@@ -1,0 +1,52 @@
+test_id,name,actual,expected,pass
+T1,20d MATE→PENDING,2,2,True
+T2,30d PENDING→分流,None,None,True
+T3a,obs无hidden_conceived,None,None,True
+T3b,obs无conception_day,None,None,True
+T3c,obs无preg_len,None,None,True
+T4,重叠交配→2栏,None,None,True
+T5,q=21→2批,None,None,True
+T6,mate≤R,None,None,True
+T7,PENDING ceil/8,None,None,True
+T8a,NURS 7d合栏,None,None,True
+T8b,NURS 8d不合栏,None,None,True
+T9a,REST 7d合栏,None,None,True
+T9b,REST 8d不合栏,None,None,True
+T10a,FATT 7d合栏,None,None,True
+T10b,FATT 8d不合栏,None,None,True
+T11,preview不修改,None,None,True
+T12,q=0无新增配种,None,None,True
+T13,CSV合计==汇总,None,None,True
+T14,loss=idle+3short,None,None,True
+T15,同seed可复现,None,None,True
+T16,REST分reason,None,None,True
+T17,decide三元组,None,None,True
+T18,PENDING在day50前不提前分流,"(3, '!=PENDING')",None,True
+T19,REST by reason独立merge,2,2,True
+T20,q=0不产生配种事件,0,<=0,True
+T21,T_NURS动态读取,35,35,True
+T22,R=ceil(N/50),None,None,True
+T23,"q=28→两个[14,14]批次",None,None,True
+T24,q=28交配栏0→2,"(0, 2)","(0, 2)",True
+T25,B=0接受after≤112,"(21, 13)",None,True
+T26,B=0拒绝总栏>112,None,None,True
+T27,90种无重复,90,90,True
+T28,Pareto-中间点被支配,"[False, False, True]",None,True
+T-ft1,h35 day209计入fatt栏,1,>=1,True
+T-ft1b,h35 day219计入fatt栏,1,>=1,True
+T-ft2,h40 day210不计入fatt栏,0,0,True
+T-ft3a,h45 day199计入fatt栏,1,>=1,True
+T-ft3b,h45 day200不计入fatt栏,0,0,True
+T35,"q_max=21→候选=[21,14,7,0]","[21, 14, 7, 0]","[21, 14, 7, 0]",True
+T36,顺序vs并行一致,"(1120.8, 1120.8)",None,True
+T37,网格顺序不影响集合,None,None,True
+T38,参数打包解包一致,None,None,True
+T39,worker后eng恢复,"(40, 210)","(40, 210)",True
+T40,h35→h45→h35一致,None,None,True
+T41,h顺序反转结果一致,None,None,True
+T42,h→T_fatt=220/210/200,"(220, 210, 200)","(220, 210, 200)",True
+T43,并行vs独立h一致(h35),None,None,True
+T43b,并行vs独立h一致(h40),None,None,True
+T44a,obs无hidden_conceived(v2),None,None,True
+T44b,obs无conception_day(v2),None,None,True
+T44c,obs无preg_len(v2),None,None,True

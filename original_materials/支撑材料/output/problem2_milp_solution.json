@@ -1,0 +1,18 @@
+{
+  "T_CYCLE": 229,
+  "TOTAL_PENS": 112,
+  "stage1_output": 1357.9912663755458,
+  "smoothness": 64.0,
+  "x_sum": 426,
+  "n_nonzero_days": 213,
+  "daily_mate_pens": 3,
+  "daily_preg_pens": 35,
+  "daily_nurs_pens": 13,
+  "daily_rest_pens": 3,
+  "daily_fatt_pens": 56,
+  "daily_ram_pens": 2,
+  "total_pens": 112,
+  "total_ewes": 426,
+  "enumeration_output": 1204.9781659388645,
+  "littles_law_bound": 1381.2255142510073
+}

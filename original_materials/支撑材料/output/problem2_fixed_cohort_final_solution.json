@@ -1,0 +1,14 @@
+{
+  "model_name": "固定配种批次_高质量近优可行方案",
+  "status": "feasible_near_optimal",
+  "total_ewes": 426,
+  "total_rams": 9,
+  "n_batches": 31,
+  "annual_output": 1357.9912663755458,
+  "min_daily_pens": 110,
+  "max_daily_pens": 112,
+  "mean_daily_pens": 111.39301310043668,
+  "violation_days": 0,
+  "validated": true,
+  "assumption": "配种阶段固定批次独占栏位20天; 其他阶段允许同阶段重新分栏"
+}

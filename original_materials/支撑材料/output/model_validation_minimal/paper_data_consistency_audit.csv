@@ -1,0 +1,11 @@
+﻿check,result
+P2: 23×14+8×13=426,OK
+"P2: 31 batches, 9 rams",OK
+P2: output 1357.99,OK
+"P1: 378 ewes, 8 rams, 1205/year",OK
+P1: 109 pens peak,OK
+P3 C_h45: 1218.64 output,OK (1218.64)
+P3 C_h45: 5.316 loss,OK (5.3164)
+"P3 vs A: -2.9% output, -78.2% loss","OK (-2.9%, +78.2%)"
+"h=35 < Y_min, h=40/h=45 ≥ Y_min",OK
+P2 Table 5: 93 fields,OK (93/93)

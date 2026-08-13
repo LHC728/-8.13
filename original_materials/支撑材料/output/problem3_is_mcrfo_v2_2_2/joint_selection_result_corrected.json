@@ -1,0 +1,16 @@
+{
+  "case": "Case A",
+  "Y_ref": 1257.1599999999999,
+  "Y_min": 1194.302,
+  "n_total": 90,
+  "n_feasible": 15,
+  "selected_N": 378,
+  "selected_q_max": 21,
+  "selected_B": 0,
+  "selected_h": 45,
+  "R": 8,
+  "T_fatt": 200,
+  "mean_output_screen": 1216.8799999999999,
+  "mean_loss_screen": 5.0118904109589035,
+  "selection_reason": "\u53ef\u884c\u7b56\u7565\u4e2dmean_daily_loss\u6700\u5c0f(\u226595%Y_ref)"
+}

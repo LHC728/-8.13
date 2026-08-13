@@ -1,0 +1,71 @@
+# 复制本文件创建一次执行任务。所有 TODO 必须由决策模型填写。
+task_id: "E-YYYYMMDD-001"
+title: "TODO"
+level: "L0 | L1 | L2"
+status: "DRAFT"
+
+objective: "TODO: 一句话、单一可验收目标"
+
+contract:
+  route: "R1"
+  contract_version: "TODO"
+  parameter_version_or_hash: "TODO"
+  check_registry_version: "CR-V3.1"
+  required_check_ids: []
+  approved_assumptions: []  # 例如 [A01, A02, B01]
+
+scope:
+  allowed_read_paths: []
+  allowed_write_paths: []
+  forbidden_paths: []
+  may_add_dependencies: false
+  network_allowed: false
+
+specification:
+  source_of_truth: []       # 公式、状态表或接口的文件与章节
+  algorithm_or_pseudocode: "TODO"
+  input_schema: "TODO: 字段、类型、单位、范围、排序"
+  output_schema: "TODO: 文件、字段、类型、精度、排序"
+  event_priority: "TODO or NOT_APPLICABLE"
+  boundary_convention: "TODO or NOT_APPLICABLE"
+  random_streams: "TODO or NOT_APPLICABLE"
+  error_behavior: "TODO: 缺失、越界、冲突必须如何失败"
+
+must_not_change:
+  - "目标、约束、指标和概率口径"
+  - "冻结输入、测试期望与容差"
+  - "搜索空间、随机种子计划和停止规则"
+
+acceptance:
+  commands: []
+  tests: []
+  expected_examples: []
+  invariants: []
+  performance_limit: "TODO or NOT_APPLICABLE"
+
+evidence_to_return:
+  - "实际读取和修改文件清单"
+  - "差异摘要"
+  - "实际命令、退出码、参数版本和随机种子"
+  - "测试通过/失败数及失败名称"
+  - "输出文件、行数/尺寸/哈希"
+  - "全部警告、偏离和未完成项"
+
+mandatory_escalation:
+  - "规格、数据、测试或来源互相矛盾"
+  - "需要新增默认、假设、依赖、算法或外部数据"
+  - "修复需要改变期望值、容差、公式、状态、指标或目标"
+  - "主模型与独立检查器不一致"
+  - "改动将改变正文数字、候选排序或结论"
+  - "超出允许文件或连续两次修复失败"
+
+completion_report_schema: |
+  STATUS: PASS | PARTIAL | BLOCKED
+  SCOPE: ...
+  CHANGES: ...
+  RUNS: ...
+  TESTS: ...
+  OUTPUTS: ...
+  DEVIATIONS: NONE | ...
+  WARNINGS: NONE | ...
+  DECISIONS_MADE: NONE

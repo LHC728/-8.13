@@ -1,0 +1,15 @@
+{
+  "model": "IS-MCRFO v2.2.2",
+  "base_results": "v2.2.1",
+  "fixes": [
+    "real T25/T26 boundary tests",
+    "T37 real grid order",
+    "dynamic T_fatt boundary tests with fatt_pens+pens_total+lambs_sold+conservation",
+    "30-row regression with 6 metrics",
+    "no None in tests_full.csv"
+  ],
+  "tests_passed": 56,
+  "tests_failed": 0,
+  "regression_rows": 30,
+  "regression_match": true
+}

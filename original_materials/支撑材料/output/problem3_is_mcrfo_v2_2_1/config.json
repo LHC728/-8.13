@@ -1,0 +1,6 @@
+{
+  "model": "IS-MCRFO v2.2.1",
+  "fix": "dynamic eng.T_FATT in Obs._p()",
+  "Y_ref": 1257.1599999999999,
+  "Y_min": 1194.302
+}

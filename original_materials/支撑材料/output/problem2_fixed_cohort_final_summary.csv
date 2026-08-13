@@ -1,0 +1,4 @@
+scheme,ewes,rams,annual_output,batches,max_mate,max_total,violation_days,validated,note
+等批量基准,378,8,1205.0,27,3,109,0,True,问题1枚举最优
+模型A_滚动混群,426,9,1358.0,N/A(混群),3,112,0,True,"MILP限时可行解,gap=1.88%"
+模型B_固定批次_最终,426,9,1357.9912663755458,31,3,112,0,True,"手工构造31批方案,逐日验证通过"

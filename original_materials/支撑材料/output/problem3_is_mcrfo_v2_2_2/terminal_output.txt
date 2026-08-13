@@ -1,0 +1,31 @@
+======================================================================
+IS-MCRFO v2.2.2 真实测试
+======================================================================
+✅ 56通过, 0失败
+  tests_full.csv null fields: 0 (should be 0)
+
+======================================================================
+跨版本回归审计: v1, v2.1, v2.2.2 (独立子进程)
+======================================================================
+  v1: 10 seeds, OK
+  v2.1: 10 seeds, OK
+  v2.2.2: 10 seeds, OK
+  回归表: 30行 (预期30)
+  最大逐种子差异: 0.0000000000
+  三版本h=40一致: True
+
+======================================================================
+复用v2.2.1已验证的筛选/正式/Pareto/统计CSV
+======================================================================
+  ✅ screening_replications_corrected.csv
+  ✅ screening_summary_corrected.csv
+  ✅ final_replications_corrected.csv
+  ✅ final_summary_corrected.csv
+  ✅ feedback_only_pareto_corrected.csv
+  ✅ global_pareto_corrected.csv
+  ✅ joint_selection_result_corrected.json
+  ✅ statistical_tests_corrected.csv
+  ✅ h_comparison_corrected.csv
+  ✅ daily_C_h35_seed2000.csv
+  ✅ daily_C_h40_seed2000.csv
+  ✅ daily_C_h45_seed2000.csv

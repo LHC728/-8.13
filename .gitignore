@@ -1,0 +1,23 @@
+# Local/editor state
+.codex/
+.agents/
+.vscode/
+.idea/
+
+# Temporary and generated files
+tmp/
+**/__pycache__/
+*.py[cod]
+*.log
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+credentials*.json
+secrets*.json
+token*.json
+
+# OS metadata
+Thumbs.db
+desktop.ini
