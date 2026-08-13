@@ -6,9 +6,25 @@
 
 # Temporary and generated files
 tmp/
+*.tmp
+*.bak
 **/__pycache__/
 *.py[cod]
 *.log
+
+# Python tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+virtualenv/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
 
 # Secrets and local configuration
 .env
@@ -21,3 +37,4 @@ token*.json
 # OS metadata
 Thumbs.db
 desktop.ini
+.DS_Store

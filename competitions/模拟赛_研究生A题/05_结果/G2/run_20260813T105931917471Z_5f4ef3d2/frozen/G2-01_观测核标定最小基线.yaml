@@ -1,0 +1,572 @@
+task_package_version: "G2-01-SPEC-V1.1.6"
+task_id: "G2-01"
+title: "观测核标定最小基线：字面单次无条件主语义与标准链替代语义"
+status: "FROZEN_FOR_DISPATCH"
+frozen_by_role: "D / G2_01_D_SPEC / L3 决策分析"
+frozen_date: "2026-08-13"
+
+governance_binding:
+  state_version: "STATE-2026-08-13-G2.2"
+  registry_version: "CR-V3.1"
+  required_checks:
+    - id: "CR-V3.1/C01"
+      applicability: "IN_SCOPE"
+      claim_limit: "本包仅冻结关键替代链标定、端点、可行性、唯一性、独立回代、残差与近退化验收；尚未声称运行通过。"
+    - id: "CR-V3.1/C02"
+      applicability: "IN_SCOPE"
+      claim_limit: "本包仅冻结字面主观测核标定与 A/B/C canonical 参数绑定；尚未声称运行通过。"
+    - id: "CR-V3.1/C03"
+      applicability: "DEFERRED"
+      claim_limit: "q_E、D 联接生成、有限状态枚举与 E 标定不在本轮 E 闭合；不得生成或猜测 canonical q_E。"
+    - id: "CR-V3.1/C04"
+      applicability: "DEFERRED"
+      claim_limit: "Q1 四格、16 状态、吸收链不在本任务实现范围。"
+    - id: "CR-V3.1/C19"
+      applicability: "IN_SCOPE_DOCUMENTATION"
+      claim_limit: "共享只读 canonical 参数与 schema；E2 oracle 内嵌任务包，且 E1/E2 不共享求根、可行性判断或核心函数。"
+    - id: "CR-V3.1/C21"
+      applicability: "IN_SCOPE"
+      claim_limit: "本轮由 L1 runner 骨架与实际证据包闭合命令、退出码、检查报告及哈希；实际运行前不得声称通过。"
+    - id: "CR-V3.1/C27"
+      applicability: "IN_SCOPE_DOCUMENTATION"
+      claim_limit: "来源分层与结论边界已列明；不宣称题意只有一种解释。"
+    - id: "CR-V3.1/C05"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "lambda 不在标定器范围。"
+    - id: "CR-V3.1/C06"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "排程质量分离与逐台 DES 全等不在标定器范围。"
+    - id: "CR-V3.1/C08"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "确定性 DES 时间线不在标定器范围。"
+    - id: "CR-V3.1/C09"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "资源并行与前置不在标定器范围。"
+    - id: "CR-V3.1/C10"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "事件结算与有效尝试不在标定器范围。"
+    - id: "CR-V3.1/C11"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "FCFS 与跨队重测不在标定器范围。"
+    - id: "CR-V3.1/C12"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "班历与周转不在标定器范围。"
+    - id: "CR-V3.1/C16"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "本标定器无随机流。"
+    - id: "CR-V3.1/C17"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "日志重放与 DES 指标不在标定器范围。"
+    - id: "CR-V3.1/C18"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "事件活性不在标定器范围。"
+    - id: "CR-V3.1/C20"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "DES/checker 变异故障注入由其他 G2 任务包闭合；本包仅列标定器负向测试。"
+
+source_layering:
+  problem_statement_or_data:
+    - "02_数据/parameters.csv 中 P026-P033 的 q/e 题面或历史统计输入。"
+  team_signed_interpretation:
+    - "01_审计/问题契约.md：单次无条件字面主语义与标准初测—触发重测链关键替代语义。"
+    - "03_模型/01_Q1概率与质量模型.md：两套标定方程。"
+  strategy_or_governance_limit:
+    - "CURRENT_STATE.md：G2 只证明最小数学核，不发布正式竞赛数字。"
+    - "CR-V3.1/C19：主实现与 checker 核心计算隔离。"
+  prohibited_wording:
+    - "不得把队伍闭合的概率语义写成题面唯一明文。"
+    - "不得把 test oracle 或手算数写成正式运行结果。"
+
+shared_read_only_artifacts:
+  schema: "04_代码/src/schemas/observation_calibration_v1.schema.json"
+  oracle_fixture: "04_代码/tests/fixtures/observation_calibration_oracles_v1.json"
+  parameter_file: "02_数据/parameters.csv"
+  ownership: "由 D 冻结；E1 可读三者，E2 仅可读 task package、parameters 与 schema，任何变更必须升级。"
+  frozen_sha256:
+    parameters_csv: "0461da2e0de09090673192d9eb0fde6fe5e70b1d22ef61fe13cdb878c449f07e"
+    schema: "f8116d59d36de705d18a8246f7633996f25358501c4b8ee4feb0fca181a5fe09"
+    oracle_fixture: "6bd550994288217748dab4dddc7a647c410d2f93896c8f4354d591ee5e0d88c5"
+    task_package: "NOT_SELF_REFERENCED_RECORD_IN_RUN_MANIFEST"
+
+objective: >-
+  实现两个彼此隔离的标准库标定通道：E1 按冻结公式产生结果，E2 从原始方程独立回代验收；
+  仅闭合任意合法 q,e 的通用接口与 A/B/C canonical 标定，不闭合 E 的 canonical q_E。
+
+canonical_scope:
+  allowed_processes: ["A", "B", "C"]
+  parameter_bindings:
+    A: {q_parameter_id: "P026", e_parameter_id: "P030"}
+    B: {q_parameter_id: "P027", e_parameter_id: "P031"}
+    C: {q_parameter_id: "P028", e_parameter_id: "P032"}
+  rules:
+    - "实际 q/e 必须在运行时由 Python csv 标准库按 parameter_id 唯一匹配读取，并用 Decimal 解析。"
+    - "不得按 CSV 行号、symbol、code_name 或聊天中的手算值绑定。"
+    - "parameter_id 缺失、重复、value 非有限十进制或不在 [0,1] 时整次 canonical 请求失败。"
+    - "本轮不得读取 P033 后自行猜 q_E；E 仅允许 direct_values 测试通用接口，不得标为 canonical_g2_abc。"
+    - "A/B/C 的手算或 oracle 数值不得写入正式配置、正式输出或论文。"
+
+interface_contract:
+  schema_version: "observation_calibration_v1"
+  envelope_types: ["calibration_request", "calibration_response", "calibration_check_report", "calibration_run_manifest", "calibration_command_log"]
+  input_summary:
+    request_fields:
+      - "schema_version: const observation_calibration_v1"
+      - "envelope_type: const calibration_request"
+      - "request_id: 非空稳定字符串"
+      - "scenario_role: canonical_g2_abc | generic | test_oracle"
+      - "semantics: single_test_unconditional_v1 | standard_chain_v1"
+      - "items: 非空数组；每项含 process_id 与 canonical_parameter_ref 或 direct_values"
+    decimal_encoding: "q/e 使用 JSON 十进制字符串；禁止 NaN、Infinity、指数拼写和二进制浮点预处理。"
+  output_summary:
+    response_fields:
+      - "schema_version, envelope_type, request_id, semantics"
+      - "overall_status: ALL_IDENTIFIED | HAS_NONIDENTIFIABLE | HAS_INFEASIBLE | FAILED_VALIDATION | NUMERICAL_FAILURE"
+      - "results: 与输入 items 同序且等长"
+      - "每项 status: UNIQUE_SOLUTION | NONIDENTIFIABLE_FAMILY | INFEASIBLE"
+      - "q,e,alpha,beta,e_max 为 canonical 普通十进制字符串或 schema 允许的 null"
+      - "diagnostics 记录 method、feasibility、brackets、iterations、residuals 和 tolerance_profile"
+    ordering: "保留请求 items 顺序；canonical_g2_abc 必须严格 A,B,C。"
+    serialization: "Python json.dump(..., ensure_ascii=False, sort_keys=True, separators=(',', ':'))；UTF-8；文件末尾一个 LF。"
+  cli_contracts:
+    E1_exact_cli: "python 04_代码/main_model/observation_calibration_v1.py --request <request.json> --parameters <parameters.csv> --output <response.json>"
+    E1_exit_codes:
+      0: "请求有效且完成；允许 response 含 INFEASIBLE/NONIDENTIFIABLE 数学状态。"
+      2: "输入 envelope、canonical binding 或参数 CSV 验证失败；不得写部分 response。"
+      3: "括区间、迭代、Decimal 或残差数值失败；不得写成功 response。"
+      4: "文件 I/O 或不可恢复序列化失败。"
+    E2_exact_cli: "python 04_代码/checker/observation_calibration_checker_v1.py --response <response.json> --parameters <parameters.csv> --schema <schema.json> --task-package <task_package.yaml> --report <check_report.json>"
+    E2_input_rule: "禁止 request 参数和 request 文件；只从 response 的 scenario_role、semantics、process_id、q、e 独立复核，canonical 时再对 parameters.csv 的 parameter_id 回代。task package/schema 使用冻结固定路径。"
+    E2_run_id_rule: >-
+      E2 在任何 report 写入前先执行 report-context preflight：只读取 response JSON 顶层 scenario_role、request_id、semantics；
+      scenario_role 必须为 canonical_g2_abc，request_id 必须能按最后一个冒号严格拆成 <run_id>:<semantics>，后缀必须与 response.semantics 字节相同，
+      前缀必须匹配 ^[0-9]{8}T[0-9]{12}Z_[0-9a-f]{8}$。任一条件失败则 exit 2、错误写 stderr，且 --report 目标必须不存在或保持原字节不变，
+      不得创建、截断、覆盖或另造时间戳。仅 preflight 成功后，前缀才成为唯一 report_context_run_id，并原样写入所有后续 PASS/FAIL/VALIDATION_ERROR/NUMERICAL_ERROR report。
+      generic/test_oracle CLI 同属 preflight 失败，不生成正式 report；其单元测试只调用 checker 内部纯函数。
+    E2_exit_codes:
+      0: "check_report.checker_status=PASS。"
+      1: "独立回代、分类、绑定或残差检查 FAIL；写完整 FAIL report。"
+      2: "若 report-context preflight 失败，只写 stderr 且不得创建或触碰 report；若 preflight 已成功，则后续 response/schema/parameters 验证错误写 schema-valid VALIDATION_ERROR report，并使用已派生父 run_id。"
+      3: "checker 自身数值失败；写 NUMERICAL_ERROR report。"
+      4: "文件 I/O 或不可恢复序列化失败。"
+
+mathematical_specification:
+  common:
+    definitions:
+      - "q=P(X=1)，e 为所选语义的总体差错参照，alpha=P(Y=1|X=0)，beta=P(Y=0|X=1)。"
+      - "输入域必要条件：q,e 均为有限十进制且 0<=q<=1、0<=e<=1。域外是 FAILED_VALIDATION，不是 INFEASIBLE。"
+    endpoint_identifiability:
+      q_zero: "当且仅当 e=0 可行；alpha=0 被识别，beta 在 [0,1] 任意且不可识别，输出 beta=null、free_parameters=['beta']。"
+      q_one: "当且仅当 e=0 可行；beta=0 被识别，alpha 在 [0,1] 任意且不可识别，输出 alpha=null、free_parameters=['alpha']。"
+      forbidden_default: "不可识别参数不得默认填 0、0.5 或 1，不得标成 UNIQUE_SOLUTION。"
+  single_test_unconditional_v1:
+    equations:
+      - "(1-q)*alpha = e/2"
+      - "q*beta = e/2"
+    interior_solution: "0<q<1 时 alpha=e/[2(1-q)]，beta=e/(2q)。"
+    necessary_and_sufficient_feasibility: "0<q<1 时当且仅当 e<=2*min(q,1-q)；可行解唯一。端点按 common.endpoint_identifiability。"
+    boundary_cases:
+      - "e=0 且 0<q<1：唯一 alpha=beta=0。"
+      - "e=2q<2(1-q)：beta=1。"
+      - "e=2(1-q)<2q：alpha=1。"
+      - "q=1/2,e=1：alpha=beta=1。"
+    method: "直接闭式；仍须在原始两式上独立计算残差。"
+  standard_chain_v1:
+    original_equations:
+      - "D=1+(1-q)*alpha+q*(1-beta)"
+      - "A=(1-q)*(alpha+alpha^2)"
+      - "B=q*(2*beta-beta^2)"
+      - "A=B=e*D/2"
+    scalar_reduction_for_E1:
+      - "令 t=A=B，t_max=min(2*(1-q),q)。"
+      - "alpha(t)=(-1+sqrt(1+4t/(1-q)))/2。"
+      - "beta(t)=1-sqrt(1-t/q)。"
+      - "D(t)=1+(1-q)*alpha(t)+q*(1-beta(t))。"
+      - "h(t)=2t/D(t)，在 [0,t_max] 连续严格递增。"
+      - "e_max(q)=h(t_max)。0<q<1 时当且仅当 e<=e_max(q) 可行，且解唯一。"
+    uniqueness_certificate: >-
+      在内部 t，h'(t)=2[D-tD']/D^2>0；代入 t=(1-q)(alpha+alpha^2)=q(2beta-beta^2)，
+      D-tD'=1+(1-q){alpha-(alpha+alpha^2)/(1+2alpha)}
+      +q(1-beta)+q(2beta-beta^2)/(2-2beta)>0。
+      beta=1 的上端点用连续性承接，不在零分母处评价导数。
+    boundaries:
+      - "e=0 且 0<q<1：t=0，唯一 alpha=beta=0。"
+      - "若 q<2/3，则 t_max=q、beta=1；若 q>2/3，则 t_max=2(1-q)、alpha=1；q=2/3 时 alpha=beta=1 且 e_max=1。"
+      - "q=0 或 q=1 按 common.endpoint_identifiability；e>0 不可行。"
+    E1_root_method:
+      algorithm: "仅用 Decimal.sqrt 与确定性二分，在 t in [0,t_max] 求 h(t)-e=0；不得调用 E2 代码。"
+      bracket: "e=0 直接返回下端；e=e_max 返回上端；0<e<e_max 时初始符号严格为负/正。"
+      stopping: >-
+        同时满足：(1) t 区间宽度<=1e-14；(2) 用当前 t_lo,t_hi 经单调 alpha(t),beta(t) 映射得到的
+        root_alpha_span、root_beta_span 均<=1e-12；(3) 按17有效位序列化参数中点并重新解析为 reported_alpha/reported_beta；
+        (4) reported_alpha 区间是 root_alpha 区间与 reported_alpha 点的最小外向凸包，reported_beta 同理，
+        两个 reported span 均<=1e-12；(5) reported 回读值的原始残差 max(|A-eD/2|,|B-eD/2|,|A-B|)<=5e-12。
+        不要求 reported 点落在 root interval；最多 300 次否则 NUMERICAL_FAILURE；
+        不得以固定额外迭代数替代参数跨度证书。
+    E2_independent_2d_back_substitution:
+      algorithm: >-
+        不使用 t、h(t)、E1 的求根/可行性函数或其输出 alpha/beta。
+        外层以 alpha 为变量；内层在 beta in [0,1] 对
+        q(2beta-beta^2)=(1-q)(alpha+alpha^2) 二分回代 beta；
+        再对 R(alpha)=2(1-q)(alpha+alpha^2)-e[1+(1-q)alpha+q(1-beta(alpha))] 二分。
+      bracket: >-
+        alpha_lo=0；若 2(1-q)<=q 则 alpha_hi=1，否则以独立二分求
+        (1-q)(alpha+alpha^2)=q 的 alpha_hi。R(alpha_lo)<=0；可行时 R(alpha_hi)>=0。
+      stopping: >-
+        独立 root_beta 括区间跨度<=1e-12，root_alpha 括区间跨度<=1e-12；按17有效位序列化各 root 中点并回读；
+        root 区间与各 reported 点的最小外向凸包 reported_alpha/reported_beta span 均<=1e-12；reported 回读值原始三残差均<=5e-12；
+        每层最多 300 次，否则 NUMERICAL_FAILURE。不得要求 reported 点属于 root interval，也不得只凭外层函数残差或固定额外迭代停止。
+      existence_diagnostic: "必须回报 alpha/beta 最终括区间、跨度、alpha 外括区间端点 R、每次 inner bracket 合法性及最终原始残差；括区间不成立时不得改算法或投影。"
+
+numeric_policy:
+  validation_and_feasibility:
+    - "JSON q/e 本来就是字符串；直接以 Decimal(string) 解析，禁止先经 float。有效位数 s：移除符号与小数点后，从首个非零数字起计至末位；数值0的 s=1。"
+    - "基础工作精度 p0=max(120,max_input_significant_digits+80)。所有分类与求根使用 Decimal localcontext，并对根号/四则的区间上下界采用 ROUND_FLOOR/ROUND_CEILING 定向舍入。"
+    - "Decimal.sqrt 区间规则固定为：在当前目标精度 p 的 p+20 临时精度计算正确舍入值 r，再取 [r.next_minus(),r.next_plus()]，回到 p 位后分别 ROUND_FLOOR/ROUND_CEILING；后续区间四则同样向外舍入。不得把单个 sqrt 近似值当精确边界。"
+    - >-
+      alpha(t)、beta(t) 或独立回代的参数区间在每次完整映射后必须与已由定义严格证明的 codomain [0,1] 取集合交：
+      lo=max(lo,0)，hi=min(hi,1)。这是将数值外包络与数学值域相交以收紧证书，保留所有真实函数值；不是裁剪/投影候选解，
+      不得改变可行性分类、reported 值或方程。交集为空或 lo>hi 才返回 NUMERICAL_FAILURE。
+    - "单次主语义可行性按 Decimal 精确代数比较，不用 epsilon 改分类。"
+    - "替代链 e_max 先在 p0 位形成包含真实 e_max 的定向舍入区间 [L,U]：e<L 判可行，e>U 判不可行，e 恰为可精确识别的端点则按代数端点规则；其余不稳定时精度依次增加80位，最多 p0+800。"
+    - "若达到 p0+800 后 e 仍落在 [L,U] 且无法以精确代数端点判定，返回 NUMERICAL_FAILURE；禁止 epsilon 分类、无限循环或任选一侧。"
+    - "根号自变量若因运算误差落到域外，NUMERICAL_FAILURE；不得截到 0。"
+  root_tolerance:
+    bracket_width_absolute: "1e-14"
+    alpha_parameter_span_absolute: "1e-12"
+    beta_parameter_span_absolute: "1e-12"
+    E1_original_residual_absolute: "1e-12"
+    E2_original_residual_absolute: "2e-12"
+    max_iterations: 300
+  cross_implementation_validation:
+    alpha_beta_absolute: "5e-11"
+    e_max_absolute: "5e-12"
+    status_and_free_parameters: "exact"
+  serialization:
+    significant_decimal_digits: 17
+    round_trip_original_residual_absolute: "5e-12"
+    negative_zero: "必须规范化为 0"
+    bracket_certificate: >-
+      E1/E2 均须在 diagnostics.notes 以如下12个固定键值字符串记录：
+      root_alpha_lo/root_alpha_hi/root_alpha_span/root_beta_lo/root_beta_hi/root_beta_span/
+      reported_alpha_lo/reported_alpha_hi/reported_alpha_span/reported_beta_lo/reported_beta_hi/reported_beta_span。
+      root 区间是各自算法对真实根的外向区间；reported 区间是对应 root 区间与17有效位实际回读点的最小外向凸包。
+      E2 另须验证 E1 response 的 reported 值和12项证书，再独立生成自己的同构12项证书；不得把 reported 点宣称为精确根。
+  immutable_rule: "E1/E2 不得放宽、改成相对容差、按样例调容差或把失败改为可行；如需改变必须 DECISION_REQUIRED。"
+
+boundary_and_error_behavior:
+  - "缺字段、额外字段、非法枚举、重复 process_id、非法 decimal、域外 q/e：FAILED_VALIDATION，整 envelope 不产生部分结果。"
+  - "数学上无解：结果 status=INFEASIBLE；alpha=beta=null；保留 q,e,e_max 与严格不等式诊断；退出码仍为 0，因为这是有效数学结果。"
+  - "端点不可识别：NONIDENTIFIABLE_FAMILY；只把自由参数置 null；不得抽选代表解。"
+  - "括区间、迭代或残差失败：overall_status=NUMERICAL_FAILURE，进程非零；禁止返回最后迭代冒充结果。"
+  - "canonical 请求必须恰有 A/B/C 且绑定指定 parameter_id；否则 FAILED_VALIDATION。"
+  - "direct_values 可接受任意 process_id 和合法 q,e，包括 E 测试；不得把 direct E 结果标为 canonical。"
+
+oracle_contract:
+  fixture: "04_代码/tests/fixtures/observation_calibration_oracles_v1.json"
+  status: "TEST_ORACLE_ONLY_NOT_FORMAL_RUN_RESULT"
+  rules:
+    - "外部 fixture 只供 E1 与 runner 测试；E2 不得读取，E2 仅用本任务包 E2_embedded_oracles。"
+    - "exact 字段优先用整数比/根式表达，可由 Fraction/Decimal 独立复算。"
+    - "近边界用十进制输入验证分类与残差，不用 fixture 输出替代 canonical 程序运行。"
+    - "任何修改预期值、删除样例或降低精度均须升级。"
+
+E2_embedded_oracles:
+  access_rule: "本小节是 E2 唯一 oracle；E2 禁止读取外部 oracle fixture。"
+  cases:
+    - id: "single_endpoint_q0"
+      semantics: "single_test_unconditional_v1"
+      q: "0"
+      e: "0"
+      expected: {status: "NONIDENTIFIABLE_FAMILY", alpha: "0", beta: null, free_parameters: ["beta"]}
+    - id: "single_exact_internal"
+      semantics: "single_test_unconditional_v1"
+      q: "0.25"
+      e: "0.25"
+      expected: {status: "UNIQUE_SOLUTION", alpha_exact: "1/6", beta_exact: "1/2", e_max_exact: "1/2"}
+    - id: "single_above_boundary"
+      semantics: "single_test_unconditional_v1"
+      q: "0.25"
+      e: "0.50000000000000000001"
+      expected: {status: "INFEASIBLE", e_max_exact: "1/2"}
+    - id: "chain_endpoint_q1"
+      semantics: "standard_chain_v1"
+      q: "1"
+      e: "0"
+      expected: {status: "NONIDENTIFIABLE_FAMILY", alpha: null, beta: "0", free_parameters: ["alpha"]}
+    - id: "chain_exact_internal"
+      semantics: "standard_chain_v1"
+      q: "0.5"
+      e: "0.5"
+      expected: {status: "UNIQUE_SOLUTION", alpha_exact: "1/2", beta_exact: "1/2", D_exact: "3/2", N_FP_exact: "3/8", N_FN_exact: "3/8"}
+    - id: "chain_global_boundary"
+      semantics: "standard_chain_v1"
+      q_exact: "2/3"
+      e: "1"
+      expected: {status: "UNIQUE_SOLUTION", alpha_exact: "1", beta_exact: "1", D_exact: "4/3", e_max_exact: "1"}
+      oracle_scope: "EXACT_FRACTION_ALGEBRA_ONLY_NOT_PUBLIC_API"
+      execution_rule: "必须用 Fraction(2,3) 做隔离代数恒等式验证；禁止转成有限 Decimal、禁止构造 API request/response、禁止调用 public API 或主 solver。任意有限十进制近似 q 下 e=1 都应按该精确 q 判为 INFEASIBLE。"
+    - id: "chain_qhalf_above_boundary"
+      semantics: "standard_chain_v1"
+      q: "0.5"
+      e: "0.76393202250021030360"
+      expected: {status: "INFEASIBLE", e_max_exact: "3-sqrt(5)"}
+    - id: "chain_near_degenerate_q001"
+      semantics: "standard_chain_v1"
+      q: "0.01"
+      e: "0.01980390195507347100477"
+      expected:
+        status: "UNIQUE_SOLUTION"
+        alpha_span_max: "1e-12"
+        beta_span_max: "1e-12"
+        cross_channel_alpha_beta_max_abs: "5e-11"
+      oracle_scope: "PUBLIC_API_NUMERICAL_REGRESSION_NOT_FORMAL_RESULT"
+      execution_rule: "不得把参考手算 beta 写为期望；只验两通道各自括区间证书、原始残差及跨通道容差。"
+  evaluation: "Fraction 处理有理数，Decimal.sqrt 在 precision>=80 独立计算；不得调用 E1、t/h 求根或外部 fixture。带 EXACT_FRACTION_ALGEBRA_ONLY_NOT_PUBLIC_API 的案例不得进入公开 API 测试。"
+
+dispatches:
+  E1:
+    dispatch:
+      protocol_version: "SA-V1.0"
+      agent_name: "G2_01_E1_CALIBRATOR"
+      role: "E1"
+      level: "L2"
+      task_type: "受控编码"
+      requested_model: "gpt-5.6-terra"
+      model_source: "explicit_override"
+      requested_reasoning_effort: "high"
+      model_selection_reason: "双语义边界与高精度二分已冻结，terra/high 足以规格化实现；无需让执行者作 L3 数学决定。"
+      context_mode: "none"
+      runtime_model_verification: "explicit_request_sent"
+      may_spawn_children: false
+    allowed_read_paths:
+      - "CURRENT_STATE.md"
+      - "01_审计/问题契约.md"
+      - "01_审计/检查注册表_V3.1.md"
+      - "02_数据/parameters.csv"
+      - "03_模型/01_Q1概率与质量模型.md"
+      - "08_项目管理/任务包/G2-01_观测核标定最小基线.yaml"
+      - "04_代码/src/schemas/observation_calibration_v1.schema.json"
+      - "04_代码/tests/fixtures/observation_calibration_oracles_v1.json"
+      - "05_结果/G2/run_<immutable_run_id>/frozen/parameters.csv"
+      - "05_结果/G2/run_<immutable_run_id>/single_test_unconditional_v1/request.json"
+      - "05_结果/G2/run_<immutable_run_id>/standard_chain_v1/request.json"
+    allowed_write_paths:
+      - "04_代码/main_model/observation_calibration_v1.py"
+      - "04_代码/tests/test_observation_calibration_main_v1.py"
+      - "05_结果/G2/run_<immutable_run_id>/single_test_unconditional_v1/response.json"
+      - "05_结果/G2/run_<immutable_run_id>/standard_chain_v1/response.json"
+    forbidden_reads:
+      - "04_代码/checker/**"
+      - "99_归档/**"
+      - "E2 推理摘要或未冻结实现"
+    implementation_limits:
+      - "仅 Python 标准库；不得新增依赖、配置或正式结果文件。"
+      - "实现 schema 对应 envelope 解析、CSV parameter_id 绑定、闭式主语义、替代链 t 二分和确定性序列化。"
+      - "不得实现 Q1 q_E、四格、lambda、DES 或 checker。"
+      - "不得读取或导入 E2 代码。"
+    exact_cli: "python 04_代码/main_model/observation_calibration_v1.py --request <request.json> --parameters <parameters.csv> --output <response.json>"
+    acceptance_commands:
+      - "python -m py_compile 04_代码/main_model/observation_calibration_v1.py 04_代码/tests/test_observation_calibration_main_v1.py"
+      - "python -m unittest 04_代码/tests/test_observation_calibration_main_v1.py -v"
+  E2:
+    dispatch:
+      protocol_version: "SA-V1.0"
+      agent_name: "G2_01_E2_INDEPENDENT_CHECKER"
+      role: "E2/checker"
+      level: "L2"
+      task_type: "独立审计"
+      requested_model: "gpt-5.6-terra"
+      model_source: "explicit_override"
+      requested_reasoning_effort: "high"
+      model_selection_reason: "需要独立二维回代和边界审计，但公式、括区间、容差均已冻结。"
+      context_mode: "none"
+      runtime_model_verification: "explicit_request_sent"
+      may_spawn_children: false
+    allowed_read_paths:
+      - "02_数据/parameters.csv"
+      - "08_项目管理/任务包/G2-01_观测核标定最小基线.yaml"
+      - "04_代码/src/schemas/observation_calibration_v1.schema.json"
+      - "05_结果/G2/run_<immutable_run_id>/frozen/parameters.csv"
+      - "05_结果/G2/run_<immutable_run_id>/frozen/G2-01_观测核标定最小基线.yaml"
+      - "05_结果/G2/run_<immutable_run_id>/frozen/observation_calibration_v1.schema.json"
+      - "05_结果/G2/run_<immutable_run_id>/single_test_unconditional_v1/response.json"
+      - "05_结果/G2/run_<immutable_run_id>/standard_chain_v1/response.json"
+    allowed_write_paths:
+      - "04_代码/checker/observation_calibration_checker_v1.py"
+      - "04_代码/tests/test_observation_calibration_checker_v1.py"
+      - "05_结果/G2/run_<immutable_run_id>/single_test_unconditional_v1/check_report.json"
+      - "05_结果/G2/run_<immutable_run_id>/standard_chain_v1/check_report.json"
+    forbidden_reads:
+      - "04_代码/main_model/**"
+      - "04_代码/tests/fixtures/observation_calibration_oracles_v1.json"
+      - "05_结果/G2/run_<immutable_run_id>/**/request.json"
+      - "CURRENT_STATE.md、01_审计/**、03_模型/** 与其他项目文档"
+      - "99_归档/**"
+      - "E1 推理摘要、核心实现说明或测试源"
+    implementation_limits:
+      - "仅 Python 标准库；自行解析冻结 task package、schema、参数与原始 response。"
+      - "不得接收或读取 request；semantics/process/q/e 必须从 response 取得，canonical binding 以 parameters.csv 复核。"
+      - "替代链必须使用冻结的嵌套 alpha-beta 二分，禁止复现 E1 的 t/h 求根或导入 E1。"
+      - "单次语义可以直接从原始方程独立回代，但不得调用 E1。"
+      - "测试 oracle 只读本任务包 E2_embedded_oracles；不得读取外部 fixture。"
+      - "不得修改参数、schema、task package、E1 输出或容差。"
+    exact_cli: "python 04_代码/checker/observation_calibration_checker_v1.py --response <response.json> --parameters <parameters.csv> --schema <schema.json> --task-package <task_package.yaml> --report <check_report.json>"
+    acceptance_commands:
+      - "python -m py_compile 04_代码/checker/observation_calibration_checker_v1.py 04_代码/tests/test_observation_calibration_checker_v1.py"
+      - "python -m unittest 04_代码/tests/test_observation_calibration_checker_v1.py -v"
+
+  RUNNER:
+    dispatch:
+      protocol_version: "SA-V1.0"
+      agent_name: "G2_01_L1_EVIDENCE_RUNNER"
+      role: "runner"
+      level: "L1"
+      task_type: "规格化编码"
+      requested_model: "gpt-5.6-terra"
+      model_source: "explicit_override"
+      requested_reasoning_effort: "medium"
+      model_selection_reason: "只编排两个冻结 CLI、复制输入并生成哈希/manifest，不实现数学。"
+      context_mode: "none"
+      runtime_model_verification: "explicit_request_sent"
+      may_spawn_children: false
+    allowed_read_paths:
+      - "02_数据/parameters.csv"
+      - "08_项目管理/任务包/G2-01_观测核标定最小基线.yaml"
+      - "04_代码/src/schemas/observation_calibration_v1.schema.json"
+      - "04_代码/tests/fixtures/observation_calibration_oracles_v1.json"
+      - "04_代码/main_model/observation_calibration_v1.py"
+      - "04_代码/checker/observation_calibration_checker_v1.py"
+    allowed_write_paths:
+      - "04_代码/scripts/run_g2_01_v1.py"
+      - "04_代码/tests/test_run_g2_01_v1.py"
+      - "05_结果/G2/run_<immutable_run_id>/**"
+    exact_cli: "python 04_代码/scripts/run_g2_01_v1.py --parameters 02_数据/parameters.csv --task-package 08_项目管理/任务包/G2-01_观测核标定最小基线.yaml --schema 04_代码/src/schemas/observation_calibration_v1.schema.json --fixture 04_代码/tests/fixtures/observation_calibration_oracles_v1.json --output-root 05_结果/G2"
+    implementation_limits:
+      - "仅编排 subprocess、复制冻结输入、生成两个 canonical request、记录 stdout/stderr/退出码、哈希与 manifest。"
+      - "不得导入 E1/E2 模块、实现公式、复算 alpha/beta、改变子进程输出或根据数字决定 PASS。"
+      - "run_id=UTC 的 YYYYMMDDTHHMMSSffffffZ_ 加 8 位 secrets.token_hex(4)；若目录已存在则失败，不覆盖、不重试改写同一目录。"
+      - "任一子进程非预期退出、缺文件、hash 不符或 checker 非 PASS 时 manifest overall_status=FAIL/INCOMPLETE，runner 非零退出并保留证据。E2 preflight exit 2 且无 report 是合法失败形态：保留 E2 stderr/exit/command；不得伪造 report。"
+      - "复制并核验冻结输入后，两个 E1/E2 子进程的 --parameters 必须指向本 run 的 frozen/parameters.csv；不得在运行中继续读取源 parameters.csv。"
+      - "正式 exact CLI 只允许 exact_cli 列出的五个选项；禁止新增或接受 --run-id、--e1、--e2、可执行路径覆盖、算法覆盖或其他公共参数。run_id 只能由 runner 内部生成，E1/E2 路径是冻结常量。"
+      - "runner 单元测试需要注入时，只能调用不暴露为 CLI 的内部纯函数，或在进程级测试环境中以受控 PATH/临时文件替身注入；不得借测试新增正式 CLI 选项。"
+    acceptance_commands:
+      - "python -m py_compile 04_代码/scripts/run_g2_01_v1.py 04_代码/tests/test_run_g2_01_v1.py"
+      - "python -m unittest 04_代码/tests/test_run_g2_01_v1.py -v"
+
+evidence_package_contract:
+  root: "05_结果/G2/run_<immutable_run_id>/"
+  exact_layout:
+    - "run_manifest.json"
+    - "commands.json"
+    - "file_hashes.sha256"
+    - "frozen/G2-01_观测核标定最小基线.yaml"
+    - "frozen/parameters.csv"
+    - "frozen/observation_calibration_v1.schema.json"
+    - "frozen/observation_calibration_oracles_v1.json"
+    - "single_test_unconditional_v1/request.json"
+    - "single_test_unconditional_v1/response.json"
+    - "single_test_unconditional_v1/check_report.json"
+    - "single_test_unconditional_v1/e1.stdout.txt"
+    - "single_test_unconditional_v1/e1.stderr.txt"
+    - "single_test_unconditional_v1/e2.stdout.txt"
+    - "single_test_unconditional_v1/e2.stderr.txt"
+    - "standard_chain_v1/request.json"
+    - "standard_chain_v1/response.json"
+    - "standard_chain_v1/check_report.json"
+    - "standard_chain_v1/e1.stdout.txt"
+    - "standard_chain_v1/e1.stderr.txt"
+    - "standard_chain_v1/e2.stdout.txt"
+    - "standard_chain_v1/e2.stderr.txt"
+  canonical_requests:
+    - "两个 request 的 scenario_role=canonical_g2_abc，items 严格 A,B,C，且分别绑定 P026/P030、P027/P031、P028/P032；禁止 E。"
+    - "request_id 分别为 <run_id>:single_test_unconditional_v1 与 <run_id>:standard_chain_v1。"
+    - "所有 q/e 数字只允许 E1 从本 run 的 frozen/parameters.csv 实际读取后进入 response；runner 不填标定数字。"
+  serialization:
+    json: "UTF-8、sort_keys=True、separators=(',', ':')、末尾 LF；数组顺序按本包冻结，禁止按哈希或文件系统顺序。"
+    text_logs: "UTF-8，原样保存子进程 stdout/stderr；不得摘要替换。"
+    hash_inventory: "file_hashes.sha256 使用小写 SHA-256、两个空格、POSIX 相对路径、按路径 Unicode code-point 升序、LF；排除 file_hashes.sha256 自身且不得列目录。"
+  run_manifest_required:
+    - "schema envelope calibration_run_manifest 的全部必填字段。"
+    - "Schema 的 artifacts minItems=0 仅使早期失败可表达，不是 PASS 放宽。PASS 时 artifacts 必须恰好覆盖至少以下11项语义产物且每项路径/role唯一：task package、parameters、schema、fixture、2 request、2 response、2 check_report、commands.json；此外所有实际 stdout/stderr 均按 stdout_log/stderr_log role 枚举。"
+    - "FAIL/INCOMPLETE 时 artifacts 只列实际存在文件，可为0项；不得为满足数量伪造占位。E2 preflight 失败允许缺对应 check_report，但实际存在的 commands.json、stdout/stderr 必须列入，并由 manifest notes 记录 REPORT_CONTEXT_PREFLIGHT_FAILED。"
+    - "task package hash 只在 manifest/artifact inventory 记录；任务包内不得自引用自身 hash。"
+    - "manifest 不记录自身 hash；其 hash 只在 file_hashes.sha256 中记录。"
+  check_report_required:
+    - "每语义一个 calibration_check_report；包含 run/check IDs、scenario_role、semantics、checker_status、四项冻结输入/输出 hash、逐 process 独立值与残差。"
+    - "E2 只验证 response；不得读取 request。"
+    - "report-context preflight 失败时 check_report 明确不存在；这不违反 schema，因为无 report 被序列化。已有 --report 文件必须保持 SHA-256 与字节数不变。"
+  command_log_required:
+    - "Schema 的 commands minItems=0 仅使子进程启动前失败可表达，不是 PASS 放宽。PASS 时 commands.json 必须恰有4条并按 E1主语义、E2主语义、E1替代语义、E2替代语义的冻结顺序记录精确 argv、cwd、UTC 起止、退出码及 stdout/stderr 相对路径。FAIL/INCOMPLETE 只记录实际启动的0至4条命令。"
+    - "argv 使用 JSON 字符串数组而非 shell 拼接文本；runner 使用 subprocess.run(..., shell=False)。"
+  completion_rule:
+    - "只有 artifacts 满足 PASS 的11项语义产物最低集合、commands 恰有4条、两个 E1 exit=0、两个 E2 exit=0 且 checker_status=PASS、所有声明文件存在、全部实际日志已枚举、冻结输入 hash 匹配，manifest overall_status 才能为 PASS。结构 schema 的 minItems=0 不得用于降低该语义门。"
+    - "所有数值仅从 E1 子进程实际 response 原样进入证据包；runner 不复制聊天、fixture 期望或手算数为运行结果。"
+    - "证据包创建后不可覆盖；验证发现失败时保留目录并标 FAIL/INCOMPLETE。"
+
+integration_acceptance:
+  commands:
+    - "python -m json.tool 04_代码/src/schemas/observation_calibration_v1.schema.json"
+    - "python -m json.tool 04_代码/tests/fixtures/observation_calibration_oracles_v1.json"
+    - "python -m unittest discover -s 04_代码/tests -p 'test_observation_calibration_*_v1.py' -v"
+    - "python -m unittest 04_代码/tests/test_run_g2_01_v1.py -v"
+    - "python 04_代码/scripts/run_g2_01_v1.py --parameters 02_数据/parameters.csv --task-package 08_项目管理/任务包/G2-01_观测核标定最小基线.yaml --schema 04_代码/src/schemas/observation_calibration_v1.schema.json --fixture 04_代码/tests/fixtures/observation_calibration_oracles_v1.json --output-root 05_结果/G2"
+    - "git diff --check -- 08_项目管理/任务包/G2-01_观测核标定最小基线.yaml 04_代码/src/schemas/observation_calibration_v1.schema.json 04_代码/tests/fixtures/observation_calibration_oracles_v1.json 04_代码/main_model/observation_calibration_v1.py 04_代码/checker/observation_calibration_checker_v1.py 04_代码/tests/test_observation_calibration_main_v1.py 04_代码/tests/test_observation_calibration_checker_v1.py"
+  required_tests:
+    - "fixture 全案例在两个隔离通道得到相同 status/free_parameters。"
+    - "唯一解 alpha/beta 跨通道差<=5e-11，且各自原始残差通过。"
+    - "q=0、q=1、e=0、单次不可行、替代不可行、精确边界、近边界和可行内部点全部覆盖。"
+    - "canonical A/B/C 确认实际从 P026-P028/P030-P032 读取；修改 CSV 临时副本值会改变输出，证明未硬编码。"
+    - "重复/缺失 parameter_id、E canonical、非法 decimal、域外值、额外字段均按冻结错误行为失败。"
+    - "故意交换 A 的 q/e parameter_id、给不可识别参数填 0、放宽边界 1e-6、把候选解投影到 [0,1]，测试必须捕获；已证明 codomain 与区间外包络的集合交不属于此禁令。"
+    - "替代链 t=0 与 t=t_max 的 interval-codomain 测试必须证明 alpha/beta 证书端点保持在 [0,1]，不会因 sqrt(0/1) 的 next_minus/next_plus 外包络毛刺误报 NUMERICAL_FAILURE。"
+    - "E2 CLI 传入 --request 必须拒绝；文件访问测试证明 E2 未打开 request、fixture、E1 源码或其他文档。"
+    - "canonical E2 从 response.request_id 严格派生父 run_id；后缀/semantics 或前缀 regex 不符均 validation exit 2，且不得生成替代时间戳。"
+    - "预置 --report 哨兵文件后触发 malformed request_id：exit 2、stderr 非空且哨兵 SHA-256/字节不变；目标原先不存在时运行后仍不存在。runner 必须以无 report 的 FAIL/INCOMPLETE manifest 留证。"
+    - "q=0.01 近退化和 q=0.5 近无理边界案例：两通道 root alpha/beta 外向区间跨度及 root+reported点最小外向凸包跨度均各<=1e-12；reported 回读残差<=5e-12；跨通道 reported 参数差<=5e-11；不得要求 reported 点属于 root interval。"
+    - "超长小数按 p0 自适应精度与最多十次80位加精执行；未稳定时 NUMERICAL_FAILURE，不得 epsilon 分类。"
+    - "runner 生成精确目录布局、两个 canonical request、四条命令记录、完整 manifest 与排除自哈希的 inventory；重复 run_id 必须失败且不覆盖。"
+  hashes_required:
+    - "schema SHA-256"
+    - "parameters.csv SHA-256"
+    - "fixture SHA-256"
+    - "E1/E2 代码与测试 SHA-256"
+    - "原始 request/response/check report SHA-256（若产生）"
+  no_pass_claim_yet: "本规格任务完成只表示可派发；CR-V3.1/C01、CR-V3.1/C02、CR-V3.1/C19、CR-V3.1/C21 尚需 E1/E2 实际运行与 D 语义验收。"
+
+must_not_change:
+  - "主/替代语义角色、公式、必要充分可行条件、端点不可识别语义。"
+  - "canonical 参数 ID、只含 A/B/C 的范围，以及 E q_E 延后闭合。"
+  - "schema、fixture、测试期望、分类规则、求根/验证/序列化容差和停止规则。"
+  - "E1/E2 文件隔离、算法异源性、只用标准库和禁止联网。"
+  - "不得新增默认值、裁剪/投影候选概率解、删除失败样本、发布正式数字或修改论文；唯一允许的 [0,1] 操作是 numeric_policy 已冻结的区间外包络与已证明 codomain 的集合交。"
+
+mandatory_escalation:
+  format: "事实—选项—影响—建议"
+  template:
+    事实: "最小复现、权威来源冲突或未定义行为；附实际输入、命令和错误。"
+    选项: "最多两个候选处理；不得自行实施。"
+    影响: "分别说明对公式、schema、fixture、检查 ID、重跑范围和结论的影响。"
+    建议: "E 可提出有证据的建议，但决策留给 D/队伍。"
+  triggers:
+    - "权威文件、schema、fixture 或本任务包冲突。"
+    - "遇到未定义状态，或需要选择新公式、根、默认、容差、精度、算法、依赖。"
+    - "可行性、存在唯一性、oracle、E1/E2 输出或原始残差不一致。"
+    - "需要访问/修改允许路径外文件，或连续两次修复仍失败。"
+
+completion_report_schema: |
+  STATUS: PASS | PARTIAL | BLOCKED
+  AGENT: name / agent_id
+  MODEL_REQUEST: ...
+  MODEL_SOURCE: explicit_override | inherited_unverified
+  MODEL_RUNTIME_VERIFICATION: explicit_request_sent | inherited_unverified | tool_reported:...
+  REASONING_EFFORT: ...
+  LEVEL_ROLE: ...
+  SCOPE: 实际读取/修改文件
+  CHANGES: 机械描述
+  RUNS: 实际命令、退出码、参数版本
+  TESTS: 通过数、失败数及失败名称
+  OUTPUTS: 文件、行数/尺寸/SHA-256
+  CHILD_AGENTS_USED: NONE
+  DEVIATIONS: NONE | ...
+  WARNINGS: NONE | ...
+  DECISIONS_MADE: NONE

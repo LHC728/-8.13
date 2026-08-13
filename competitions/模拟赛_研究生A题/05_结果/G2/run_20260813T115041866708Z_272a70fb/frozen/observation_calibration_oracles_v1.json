@@ -1,0 +1,403 @@
+{
+  "fixture_version": "observation_calibration_oracles_v1",
+  "fixture_revision": "1.1.7",
+  "artifact_status": "TEST_ORACLE_ONLY_NOT_FORMAL_RUN_RESULT",
+  "formal_result_eligible": false,
+  "description": "Exact rational/radical and boundary cases for the two frozen G2-01 calibration semantics. These are test inputs and expected mathematical facts, not canonical A/B/C run outputs.",
+  "tolerance_profile": {
+    "working_precision_rule": "p0=max(120,max_input_significant_digits+80); increase by 80 up to p0+800 only when directed-rounding feasibility interval is unresolved",
+    "root_bracket_width_absolute": "1e-14",
+    "alpha_parameter_span_absolute": "1e-12",
+    "beta_parameter_span_absolute": "1e-12",
+    "reported_alpha_hull_span_absolute": "1e-12",
+    "reported_beta_hull_span_absolute": "1e-12",
+    "E1_original_residual_absolute": "1e-12",
+    "E2_original_residual_absolute": "2e-12",
+    "cross_implementation_alpha_beta_absolute": "5e-11",
+    "cross_implementation_e_max_absolute": "5e-12",
+    "serialization_significant_decimal_digits": 17,
+    "round_trip_original_residual_absolute": "5e-12",
+    "interval_codomain_intersection": "After each complete alpha/beta interval mapping, intersect the outward enclosure with proven codomain [0,1]; empty or reversed intersection is NUMERICAL_FAILURE. This is not candidate-solution clipping.",
+    "max_iterations": 300
+  },
+  "exact_expression_grammar": {
+    "operators": ["integer", "rational", "sqrt", "+", "-", "*", "/"],
+    "evaluation_rule": "For exact-expression-only algebraic oracles, evaluate independently with Fraction and Decimal.sqrt at precision >= 120; do not use the public API or main solver. Public decimal cases follow tolerance_profile.working_precision_rule."
+  },
+  "cases": [
+    {
+      "case_id": "single_q0_e0_nonidentifiable_beta",
+      "semantics": "single_test_unconditional_v1",
+      "input": { "q": "0", "e": "0" },
+      "expected": {
+        "status": "NONIDENTIFIABLE_FAMILY",
+        "alpha_exact": "0",
+        "beta_exact": null,
+        "free_parameters": ["beta"],
+        "e_max_exact": "0"
+      },
+      "coverage": ["q=0", "e=0", "endpoint", "nonidentifiable"]
+    },
+    {
+      "case_id": "single_q1_e0_nonidentifiable_alpha",
+      "semantics": "single_test_unconditional_v1",
+      "input": { "q": "1", "e": "0" },
+      "expected": {
+        "status": "NONIDENTIFIABLE_FAMILY",
+        "alpha_exact": null,
+        "beta_exact": "0",
+        "free_parameters": ["alpha"],
+        "e_max_exact": "0"
+      },
+      "coverage": ["q=1", "e=0", "endpoint", "nonidentifiable"]
+    },
+    {
+      "case_id": "single_q0_positive_e_infeasible",
+      "semantics": "single_test_unconditional_v1",
+      "input": { "q": "0", "e": "0.0001" },
+      "expected": {
+        "status": "INFEASIBLE",
+        "alpha_exact": null,
+        "beta_exact": null,
+        "free_parameters": [],
+        "e_max_exact": "0"
+      },
+      "coverage": ["endpoint", "infeasible"]
+    },
+    {
+      "case_id": "single_internal_exact_rational",
+      "semantics": "single_test_unconditional_v1",
+      "input": { "q": "0.25", "e": "0.25" },
+      "expected": {
+        "status": "UNIQUE_SOLUTION",
+        "alpha_exact": "1/6",
+        "beta_exact": "1/2",
+        "free_parameters": [],
+        "e_max_exact": "1/2"
+      },
+      "coverage": ["feasible_internal", "exact_rational"]
+    },
+    {
+      "case_id": "single_exact_feasibility_boundary_beta_one",
+      "semantics": "single_test_unconditional_v1",
+      "input": { "q": "0.25", "e": "0.5" },
+      "expected": {
+        "status": "UNIQUE_SOLUTION",
+        "alpha_exact": "1/3",
+        "beta_exact": "1",
+        "free_parameters": [],
+        "e_max_exact": "1/2"
+      },
+      "coverage": ["exact_boundary", "beta=1"]
+    },
+    {
+      "case_id": "single_just_above_boundary_infeasible",
+      "semantics": "single_test_unconditional_v1",
+      "input": { "q": "0.25", "e": "0.50000000000000000001" },
+      "expected": {
+        "status": "INFEASIBLE",
+        "alpha_exact": null,
+        "beta_exact": null,
+        "free_parameters": [],
+        "e_max_exact": "1/2"
+      },
+      "coverage": ["near_boundary", "infeasible", "no_epsilon_reclassification"]
+    },
+    {
+      "case_id": "chain_q0_e0_nonidentifiable_beta",
+      "semantics": "standard_chain_v1",
+      "input": { "q": "0", "e": "0" },
+      "expected": {
+        "status": "NONIDENTIFIABLE_FAMILY",
+        "alpha_exact": "0",
+        "beta_exact": null,
+        "free_parameters": ["beta"],
+        "e_max_exact": "0"
+      },
+      "coverage": ["q=0", "e=0", "endpoint", "nonidentifiable"]
+    },
+    {
+      "case_id": "chain_q1_e0_nonidentifiable_alpha",
+      "semantics": "standard_chain_v1",
+      "input": { "q": "1", "e": "0" },
+      "expected": {
+        "status": "NONIDENTIFIABLE_FAMILY",
+        "alpha_exact": null,
+        "beta_exact": "0",
+        "free_parameters": ["alpha"],
+        "e_max_exact": "0"
+      },
+      "coverage": ["q=1", "e=0", "endpoint", "nonidentifiable"]
+    },
+    {
+      "case_id": "chain_q1_positive_e_infeasible",
+      "semantics": "standard_chain_v1",
+      "input": { "q": "1", "e": "0.0001" },
+      "expected": {
+        "status": "INFEASIBLE",
+        "alpha_exact": null,
+        "beta_exact": null,
+        "free_parameters": [],
+        "e_max_exact": "0"
+      },
+      "coverage": ["endpoint", "infeasible"]
+    },
+    {
+      "case_id": "chain_internal_symmetric_exact",
+      "semantics": "standard_chain_v1",
+      "input": { "q": "0.5", "e": "0.5" },
+      "expected": {
+        "status": "UNIQUE_SOLUTION",
+        "alpha_exact": "1/2",
+        "beta_exact": "1/2",
+        "free_parameters": [],
+        "D_exact": "3/2",
+        "N_FP_exact": "3/8",
+        "N_FN_exact": "3/8",
+        "e_max_exact": "3-sqrt(5)"
+      },
+      "coverage": ["feasible_internal", "exact_rational", "independent_2d_back_substitution"]
+    },
+    {
+      "case_id": "chain_internal_asymmetric_exact",
+      "semantics": "standard_chain_v1",
+      "input": { "q": "5/17", "e": "1/3" },
+      "input_encoding_note": "Fractions in this test-oracle fixture are exact-expression inputs for the test harness; API request envelopes must convert them to ordinary decimal strings before schema validation.",
+      "expected": {
+        "status": "UNIQUE_SOLUTION",
+        "alpha_exact": "1/4",
+        "beta_exact": "1/2",
+        "free_parameters": [],
+        "D_exact": "45/34",
+        "N_FP_exact": "15/68",
+        "N_FN_exact": "15/68"
+      },
+      "coverage": ["feasible_internal", "exact_rational", "asymmetric_q"]
+    },
+    {
+      "case_id": "chain_zero_error_internal",
+      "semantics": "standard_chain_v1",
+      "input": { "q": "0.37", "e": "0" },
+      "expected": {
+        "status": "UNIQUE_SOLUTION",
+        "alpha_exact": "0",
+        "beta_exact": "0",
+        "free_parameters": []
+      },
+      "coverage": ["e=0", "interior_q", "degenerate_root"]
+    },
+    {
+      "case_id": "chain_global_endpoint_q_two_thirds_e_one",
+      "semantics": "standard_chain_v1",
+      "input": { "q": "2/3", "e": "1" },
+      "oracle_scope": "EXACT_FRACTION_ALGEBRA_ONLY_NOT_PUBLIC_API",
+      "input_encoding_note": "Evaluate q=Fraction(2,3) exactly in an isolated algebraic oracle. Do not convert q to a finite Decimal, do not construct a public JSON request/response, and do not call the public API or main solver: every finite decimal approximation to 2/3 has e_max<1 and therefore correctly classifies e=1 as INFEASIBLE.",
+      "expected": {
+        "status": "UNIQUE_SOLUTION",
+        "alpha_exact": "1",
+        "beta_exact": "1",
+        "free_parameters": [],
+        "D_exact": "4/3",
+        "N_FP_exact": "2/3",
+        "N_FN_exact": "2/3",
+        "e_max_exact": "1"
+      },
+      "coverage": ["exact_boundary", "alpha=1", "beta=1", "e=1"]
+    },
+    {
+      "case_id": "chain_qhalf_just_below_boundary",
+      "semantics": "standard_chain_v1",
+      "input": { "q": "0.5", "e": "0.76393202250021030358" },
+      "expected": {
+        "status": "UNIQUE_SOLUTION",
+        "alpha_exact": null,
+        "beta_exact": null,
+        "free_parameters": [],
+        "e_max_exact": "3-sqrt(5)",
+        "comparison": "e < e_max",
+        "root_alpha_span_max": "1e-12",
+        "root_beta_span_max": "1e-12",
+        "reported_alpha_hull_span_max": "1e-12",
+        "reported_beta_hull_span_max": "1e-12",
+        "reported_round_trip_residual_max": "5e-12"
+      },
+      "expectation_rule": "The 17-significant-digit reported value need not lie inside the shrinking true-root interval. Verify the true-root outward interval separately, then verify the outward convex hull of that interval and the parsed reported point.",
+      "coverage": ["near_boundary", "feasible", "high_precision_recheck", "root_interval", "reported_hull"]
+    },
+    {
+      "case_id": "chain_qhalf_just_above_boundary",
+      "semantics": "standard_chain_v1",
+      "input": { "q": "0.5", "e": "0.76393202250021030360" },
+      "expected": {
+        "status": "INFEASIBLE",
+        "alpha_exact": null,
+        "beta_exact": null,
+        "free_parameters": [],
+        "e_max_exact": "3-sqrt(5)",
+        "comparison": "e > e_max"
+      },
+      "coverage": ["near_boundary", "infeasible", "no_epsilon_reclassification", "high_precision_recheck"]
+    },
+    {
+      "case_id": "chain_near_degenerate_q001",
+      "semantics": "standard_chain_v1",
+      "input": { "q": "0.01", "e": "0.01980390195507347100477" },
+      "expected": {
+        "status": "UNIQUE_SOLUTION",
+        "root_alpha_span_max": "1e-12",
+        "root_beta_span_max": "1e-12",
+        "reported_alpha_hull_span_max": "1e-12",
+        "reported_beta_hull_span_max": "1e-12",
+        "cross_channel_alpha_beta_max_abs": "5e-11",
+        "E1_original_residual_max": "1e-12",
+        "E2_original_residual_max": "2e-12"
+      },
+      "oracle_scope": "PUBLIC_API_NUMERICAL_REGRESSION_NOT_FORMAL_RESULT",
+      "expectation_rule": "Do not freeze a hand-computed alpha or beta. Separately verify each channel's outward true-root interval, the outward convex hull containing that interval and the parsed 17-digit reported point, serialized round-trip residuals, and cross-channel tolerance.",
+      "coverage": ["near_degenerate", "beta_near_one", "root_interval_certificate", "reported_hull", "cross_channel"]
+    }
+  ],
+  "canonical_binding_oracle": {
+    "scenario_role": "canonical_g2_abc",
+    "required_order": ["A", "B", "C"],
+    "bindings": [
+      { "process_id": "A", "q_parameter_id": "P026", "e_parameter_id": "P030" },
+      { "process_id": "B", "q_parameter_id": "P027", "e_parameter_id": "P031" },
+      { "process_id": "C", "q_parameter_id": "P028", "e_parameter_id": "P032" }
+    ],
+    "forbidden_processes": ["E"],
+    "reason": "Canonical E requires q_E from CR-V3.1/C03 and is deferred; generic direct-value tests may still use process_id E."
+  },
+  "checker_report_context_negative_tests": {
+    "oracle_scope": "CLI_CONTROL_FLOW_ONLY_NOT_FORMAL_RESULT",
+    "cases": [
+      {
+        "case_id": "malformed_run_id_no_report",
+        "scenario_role": "canonical_g2_abc",
+        "request_id": "bad:standard_chain_v1",
+        "semantics": "standard_chain_v1",
+        "expected_exit_code": 2,
+        "expected_report_behavior": "ABSENT_OR_EXISTING_FILE_BYTE_IDENTICAL",
+        "expected_stderr_nonempty": true
+      },
+      {
+        "case_id": "semantics_suffix_mismatch_no_report",
+        "scenario_role": "canonical_g2_abc",
+        "request_id": "20260813T010203123456Z_0123abcd:single_test_unconditional_v1",
+        "semantics": "standard_chain_v1",
+        "expected_exit_code": 2,
+        "expected_report_behavior": "ABSENT_OR_EXISTING_FILE_BYTE_IDENTICAL",
+        "expected_stderr_nonempty": true
+      }
+    ]
+  },
+  "interval_codomain_boundary_tests": {
+    "oracle_scope": "NUMERICAL_CERTIFICATE_ONLY_NOT_FORMAL_RESULT",
+    "cases": [
+      {
+        "case_id": "chain_t_zero_interval_intersection",
+        "q": "0.01",
+        "t_exact": "0",
+        "expected_alpha_interval_exact": ["0", "0"],
+        "expected_beta_interval_exact": ["0", "0"],
+        "expected_status": "CERTIFICATE_VALID"
+      },
+      {
+        "case_id": "chain_tmax_beta_one_interval_intersection",
+        "q": "0.01",
+        "t_exact": "0.01",
+        "expected_beta_interval_exact": ["1", "1"],
+        "expected_parameter_intervals_subset": ["0", "1"],
+        "expected_status": "CERTIFICATE_VALID"
+      },
+      {
+        "case_id": "chain_tmax_alpha_one_interval_intersection",
+        "q": "0.9",
+        "t_exact": "0.2",
+        "expected_alpha_interval_exact": ["1", "1"],
+        "expected_parameter_intervals_subset": ["0", "1"],
+        "expected_status": "CERTIFICATE_VALID"
+      }
+    ]
+  },
+  "evidence_envelope_control_tests": {
+    "oracle_scope": "SCHEMA_AND_RUNNER_CONTROL_FLOW_ONLY_NOT_FORMAL_RESULT",
+    "cases": [
+      {
+        "case_id": "early_failure_zero_commands_schema_valid",
+        "overall_status": "INCOMPLETE",
+        "artifact_count": 0,
+        "command_count": 0,
+        "expected_schema_valid": true,
+        "expected_pass_semantics": false
+      },
+      {
+        "case_id": "preflight_failure_logs_without_report",
+        "overall_status": "FAIL",
+        "required_actual_roles": ["command_log", "stdout_log", "stderr_log"],
+        "forbidden_fabricated_roles": ["check_report"],
+        "expected_schema_valid": true,
+        "expected_pass_semantics": false
+      },
+      {
+        "case_id": "pass_requires_semantic_minimum",
+        "overall_status": "PASS",
+        "required_semantic_artifact_count_minimum": 11,
+        "required_command_count_exact": 4,
+        "expected_pass_semantics": true
+      }
+    ]
+  },
+  "single_reported_hull_control_tests": {
+    "oracle_scope": "PUBLIC_API_CERTIFICATE_CONTROL_NOT_FORMAL_RESULT",
+    "cases": [
+      {
+        "case_id": "single_nonterminating_public_hull",
+        "semantics": "single_test_unconditional_v1",
+        "input": { "q": "0.025", "e": "0.03" },
+        "focus_parameter": "alpha",
+        "expected_public_alpha": "0.015384615384615385",
+        "expected": {
+          "root_interval_contains_exact_expression": "3/195",
+          "reported_interval_contains_public_point": true,
+          "reported_interval_contains_root_interval": true,
+          "root_span_max": "1e-12",
+          "reported_span_max": "1e-12",
+          "public_round_trip_residual_max": "5e-12"
+        }
+      },
+      {
+        "case_id": "single_forged_internal_point_hull_rejected",
+        "mutation": "Set reported_alpha_lo=reported_alpha_hi to the internal high-precision root while response.alpha remains the 17-digit public point.",
+        "expected_checker_status": "FAIL",
+        "reason": "Reported hull does not contain the actual parsed public point and is not the required minimum convex hull."
+      }
+    ]
+  },
+  "code_snapshot_evidence_control_tests": {
+    "oracle_scope": "RUNNER_CONTROL_FLOW_ONLY_NOT_FORMAL_RESULT",
+    "required_snapshot_roles": {
+      "source_code": ["E1", "E2", "runner"],
+      "test_code": ["test_main", "test_checker", "test_runner"]
+    },
+    "cases": [
+      {
+        "case_id": "stable_six_snapshot_pass_prerequisite",
+        "expected_snapshot_count": 6,
+        "expected_each_hash_relation": "source_before == snapshot == source_after",
+        "expected_child_execution": "frozen E1/E2 copies only"
+      },
+      {
+        "case_id": "source_changes_during_copy_blocks_children",
+        "mutation": "Change one source between hash-before and hash-after.",
+        "expected_manifest_status": "FAIL_OR_INCOMPLETE",
+        "expected_child_command_count": 0
+      },
+      {
+        "case_id": "worktree_child_path_rejected_for_pass",
+        "mutation": "Point an E1 or E2 command at worktree source instead of run/frozen/code copy.",
+        "expected_pass_semantics": false
+      }
+    ]
+  }
+}

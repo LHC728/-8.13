@@ -4,6 +4,23 @@ title: "TODO"
 level: "L0 | L1 | L2"
 status: "DRAFT"
 
+dispatch:
+  protocol_version: "SA-V1.0"
+  agent_name: "TODO: 唯一且体现职责的名称"
+  role: "E1 | E2/checker | D-red | read-only auditor | runner | reporter"
+  task_type: "机械整理 | 规格化编码 | 受控编码 | 独立审计"
+  requested_model: "gpt-5.6-terra | gpt-5.6-sol | INHERIT"
+  model_source: "explicit_override | inherited_unverified"
+  requested_reasoning_effort: "low | medium | high | xhigh | max | inherited"
+  model_selection_reason: "TODO: 为什么该档足够；高于默认档时说明低档为何不足"
+  context_mode: "none | bounded:TODO | all"
+  runtime_model_verification: "explicit_request_sent | inherited_unverified | TODO: 工具实际返回值"
+  pre_dispatch_user_disclosure: true
+  post_completion_user_summary: true
+  may_spawn_children: false
+  max_children: 0
+  child_model_allowlist: []
+
 objective: "TODO: 一句话、单一可验收目标"
 
 contract:
@@ -18,6 +35,8 @@ scope:
   allowed_read_paths: []
   allowed_write_paths: []
   forbidden_paths: []
+  exclusive_write_owner: true
+  concurrency_group: "TODO or NONE"
   may_add_dependencies: false
   network_allowed: false
 
@@ -44,11 +63,13 @@ acceptance:
   performance_limit: "TODO or NOT_APPLICABLE"
 
 evidence_to_return:
+  - "Agent名称、Agent ID、请求模型、模型来源、reasoning effort与运行时可验证状态"
   - "实际读取和修改文件清单"
   - "差异摘要"
   - "实际命令、退出码、参数版本和随机种子"
   - "测试通过/失败数及失败名称"
   - "输出文件、行数/尺寸/哈希"
+  - "下级Agent清单；未使用必须写NONE"
   - "全部警告、偏离和未完成项"
 
 mandatory_escalation:
@@ -61,11 +82,18 @@ mandatory_escalation:
 
 completion_report_schema: |
   STATUS: PASS | PARTIAL | BLOCKED
+  AGENT: name / agent_id
+  MODEL_REQUEST: ...
+  MODEL_SOURCE: explicit_override | inherited_unverified
+  MODEL_RUNTIME_VERIFICATION: explicit_request_sent | inherited_unverified | tool_reported:...
+  REASONING_EFFORT: ...
+  LEVEL_ROLE: ...
   SCOPE: ...
   CHANGES: ...
   RUNS: ...
   TESTS: ...
   OUTPUTS: ...
+  CHILD_AGENTS_USED: NONE | ...
   DEVIATIONS: NONE | ...
   WARNINGS: NONE | ...
   DECISIONS_MADE: NONE
