@@ -1,0 +1,217 @@
+{
+  "fixture_version": "q1_quality_oracles_v1",
+  "fixture_revision": "1.0.0",
+  "artifact_status": "TEST_ORACLE_ONLY_NOT_FORMAL_RUN_RESULT",
+  "formal_result_eligible": false,
+  "description": "Exact rational extreme-parameter cases for the G2-02 Q1 chain under both frozen observation semantics. These are test inputs and expected mathematical facts for E1/runner unit tests, not canonical A/B/C run outputs and not formal competition numbers. E2 must not read this file; E2 uses the embedded oracles inside the G2-02 task package.",
+  "lambda_counting_signed_decision": "2026-08-13 人工裁决 B：'每台至多一次'按该装置首次 E 有效真阳性计，与'仅初测'同期望 1-beta_E；事件级期望 (1-beta_E)(2-beta_E)；三种口径的归一来源比例总体相等。",
+  "tolerance_profile": {
+    "working_precision_rule": "p0=max(120,max_input_significant_digits+80); Decimal localcontext; no binary float preprocessing",
+    "serialization_significant_decimal_digits": 17,
+    "fraction_to_public_absolute": "1e-15",
+    "cross_route_absolute": "1e-15",
+    "conservation_absolute": "1e-15",
+    "cross_channel_alpha_beta_absolute": "5e-11",
+    "cross_channel_e_max_absolute": "5e-12",
+    "cross_channel_aggregate_absolute": "1e-9"
+  },
+  "exact_fraction_grammar": {
+    "notation": "integer-ratio strings 'num/den' with integer num and positive integer den; '0/1' for zero; null means absent by construction.",
+    "evaluation_rule": "parse with Fraction; compare against 17-significant-digit public decimals with absolute tolerance fraction_to_public_absolute; statuses and free_parameters must match exactly."
+  },
+  "cases": [
+    {
+      "case_id": "O1_perfect_symmetric_single",
+      "semantics": "single_test_unconditional_v1",
+      "input": { "q_a": "0.25", "q_b": "0.25", "q_c": "0.25", "q_d": "0.25", "e_a": "0", "e_b": "0", "e_c": "0", "e_e": "0" },
+      "expected": {
+        "upstream_statuses": { "A": "UNIQUE_SOLUTION", "B": "UNIQUE_SOLUTION", "C": "UNIQUE_SOLUTION" },
+        "overall_status": "ALL_ROUTES_AGREE",
+        "infeasible_stage": null,
+        "q_E": "1/4",
+        "E_kernel": { "status": "UNIQUE_SOLUTION", "alpha_E": "0/1", "beta_E": "0/1", "e_max_E": "1/2", "free_parameters": [] },
+        "E_rates": { "first_abnormal": "1/4", "process_exit": "1/4", "device_total_exit": "175/256" },
+        "fourfold": { "p_GP": "81/256", "p_BP": "0/1", "p_GE": "0/1", "p_BE": "175/256" },
+        "anchors": { "E_S": "2025/64", "E_PL": "0/1", "E_PW": "0/1" },
+        "lambda": {
+          "main": { "A": "0/1", "B": "0/1", "C": "0/1", "D": "1/1" },
+          "na": false,
+          "counts": { "event_level": "2/1", "first_test_only": "1/1", "at_most_once_per_device": "1/1" },
+          "tilde": { "A": "0/1", "B": "0/1", "C": "0/1", "D": "1/1" }
+        }
+      },
+      "coverage": ["perfect_tests", "full_chain_exact", "lambda_concentration", "counts"]
+    },
+    {
+      "case_id": "O2_upstream_infeasible_single",
+      "semantics": "single_test_unconditional_v1",
+      "input": { "q_a": "0", "q_b": "0", "q_c": "0", "q_d": "0", "e_a": "0.02", "e_b": "0.02", "e_c": "0.02", "e_e": "0.02" },
+      "expected": {
+        "upstream_statuses": { "A": "INFEASIBLE", "B": "INFEASIBLE", "C": "INFEASIBLE" },
+        "overall_status": "HAS_INFEASIBLE",
+        "infeasible_stage": "ABC_KERNEL",
+        "q_E": null,
+        "E_kernel": null,
+        "E_rates": null,
+        "fourfold": null,
+        "anchors": null,
+        "lambda": null
+      },
+      "coverage": ["no_clipping", "infeasibility_propagation", "q_zero_positive_e"]
+    },
+    {
+      "case_id": "O3_E_infeasible_single",
+      "semantics": "single_test_unconditional_v1",
+      "input": { "q_a": "0.5", "q_b": "0.5", "q_c": "0.5", "q_d": "0.5", "e_a": "0.5", "e_b": "0.5", "e_c": "0.5", "e_e": "0.5" },
+      "expected": {
+        "upstream_statuses": { "A": "UNIQUE_SOLUTION", "B": "UNIQUE_SOLUTION", "C": "UNIQUE_SOLUTION" },
+        "overall_status": "HAS_INFEASIBLE",
+        "infeasible_stage": "E_KERNEL",
+        "q_E": "15/16",
+        "E_kernel": { "status": "INFEASIBLE", "alpha_E": null, "beta_E": null, "e_max_E": "1/8", "free_parameters": [] },
+        "E_rates": null,
+        "fourfold": null,
+        "anchors": null,
+        "lambda": null
+      },
+      "coverage": ["no_projection", "E_kernel_feasibility", "partial_chain"]
+    },
+    {
+      "case_id": "O4_interior_exact_single",
+      "semantics": "single_test_unconditional_v1",
+      "input": { "q_a": "0.25", "q_b": "0.25", "q_c": "0.25", "q_d": "0.25", "e_a": "0.25", "e_b": "0.25", "e_c": "0.25", "e_e": "0.25" },
+      "expected": {
+        "upstream_statuses": { "A": "UNIQUE_SOLUTION", "B": "UNIQUE_SOLUTION", "C": "UNIQUE_SOLUTION" },
+        "overall_status": "ALL_ROUTES_AGREE",
+        "infeasible_stage": null,
+        "q_E": "212111/340736",
+        "E_kernel": { "status": "UNIQUE_SOLUTION", "alpha_E": "42592/128625", "beta_E": "42592/212111", "e_max_E": "128625/170368", "free_parameters": [] },
+        "E_rates": null,
+        "fourfold": null,
+        "anchors": null,
+        "lambda": null
+      },
+      "coverage": ["interior_exact", "cross_route_agreement_downstream_not_frozen_here"]
+    },
+    {
+      "case_id": "O5_NA_lambda_beta1_single",
+      "semantics": "single_test_unconditional_v1",
+      "input": { "q_a": "0.125", "q_b": "0.125", "q_c": "0.125", "q_d": "0.125", "e_a": "0", "e_b": "0", "e_c": "0", "e_e": "0.25" },
+      "expected": {
+        "upstream_statuses": { "A": "UNIQUE_SOLUTION", "B": "UNIQUE_SOLUTION", "C": "UNIQUE_SOLUTION" },
+        "overall_status": "ALL_ROUTES_AGREE",
+        "infeasible_stage": null,
+        "q_E": "1/8",
+        "E_kernel": { "status": "UNIQUE_SOLUTION", "alpha_E": "1/7", "beta_E": "1/1", "e_max_E": "1/4", "free_parameters": [] },
+        "E_rates": { "first_abnormal": "1/8", "process_exit": "1/56", "device_total_exit": "169/512" },
+        "fourfold": { "p_GP": "147/256", "p_BP": "343/4096", "p_GE": "49/4096", "p_BE": "169/512" },
+        "anchors": { "E_S": "67375/1024", "E_PL": "343/4096", "E_PW": "49/4096" },
+        "lambda": {
+          "main": { "A": null, "B": null, "C": null, "D": null },
+          "na": true,
+          "counts": { "event_level": "0/1", "first_test_only": "0/1", "at_most_once_per_device": "0/1" },
+          "tilde": { "A": "0/1", "B": "0/1", "C": "0/1", "D": "1/1" }
+        }
+      },
+      "coverage": ["zero_denominator_NA", "beta_one", "false_positive_only_E_events"]
+    },
+    {
+      "case_id": "O6_defect_concentration_single",
+      "semantics": "single_test_unconditional_v1",
+      "input": { "q_a": "0.25", "q_b": "0", "q_c": "0", "q_d": "0", "e_a": "0.375", "e_b": "0", "e_c": "0", "e_e": "0.25" },
+      "expected": {
+        "upstream_statuses": { "A": "UNIQUE_SOLUTION", "B": "NONIDENTIFIABLE_FAMILY", "C": "NONIDENTIFIABLE_FAMILY" },
+        "overall_status": "ALL_ROUTES_AGREE",
+        "infeasible_stage": null,
+        "q_E": "1/4",
+        "E_kernel": { "status": "UNIQUE_SOLUTION", "alpha_E": "1/6", "beta_E": "1/2", "e_max_E": "1/2", "free_parameters": [] },
+        "E_rates": { "first_abnormal": "1/4", "process_exit": "1/12", "device_total_exit": "9/64" },
+        "fourfold": { "p_GP": "175/256", "p_BP": "45/256", "p_GE": "17/256", "p_BE": "19/256" },
+        "anchors": { "E_S": "1375/16", "E_PL": "45/256", "E_PW": "17/256" },
+        "lambda": {
+          "main": { "A": "1/1", "B": "0/1", "C": "0/1", "D": "0/1" },
+          "na": false,
+          "counts": { "event_level": "3/4", "first_test_only": "1/2", "at_most_once_per_device": "1/2" },
+          "tilde": { "A": "1/1", "B": "0/1", "C": "0/1", "D": "0/1" }
+        }
+      },
+      "coverage": ["lambda_concentration", "upstream_nonidentifiable_deterministic", "count_pinning_beta_half"]
+    },
+    {
+      "case_id": "O1c_perfect_symmetric_chain",
+      "semantics": "standard_chain_v1",
+      "input": { "q_a": "0.25", "q_b": "0.25", "q_c": "0.25", "q_d": "0.25", "e_a": "0", "e_b": "0", "e_c": "0", "e_e": "0" },
+      "expected": {
+        "upstream_statuses": { "A": "UNIQUE_SOLUTION", "B": "UNIQUE_SOLUTION", "C": "UNIQUE_SOLUTION" },
+        "overall_status": "ALL_ROUTES_AGREE",
+        "infeasible_stage": null,
+        "q_E": "1/4",
+        "E_kernel": { "status": "UNIQUE_SOLUTION", "alpha_E": "0/1", "beta_E": "0/1", "e_max_E": null, "free_parameters": [] },
+        "E_rates": { "first_abnormal": "1/4", "process_exit": "1/4", "device_total_exit": "175/256" },
+        "fourfold": { "p_GP": "81/256", "p_BP": "0/1", "p_GE": "0/1", "p_BE": "175/256" },
+        "anchors": { "E_S": "2025/64", "E_PL": "0/1", "E_PW": "0/1" },
+        "lambda": {
+          "main": { "A": "0/1", "B": "0/1", "C": "0/1", "D": "1/1" },
+          "na": false,
+          "counts": { "event_level": "2/1", "first_test_only": "1/1", "at_most_once_per_device": "1/1" },
+          "tilde": { "A": "0/1", "B": "0/1", "C": "0/1", "D": "1/1" }
+        }
+      },
+      "coverage": ["perfect_tests", "full_chain_exact", "lambda_concentration", "counts"]
+    },
+    {
+      "case_id": "O2c_upstream_infeasible_chain",
+      "semantics": "standard_chain_v1",
+      "input": { "q_a": "0", "q_b": "0", "q_c": "0", "q_d": "0", "e_a": "0.02", "e_b": "0.02", "e_c": "0.02", "e_e": "0.02" },
+      "expected": {
+        "upstream_statuses": { "A": "INFEASIBLE", "B": "INFEASIBLE", "C": "INFEASIBLE" },
+        "overall_status": "HAS_INFEASIBLE",
+        "infeasible_stage": "ABC_KERNEL",
+        "q_E": null,
+        "E_kernel": null,
+        "E_rates": null,
+        "fourfold": null,
+        "anchors": null,
+        "lambda": null
+      },
+      "coverage": ["no_clipping", "infeasibility_propagation", "q_zero_positive_e"]
+    },
+    {
+      "case_id": "O3c_E_infeasible_chain",
+      "semantics": "standard_chain_v1",
+      "input": { "q_a": "0.5", "q_b": "0.5", "q_c": "0.5", "q_d": "0.5", "e_a": "0.5", "e_b": "0.5", "e_c": "0.5", "e_e": "0.5" },
+      "expected": {
+        "upstream_statuses": { "A": "UNIQUE_SOLUTION", "B": "UNIQUE_SOLUTION", "C": "UNIQUE_SOLUTION" },
+        "overall_status": "HAS_INFEASIBLE",
+        "infeasible_stage": "E_KERNEL",
+        "q_E": "15/16",
+        "E_kernel": { "status": "INFEASIBLE", "alpha_E": null, "beta_E": null, "e_max_E": null, "free_parameters": [] },
+        "E_rates": null,
+        "fourfold": null,
+        "anchors": null,
+        "lambda": null
+      },
+      "traceability_note": "chain e_max_E(q=15/16) = 8/(17+sqrt(345)+2*sqrt(195)) ~ 0.12591 < 0.5; classification INFEASIBLE is the frozen expectation, the radical value is informational only and is cross-checked by E2 independent e_max computation within 5e-12 in canonical runs.",
+      "coverage": ["no_projection", "E_kernel_feasibility_chain", "partial_chain"]
+    },
+    {
+      "case_id": "O5c_E_infeasible_chain",
+      "semantics": "standard_chain_v1",
+      "input": { "q_a": "0.125", "q_b": "0.125", "q_c": "0.125", "q_d": "0.125", "e_a": "0", "e_b": "0", "e_c": "0", "e_e": "0.25" },
+      "expected": {
+        "upstream_statuses": { "A": "UNIQUE_SOLUTION", "B": "UNIQUE_SOLUTION", "C": "UNIQUE_SOLUTION" },
+        "overall_status": "HAS_INFEASIBLE",
+        "infeasible_stage": "E_KERNEL",
+        "q_E": "1/8",
+        "E_kernel": { "status": "INFEASIBLE", "alpha_E": null, "beta_E": null, "e_max_E": null, "free_parameters": [] },
+        "E_rates": null,
+        "fourfold": null,
+        "anchors": null,
+        "lambda": null
+      },
+      "traceability_note": "chain e_max_E(q=1/8) = 9-7*sqrt(11/7) ~ 0.22504 < 0.25; classification INFEASIBLE is the frozen expectation, the radical value is informational only and is cross-checked by E2 independent e_max computation within 5e-12 in canonical runs.",
+      "coverage": ["no_projection", "E_kernel_feasibility_chain", "partial_chain"]
+    }
+  ],
+  "coverage_requirement": "E1/runner unit tests must cover at minimum: both semantics x {perfect full chain, upstream infeasible, E infeasible}; single semantics additionally {interior exact, zero-denominator NA, defect concentration with upstream nonidentifiable and count pinning}. Changing expected values, deleting cases or relaxing tolerances requires DECISION_REQUIRED escalation."
+}
