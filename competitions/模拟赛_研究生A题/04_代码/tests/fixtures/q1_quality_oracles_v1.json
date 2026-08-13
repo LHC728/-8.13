@@ -103,7 +103,7 @@
         "infeasible_stage": null,
         "q_E": "1/8",
         "E_kernel": { "status": "UNIQUE_SOLUTION", "alpha_E": "1/7", "beta_E": "1/1", "e_max_E": "1/4", "free_parameters": [] },
-        "E_rates": { "first_abnormal": "1/8", "process_exit": "1/56", "device_total_exit": "169/512" },
+        "E_rates": { "first_abnormal": "1/8", "process_exit": "1/56", "device_total_exit": "1401/4096" },
         "fourfold": { "p_GP": "147/256", "p_BP": "343/4096", "p_GE": "49/4096", "p_BE": "169/512" },
         "anchors": { "E_S": "67375/1024", "E_PL": "343/4096", "E_PW": "49/4096" },
         "lambda": {

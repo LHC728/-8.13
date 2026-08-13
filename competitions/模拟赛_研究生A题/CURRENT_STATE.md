@@ -63,7 +63,7 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
 - `G2-01-SPEC-V1.1.11` 观测核标定最小基线已通过最终 L3 验收；不可变证据目录为 `05_结果/G2/run_20260813T134251279572Z_f1290916/`。
 - `CR-V3.1/C01`、`C02`、`C19`、`C21` 仅在 G2-01 canonical A/B/C 标定子范围内通过。
 - `CR-V3.1/C03`、`C04`、canonical E 与 `q_E` 仍为 DEFERRED；不得猜测或手填 `q_E`，也不得据此宣告整个 G2 Gate 通过。
-- `G2-02-SPEC-V1.0.0`（Q1 概率与质量解析链）任务包已冻结，**等待人工批准派单**；冻结物：`08_项目管理/任务包/G2-02_Q1概率与质量解析链.yaml`、`04_代码/src/schemas/q1_quality_v1.schema.json`、`04_代码/tests/fixtures/q1_quality_oracles_v1.json`；尚未运行任何 G2-02 数值实现。
+- `G2-02-SPEC-V1.0.2`（Q1 概率与质量解析链）任务包已冻结，**等待重新派单**；冻结物：`08_项目管理/任务包/G2-02_Q1概率与质量解析链.yaml`、`04_代码/src/schemas/q1_quality_v1.schema.json`、`04_代码/tests/fixtures/q1_quality_oracles_v1.json`。`V1.0.2` 为 **frozen oracle bug correction only**：fixture 案例 `O5_NA_lambda_beta1_single` 的 `E_rates.device_total_exit` 由 `169/512` 修正为 `1401/4096`（原值遗漏 `p_GE` 分量），冻结公式 `p_device_total_exit=p_GE+p_BE` 与 O6 期望不变；数学语义、公式、λ 裁决、q_E 定义、schema、tolerance 均未改变；保留 V1.0.1 的 runner 所有权修正。**S1 因冻结冲突合规阻断，等待按 V1.0.2 重新派单；S2 现有代码仅为 `IMPLEMENTATION_CANDIDATE_PENDING_V1.0.2_REBIND`，未在当前冻结版本下正式验收；G2-02 未通过，S4 未开始。**
 
 1. 实现并诊断单次无条件主观测核（G2-01 已完成）；
 2. 实现标准链关键替代观测核（G2-01 已完成）；

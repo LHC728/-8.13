@@ -1,4 +1,4 @@
-task_package_version: "G2-02-SPEC-V1.0.0"
+task_package_version: "G2-02-SPEC-V1.0.2"
 task_id: "G2-02"
 title: "Q1 概率与质量解析链闭合：q_E、E 核标定、终局四格、E[S]/E[PL]/E[PW] 与 lambda 两语义全链"
 status: "FROZEN_PENDING_HUMAN_APPROVAL"
@@ -6,6 +6,30 @@ frozen_by_role: "D / G2_02_D_SPEC / L3 决策分析"
 frozen_model_request: "DeepSeek V4 Pro / reasoning effort high（本阶段规格冻结由用户指定模型完成）"
 frozen_date: "2026-08-13"
 approval_gate: "人工批准后才能派单 E1/E2/RUNNER；批准前不运行任何 G2-02 数值实现。"
+
+revision_history:
+  - version: "G2-02-SPEC-V1.0.2"
+    date: "2026-08-14"
+    change_type: "frozen oracle correction only: O5 device_total_exit omitted p_GE"
+    detail: >-
+      fixture q1_quality_oracles_v1.json 案例 O5_NA_lambda_beta1_single 的 E_rates.device_total_exit
+      由 169/512 修正为 1401/4096：原值等于 p_BE 单项，遗漏 E 阶段假阳性退出分量 Z_0*alpha_E^2=49/4096；
+      冻结公式 p_device_total_exit=p_GE+p_BE 保持不变，O6 期望 9/64 保持不变。
+      数学语义、公式、lambda 裁决（SD-G2-02-LAMBDA-ONCE）、q_E 定义、schema、tolerance、
+      E1/E2 算法要求、checker 隔离规则与 G2-01 上游证据均未改变。
+      新 fixture SHA-256=fadefcedddc1e1233d75f16fc9d596284d43681f4120721be2ff47d4aff2b4ad。
+      保留 V1.0.1 的 single-writer ownership 修正：runner 两文件（04_代码/scripts/run_g2_02_v1.py、
+      04_代码/tests/test_run_g2_02_v1.py）只归 RUNNER 所有，不恢复 E2 所有权。
+    approved_by: "人工 Gate：公式优先 / 修正 O5 fixture"
+  - version: "G2-02-SPEC-V1.0.1"
+    date: "2026-08-14"
+    change_type: "dispatch / single-writer ownership correction only"
+    detail: >-
+      E2 的 allowed_write_paths 移除两个 runner 实现文件（04_代码/scripts/run_g2_02_v1.py、
+      04_代码/tests/test_run_g2_02_v1.py），该两文件只归 RUNNER 所有；E2 保留 checker 两份源码与
+      两个 check_report 输出路径。本修订不改变任何数学语义、lambda 裁决、q_E 定义、schema、
+      oracle fixture、tolerance、E1/E2 算法要求、checker 隔离规则或 G2-01 上游证据。
+    approved_by: "人工 Gate CONDITIONAL PASS"
 
 governance_binding:
   state_version: "STATE-2026-08-13-G2.4"
@@ -106,7 +130,7 @@ shared_read_only_artifacts:
   frozen_sha256:
     parameters_csv: "0461da2e0de09090673192d9eb0fde6fe5e70b1d22ef61fe13cdb878c449f07e"
     schema: "94157e00e59a07100441084daa8bc31755c0aad54df3c824a705733aff7776e2"
-    oracle_fixture: "7f2cd3bcf866c83d79fc5fe8ea0db6e0e800a7f5f56035eb038afd94a210c702"
+    oracle_fixture: "fadefcedddc1e1233d75f16fc9d596284d43681f4120721be2ff47d4aff2b4ad"
     upstream_single_response: "355af00ce77791208af17303912ed5972619ad89116f3d0d05f46494d534d0ea"
     upstream_chain_response: "e71473ce391da82d7711ceff872b031ec307aa6d8e524f3ff1cd5c5a440542fd"
     upstream_file_hashes: "d9f030a2e79935360ee10c4991f35a6890f53c4522cb1e0dd150c02b1586717e"
@@ -425,8 +449,6 @@ dispatches:
     allowed_write_paths:
       - "04_代码/checker/q1_quality_checker_v1.py"
       - "04_代码/tests/test_q1_quality_checker_v1.py"
-      - "04_代码/scripts/run_g2_02_v1.py"
-      - "04_代码/tests/test_run_g2_02_v1.py"
       - "05_结果/G2/run_<immutable_run_id>/single_test_unconditional_v1/check_report.json"
       - "05_结果/G2/run_<immutable_run_id>/standard_chain_v1/check_report.json"
     forbidden_reads:
@@ -620,7 +642,7 @@ integration_acceptance:
 post_run_state_governance:
   current_files_this_task: "CURRENT_STATE.md 与 CHANGELOG.md 在实现阶段只读/不修改；本规格冻结不代表 G2-02 已执行或通过。"
   update_preconditions:
-    - "必须产生 task_package_version 与本任务包顶层 task_package_version 字段精确相同（当前为 G2-02-SPEC-V1.0.0），并引用当前冻结 parameters/schema/fixture/上游 hash 的全新不可变 run；不得复用或修补旧 run。"
+    - "必须产生 task_package_version 与本任务包顶层 task_package_version 字段精确相同（当前为 G2-02-SPEC-V1.0.2），并引用当前冻结 parameters/schema/fixture/上游 hash 的全新不可变 run；不得复用或修补旧 run。"
     - "该 run 的两个语义 checker_status=PASS、runner manifest=PASS、证据包通过本任务全部 acceptance，且最终 L3 语义审计明确 PASS。"
     - "最终 L3 PASS 报告必须给出 run_id、manifest/check report/hash inventory 路径与 SHA-256，并确认未进入 DES/G3、未发布正式数字。"
   permitted_update_after_pass:

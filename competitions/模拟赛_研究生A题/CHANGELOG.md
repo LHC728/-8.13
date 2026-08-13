@@ -2,6 +2,34 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-02-SPEC-V1.0.2`
+
+### 修改
+
+- 任务包 `G2-02_Q1概率与质量解析链.yaml` 由 `G2-02-SPEC-V1.0.1` 升级至 `G2-02-SPEC-V1.0.2`，经人工 Gate 裁决（公式优先 / 修正 O5 fixture）。
+- **frozen oracle bug correction**：`04_代码/tests/fixtures/q1_quality_oracles_v1.json` 案例 `O5_NA_lambda_beta1_single` 的 `E_rates.device_total_exit` 由 `169/512` 修正为 `1401/4096`（原值等于 `p_BE` 单项，遗漏 E 阶段假阳性退出分量 `Z_0·alpha_E^2=49/4096`）；冻结公式 `p_device_total_exit=p_GE+p_BE` 不变，O6 期望 `9/64` 不变。fixture SHA-256：`7f2cd3bc…` → `fadefced…`。
+- 任务包内新增 V1.0.2 `revision_history` 记录；保留 V1.0.1 的 single-writer ownership 修正（`04_代码/scripts/run_g2_02_v1.py`、`04_代码/tests/test_run_g2_02_v1.py` 只归 RUNNER 所有，不恢复 E2 所有权）。
+
+### 影响与边界
+
+- 数学语义、公式、λ 裁决（`SD-G2-02-LAMBDA-ONCE`）、q_E 定义、schema、tolerance、E1/E2 算法要求、checker 隔离规则与 G2-01 上游证据均未改变。
+- S1 因冻结冲突合规阻断（`BLOCKED_BY_FROZEN_SPEC`），等待按 V1.0.2 重新派单；S2 现有代码仅记为 `IMPLEMENTATION_CANDIDATE_PENDING_V1.0.2_REBIND`，未在当前冻结版本下正式验收。
+- G2-02 未通过；S4/S5/S6 未开始；未运行 canonical；未 commit/push。
+
+## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-02-SPEC-V1.0.1`
+
+### 修改
+
+- 任务包 `G2-02_Q1概率与质量解析链.yaml` 由 `G2-02-SPEC-V1.0.0` 升级至 `G2-02-SPEC-V1.0.1`，经人工 Gate CONDITIONAL PASS 批准。
+- 变更性质：`dispatch / single-writer ownership correction only`——E2 的 `allowed_write_paths` 移除两个 runner 实现文件（`04_代码/scripts/run_g2_02_v1.py`、`04_代码/tests/test_run_g2_02_v1.py`），该两文件只归 RUNNER 所有；E2 保留 checker 两份源码与两个 check_report 输出路径。
+- 任务包内新增 `revision_history` 字段记录本修正；`CURRENT_STATE.md` 版本引用同步至 `V1.0.1`。
+
+### 影响与边界
+
+- 不改变任何数学语义、lambda 裁决、q_E 定义、schema、oracle fixture、tolerance、E1/E2 算法要求、checker 隔离规则或 G2-01 上游证据。
+- 未运行任何 G2-02 数值实现，未启动 E1/E2/RUNNER；不得据此宣称 G2-02 已实现或已通过，不改变 G2 Gate 结论。
+- 待人工批准后，方可按并行派单规划启动 E1 ∥ E2。
+
 ## 2026-08-13 / `STATE-2026-08-13-G2.4` / `G2-02-SPEC-V1.0.0`
 
 ### 修改
