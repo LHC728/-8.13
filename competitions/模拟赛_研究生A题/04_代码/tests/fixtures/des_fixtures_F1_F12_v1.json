@@ -1,0 +1,578 @@
+{
+  "schema_version": "des_fixtures_v1",
+  "task_package_ref": "G2-03-SPEC-V1.0.1",
+  "registry_version": "CR-V3.1",
+  "purpose": "Deterministic scripted fixtures F1..F12 for the G2-03 minimal parallel DES. All real states and observations are scripted (no RNG). Acceptance values are test oracles / fixture timelines, NOT formal competition numbers.",
+  "k9_authoritative_file": "01_审计/手算样例_K9跨班重测.md",
+  "k9_authoritative_note": "F8 binds event-by-event to the K9 hand timeline; T=14h, S=3, PL=0, PW=0, YXB_A=7.5/18, YXB_B=8/18, YXB_C=7.5/18, YXB_E=9/18. YXB values are stored below as reduced fractions (7.5/18=15/36=5/12, 8/18=4/9, 9/18=1/2).",
+  "fixtures": [
+    {
+      "fixture_id": "F1",
+      "name": "单装置 A/B/C 同刻并行",
+      "description": "One device, all PASS: A/B/C start at t=0 in parallel, B finishes 2.0, A/C finish 2.5, E runs 2.5..5.5, device passes at 5.5. Last device: no turnover.",
+      "checks": ["CR-V3.1/C09", "CR-V3.1/C12"],
+      "config": {
+        "schema_version": "des_config_v1",
+        "scenario_id": "fixture_F1",
+        "scenario": "isolated_small_case",
+        "batch_size": 1,
+        "shift_length_h": "1000000",
+        "shifts_per_day": 1,
+        "durations": {"A": "2.5", "B": "2", "C": "2.5", "E": "3"},
+        "transport_out_h": "0.5",
+        "transport_in_h": "0.5",
+        "turnover_profile": "1h_literal",
+        "deterministic_initial_state": {"preloaded_devices": [1], "all_calibrated": true, "queues_empty": true},
+        "random_enabled": false,
+        "key_schema_version": "key_schema_v1"
+      },
+      "scripted_real_states": {
+        "1": {"A": "normal", "B": "normal", "C": "normal", "D": "normal"}
+      },
+      "scripted_outcomes": [
+        {"device_id": 1, "process": "A", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "B", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "C", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "E", "effective_attempt_no": 1, "outcome": "PASS"}
+      ],
+      "acceptance": {
+        "T": "11/2",
+        "T_h_note": "T = 5.5 h",
+        "S": 1,
+        "PL": 0,
+        "PW": 0,
+        "key_assertions": [
+          "A/B/C all start at t=0 (true parallelism)",
+          "B completes at 2.0; A and C complete at 2.5",
+          "E starts at 2.5 and completes at 5.5",
+          "no TURNOVER_* events (last device not transported out)",
+          "SIMULATION_END at 5.5"
+        ]
+      }
+    },
+    {
+      "fixture_id": "F2",
+      "name": "双装置资源竞争 + FCFS",
+      "description": "Two devices, both preloaded, all PASS. A/B/C/E capacity 1; on every resource the device with the smaller device_id is dispatched first (FCFS key tie broken by device_id).",
+      "checks": ["CR-V3.1/C09", "CR-V3.1/C11"],
+      "config": {
+        "schema_version": "des_config_v1",
+        "scenario_id": "fixture_F2",
+        "scenario": "isolated_small_case",
+        "batch_size": 2,
+        "shift_length_h": "1000000",
+        "shifts_per_day": 1,
+        "durations": {"A": "2.5", "B": "2", "C": "2.5", "E": "3"},
+        "transport_out_h": "0.5",
+        "transport_in_h": "0.5",
+        "turnover_profile": "1h_literal",
+        "deterministic_initial_state": {"preloaded_devices": [1, 2], "all_calibrated": true, "queues_empty": true},
+        "random_enabled": false,
+        "key_schema_version": "key_schema_v1"
+      },
+      "scripted_real_states": {
+        "1": {"A": "normal", "B": "normal", "C": "normal", "D": "normal"},
+        "2": {"A": "normal", "B": "normal", "C": "normal", "D": "normal"}
+      },
+      "scripted_outcomes": [
+        {"device_id": 1, "process": "A", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "B", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "C", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "E", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "A", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "B", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "C", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "E", "effective_attempt_no": 1, "outcome": "PASS"}
+      ],
+      "acceptance": {
+        "T": "17/2",
+        "T_h_note": "T = 8.5 h",
+        "S": 2,
+        "PL": 0,
+        "PW": 0,
+        "key_assertions": [
+          "device1 A/B/C start at 0; device2 A starts at 2.5, device2 B at 2.0, device2 C at 2.5 (capacity 1)",
+          "device2 E starts at 5.5 (after device1 E 2.5..5.5)",
+          "same resource: smaller device_id dispatched first",
+          "no self-overlap of the same process"
+        ]
+      }
+    },
+    {
+      "fixture_id": "F3",
+      "name": "首次异常释放自身重测且不取消他人",
+      "description": "One device. A initial ABNORMAL (first) at 2.5 releases only A's retest (attempt 2, release_time=2.5); B and C are NOT cancelled; after A retest PASS at 5.0, E is released and runs 5.0..8.0.",
+      "checks": ["CR-V3.1/C09", "CR-V3.1/C10", "CR-V3.1/C11"],
+      "config": {
+        "schema_version": "des_config_v1",
+        "scenario_id": "fixture_F3",
+        "scenario": "isolated_small_case",
+        "batch_size": 1,
+        "shift_length_h": "1000000",
+        "shifts_per_day": 1,
+        "durations": {"A": "2.5", "B": "2", "C": "2.5", "E": "3"},
+        "transport_out_h": "0.5",
+        "transport_in_h": "0.5",
+        "turnover_profile": "1h_literal",
+        "deterministic_initial_state": {"preloaded_devices": [1], "all_calibrated": true, "queues_empty": true},
+        "random_enabled": false,
+        "key_schema_version": "key_schema_v1"
+      },
+      "scripted_real_states": {
+        "1": {"A": "normal", "B": "normal", "C": "normal", "D": "normal"}
+      },
+      "scripted_outcomes": [
+        {"device_id": 1, "process": "A", "effective_attempt_no": 1, "outcome": "ABNORMAL"},
+        {"device_id": 1, "process": "A", "effective_attempt_no": 2, "outcome": "PASS"},
+        {"device_id": 1, "process": "B", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "C", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "E", "effective_attempt_no": 1, "outcome": "PASS"}
+      ],
+      "acceptance": {
+        "T": "8",
+        "T_h_note": "T = 8 h",
+        "S": 1,
+        "PL": 0,
+        "PW": 0,
+        "key_assertions": [
+          "A initial ABNORMAL at 2.5 does not cancel B (done 2.0) or C (done 2.5)",
+          "A retest released at 2.5 with effective_attempt_no=2 and release_time=2.5",
+          "A retest runs 2.5..5.0 in parallel with nothing blocked; E released only after A PASSED",
+          "E runs 5.0..8.0; device passes at 8.0"
+        ]
+      }
+    },
+    {
+      "fixture_id": "F4",
+      "name": "第二次异常与同刻结算（先结算后取消）",
+      "description": "Two devices, both preloaded. Device1: A/C first ABNORMAL (retests FCFS-delayed by device2's earlier-released initials), B retest second ABNORMAL at 6.0 triggers exit; device1's running A/C retests are cancelled at the same timestamp (outcome NONE, elapsed counted, attempt unchanged). Device2 completes normally; its results are preserved. NOTE (construction): the literal 'device2 PASS at exactly the exit tick' alignment of the frozen F4 wording is not reachable under FCFS for 2 devices (device-2 completion times {4,5,8} never coincide with device-1 exit times {6,7.5}); the fixture realizes the same SEM-08/SEM-09/C10 semantics: same-timestamp batch settlement before exit, cancel-unfinished, results preserved, deterministic log order.",
+      "checks": ["CR-V3.1/C10"],
+      "config": {
+        "schema_version": "des_config_v1",
+        "scenario_id": "fixture_F4",
+        "scenario": "isolated_small_case",
+        "batch_size": 2,
+        "shift_length_h": "1000000",
+        "shifts_per_day": 1,
+        "durations": {"A": "2.5", "B": "2", "C": "2.5", "E": "3"},
+        "transport_out_h": "0.5",
+        "transport_in_h": "0.5",
+        "turnover_profile": "1h_literal",
+        "deterministic_initial_state": {"preloaded_devices": [1, 2], "all_calibrated": true, "queues_empty": true},
+        "random_enabled": false,
+        "key_schema_version": "key_schema_v1"
+      },
+      "scripted_real_states": {
+        "1": {"A": "normal", "B": "normal", "C": "normal", "D": "not_created"},
+        "2": {"A": "normal", "B": "normal", "C": "normal", "D": "normal"}
+      },
+      "scripted_outcomes": [
+        {"device_id": 1, "process": "A", "effective_attempt_no": 1, "outcome": "ABNORMAL"},
+        {"device_id": 1, "process": "B", "effective_attempt_no": 1, "outcome": "ABNORMAL"},
+        {"device_id": 1, "process": "B", "effective_attempt_no": 2, "outcome": "ABNORMAL"},
+        {"device_id": 1, "process": "C", "effective_attempt_no": 1, "outcome": "ABNORMAL"},
+        {"device_id": 2, "process": "A", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "B", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "C", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "E", "effective_attempt_no": 1, "outcome": "PASS"}
+      ],
+      "acceptance": {
+        "T": "8",
+        "T_h_note": "T = 8 h (device2 E 5.0..8.0)",
+        "S": 1,
+        "PL": 0,
+        "PW": 1,
+        "key_assertions": [
+          "device1 B retest ABNORMAL (second effective abnormal) at 6.0 -> device1 EXITED (reason process_second_abnormal)",
+          "device1 A/C retests (running 5.0..7.5) cancelled at 6.0: outcome NONE, cancel_reason DEVICE_EXIT, elapsed 1.0h each, effective_attempt_no unchanged (2)",
+          "no ACTIVITY_COMPLETE for cancelled A/C retests; no observation materialized for them",
+          "device2 A/B/C/E results preserved; device2 E completes PASS at 8.0",
+          "batch settlement before exit at the same timestamp; log order deterministic"
+        ]
+      }
+    },
+    {
+      "fixture_id": "F5",
+      "name": "D 未生成即退出（不提前生成 D）",
+      "description": "One device. A initial ABNORMAL, A retest ABNORMAL (second) -> exit at 5.0 before ever reaching E. d_state stays not_created; no D_CREATED event; PW counts 1 (all generated real states normal).",
+      "checks": ["CR-V3.1/C09", "CR-V3.1/C10"],
+      "config": {
+        "schema_version": "des_config_v1",
+        "scenario_id": "fixture_F5",
+        "scenario": "isolated_small_case",
+        "batch_size": 1,
+        "shift_length_h": "1000000",
+        "shifts_per_day": 1,
+        "durations": {"A": "2.5", "B": "2", "C": "2.5", "E": "3"},
+        "transport_out_h": "0.5",
+        "transport_in_h": "0.5",
+        "turnover_profile": "1h_literal",
+        "deterministic_initial_state": {"preloaded_devices": [1], "all_calibrated": true, "queues_empty": true},
+        "random_enabled": false,
+        "key_schema_version": "key_schema_v1"
+      },
+      "scripted_real_states": {
+        "1": {"A": "normal", "B": "normal", "C": "normal", "D": "not_created"}
+      },
+      "scripted_outcomes": [
+        {"device_id": 1, "process": "A", "effective_attempt_no": 1, "outcome": "ABNORMAL"},
+        {"device_id": 1, "process": "A", "effective_attempt_no": 2, "outcome": "ABNORMAL"},
+        {"device_id": 1, "process": "B", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "C", "effective_attempt_no": 1, "outcome": "PASS"}
+      ],
+      "acceptance": {
+        "T": "5",
+        "T_h_note": "T = 5 h",
+        "S": 0,
+        "PL": 0,
+        "PW": 1,
+        "key_assertions": [
+          "device1 exits at 5.0 with terminal_state EXITED, reason process_second_abnormal",
+          "d_state = not_created at exit (E never reached; no D_CREATED event in log)",
+          "no anti-factual D generation; PW counts 1 (all generated real states normal)"
+        ]
+      }
+    },
+    {
+      "fixture_id": "F6",
+      "name": "班末剩余时间不足禁止启动",
+      "description": "One device, Q3 two shifts K=9 ([0,9),[9,18)). A initial ABNORMAL, A retest PASS (5.0); E initial ABNORMAL at 8.0 -> E retest released at 8.0 (attempt 2) but 8.0+3.0=11.0 > 9.0 -> forbidden to start in shift 1; task stays READY with its FCFS key; shift 2 starts it at 9.0; E retest PASS at 12.0.",
+      "checks": ["CR-V3.1/C12", "CR-V3.1/C18"],
+      "config": {
+        "schema_version": "des_config_v1",
+        "scenario_id": "fixture_F6",
+        "scenario": "q3_two_shift",
+        "batch_size": 1,
+        "shift_length_h": "9",
+        "shifts_per_day": 2,
+        "durations": {"A": "2.5", "B": "2", "C": "2.5", "E": "3"},
+        "transport_out_h": "0.5",
+        "transport_in_h": "0.5",
+        "turnover_profile": "1h_literal",
+        "deterministic_initial_state": {"preloaded_devices": [1], "all_calibrated": true, "queues_empty": true},
+        "random_enabled": false,
+        "key_schema_version": "key_schema_v1"
+      },
+      "scripted_real_states": {
+        "1": {"A": "normal", "B": "normal", "C": "normal", "D": "normal"}
+      },
+      "scripted_outcomes": [
+        {"device_id": 1, "process": "A", "effective_attempt_no": 1, "outcome": "ABNORMAL"},
+        {"device_id": 1, "process": "A", "effective_attempt_no": 2, "outcome": "PASS"},
+        {"device_id": 1, "process": "B", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "C", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "E", "effective_attempt_no": 1, "outcome": "ABNORMAL"},
+        {"device_id": 1, "process": "E", "effective_attempt_no": 2, "outcome": "PASS"}
+      ],
+      "acceptance": {
+        "T": "12",
+        "T_h_note": "T = 12 h",
+        "S": 1,
+        "PL": 0,
+        "PW": 0,
+        "key_assertions": [
+          "E retest released at 8.0 (release_time 8.0, attempt 2) but NOT started: 8.0+3.0 > 9.0 (SEM-20)",
+          "E retest stays READY with unchanged FCFS key until shift 2",
+          "E retest starts at 9.0 in shift 2 (squad 2), completes PASS at 12.0",
+          "D created exactly once at the first E start (5.0), not regenerated for the E retest (9.0)"
+        ]
+      }
+    },
+    {
+      "fixture_id": "F7",
+      "name": "恰好班末完成允许启动",
+      "description": "Two devices, Q3 K=9, only device1 preloaded. Device1 passes at 5.5; bay1 turnover 5.5..6.5 (1h literal) brings device2 in at 6.5. Device2 A/C start 6.5 and complete exactly at 9.0 == shift end (legal, SEM-19); completions are settled before the shift change at 9.0; E released 9.0 and runs in shift 2.",
+      "checks": ["CR-V3.1/C12"],
+      "config": {
+        "schema_version": "des_config_v1",
+        "scenario_id": "fixture_F7",
+        "scenario": "q3_two_shift",
+        "batch_size": 2,
+        "shift_length_h": "9",
+        "shifts_per_day": 2,
+        "durations": {"A": "2.5", "B": "2", "C": "2.5", "E": "3"},
+        "transport_out_h": "0.5",
+        "transport_in_h": "0.5",
+        "turnover_profile": "1h_literal",
+        "deterministic_initial_state": {"preloaded_devices": [1], "all_calibrated": true, "queues_empty": true},
+        "random_enabled": false,
+        "key_schema_version": "key_schema_v1"
+      },
+      "scripted_real_states": {
+        "1": {"A": "normal", "B": "normal", "C": "normal", "D": "normal"},
+        "2": {"A": "normal", "B": "normal", "C": "normal", "D": "normal"}
+      },
+      "scripted_outcomes": [
+        {"device_id": 1, "process": "A", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "B", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "C", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "E", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "A", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "B", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "C", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "E", "effective_attempt_no": 1, "outcome": "PASS"}
+      ],
+      "acceptance": {
+        "T": "12",
+        "T_h_note": "T = 12 h",
+        "S": 2,
+        "PL": 0,
+        "PW": 0,
+        "key_assertions": [
+          "device2 A/C start at 6.5 and complete at 9.0 exactly (start+duration == shift_end legal)",
+          "device2 A/C completions settled at 9.0 BEFORE the shift change (not cancelled by shift)",
+          "device2 E released at 9.0 and runs 9.0..12.0 in shift 2",
+          "turnover 1h literal: bay1 unavailable 5.5..6.5"
+        ]
+      }
+    },
+    {
+      "fixture_id": "F8",
+      "name": "K=9 三装置跨班待重测（权威手算）",
+      "description": "K9 hand timeline (01_审计/手算样例_K9跨班重测.md): 3 devices, Q3 K=9, preloaded [1,2], 1h literal turnover, squads 1/2. Device3 B initial ABNORMAL at 8.5 -> retest released at 8.5 (attempt 2) but 0.5h remaining < 2h -> forbidden; shift change at 9.0; squad 2 executes the retest 9.0..11.0 (no queue jump); E 11.0..14.0. T=14h, S=3, PL=0, PW=0, YXB_A=7.5/18, YXB_B=8/18, YXB_C=7.5/18, YXB_E=9/18.",
+      "checks": ["CR-V3.1/C08", "CR-V3.1/C09", "CR-V3.1/C11", "CR-V3.1/C12"],
+      "config": {
+        "schema_version": "des_config_v1",
+        "scenario_id": "fixture_F8_K9",
+        "scenario": "q3_two_shift",
+        "batch_size": 3,
+        "shift_length_h": "9",
+        "shifts_per_day": 2,
+        "durations": {"A": "2.5", "B": "2", "C": "2.5", "E": "3"},
+        "transport_out_h": "0.5",
+        "transport_in_h": "0.5",
+        "turnover_profile": "1h_literal",
+        "deterministic_initial_state": {"preloaded_devices": [1, 2], "all_calibrated": true, "queues_empty": true},
+        "random_enabled": false,
+        "key_schema_version": "key_schema_v1"
+      },
+      "scripted_real_states": {
+        "1": {"A": "normal", "B": "normal", "C": "normal", "D": "normal"},
+        "2": {"A": "normal", "B": "normal", "C": "normal", "D": "normal"},
+        "3": {"A": "normal", "B": "normal", "C": "normal", "D": "normal"}
+      },
+      "scripted_outcomes": [
+        {"device_id": 1, "process": "A", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "B", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "C", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "E", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "A", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "B", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "C", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "E", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 3, "process": "A", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 3, "process": "B", "effective_attempt_no": 1, "outcome": "ABNORMAL"},
+        {"device_id": 3, "process": "B", "effective_attempt_no": 2, "outcome": "PASS"},
+        {"device_id": 3, "process": "C", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 3, "process": "E", "effective_attempt_no": 1, "outcome": "PASS"}
+      ],
+      "acceptance": {
+        "T": "14",
+        "T_h_note": "T = 14 h (K9 authoritative)",
+        "S": 3,
+        "PL": 0,
+        "PW": 0,
+        "YXB_A": "5/12",
+        "YXB_A_note": "7.5/18",
+        "YXB_B": "4/9",
+        "YXB_B_note": "8/18",
+        "YXB_C": "5/12",
+        "YXB_C_note": "7.5/18",
+        "YXB_E": "1/2",
+        "YXB_E_note": "9/18",
+        "yxb_denominator_h": "18",
+        "key_assertions": [
+          "device3 B retest TASK_RELEASE at 8.5 with release_time=8.5 and effective_attempt_no=2 (never rewritten)",
+          "device3 B retest NOT started at 8.5 (remaining 0.5h < 2h)",
+          "device3 A/C complete at 9.0, settled BEFORE the shift change (not cancelled)",
+          "device3 B retest started at 9.0 by squad 2 (SHIFT_CHANGE to squad 2 precedes dispatch)",
+          "device3 B retest interval 9.0..11.0; E 11.0..14.0",
+          "device2 terminal at 8.5; bay2 TERMINAL_OCCUPIED_UNTIL_STOP (no empty transport-in)",
+          "SIMULATION_END at 14.0; no transport out for the last device"
+        ]
+      }
+    },
+    {
+      "fixture_id": "F9",
+      "name": "1h 主周转",
+      "description": "Two devices, isolated case, only device1 preloaded. Device1 passes at 5.5; bay1 turnover 1h literal: out 5.5..6.0, in 6.0..6.5; device2 enters at 6.5 (A/C 6.5..9.0, B 6.5..8.5, E 9.0..12.0). Bay unavailable during turnover.",
+      "checks": ["CR-V3.1/C12"],
+      "config": {
+        "schema_version": "des_config_v1",
+        "scenario_id": "fixture_F9",
+        "scenario": "isolated_small_case",
+        "batch_size": 2,
+        "shift_length_h": "1000000",
+        "shifts_per_day": 1,
+        "durations": {"A": "2.5", "B": "2", "C": "2.5", "E": "3"},
+        "transport_out_h": "0.5",
+        "transport_in_h": "0.5",
+        "turnover_profile": "1h_literal",
+        "deterministic_initial_state": {"preloaded_devices": [1], "all_calibrated": true, "queues_empty": true},
+        "random_enabled": false,
+        "key_schema_version": "key_schema_v1"
+      },
+      "scripted_real_states": {
+        "1": {"A": "normal", "B": "normal", "C": "normal", "D": "normal"},
+        "2": {"A": "normal", "B": "normal", "C": "normal", "D": "normal"}
+      },
+      "scripted_outcomes": [
+        {"device_id": 1, "process": "A", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "B", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "C", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "E", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "A", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "B", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "C", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "E", "effective_attempt_no": 1, "outcome": "PASS"}
+      ],
+      "acceptance": {
+        "T": "12",
+        "T_h_note": "T = 12 h (device2 E 9.0..12.0)",
+        "S": 2,
+        "PL": 0,
+        "PW": 0,
+        "key_assertions": [
+          "turnover 1h literal: TURNOVER_OUT_START 5.5, OUT_COMPLETE 6.0, IN_START 6.0, IN_COMPLETE 6.5",
+          "bay1 not usable for tests during 5.5..6.5",
+          "device2 entry_time = 6.5; its A/B/C released at 6.5",
+          "T = 12.0 (no transport out for last device)"
+        ]
+      }
+    },
+    {
+      "fixture_id": "F10",
+      "name": "0.5h 重叠替代周转（隔离配置）",
+      "description": "Identical to F9 except turnover_profile=0.5h_overlap: out and in fully overlap, complete turnover 0.5h (5.5..6.0). Device2 enters at 6.0; A/C 6.0..8.5, B 6.0..8.0, E 8.5..11.5. Manifest/profile strictly isolated from the 1h literal configuration.",
+      "checks": ["CR-V3.1/C12"],
+      "config": {
+        "schema_version": "des_config_v1",
+        "scenario_id": "fixture_F10",
+        "scenario": "isolated_small_case",
+        "batch_size": 2,
+        "shift_length_h": "1000000",
+        "shifts_per_day": 1,
+        "durations": {"A": "2.5", "B": "2", "C": "2.5", "E": "3"},
+        "transport_out_h": "0.5",
+        "transport_in_h": "0.5",
+        "turnover_profile": "0.5h_overlap",
+        "deterministic_initial_state": {"preloaded_devices": [1], "all_calibrated": true, "queues_empty": true},
+        "random_enabled": false,
+        "key_schema_version": "key_schema_v1"
+      },
+      "scripted_real_states": {
+        "1": {"A": "normal", "B": "normal", "C": "normal", "D": "normal"},
+        "2": {"A": "normal", "B": "normal", "C": "normal", "D": "normal"}
+      },
+      "scripted_outcomes": [
+        {"device_id": 1, "process": "A", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "B", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "C", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "E", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "A", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "B", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "C", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 2, "process": "E", "effective_attempt_no": 1, "outcome": "PASS"}
+      ],
+      "acceptance": {
+        "T": "23/2",
+        "T_h_note": "T = 11.5 h (device2 E 8.5..11.5)",
+        "S": 2,
+        "PL": 0,
+        "PW": 0,
+        "key_assertions": [
+          "turnover 0.5h overlap: OUT_START 5.5; OUT_COMPLETE, IN_START, IN_COMPLETE all at 6.0",
+          "bay1 not usable for tests during 5.5..6.0",
+          "device2 entry_time = 6.0; T = 11.5 (strictly less than the 1h-literal T=12 for identical inputs)",
+          "manifest/profile strictly isolated from 1h_literal (F9)"
+        ]
+      }
+    },
+    {
+      "fixture_id": "F11",
+      "name": "活性：未完成任务 -> 下一班唤醒存在",
+      "description": "Same scenario as F6: at 8.0 the E retest is READY but cannot fit shift 1; calendar is empty; the engine must wake up at the next shift boundary (9.0) and start it in shift 2. No deadlock, time strictly advances, CR-V3.1/C18.",
+      "checks": ["CR-V3.1/C18"],
+      "config": {
+        "schema_version": "des_config_v1",
+        "scenario_id": "fixture_F11",
+        "scenario": "q3_two_shift",
+        "batch_size": 1,
+        "shift_length_h": "9",
+        "shifts_per_day": 2,
+        "durations": {"A": "2.5", "B": "2", "C": "2.5", "E": "3"},
+        "transport_out_h": "0.5",
+        "transport_in_h": "0.5",
+        "turnover_profile": "1h_literal",
+        "deterministic_initial_state": {"preloaded_devices": [1], "all_calibrated": true, "queues_empty": true},
+        "random_enabled": false,
+        "key_schema_version": "key_schema_v1"
+      },
+      "scripted_real_states": {
+        "1": {"A": "normal", "B": "normal", "C": "normal", "D": "normal"}
+      },
+      "scripted_outcomes": [
+        {"device_id": 1, "process": "A", "effective_attempt_no": 1, "outcome": "ABNORMAL"},
+        {"device_id": 1, "process": "A", "effective_attempt_no": 2, "outcome": "PASS"},
+        {"device_id": 1, "process": "B", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "C", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "E", "effective_attempt_no": 1, "outcome": "ABNORMAL"},
+        {"device_id": 1, "process": "E", "effective_attempt_no": 2, "outcome": "PASS"}
+      ],
+      "acceptance": {
+        "T": "12",
+        "T_h_note": "T = 12 h",
+        "S": 1,
+        "PL": 0,
+        "PW": 0,
+        "key_assertions": [
+          "WAKE_UP event exists at 9.0 (calendar empty at 8.0 but unfinished work)",
+          "time strictly increases; no zero-time loop",
+          "E retest starts at 9.0 in shift 2 and completes PASS at 12.0 (no deadlock)"
+        ]
+      }
+    },
+    {
+      "fixture_id": "F12",
+      "name": "末台不运出（无意义末台运输不得发生）",
+      "description": "One device, all PASS: device passes at 5.5; it is the last device, so no turnover is scheduled (no out / no empty transport-in); timing stops at the terminal judgment.",
+      "checks": ["CR-V3.1/C12"],
+      "config": {
+        "schema_version": "des_config_v1",
+        "scenario_id": "fixture_F12",
+        "scenario": "isolated_small_case",
+        "batch_size": 1,
+        "shift_length_h": "1000000",
+        "shifts_per_day": 1,
+        "durations": {"A": "2.5", "B": "2", "C": "2.5", "E": "3"},
+        "transport_out_h": "0.5",
+        "transport_in_h": "0.5",
+        "turnover_profile": "1h_literal",
+        "deterministic_initial_state": {"preloaded_devices": [1], "all_calibrated": true, "queues_empty": true},
+        "random_enabled": false,
+        "key_schema_version": "key_schema_v1"
+      },
+      "scripted_real_states": {
+        "1": {"A": "normal", "B": "normal", "C": "normal", "D": "normal"}
+      },
+      "scripted_outcomes": [
+        {"device_id": 1, "process": "A", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "B", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "C", "effective_attempt_no": 1, "outcome": "PASS"},
+        {"device_id": 1, "process": "E", "effective_attempt_no": 1, "outcome": "PASS"}
+      ],
+      "acceptance": {
+        "T": "11/2",
+        "T_h_note": "T = 5.5 h",
+        "S": 1,
+        "PL": 0,
+        "PW": 0,
+        "key_assertions": [
+          "zero TURNOVER_* events in the whole log",
+          "bay1 ends TERMINAL_OCCUPIED_UNTIL_STOP (last device, no next device)",
+          "SIMULATION_END at 5.5; timing stops at terminal judgment"
+        ]
+      }
+    }
+  ]
+}

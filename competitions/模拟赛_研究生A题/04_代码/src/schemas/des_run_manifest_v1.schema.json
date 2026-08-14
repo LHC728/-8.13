@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "des_run_manifest_v1.schema.json",
+  "title": "G2-03 deterministic minimal parallel DES - run manifest",
+  "description": "Run manifest draft for the G2-03 deterministic DES (G2-03-SPEC-V1.0.1 schemas_and_manifest_draft.run_manifest_schema). The runner (G2-04) will produce one immutable manifest per run; this round only freezes the structure. run_id is UTC timestamp + 8 hex; hashes are lowercase SHA-256; metrics are run-level fixture outputs (T as exact rational string, S/PL/PW as device counts, YXB as exact rational strings). Manifest does not record its own hash (that lives in file_hashes.sha256). Structural constraints only.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "envelope_type",
+    "run_id",
+    "scenario_id",
+    "config_hash",
+    "event_log_hash",
+    "scripted_fixture_hash",
+    "parameters_hash",
+    "task_package_ref",
+    "registry_version",
+    "code_snapshots",
+    "metrics"
+  ],
+  "properties": {
+    "schema_version": { "const": "des_run_manifest_v1" },
+    "envelope_type": { "const": "des_run_manifest" },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[0-9]{8}T[0-9]{12}Z_[0-9a-f]{8}$",
+      "description": "UTC YYYYMMDDTHHMMSSffffffZ_ + 8 hex from secrets.token_hex(4); a run_id conflict must fail without overwriting."
+    },
+    "scenario_id": { "type": "string", "minLength": 1 },
+    "config_hash": { "$ref": "#/$defs/sha256" },
+    "event_log_hash": { "$ref": "#/$defs/sha256" },
+    "scripted_fixture_hash": { "$ref": "#/$defs/sha256" },
+    "parameters_hash": { "$ref": "#/$defs/sha256" },
+    "task_package_ref": { "type": "string", "minLength": 1 },
+    "registry_version": { "const": "CR-V3.1" },
+    "code_snapshots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": { "$ref": "#/$defs/relativePath" },
+          "sha256": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    },
+    "metrics": { "$ref": "#/$defs/metricsBlock" },
+    "notes": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?![A-Za-z]:)(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]+$"
+    },
+    "rationalString": {
+      "type": "string",
+      "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:/[1-9][0-9]*)?$",
+      "description": "An exact non-negative rational string (\"0\", \"9\", \"2.5\", \"5/2\")."
+    },
+    "metricsBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["T", "S", "PL", "PW", "YXB_A", "YXB_B", "YXB_C", "YXB_E"],
+      "properties": {
+        "T": { "$ref": "#/$defs/rationalString" },
+        "S": { "type": "integer", "minimum": 0 },
+        "PL": { "type": "integer", "minimum": 0 },
+        "PW": { "type": "integer", "minimum": 0 },
+        "YXB_A": { "$ref": "#/$defs/rationalString" },
+        "YXB_B": { "$ref": "#/$defs/rationalString" },
+        "YXB_C": { "$ref": "#/$defs/rationalString" },
+        "YXB_E": { "$ref": "#/$defs/rationalString" },
+        "yxb_denominator_h": { "$ref": "#/$defs/rationalString" }
+      }
+    }
+  }
+}

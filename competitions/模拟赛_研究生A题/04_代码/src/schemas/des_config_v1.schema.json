@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "des_config_v1.schema.json",
+  "title": "G2-03 deterministic minimal parallel DES - input config",
+  "description": "Shared read-only input schema for the deterministic minimal parallel DES (G2-03-SPEC-V1.0.1 schemas_and_manifest_draft.input_config_schema). All rational quantities are strings (decimal or fraction form) to forbid binary-float preprocessing; random_enabled is frozen to false (no RNG in G2-03). Structural constraints only; positivity of durations/transport is enforced by the engine and marked SCHEMA_CONSTRAINT_DEFERRED where not mechanically expressed here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scenario_id",
+    "scenario",
+    "batch_size",
+    "shift_length_h",
+    "shifts_per_day",
+    "durations",
+    "transport_out_h",
+    "transport_in_h",
+    "turnover_profile",
+    "deterministic_initial_state",
+    "random_enabled",
+    "key_schema_version"
+  ],
+  "properties": {
+    "schema_version": { "const": "des_config_v1" },
+    "scenario_id": { "type": "string", "minLength": 1 },
+    "scenario": { "enum": ["q2_single_shift", "q3_two_shift", "isolated_small_case"] },
+    "batch_size": { "type": "integer", "minimum": 1 },
+    "shift_length_h": { "$ref": "#/$defs/positiveRationalString" },
+    "shifts_per_day": { "type": "integer", "minimum": 1 },
+    "durations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["A", "B", "C", "E"],
+      "properties": {
+        "A": { "$ref": "#/$defs/positiveRationalString" },
+        "B": { "$ref": "#/$defs/positiveRationalString" },
+        "C": { "$ref": "#/$defs/positiveRationalString" },
+        "E": { "$ref": "#/$defs/positiveRationalString" }
+      }
+    },
+    "transport_out_h": { "$ref": "#/$defs/nonNegativeRationalString" },
+    "transport_in_h": { "$ref": "#/$defs/nonNegativeRationalString" },
+    "turnover_profile": { "enum": ["1h_literal", "0.5h_overlap"] },
+    "deterministic_initial_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["preloaded_devices", "all_calibrated", "queues_empty"],
+      "properties": {
+        "preloaded_devices": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 1 }
+        },
+        "all_calibrated": { "const": true },
+        "queues_empty": { "const": true }
+      }
+    },
+    "random_enabled": { "const": false },
+    "key_schema_version": { "const": "key_schema_v1" }
+  },
+  "$defs": {
+    "positiveRationalString": {
+      "type": "string",
+      "pattern": "^(?:[1-9][0-9]*(?:\\.[0-9]+)?|0\\.[0-9]*[1-9][0-9]*)(?:/[1-9][0-9]*)?$",
+      "description": "A positive exact rational: integer, decimal, or fraction string (e.g. \"9\", \"2.5\", \"5/2\")."
+    },
+    "nonNegativeRationalString": {
+      "type": "string",
+      "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:/[1-9][0-9]*)?$",
+      "description": "A non-negative exact rational string (e.g. \"0\", \"0.5\", \"1/2\")."
+    }
+  }
+}
