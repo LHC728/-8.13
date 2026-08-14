@@ -92,9 +92,10 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
   - 任务包：`G3-SPEC-V1.0`（status FROZEN_FOR_IMPLEMENTATION；`08_项目管理/任务包/G3_公共随机DES与H1基线.yaml`）。Human Gate G3_SPEC_DRAFT CONDITIONAL PASS → 全部决策（G3-DEC-01..07）落文 → fresh verified Pro/high 终审（session `f5550518-edfa-48cc-9213-da37ffd789bd`，deepseek-v4-pro/high）PASS/HIGH/implementation_ready=YES → 冻结。
   - Pilot #2 范围：G3-SPEC-V1.0 实现 S1→S9（key_schema → 寿命/再生 → 随机 DES+H1 → C06 oracle → C17 replay → C16 实验分离 → H1 tuning（C26）→ holdout → evidence）至 G3 Macro Gate；**无条件停机，不跨入 Q2 formal**。
   - **G3 tuning/holdout 100-device 批次（授权验证/调优）与 Q2 FORMAL 100-device 评估（未授权）明确区分**。
-  - **Pilot #2 进度：S1-S8 完成**（S1 key_schema commit `5a437dc`；S2 寿命/再生 `7ccb550`；S3 随机 DES `6418818`+`d88c7a3`+YELLOW `617722e`；S4 C06 oracle `d88c7a3`；S5 C17 replay `9a2b192`+YELLOW `617722e`；S6 C16 分离 `2fdd332`；S7 H1 tuning `5b70446`；S8 holdout `fad658f`）。YELLOW 修复（发现 A FCFS 派序 / 发现 B checker 配对）证据见 `01_审计/RED_EVIDENCE_G3_S7.md`；S8 C07 统计方法两处缺陷（GREEN）见 `01_审计/RED_EVIDENCE_G3_S8.md`。
+  - **Pilot #2 进度：S1-S9 完成**（S1 key_schema commit `5a437dc`；S2 寿命/再生 `7ccb550`；S3 随机 DES `6418818`+`d88c7a3`+YELLOW `617722e`；S4 C06 oracle `d88c7a3`；S5 C17 replay `9a2b192`+YELLOW `617722e`；S6 C16 分离 `2fdd332`；S7 H1 tuning `5b70446`；S8 holdout `fad658f`；S9 evidence `f279ae6`）。YELLOW 修复（发现 A FCFS 派序 / 发现 B checker 配对）证据见 `01_审计/RED_EVIDENCE_G3_S7.md`；S8 C07 统计方法两处缺陷（GREEN）见 `01_审计/RED_EVIDENCE_G3_S8.md`。
   - **FINAL H1 CANDIDATE（冻结）**：tau_pm=198h（S7 run `01b7c7e7`；mean T=830.75h、mean PM=15/4；调优数据非 Q2 正式）；S8 holdout run `020bc637`（C06/C17 100/100 PASS、C07 flagged=7/100 正常）未重调。
-  - **S9 evidence package 与 G3 Macro L3（fresh verified Pro/high）待执行**；G3 Macro Gate 后无条件停机。
+  - **S9 evidence package = run `fc3fe3e6`**（INDEX_OK；accepted = tuning `01b7c7e7` + holdout `020bc637`；7 个失败/被替代 run 保留不可变并标注 superseded）。
+  - **G3 Macro L3（fresh verified Pro/high）待执行**；G3 Macro Gate 后无条件停机。
   - 状态：H1 formal = NOT STARTED；H2 = NOT STARTED；100-device formal Q2 = NOT STARTED；Q3 formal = NOT STARTED；Q4 = NOT STARTED。
   - Pilot #2 预算：软墙钟 4h / 硬墙钟 8h；hard cap 无条件停止回 Human Gate。
   - 禁止：发布/冻结 Q2 正式数字（T/S/PL/PW/YXB/管理建议）、写论文、实现 H2、枚举 K、推荐 K。

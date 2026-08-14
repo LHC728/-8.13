@@ -2,6 +2,21 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G3 S9 EVIDENCE PACKAGE COMPLETED`
+
+### 修改
+
+- **S9 immutable evidence package 完成**（commit `f279ae6`）：
+  - 新增 `04_代码/scripts/run_g3_evidence_v1.py` + `04_代码/tests/test_g3_evidence_v1.py`（11 tests，G3 全套 299 PASS）。
+  - run `run_20260814T180658183615Z_fc3fe3e6`（INDEX_OK）：聚合 15 个 G3 源码文件 hash、task package/parameters/问题契约 hash、9 个 run 目录（tuning 6 + holdout 3）全部 file_hashes.sha256 复核一致、git 链、环境版本、命令。
+  - **accepted = S7 tuning `01b7c7e7` + S8 holdout `020bc637`**；7 个失败/被替代 run（5 个 VALIDATION_FAILED tuning + 2 个 C07 方法缺陷 holdout）保留不可变并标注 superseded。
+  - S9 仅聚合/校验，不重新生成任何仿真数字；G3 数据均标非 Q2 正式。
+
+### 影响与边界
+
+- Pilot #2 S1-S9 全部完成；下一步 **G3 Macro L3（fresh verified Pro/high 终审）**，之后无条件停机。
+- 软墙钟 4h / 硬墙钟 8h 预算继续适用；Q2 formal/Q3/H2 非授权。
+
 ## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G3 S7 TUNING + S8 HOLDOUT COMPLETED`
 
 ### 修改
