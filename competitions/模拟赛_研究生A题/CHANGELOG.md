@@ -2,6 +2,28 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G3 S7 TUNING + S8 HOLDOUT COMPLETED`
+
+### 修改
+
+- **S7 H1 tuning（C26）完成**（修复后引擎/checker 重跑，commit `5b70446`）：
+  - run `run_20260814T174022592173Z_01b7c7e7`（namespace=h1_tuning、master_seed=1、20 共享 CRN worlds、100-device 批次；G3 调优数据，非 Q2 正式）。
+  - 粗网格 {120,144,168,192,216}+NO_PM_BEFORE_MANDATORY → 粗胜者 tau_pm_192（mean T 精确最小）→ G3-DEC-02 局部细化 {180,186,198,204} → **FINAL H1 CANDIDATE = tau_pm 198h**（mean T=3323/4h=830.75h=3323/96 天、mean PM=15/4）；C06/C17 全候选 PASS，VALIDATION=PASS。
+  - 旧失效中间 run（`b9fe7d80`/`33da177a`/`09e7d0b7`/`09d2992c`/`48028e83`）保留不可变（发现 A/B 修复前产物）。
+- **S8 holdout（G3-DEC-04 + C07）完成**（commit `fad658f`）：
+  - run `run_20260814T180238855262Z_020bc637`（namespace=g3_holdout、master_seed=2 独立 seed 池、100 独立 100-device 批次、冻结 tau_pm=198h；G3 holdout 数据，非 Q2 正式）。
+  - **C06/C17：100/100 批 PASS**；C07 四格烟测 flagged=7/100（Binomial(100,0.05) 预期 5，正常）、investigate=False；经验事件级 lambda mean=9.76 vs 解析锚 9.6785（相对偏差 0.8%）；C24 仪表聚合输出。
+  - **C07 统计方法两处缺陷已调查并修复（GREEN 级，`01_审计/RED_EVIDENCE_G3_S8.md`）**：① GE 小期望单元（N·p=0.0815<<1）卡方不适用 → GE 移出 X² 作单独诊断；② 初版统计量用 `Σ(n-Np)²/(Np(1-p))` 非 Pearson 形式，对 GP(p≈0.925) 放大 ~13 倍致 flag 率失真 → 改标准 Pearson `Σ(n-Np)²/(Np)`（GP/BP/BE、2df）。修复后同批数据 flagged 15→7。未改任何冻结契约/锚/语义/代码路径；holdout 绝不重调。
+  - 修复前 run `eba82d4b`、`1dfbec68` 保留不可变（C07 方法缺陷产物，非 accepted）。
+- 新增 `04_代码/scripts/run_g3_holdout_v1.py` + `04_代码/tests/test_g3_holdout_v1.py`（23 tests）；G3 全套测试 288 PASS。
+
+### 影响与边界
+
+- **FINAL H1 CANDIDATE = tau_pm 198h（冻结值）**：仅用于 holdout/后续 G3 验证，非 Q2 正式推荐。
+- holdout 结果未用于重调（禁 holdout 破 tie / 禁因 holdout 改策略）。
+- G3 状态：S1-S8 完成；S9 evidence package 与 G3 Macro L3 待执行；G3 Macro Gate 后无条件停机。
+- 软墙钟 4h / 硬墙钟 8h 预算继续适用；Q2 formal/Q3/H2 非授权。
+
 ## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-04 REBIND TO SPEC V1.0`
 
 ### 修改
