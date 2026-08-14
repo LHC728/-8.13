@@ -2,7 +2,7 @@
 """Unit tests for the E2 independent checker (q1_quality_checker_v1).
 
 Oracle expectations come EXCLUSIVELY from the ``E2_embedded_oracles`` section
-of the frozen task package G2-02-SPEC-V1.0.3 (this module never reads the
+of the frozen task package G2-02-SPEC-V1.0.4 (this module never reads the
 external fixture ``04_代码/tests/fixtures/q1_quality_oracles_v1.json``, never
 reads request files, never reads main_model sources or project documents).
 
@@ -12,7 +12,7 @@ additionally the NA branch and the concentration/count-pinning case; plus
 isolation (file-access) tests proving the checker code never opens forbidden
 paths, and CLI contract tests (--request rejection, preflight sentinel).
 
-V1.0.3 rebind coverage: the lambda NA/null contract (main/sum/max_abs_deviation
+V1.0.4 rebind coverage: the lambda NA/null contract (main/sum/max_abs_deviation
 and route_agreement.lambda_* null when na=true; tilde null when q_E == 0 and
 numeric when q_E > 0; a numeric "0" in any NA field must FAIL) and the
 e_max_E semantic gate (single asserts numerically; chain emits NOT_APPLICABLE
@@ -404,10 +404,10 @@ def _make_parameters_csv(path, values=None):
 
 
 def _make_task_package(path, params_hash, upstream_hash, schema_hash,
-                       wrong_params=False):
+                       wrong_params=False, version="G2-02-SPEC-V1.0.4"):
     p = ("0" * 64) if wrong_params else params_hash
     doc = (
-        "task_package_version: \"G2-02-SPEC-V1.0.3\"\n"
+        "task_package_version: \"%s\"\n"
         "shared_read_only_artifacts:\n"
         "  frozen_sha256:\n"
         "    parameters_csv: \"%s\"\n"
@@ -427,7 +427,7 @@ def _make_task_package(path, params_hash, upstream_hash, schema_hash,
         "    E2_independent_residual_absolute: \"2e-12\"\n"
         "  serialization:\n"
         "    significant_decimal_digits: 17\n"
-    ) % (p, schema_hash, "0" * 64, upstream_hash, upstream_hash, "0" * 64)
+    ) % (version, p, schema_hash, "0" * 64, upstream_hash, upstream_hash, "0" * 64)
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         f.write(doc)
 
@@ -501,7 +501,7 @@ def _make_response(path, run_id=RUN_ID, tamper_q_e=None, scenario="o1",
     emitted with the legal zero lexical form "0.000000").  ``mutate`` is an
     optional in-place document mutator used by the negative tests.  For
     standard_chain_v1 the response omits ``E_kernel.e_max_E`` per the frozen
-    V1.0.3 contract (E1 omits the key; E2 emits NOT_APPLICABLE).
+    V1.0.4 contract (E1 omits the key; E2 emits NOT_APPLICABLE).
     """
     sem, params, res = _scenario_compute(scenario)
     pub = _pub_scalar
@@ -727,9 +727,27 @@ class CliContractTests(unittest.TestCase):
             self.assertEqual(code, 2)
             self.assertTrue(os.path.isfile(report))
 
+    def test_stale_v103_task_package_validation_error(self):
+        """V1.0.4 strict version binding at the CLI: a V1.0.3 task package is
+        refused with exit 2 and a VALIDATION_ERROR report (no active V1.0.3
+        binding survives the rebind)."""
+        with tempfile.TemporaryDirectory(prefix="e2_version_") as tmp:
+            params, upstream, schema, task_pkg, response, report = _make_cli_inputs(tmp)
+            _make_task_package(task_pkg, _sha(params), _sha(upstream), _sha(schema),
+                               version="G2-02-SPEC-V1.0.3")
+            code = chk.main(_cli_argv(response, params, upstream, schema, task_pkg, report))
+            self.assertEqual(code, 2)
+            self.assertTrue(os.path.isfile(report))
+            with open(report, "r", encoding="utf-8") as f:
+                rep = json.load(f)
+            self.assertEqual(rep["checker_status"], "FAIL")
+            self.assertEqual(rep["report_context_run_id"], RUN_ID)
+            self.assertTrue(any("task_package_version" in e for e in rep["errors"]),
+                            "expected a task_package_version error, got %r" % rep["errors"])
+
 
 class NaNullContractTests(unittest.TestCase):
-    """V1.0.3 NA/null contract: when lambda.na=true the main A/B/C/D leaves,
+    """V1.0.4 NA/null contract: when lambda.na=true the main A/B/C/D leaves,
     sum, max_abs_deviation and route_agreement.lambda_A..D must all be null
     (a numeric "0" or any other number must FAIL); tilde A/B/C/D and
     route_agreement.tilde_A..D must be null when q_E == 0 and numeric when
@@ -820,7 +838,7 @@ class NaNullContractTests(unittest.TestCase):
 
 
 class EmaxSemanticGateTests(unittest.TestCase):
-    """V1.0.3 e_max_E semantic gate: single_test_unconditional_v1 keeps the
+    """V1.0.4 e_max_E semantic gate: single_test_unconditional_v1 keeps the
     numeric e_max_E assertion; standard_chain_v1 emits NOT_APPLICABLE and a
     chain response that omits e_max_E must NOT fail."""
 
@@ -900,9 +918,9 @@ class YamlParserTests(unittest.TestCase):
                                "G2-02_Q1概率与质量解析链.yaml")
         self.assertTrue(os.path.isfile(tp_path))
         tp = chk.load_task_package(tp_path)
-        # formal spec binding: the checker is bound to the frozen V1.0.3
-        # (no active V1.0.0/V1.0.1/V1.0.2 binding)
-        self.assertEqual(tp["task_package_version"], "G2-02-SPEC-V1.0.3")
+        # formal spec binding: the checker is bound to the frozen V1.0.4
+        # (no active V1.0.0/V1.0.1/V1.0.2/V1.0.3 binding; strict equality)
+        self.assertEqual(tp["task_package_version"], "G2-02-SPEC-V1.0.4")
         self.assertEqual(
             tp["frozen_sha256"]["parameters_csv"],
             "0461da2e0de09090673192d9eb0fde6fe5e70b1d22ef61fe13cdb878c449f07e")
@@ -915,6 +933,27 @@ class YamlParserTests(unittest.TestCase):
                          "1e-15")
         self.assertEqual(chk._tol_value(tp["tolerances"]["cross_channel_kernel_alpha_beta_absolute"]),
                          "5e-11")
+
+    def test_stale_v103_task_package_rejected(self):
+        """V1.0.4 strict version binding: a task package still bound to the
+        previous active spec G2-02-SPEC-V1.0.3 must be refused; the real
+        V1.0.4 package is the only accepted version (no startswith /
+        multi-version acceptance)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "task_package.yaml")
+            _make_task_package(path, "0" * 64, "0" * 64, "0" * 64,
+                               version="G2-02-SPEC-V1.0.3")
+            with self.assertRaises(chk.CheckerValidationError):
+                chk.load_task_package(path)
+
+    def test_v104_task_package_accepted(self):
+        """The current frozen G2-02-SPEC-V1.0.4 package loads cleanly."""
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "task_package.yaml")
+            _make_task_package(path, "0" * 64, "0" * 64, "0" * 64,
+                               version="G2-02-SPEC-V1.0.4")
+            tp = chk.load_task_package(path)
+            self.assertEqual(tp["task_package_version"], "G2-02-SPEC-V1.0.4")
 
 
 class ParametersTests(unittest.TestCase):

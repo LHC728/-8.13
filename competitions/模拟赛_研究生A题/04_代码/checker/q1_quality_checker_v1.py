@@ -3,7 +3,7 @@
 
 Role
 ----
-This module is the INDEPENDENT oracle (E2) for task package G2-02-SPEC-V1.0.3
+This module is the INDEPENDENT oracle (E2) for task package G2-02-SPEC-V1.0.4
 ("Q1 概率与质量解析链闭合").  It re-derives every public quantity of an E1
 ``q1_response`` envelope from first principles and compares it against the
 response, producing a ``q1_check_report`` envelope.
@@ -51,12 +51,18 @@ from decimal import Decimal, InvalidOperation, localcontext
 from fractions import Fraction
 
 # --------------------------------------------------------------------------
-# Frozen constants (from task package G2-02-SPEC-V1.0.3 and shared schema)
+# Frozen constants (from task package G2-02-SPEC-V1.0.4 and shared schema)
 # --------------------------------------------------------------------------
 
 SCHEMA_VERSION = "q1_quality_v1"
 ENVELOPE_RESPONSE = "q1_response"
 ENVELOPE_REPORT = "q1_check_report"
+
+# Strict version binding: this checker is bound to exactly ONE frozen task
+# package version.  A package carrying any other version -- including the
+# previous active G2-02-SPEC-V1.0.3 -- is refused during load (VALIDATION
+# ERROR, exit 2).  startswith/multi-version acceptance is never allowed.
+TASK_PACKAGE_VERSION = "G2-02-SPEC-V1.0.4"
 
 SEMANTICS_SINGLE = "single_test_unconditional_v1"
 SEMANTICS_CHAIN = "standard_chain_v1"
@@ -1049,11 +1055,15 @@ def load_task_package(path):
         except (TypeError, ValueError):
             sig_digits = SIGNIFICANT_DIGITS
     version = doc.get("task_package_version")
+    if version != TASK_PACKAGE_VERSION:
+        raise CheckerValidationError(
+            "task_package_version %r does not match frozen binding %s"
+            % (version, TASK_PACKAGE_VERSION))
     return {
         "frozen_sha256": frozen_sha256,
         "tolerances": tolerances,
         "significant_decimal_digits": sig_digits,
-        "task_package_version": version if isinstance(version, str) else None,
+        "task_package_version": version,
         "_raw_doc": doc,
     }
 
@@ -1211,7 +1221,7 @@ def validate_response_structure(response, schema_info):
         _check(isinstance(ek.get("free_parameters"), list) and
                set(ek.get("free_parameters", [])).issubset({"alpha", "beta"}),
                "E_kernel.free_parameters invalid")
-        # V1.0.3: e_max_E is asserted only for single_test_unconditional_v1;
+        # V1.0.4: e_max_E is asserted only for single_test_unconditional_v1;
         # for standard_chain_v1 E1 omits the key (NOT_APPLICABLE), so the
         # field is optional here and only validated when present.
         if ek.get("e_max_E") is not None:
@@ -1231,7 +1241,7 @@ def validate_response_structure(response, schema_info):
             for m in fields:
                 _check(block.get(m) is None or (isinstance(block.get(m), str) and DEC_PROB_RE.match(block[m])),
                        "lambda.%s.%s invalid" % (sub, m))
-        # V1.0.3 NA/null contract: sum and max_abs_deviation are nullable
+        # V1.0.4 NA/null contract: sum and max_abs_deviation are nullable
         # (null when lambda.na=true); the null-vs-numeric equivalence is
         # enforced semantically in verify_response.
         _check(lb.get("sum") is None or (isinstance(lb.get("sum"), str) and DEC_SIGNED_RE.match(lb["sum"])),
@@ -1279,7 +1289,7 @@ def validate_response_structure(response, schema_info):
         for field in ("q_E", "G", "Z_0", "Z_1", "p_GP", "p_BP", "p_GE", "p_BE"):
             _check(isinstance(ra.get(field), str) and DEC_SIGNED_RE.match(ra[field]),
                    "route_agreement.%s invalid" % field)
-        # V1.0.3: route_agreement.lambda_* (NA when lambda.na) and
+        # V1.0.4: route_agreement.lambda_* (NA when lambda.na) and
         # route_agreement.tilde_* (NA when q_E == 0) are nullable; the
         # null-vs-numeric equivalence is enforced semantically in
         # verify_response.
@@ -1429,7 +1439,7 @@ _ROUTE_CORE_FIELDS = ("q_E", "G", "Z_0", "Z_1", "p_GP", "p_BP", "p_GE", "p_BE")
 def _route_agreement_verify(items, ra, tol_str, na_lambda, na_tilde):
     """Verify the response route_agreement block and emit one item per field.
 
-    V1.0.3 NA/null contract: the eight core deviation fields must be numeric
+    V1.0.4 NA/null contract: the eight core deviation fields must be numeric
     and within the cross-route tolerance; ``lambda_A..D`` must be null when
     the lambda main table is NA (na_lambda) and numeric otherwise;
     ``tilde_A..D`` must be null when q_E == 0 (na_tilde) and numeric
@@ -1598,7 +1608,7 @@ def verify_response(response, parameters, schema_info, task_pkg, upstream_path,
                         rk.get("free_parameters"), ek["free_parameters"])
             _num_item(items, "E_kernel.alpha_E", rk.get("alpha_E"), ek["alpha"], tol["kernel"])
             _num_item(items, "E_kernel.beta_E", rk.get("beta_E"), ek["beta"], tol["kernel"])
-            # V1.0.3 e_max_E semantic gate: single asserts numerically;
+            # V1.0.4 e_max_E semantic gate: single asserts numerically;
             # chain is NOT_APPLICABLE (E1 omits the key and an omitted
             # e_max_E must not fail).
             if semantics == SEMANTICS_SINGLE:
@@ -1633,13 +1643,13 @@ def verify_response(response, parameters, schema_info, task_pkg, upstream_path,
                 for m in "ABCD":
                     _num_item(items, "lambda.main.%s" % m, rmain.get(m), lb2["main"][m], tol["agg"])
             if lb2["sum"] is None:
-                # V1.0.3 NA contract: when lambda is NA the sum must be null
+                # V1.0.4 NA contract: when lambda is NA the sum must be null
                 # (a numeric "0" is a contract violation -> FAIL).
                 items.append(_item("lambda.sum", rlb.get("sum"), None, tol["conserv"],
                                    "PASS" if rlb.get("sum") is None else "FAIL"))
             else:
                 _num_item(items, "lambda.sum", rlb.get("sum"), lb2["sum"], tol["conserv"])
-            # V1.0.3 NA contract: lambda.max_abs_deviation must be null when
+            # V1.0.4 NA contract: lambda.max_abs_deviation must be null when
             # lambda is NA and a numeric decimal string otherwise.
             m_abs = rlb.get("max_abs_deviation")
             if lb2["na"]:
@@ -1725,7 +1735,7 @@ def verify_response(response, parameters, schema_info, task_pkg, upstream_path,
             rk = response.get("E_kernel") or {}
             _exact_item(items, "E_kernel.status", rk.get("status"), "INFEASIBLE")
             _exact_item(items, "E_kernel.free_parameters", rk.get("free_parameters"), [])
-            # V1.0.3 e_max_E semantic gate: single asserts numerically (the
+            # V1.0.4 e_max_E semantic gate: single asserts numerically (the
             # frozen O3 single case pins e_max_E = 1/8); chain is
             # NOT_APPLICABLE and an omitted key must not fail.
             if semantics == SEMANTICS_SINGLE:
