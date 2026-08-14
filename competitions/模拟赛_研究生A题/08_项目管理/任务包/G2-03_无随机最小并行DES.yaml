@@ -32,7 +32,7 @@ governance_binding:
   registry_version: "CR-V3.1"
   upstream_task_packages:
     - "G2-01-SPEC-V1.1.11（观测核标定，本包不依赖其数值输出，仅共用 parameters.csv 与 schema 目录约定）"
-    - "G2-02-SPEC-V1.0.4（Q1 概率与质量解析链，本包不依赖其数值输出）"
+    - "G2-02-SPEC-V1.0.5（Q1 概率与质量解析链，本包不依赖其数值输出）"
   required_checks:
     - id: "CR-V3.1/C08"
       applicability: "IN_SCOPE_PARTIAL"
