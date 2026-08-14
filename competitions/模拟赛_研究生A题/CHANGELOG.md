@@ -20,6 +20,20 @@
 - 无语义变化（INVALIDATION_REPORT：changed_semantics=NO）；未改 checker/tests/fixtures/schemas/specs/CR-V3.1。
 - G3 / H1 formal / H2 / 100-device / Q2 / Q3 / Q4 = NOT STARTED。
 
+## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-01 CLEAN REISSUE + G2-02 V1.0.5 PROVENANCE REBIND`
+
+### 修改
+
+- **G2-01 evidence clean reissue**（commit `13d9edf`）：新 run `run_20260814T130221390333Z_8babb503`（LF-clean、inventory 26/26、数学 payload 与历史 `f1290916` 逐字段一致、归一化 byte-identical；差异仅 request_id.run_id，Human Gate OPTION A APPROVED）。旧 run `f1290916` 保留为 HISTORICAL_INVALIDATED_EVIDENCE（HASH_INVENTORY_MISMATCH）。G2-01 runner/checker 增加 evidence-finalization LF newline（非数学）。
+- **G2-02-SPEC-V1.0.5 冻结**（commit `495bd1a`）：provenance-clean upstream rebind only（OPTION B APPROVED）；upstream 整体切换至 clean G2-01 `8babb503`；数学/schema/fixture/容差不变。
+- **G2-02 provenance-clean reissue**（commit 见本条目）：governed run `run_20260814T130947069958Z_4bb92eda`（checker 双 PASS、inventory 37/37、frozen upstream 与 clean G2-01 一致；新旧 response canonical projection 逐字段一致 + byte-identical）。旧 run `52f4ebc4` = HISTORICAL_MATHEMATICALLY_VALID / PROVENANCE_SUPERSEDED_FOR_CURRENT_CHAIN。
+- 中间失败 run（`ef19a3a4`/`ddbcf433`/`05620ece`）保留；`ddbcf433` stderr 纯 CRLF→LF 行尾归一化（内容不变，diff --check 硬门）。
+- 数学/数值无任何变化；INVALIDATION_REPORT 已更新。
+
+### 影响与边界
+
+- Whole G2 仍 NOT PASS（qualifying Pro/high Macro L3 pending）；G3/H1/H2/100-device/Q2/Q3/Q4 NOT STARTED。
+
 ## 2026-08-14 / `STATE-2026-08-13-G2.4` / `WHOLE G2 MACRO STOP / GOVERNANCE REPAIR AUTHORIZED`
 
 ### 修改

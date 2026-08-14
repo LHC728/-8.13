@@ -80,3 +80,17 @@
 
 - 旧 run `...f1290916` 保留原字节，不重写任何文件、不补 sidecar；状态 = HISTORICAL_INVALIDATED_EVIDENCE。
 - 旧 G2-02 run `...52f4ebc4` 保留原字节；状态 = HISTORICAL_ACCEPTED_MATH_WITH_SUPERSEDED_UPSTREAM_PROVENANCE。
+
+## 十、追加：G2-02 provenance-clean reissue（V1.0.5）
+
+- **change_class = UPSTREAM_PROVENANCE_REBIND**；changed_semantics = NO。
+- G2-02-SPEC-V1.0.5 冻结（commit `495bd1a`）：`upstream_g2_01_run` → `run_20260814T130221390333Z_8babb503`；三个 upstream frozen SHA 更新为新 clean run 实际值（`afc6f8b2…`/`49bad533…`/`2a1e30fb…`）；数学/schema/fixture/容差全部不变。
+- G2-02 runner/main/checker/route 的 V1.0.5 provenance 绑定更新（SPEC_VERSION、FROZEN_UPSTREAM_SHA256、TASK_PACKAGE_VERSION、route docstring 版本注释、测试断言）——纯 metadata/注释，数学逻辑不变；tests 102+55 全 PASS。
+- **governed G2-02 reissue = `run_20260814T130947069958Z_4bb92eda`**（checker 双 PASS、inventory 37/37、frozen upstream 与 clean G2-01 字节一致、overall PASS）。新旧 G2-02 response 的 canonical projection（移除 request_id.run_id + upstream_sha256 provenance note 后）逐字段一致且固定 sort_keys 序列化 byte-identical（single 6010B、chain 6251B）——仅预授权差异。
+- **历史 G2-02 run `...52f4ebc4` = HISTORICAL_MATHEMATICALLY_VALID / PROVENANCE_SUPERSEDED_FOR_CURRENT_CHAIN**（不删除、不覆盖、不称数学错误）。
+- **中间失败 run 保留**：`...ef19a3a4`（V1.0.4 spec 拒绝 FAIL）、`...ddbcf433`（upstream 校验 INCOMPLETE）、`...05620ece`（route docstring 修改前的 PASS，作为 pre-final 候选保留）。`...ddbcf433` 的 4 个 stderr 做纯 CRLF→LF 行尾归一化（内容/失败结论不变；与项目 LF 惯例及历史失败 run 一致；`git diff --check` 硬门要求）。
+- 是否影响下游：由 Phase D dependency scan 按实际引用判断，不预先断言。
+
+## 十一、原始失效记录（保留）
+
+（上文第一节至第九节为 G2-01 原始 invalidation 记录，保持原样供追溯。）

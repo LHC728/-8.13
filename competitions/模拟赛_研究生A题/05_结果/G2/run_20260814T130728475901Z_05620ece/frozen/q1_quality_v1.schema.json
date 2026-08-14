@@ -1,0 +1,675 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "q1_quality_v1.schema.json",
+  "title": "G2-02 Q1 probability and quality chain envelopes",
+  "description": "Shared read-only interface schema for the G2-02 Q1 chain (closed form / 16-state enumeration / absorption chain) and its independent checker. Decimal quantities are strings to avoid binary-float preprocessing. Probabilities are in [0,1]; E_S is in [0,100]. Allowed shared artifact; contains no core math.",
+  "oneOf": [
+    { "$ref": "#/$defs/requestEnvelope" },
+    { "$ref": "#/$defs/responseEnvelope" },
+    { "$ref": "#/$defs/checkReportEnvelope" },
+    { "$ref": "#/$defs/runManifestEnvelope" },
+    { "$ref": "#/$defs/commandLogEnvelope" }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?![A-Za-z]:)(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]+$"
+    },
+    "decimalProbability": {
+      "type": "string",
+      "pattern": "^(0(?:\\.[0-9]+)?|1(?:\\.0+)?)$"
+    },
+    "decimalNonnegative": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)(?:\\.[0-9]+)?$"
+    },
+    "decimalSigned": {
+      "type": "string",
+      "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$"
+    },
+    "nullableDecimalProbability": {
+      "type": ["string", "null"],
+      "pattern": "^(0(?:\\.[0-9]+)?|1(?:\\.0+)?)$"
+    },
+    "nullableDecimalSigned": {
+      "type": ["string", "null"],
+      "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$"
+    },
+    "semantics": {
+      "enum": [
+        "single_test_unconditional_v1",
+        "standard_chain_v1"
+      ]
+    },
+    "scenarioRole": {
+      "enum": ["canonical_g2_02", "generic", "test_oracle"]
+    },
+    "processStatus": {
+      "enum": ["UNIQUE_SOLUTION", "NONIDENTIFIABLE_FAMILY", "INFEASIBLE"]
+    },
+    "overallStatus": {
+      "enum": [
+        "ALL_ROUTES_AGREE",
+        "ROUTE_MISMATCH",
+        "HAS_INFEASIBLE",
+        "HAS_INDETERMINATE",
+        "FAILED_VALIDATION",
+        "NUMERICAL_FAILURE"
+      ]
+    },
+    "infeasibleStage": {
+      "enum": ["ABC_KERNEL", "E_KERNEL"]
+    },
+    "freeParameterList": {
+      "type": "array",
+      "items": { "enum": ["alpha", "beta"] },
+      "uniqueItems": true
+    },
+    "kernelItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["process_id", "q", "e", "status", "free_parameters", "source"],
+      "properties": {
+        "process_id": { "enum": ["A", "B", "C"] },
+        "q": { "$ref": "#/$defs/decimalProbability" },
+        "e": { "$ref": "#/$defs/decimalProbability" },
+        "alpha": { "$ref": "#/$defs/decimalProbability" },
+        "beta": { "$ref": "#/$defs/decimalProbability" },
+        "status": { "$ref": "#/$defs/processStatus" },
+        "free_parameters": { "$ref": "#/$defs/freeParameterList" },
+        "source": { "enum": ["upstream_bound", "derived"] }
+      }
+    },
+    "upstreamBoundReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "file", "sha256", "semantics_expect"],
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "pattern": "^[0-9]{8}T[0-9]{12}Z_[0-9a-f]{8}$"
+        },
+        "file": { "$ref": "#/$defs/relativePath" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "semantics_expect": { "$ref": "#/$defs/semantics" }
+      }
+    },
+    "upstreamDerivedValues": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["q_a", "q_b", "q_c", "q_d", "e_a", "e_b", "e_c", "e_e"],
+      "properties": {
+        "q_a": { "$ref": "#/$defs/decimalProbability" },
+        "q_b": { "$ref": "#/$defs/decimalProbability" },
+        "q_c": { "$ref": "#/$defs/decimalProbability" },
+        "q_d": { "$ref": "#/$defs/decimalProbability" },
+        "e_a": { "$ref": "#/$defs/decimalProbability" },
+        "e_b": { "$ref": "#/$defs/decimalProbability" },
+        "e_c": { "$ref": "#/$defs/decimalProbability" },
+        "e_e": { "$ref": "#/$defs/decimalProbability" }
+      }
+    },
+    "requestUpstream": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "reference"],
+          "properties": {
+            "mode": { "const": "bound_frozen" },
+            "reference": { "$ref": "#/$defs/upstreamBoundReference" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "values"],
+          "properties": {
+            "mode": { "const": "derive_from_values" },
+            "values": { "$ref": "#/$defs/upstreamDerivedValues" }
+          }
+        }
+      ]
+    },
+    "requestEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "envelope_type", "request_id", "scenario_role", "semantics", "upstream"],
+      "properties": {
+        "schema_version": { "const": "q1_quality_v1" },
+        "envelope_type": { "const": "q1_request" },
+        "request_id": { "type": "string", "minLength": 1 },
+        "scenario_role": { "$ref": "#/$defs/scenarioRole" },
+        "semantics": { "$ref": "#/$defs/semantics" },
+        "upstream": { "$ref": "#/$defs/requestUpstream" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "scenario_role": { "const": "canonical_g2_02" } },
+            "required": ["scenario_role"]
+          },
+          "then": {
+            "properties": {
+              "upstream": {
+                "type": "object",
+                "required": ["mode"],
+                "properties": { "mode": { "const": "bound_frozen" } }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "scenario_role": { "enum": ["generic", "test_oracle"] } },
+            "required": ["scenario_role"]
+          },
+          "then": {
+            "properties": {
+              "upstream": {
+                "type": "object",
+                "required": ["mode"],
+                "properties": { "mode": { "const": "derive_from_values" } }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "fourfoldValues": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["p_GP", "p_BP", "p_GE", "p_BE"],
+      "properties": {
+        "p_GP": { "$ref": "#/$defs/decimalProbability" },
+        "p_BP": { "$ref": "#/$defs/decimalProbability" },
+        "p_GE": { "$ref": "#/$defs/decimalProbability" },
+        "p_BE": { "$ref": "#/$defs/decimalProbability" }
+      }
+    },
+    "fourfoldBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["p_GP", "p_BP", "p_GE", "p_BE", "sum", "per_route", "max_abs_deviation"],
+      "properties": {
+        "p_GP": { "$ref": "#/$defs/decimalProbability" },
+        "p_BP": { "$ref": "#/$defs/decimalProbability" },
+        "p_GE": { "$ref": "#/$defs/decimalProbability" },
+        "p_BE": { "$ref": "#/$defs/decimalProbability" },
+        "sum": { "$ref": "#/$defs/decimalSigned" },
+        "per_route": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["closed_form", "enumeration", "absorption_chain"],
+          "properties": {
+            "closed_form": { "$ref": "#/$defs/fourfoldValues" },
+            "enumeration": { "$ref": "#/$defs/fourfoldValues" },
+            "absorption_chain": { "$ref": "#/$defs/fourfoldValues" }
+          }
+        },
+        "max_abs_deviation": { "$ref": "#/$defs/decimalSigned" }
+      }
+    },
+    "anchorsBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["E_S", "E_PL", "E_PW"],
+      "properties": {
+        "E_S": { "$ref": "#/$defs/decimalNonnegative" },
+        "E_PL": { "$ref": "#/$defs/decimalProbability" },
+        "E_PW": { "$ref": "#/$defs/decimalProbability" }
+      }
+    },
+    "lambdaMain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["A", "B", "C", "D"],
+      "properties": {
+        "A": { "$ref": "#/$defs/nullableDecimalProbability" },
+        "B": { "$ref": "#/$defs/nullableDecimalProbability" },
+        "C": { "$ref": "#/$defs/nullableDecimalProbability" },
+        "D": { "$ref": "#/$defs/nullableDecimalProbability" }
+      }
+    },
+    "lambdaBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["main", "sum", "counts", "tilde", "na", "max_abs_deviation"],
+      "properties": {
+        "main": { "$ref": "#/$defs/lambdaMain" },
+        "sum": { "$ref": "#/$defs/nullableDecimalSigned" },
+        "counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["event_level", "first_test_only", "at_most_once_per_device"],
+          "properties": {
+            "event_level": { "$ref": "#/$defs/decimalNonnegative" },
+            "first_test_only": { "$ref": "#/$defs/decimalNonnegative" },
+            "at_most_once_per_device": { "$ref": "#/$defs/decimalNonnegative" }
+          }
+        },
+        "tilde": { "$ref": "#/$defs/lambdaMain" },
+        "na": { "type": "boolean" },
+        "max_abs_deviation": { "$ref": "#/$defs/nullableDecimalSigned" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "na": { "const": true } },
+            "required": ["na"]
+          },
+          "then": {
+            "properties": {
+              "main": {
+                "properties": {
+                  "A": { "const": null },
+                  "B": { "const": null },
+                  "C": { "const": null },
+                  "D": { "const": null }
+                }
+              },
+              "sum": { "const": null },
+              "max_abs_deviation": { "const": null }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "na": { "const": false } },
+            "required": ["na"]
+          },
+          "then": {
+            "properties": {
+              "main": {
+                "properties": {
+                  "A": { "$ref": "#/$defs/decimalProbability" },
+                  "B": { "$ref": "#/$defs/decimalProbability" },
+                  "C": { "$ref": "#/$defs/decimalProbability" },
+                  "D": { "$ref": "#/$defs/decimalProbability" }
+                }
+              },
+              "sum": { "$ref": "#/$defs/decimalSigned" },
+              "max_abs_deviation": { "$ref": "#/$defs/decimalSigned" }
+            }
+          }
+        }
+      ]
+    },
+    "EKernelBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "free_parameters", "diagnostics"],
+      "properties": {
+        "status": { "$ref": "#/$defs/processStatus" },
+        "alpha_E": { "$ref": "#/$defs/decimalProbability" },
+        "beta_E": { "$ref": "#/$defs/decimalProbability" },
+        "e_max_E": { "$ref": "#/$defs/decimalProbability" },
+        "free_parameters": { "$ref": "#/$defs/freeParameterList" },
+        "diagnostics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["method", "feasibility", "notes"],
+          "properties": {
+            "method": { "type": "string", "minLength": 1 },
+            "feasibility": { "type": "string", "minLength": 1 },
+            "notes": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "EPhaseRates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["first_abnormal", "process_exit", "device_total_exit"],
+      "properties": {
+        "first_abnormal": { "$ref": "#/$defs/decimalProbability" },
+        "process_exit": { "$ref": "#/$defs/decimalProbability" },
+        "device_total_exit": { "$ref": "#/$defs/decimalProbability" }
+      }
+    },
+    "multinomialBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["N", "p"],
+      "properties": {
+        "N": { "const": 100 },
+        "p": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": { "$ref": "#/$defs/decimalProbability" }
+        }
+      }
+    },
+    "routeAgreementBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "q_E", "G", "Z_0", "Z_1", "p_GP", "p_BP", "p_GE", "p_BE",
+        "lambda_A", "lambda_B", "lambda_C", "lambda_D",
+        "tilde_A", "tilde_B", "tilde_C", "tilde_D"
+      ],
+      "properties": {
+        "q_E": { "$ref": "#/$defs/decimalSigned" },
+        "G": { "$ref": "#/$defs/decimalSigned" },
+        "Z_0": { "$ref": "#/$defs/decimalSigned" },
+        "Z_1": { "$ref": "#/$defs/decimalSigned" },
+        "p_GP": { "$ref": "#/$defs/decimalSigned" },
+        "p_BP": { "$ref": "#/$defs/decimalSigned" },
+        "p_GE": { "$ref": "#/$defs/decimalSigned" },
+        "p_BE": { "$ref": "#/$defs/decimalSigned" },
+        "lambda_A": { "$ref": "#/$defs/nullableDecimalSigned" },
+        "lambda_B": { "$ref": "#/$defs/nullableDecimalSigned" },
+        "lambda_C": { "$ref": "#/$defs/nullableDecimalSigned" },
+        "lambda_D": { "$ref": "#/$defs/nullableDecimalSigned" },
+        "tilde_A": { "$ref": "#/$defs/nullableDecimalSigned" },
+        "tilde_B": { "$ref": "#/$defs/nullableDecimalSigned" },
+        "tilde_C": { "$ref": "#/$defs/nullableDecimalSigned" },
+        "tilde_D": { "$ref": "#/$defs/nullableDecimalSigned" }
+      }
+    },
+    "responseEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version", "envelope_type", "request_id", "scenario_role",
+        "semantics", "overall_status", "abc_kernels"
+      ],
+      "properties": {
+        "schema_version": { "const": "q1_quality_v1" },
+        "envelope_type": { "const": "q1_response" },
+        "request_id": { "type": "string", "minLength": 1 },
+        "scenario_role": { "$ref": "#/$defs/scenarioRole" },
+        "semantics": { "$ref": "#/$defs/semantics" },
+        "overall_status": { "$ref": "#/$defs/overallStatus" },
+        "infeasible_stage": { "$ref": "#/$defs/infeasibleStage" },
+        "abc_kernels": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": { "$ref": "#/$defs/kernelItem" }
+        },
+        "q_E": { "$ref": "#/$defs/decimalProbability" },
+        "G": { "$ref": "#/$defs/decimalProbability" },
+        "Z_0": { "$ref": "#/$defs/decimalProbability" },
+        "Z_1": { "$ref": "#/$defs/decimalProbability" },
+        "reach_E_distribution": {
+          "type": "array",
+          "minItems": 16,
+          "maxItems": 16,
+          "items": { "$ref": "#/$defs/decimalProbability" }
+        },
+        "E_kernel": { "$ref": "#/$defs/EKernelBlock" },
+        "E_rates": { "$ref": "#/$defs/EPhaseRates" },
+        "fourfold": { "$ref": "#/$defs/fourfoldBlock" },
+        "anchors": { "$ref": "#/$defs/anchorsBlock" },
+        "lambda": { "$ref": "#/$defs/lambdaBlock" },
+        "multinomial": { "$ref": "#/$defs/multinomialBlock" },
+        "route_agreement": { "$ref": "#/$defs/routeAgreementBlock" },
+        "diagnostics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["notes"],
+          "properties": {
+            "notes": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "overall_status": { "enum": ["ALL_ROUTES_AGREE", "ROUTE_MISMATCH"] } },
+            "required": ["overall_status"]
+          },
+          "then": {
+            "required": [
+              "q_E", "G", "Z_0", "Z_1", "reach_E_distribution", "E_kernel",
+              "E_rates", "fourfold", "anchors", "lambda", "multinomial",
+              "route_agreement", "diagnostics"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": { "overall_status": { "const": "HAS_INFEASIBLE" } },
+            "required": ["overall_status"]
+          },
+          "then": {
+            "required": ["infeasible_stage", "diagnostics"],
+            "properties": {
+              "E_rates": { "type": "null" },
+              "fourfold": { "type": "null" },
+              "anchors": { "type": "null" },
+              "lambda": { "type": "null" },
+              "multinomial": { "type": "null" },
+              "route_agreement": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "lambda": { "properties": { "na": { "const": true } }, "required": ["na"] } },
+            "required": ["lambda"]
+          },
+          "then": {
+            "properties": {
+              "route_agreement": {
+                "properties": {
+                  "lambda_A": { "const": null },
+                  "lambda_B": { "const": null },
+                  "lambda_C": { "const": null },
+                  "lambda_D": { "const": null }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "lambda": { "properties": { "na": { "const": false } }, "required": ["na"] } },
+            "required": ["lambda"]
+          },
+          "then": {
+            "properties": {
+              "route_agreement": {
+                "properties": {
+                  "lambda_A": { "$ref": "#/$defs/decimalSigned" },
+                  "lambda_B": { "$ref": "#/$defs/decimalSigned" },
+                  "lambda_C": { "$ref": "#/$defs/decimalSigned" },
+                  "lambda_D": { "$ref": "#/$defs/decimalSigned" }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "q_E": { "pattern": "^0(?:\\.0+)?$" } },
+            "required": ["q_E"]
+          },
+          "then": {
+            "properties": {
+              "lambda": {
+                "properties": {
+                  "tilde": {
+                    "properties": {
+                      "A": { "const": null },
+                      "B": { "const": null },
+                      "C": { "const": null },
+                      "D": { "const": null }
+                    }
+                  }
+                }
+              },
+              "route_agreement": {
+                "properties": {
+                  "tilde_A": { "const": null },
+                  "tilde_B": { "const": null },
+                  "tilde_C": { "const": null },
+                  "tilde_D": { "const": null }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "q_E": { "pattern": "^0\\.0*[1-9][0-9]*$|^1(?:\\.0+)?$" } },
+            "required": ["q_E"]
+          },
+          "then": {
+            "properties": {
+              "lambda": {
+                "properties": {
+                  "tilde": {
+                    "properties": {
+                      "A": { "$ref": "#/$defs/decimalProbability" },
+                      "B": { "$ref": "#/$defs/decimalProbability" },
+                      "C": { "$ref": "#/$defs/decimalProbability" },
+                      "D": { "$ref": "#/$defs/decimalProbability" }
+                    }
+                  }
+                }
+              },
+              "route_agreement": {
+                "properties": {
+                  "tilde_A": { "$ref": "#/$defs/decimalSigned" },
+                  "tilde_B": { "$ref": "#/$defs/decimalSigned" },
+                  "tilde_C": { "$ref": "#/$defs/decimalSigned" },
+                  "tilde_D": { "$ref": "#/$defs/decimalSigned" }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "checkReportEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version", "envelope_type", "request_id", "semantics",
+        "checker_status", "report_context_run_id", "frozen_input_hashes", "items", "errors"
+      ],
+      "properties": {
+        "schema_version": { "const": "q1_quality_v1" },
+        "envelope_type": { "const": "q1_check_report" },
+        "request_id": { "type": "string", "minLength": 1 },
+        "semantics": { "$ref": "#/$defs/semantics" },
+        "checker_status": { "enum": ["PASS", "FAIL"] },
+        "report_context_run_id": {
+          "type": "string",
+          "pattern": "^[0-9]{8}T[0-9]{12}Z_[0-9a-f]{8}$"
+        },
+        "frozen_input_hashes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["parameters_sha256", "upstream_sha256"],
+          "properties": {
+            "parameters_sha256": { "$ref": "#/$defs/sha256" },
+            "upstream_sha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["quantity", "verdict"],
+            "properties": {
+              "quantity": { "type": "string", "minLength": 1 },
+              "response_value": { "type": ["string", "null"] },
+              "independent_value": { "type": ["string", "null"] },
+              "abs_deviation": { "type": ["string", "null"] },
+              "tolerance": { "type": ["string", "null"] },
+              "verdict": { "enum": ["PASS", "FAIL", "NOT_APPLICABLE"] }
+            }
+          }
+        },
+        "E_kernel_independent": { "$ref": "#/$defs/EKernelBlock" },
+        "route_table_verdict": { "enum": ["PASS", "FAIL"] },
+        "errors": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "runManifestEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version", "envelope_type", "run_id", "overall_status", "artifacts", "notes"
+      ],
+      "properties": {
+        "schema_version": { "const": "q1_quality_v1" },
+        "envelope_type": { "const": "q1_run_manifest" },
+        "run_id": {
+          "type": "string",
+          "pattern": "^[0-9]{8}T[0-9]{12}Z_[0-9a-f]{8}$"
+        },
+        "overall_status": { "enum": ["PASS", "FAIL", "INCOMPLETE"] },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "role", "bytes", "sha256"],
+            "properties": {
+              "path": { "$ref": "#/$defs/relativePath" },
+              "role": { "type": "string", "minLength": 1 },
+              "bytes": { "type": "integer", "minimum": 0 },
+              "sha256": { "$ref": "#/$defs/sha256" },
+              "source_sha256_before": { "$ref": "#/$defs/sha256" },
+              "source_sha256_after": { "$ref": "#/$defs/sha256" }
+            }
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "commandLogEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "envelope_type", "commands"],
+      "properties": {
+        "schema_version": { "const": "q1_quality_v1" },
+        "envelope_type": { "const": "q1_command_log" },
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "index", "argv", "cwd", "start_utc", "end_utc", "exit_code",
+              "stdout_rel", "stderr_rel"
+            ],
+            "properties": {
+              "index": { "type": "integer", "minimum": 0 },
+              "argv": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "cwd": { "type": "string" },
+              "start_utc": { "type": "string" },
+              "end_utc": { "type": "string" },
+              "exit_code": { "type": "integer" },
+              "stdout_rel": { "type": ["string", "null"] },
+              "stderr_rel": { "type": ["string", "null"] }
+            }
+          }
+        }
+      }
+    }
+  }
+}

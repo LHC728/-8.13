@@ -2,7 +2,7 @@
 
 > 最后更新：2026-08-14
 > 状态版本：`STATE-2026-08-13-G2.4`
-> 当前 Gate：**AUTOPILOT PILOT #1 = STOPPED（Macro Stop 已到达）；WHOLE_G2_GOVERNANCE_AND_EVIDENCE_REPAIR：G2-04-SPEC-V1.0 已冻结（FROZEN_PENDING_REBIND）→ rebind 完成，governed formal run `run_20260814T114143591701Z_32913efa` 已生成（G2-04 = IMPLEMENTATION_AND_VERIFICATION_COMPLETED_CANDIDATE）；fresh qualifying Pro/high Macro L3 待完成；Whole G2 = NOT PASS；G3/H1/H2/100-device/Q2/Q3/Q4 = NOT STARTED**
+> 当前 Gate：**AUTOPILOT PILOT #1 = STOPPED（Macro Stop 已到达）；FINAL_EVIDENCE_PROVENANCE_REPAIR：G2-01 clean reissue（`8babb503`）与 G2-02 provenance-clean reissue（V1.0.5，`4bb92eda`）已完成，U1 闭合；G2-04-SPEC-V1.0 rebind 完成（governed run `32913efa`）；remaining blocker = qualifying verified Pro/high Macro L3（U0）；Whole G2 = NOT PASS；G3/H1/H2/100-device/Q2/Q3/Q4 = NOT STARTED**
 > 当前检查注册表：[`CR-V3.1`](01_审计/检查注册表_V3.1.md)
 
 ## 1. 新对话只需先读
@@ -68,6 +68,9 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
   - 历史失败（保留为不可变证据，未修改）：① `run_20260814T043709752483Z_99f602bd`（V1.0.3 frozen runtime dependency snapshot gap → V1.0.4 快照 9→10 + RUNNER rebind 闭合）；② `run_20260814T053311144723Z_a694e8f9`（E1 route_agreement 错误输出代表值而非三路线最大绝对偏差 → L3 semantic adjudication + E1 correction 闭合）。
   - 限制：**whole G2 Gate != PASS**；G2-03/G2-04 见下节（candidates，均未最终验收）；G3 = NOT STARTED；H1 formal experiment = NOT STARTED；H2 = NOT STARTED；100-device formal run = NOT STARTED；不发布论文正式数字；Q2/Q3 尚未开始。
 
+- **`G2-01`（观测核标定）= evidence reissue 完成**：历史 run `run_20260813T134251279572Z_f1290916` = **HISTORICAL_INVALIDATED_EVIDENCE**（reason=HASH_INVENTORY_MISMATCH，保留不改，INVALIDATION_REPORT 见 `01_审计/INVALIDATION_REPORT_G2_01_hash_inventory.md`）；**clean reissue = `run_20260814T130221390333Z_8babb503`**（G2-01 evidence mechanically restored；数学输出与历史逐字一致，差异仅 request_id.run_id 经 Human Gate OPTION A 批准；semantic acceptance inherited pending Whole G2 Macro confirmation）。
+- **`G2-02`（Q1 概率与质量解析链）= provenance-clean reissue 完成**：spec `G2-02-SPEC-V1.0.5`（upstream rebind only）；历史 run `run_20260814T062114478293Z_52f4ebc4` = **HISTORICAL_ACCEPTED_MATH_WITH_SUPERSEDED_UPSTREAM_PROVENANCE**（保留不改）；**governed reissue = `run_20260814T130947069958Z_4bb92eda`**（数学结果与 52f4ebc4 逐字段一致，仅 upstream provenance 更新）。
+- **Whole G2 = NOT PASS**。当前 blocker：**qualifying verified Pro/high Macro L3 pending**（U0 未闭合——先前 reviewer 非 Pro/high 可独立验证；U1 已由上述 reissue 闭合）。
 - **`G2-03`（确定性最小并行 DES）= COMPLETED_CANDIDATE**（AUTOPILOT PILOT #1 已 Macro Stop；最终整体判定待 Whole G2）：
   - 任务包：`G2-03-SPEC-V1.0.2`（V1.0 freeze commit `cecaa97e21d1a7f70a61e96455deabc15aded783`；V1.0.1 governance commit `37150f2af0b047725b84ef6fa802638d329f1447`；V1.0.2 L3 fixture adjudication commit `e89a237aca095965863cf6248321d6a203730307`）。
   - **S1 deterministic DES baseline = ACCEPTED**：accepted commit `31b0bffb72d6b805ae313ddb9e5e0ae9a83c16ab`（V1.0.2 rebind）。验收记录：24 semantics implemented；F1-F12 family PASS；F4b PASS；F9b PASS（SEM-23 并发运输，T=15）；F8 K9 PASS（T=14）；py_compile PASS；unittest 27/27 PASS；main DES stdlib-only；D E2 timing PASS；SEM21 PASS；SEM23 PASS。
