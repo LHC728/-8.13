@@ -2269,7 +2269,38 @@ class G3ReplayChecker:
                        "OBSERVATION_MATERIALIZED", "settle -> observe")
             check_pair("OBSERVATION_MATERIALIZED", "DEVICE_EXIT",
                        "observe -> classify/exit")
-            check_pair("DEVICE_EXIT", "DEVICE_TERMINAL", "exit -> terminal")
+            # DEVICE_EXIT -> DEVICE_TERMINAL is a *per-device* ordering at a
+            # timestamp: several devices can exit simultaneously and their
+            # EXIT/TERMINAL seqs interleave across devices, so a global
+            # min/max comparison mis-pairs different devices (RED_G3_S7
+            # finding B; S7 rep=9 t=465 dev56/dev57). Pair by device_id; a
+            # same-device TERMINAL before EXIT is still a real defect and
+            # must be caught. All other check_pair calls compare different
+            # closure phases and keep the global first/last order.
+            exit_seqs: dict[Any, list[int]] = {}
+            term_seqs: dict[Any, list[int]] = {}
+            for _rec in group:
+                _et = _rec.get("event_type")
+                if _et == "DEVICE_EXIT":
+                    exit_seqs.setdefault(_rec.get("device_id"), []).append(
+                        _rec["seq"]
+                    )
+                elif _et == "DEVICE_TERMINAL":
+                    term_seqs.setdefault(_rec.get("device_id"), []).append(
+                        _rec["seq"]
+                    )
+            for _dev in sorted(set(exit_seqs) & set(term_seqs)):
+                _a = (min(exit_seqs[_dev]), max(exit_seqs[_dev]))
+                _b = (min(term_seqs[_dev]), max(term_seqs[_dev]))
+                if _a[1] >= _b[0]:
+                    self._issue(
+                        "C18", loc,
+                        "DEVICE_EXIT.seq < DEVICE_TERMINAL.seq "
+                        "(exit -> terminal, device %s)" % _dev,
+                        (_a[1], _b[0]),
+                        "DEVICE_EXIT must strictly precede DEVICE_TERMINAL "
+                        "at the same timestamp for the same device",
+                    )
             check_pair("DEVICE_TERMINAL", "TASK_CANCEL", "terminal -> cancel")
             check_pair("TASK_CANCEL", "D_CREATED", "cancel -> D")
             check_pair(EVENT_EQUIPMENT_CALIBRATION_COMPLETE, "D_CREATED",

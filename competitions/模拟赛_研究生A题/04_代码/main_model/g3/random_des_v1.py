@@ -1769,6 +1769,14 @@ class RandomDesEngine:
             queue = self.queues[resource_id]
             if not queue:
                 continue
+            # Frozen C11 FCFS (G3-SPEC-V1.0 section 2): the WAITING candidate
+            # with the minimal frozen key
+            # (release_time, device_id, process_order, effective_attempt_no)
+            # is dispatched first, NOT the enqueue-order head. The release
+            # closure enqueues creations before same-instant retests, whose
+            # key can be smaller (RED_G3_S7 finding A). Keep the queue in key
+            # order so ``_start_task``'s pop(0) removes the selected head.
+            queue.sort(key=lambda entry: entry.fcfs_key)
             head = queue[0]
             if head.status != sm.QueueEntryStatus.WAITING:
                 continue

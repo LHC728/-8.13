@@ -807,6 +807,119 @@ class TestFaultInjection(_Base):
 
 
 # ---------------------------------------------------------------------------
+# RED_G3_S7 finding B: C18 DEVICE_EXIT -> DEVICE_TERMINAL is a per-device
+# ordering at one timestamp
+# ---------------------------------------------------------------------------
+
+
+class TestC18ExitTerminalPerDevice(_Base):
+    """RED_G3_S7 finding B regression: at one timestamp several devices can
+    exit simultaneously and their DEVICE_EXIT / DEVICE_TERMINAL seqs
+    interleave across devices, so a global min/max comparison mis-pairs
+    different devices (S7 rep=9 t=465: dev57 EXIT seq 1394 vs dev56 TERMINAL
+    seq 1393 -> false C18). The check must pair by device_id: the interleaved
+    log passes, while a same-device TERMINAL before EXIT still FAILs."""
+
+    # Frozen S7 E kernel input (Q1-frozen q_E propagation, accepted G2-02 run
+    # 4bb92eda; e_E = P033), restated only for building the test world.
+    S7_Q_E = Fraction("0.062593912407392898")
+
+    def _s7_kernel(self) -> dict[str, dict[str, Fraction]]:
+        kernel: dict[str, dict[str, Fraction]] = {}
+        for proc in ("A", "B", "C"):
+            alpha, beta = rd.frozen_single_test_alpha_beta(
+                DEFECT_Q[proc], FROZEN_E[proc]
+            )
+            kernel[proc] = {"alpha": alpha, "beta": beta}
+        alpha_e, beta_e = rd.frozen_single_test_alpha_beta(
+            self.S7_Q_E, Fraction(2, 100)
+        )
+        kernel["E"] = {"alpha": alpha_e, "beta": beta_e}
+        return kernel
+
+    def _minimal_two_exit_log(self) -> list[dict]:
+        """Two devices exit at the same instant; their EXIT/TERMINAL pairs
+        interleave in seq order (e1 < t1 < e2 < t2) exactly like the engine's
+        ``_apply_exits`` emission for sorted device ids. dev2's EXIT seq is
+        AFTER dev1's TERMINAL seq, which the old global check reported as a
+        C18 violation."""
+        return [
+            {"seq": 1, "event_time": "5", "event_type": "DEVICE_EXIT",
+             "device_id": 1, "process": "B", "effective_attempt_no": 2},
+            {"seq": 2, "event_time": "5", "event_type": "DEVICE_TERMINAL",
+             "device_id": 1, "terminal_state": rck.TERMINAL_EXITED},
+            {"seq": 3, "event_time": "5", "event_type": "DEVICE_EXIT",
+             "device_id": 2, "process": "B", "effective_attempt_no": 2},
+            {"seq": 4, "event_time": "5", "event_type": "DEVICE_TERMINAL",
+             "device_id": 2, "terminal_state": rck.TERMINAL_EXITED},
+            {"seq": 5, "event_time": "5", "event_type": "SIMULATION_END"},
+        ]
+
+    def _c18_only_checker(self, log) -> rck.G3ReplayChecker:
+        cfg = make_config(batch_size=2)
+        checker = rck.G3ReplayChecker(
+            log, cfg.to_dict(), parameters_csv=str(PARAMS_CSV)
+        )
+        self.assertTrue(checker._structural_ok)
+        return checker
+
+    def test_interleaved_multi_device_exit_no_false_positive(self) -> None:
+        checker = self._c18_only_checker(self._minimal_two_exit_log())
+        checker._check_same_timestamp_order()
+        self.assertEqual(
+            checker._issues, [],
+            [i.describe() for i in checker._issues],
+        )
+
+    def test_same_device_terminal_before_exit_still_caught(self) -> None:
+        checker = self._c18_only_checker(self._minimal_two_exit_log())
+        # swap the seqs of device 1's EXIT/TERMINAL: a same-instant
+        # TERMINAL-before-EXIT is a genuine engine defect and must be caught
+        # (the per-device fix must not weaken the real detection).
+        exit_rec = term_rec = None
+        for rec in checker._log:
+            if rec["event_type"] == "DEVICE_EXIT" and rec["device_id"] == 1:
+                exit_rec = rec
+            elif rec["event_type"] == "DEVICE_TERMINAL" and rec["device_id"] == 1:
+                term_rec = rec
+        self.assertIsNotNone(exit_rec)
+        self.assertIsNotNone(term_rec)
+        exit_rec["seq"], term_rec["seq"] = term_rec["seq"], exit_rec["seq"]
+        checker._check_same_timestamp_order()
+        c18 = [i for i in checker._issues if i.check_id == "C18"]
+        self.assertTrue(
+            any("DEVICE_EXIT.seq < DEVICE_TERMINAL.seq" in i.expected
+                for i in c18),
+            [i.describe() for i in checker._issues],
+        )
+
+    def test_real_s7_world_simultaneous_exit_passes(self) -> None:
+        # The exact S7 failing world (master_seed=1, replicate_id=9, NO_PM,
+        # h1_tuning, 100 devices): two devices exit at t=465, which made the
+        # old global EXIT/TERMINAL comparison false-positive with C18. The
+        # per-device check passes the full C17 replay.
+        cfg = make_config(
+            batch_size=100, master_seed=1, replicate_id=9,
+            namespace=ks.NAMESPACE_H1_TUNING, kernel=self._s7_kernel(),
+            scenario="q2_single_shift", shift_length_h="12",
+        )
+        res = run(cfg)
+        by_time: dict[str, int] = {}
+        for rec in records(res.event_log, "DEVICE_EXIT"):
+            by_time[rec["event_time"]] = by_time.get(rec["event_time"], 0) + 1
+        multi = {t: n for t, n in by_time.items() if n >= 2}
+        self.assertTrue(
+            multi,
+            "scenario guard: this fixed S7 world must still contain a "
+            "same-timestamp multi-device exit (found %s)" % by_time,
+        )
+        report = self.check(cfg, event_log=res.event_log, metrics=res.metrics)
+        self.assertEqual(
+            report.verdict, "PASS", [i.describe() for i in report.issues]
+        )
+
+
+# ---------------------------------------------------------------------------
 # 8. Deterministic reproducibility
 # ---------------------------------------------------------------------------
 

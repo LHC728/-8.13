@@ -635,6 +635,64 @@ class TestFcfsOrder(_Base):
         self.assertEqual([s["device_id"] for s in a_starts][:2], [1, 2])
 
 
+class TestFcfsDispatchMinKey(_Base):
+    """RED_G3_S7 finding A regression: ``_equipment_and_dispatch`` must
+    dispatch the WAITING candidate with the minimal frozen FCFS key
+    (release_time, device_id, process_order, effective_attempt_no), NOT the
+    enqueue-order queue head. ``_release_tasks`` enqueues creations before
+    same-instant retests, and a retest key can be smaller than the creation
+    key (S7 rep=4: D95_B retest was jumped by the D96_B first test)."""
+
+    def _dispatch_b(self, creation_device: int, retest_device: int,
+                    release: Fraction) -> list[dict]:
+        """Set up the B-resource queue at ``release`` exactly as
+        ``_release_tasks`` builds it (creations first, then retests) and run
+        one equipment+dispatch closure; return the emitted ACTIVITY_START
+        records (empty if nothing was dispatched)."""
+        cfg = make_config(batch_size=6)
+        eng = rd.RandomDesEngine(cfg)
+        eng.now = release
+        eng.shift_state.active_shift = eng._shift_at(eng.now)
+        for device_id in (creation_device, retest_device):
+            eng.devices[device_id] = sm.DeviceState(
+                device_id=device_id,
+                entry_time=Fraction(0),
+                bay_id=1,
+                process_state={p: sm.ProcessState(process=p) for p in sm.RESOURCES},
+            )
+        eng.resources["B"].status = sm.ResourceStatus.IDLE
+        eng.resources["B"].current_activity = None
+        eng.equipment["B"].available = True
+        eng._release_task(creation_device, "B", 1, release)  # creations first
+        eng._release_task(retest_device, "B", 2, release)    # retests after
+        before = len(eng.log)
+        eng._equipment_and_dispatch()
+        return [
+            r for r in eng.log[before:]
+            if r["event_type"] == sm.EventType.ACTIVITY_START.value
+        ]
+
+    def test_same_release_retest_beats_creation(self) -> None:
+        # retest (d5, B, 2) key (5,5,B,2) < creation (d6, B, 1) key (5,6,B,1)
+        # although the creation is enqueued first: the retest must be
+        # dispatched first (frozen C11 minimal-key selection).
+        starts = self._dispatch_b(creation_device=6, retest_device=5,
+                                  release=Fraction(5))
+        self.assertEqual(len(starts), 1)
+        self.assertEqual(starts[0]["device_id"], 5)
+        self.assertEqual(starts[0]["effective_attempt_no"], 2)
+
+    def test_same_release_creation_beats_retest_when_key_smaller(self) -> None:
+        # creation (d4, B, 1) key (5,4,B,1) < retest (d5, B, 2) key (5,5,B,2):
+        # the creation is dispatched first (min-key selection, no
+        # over-correction toward retests).
+        starts = self._dispatch_b(creation_device=4, retest_device=5,
+                                  release=Fraction(5))
+        self.assertEqual(len(starts), 1)
+        self.assertEqual(starts[0]["device_id"], 4)
+        self.assertEqual(starts[0]["effective_attempt_no"], 1)
+
+
 class TestDeterminism(_Base):
     """Required point 8: same seed+config -> byte/canonical identical log."""
 
