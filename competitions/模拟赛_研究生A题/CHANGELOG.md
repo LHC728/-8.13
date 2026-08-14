@@ -20,6 +20,22 @@
 - 无语义变化（INVALIDATION_REPORT：changed_semantics=NO）；未改 checker/tests/fixtures/schemas/specs/CR-V3.1。
 - G3 / H1 formal / H2 / 100-device / Q2 / Q3 / Q4 = NOT STARTED。
 
+## 2026-08-14 / `STATE-2026-08-13-G2.4` / `WHOLE G2 FINAL PASS`
+
+### 修改
+
+- **Whole G2 = FINAL PASS（Human Gate 2026-08-14 正式接受）**；**U0 = CLOSED、U1 = CLOSED**。
+- **U1（evidence/provenance repair）闭合**：G2-01 clean reissue `run_20260814T130221390333Z_8babb503` accepted；G2-02 provenance-clean reissue（`G2-02-SPEC-V1.0.5`，run `run_20260814T130947069958Z_4bb92eda`）accepted。
+- **U0（qualifying Macro reviewer route）闭合**：reviewer = `G2_WHOLE_MACRO_L3_WORKFLOW_PRO_REVIEWER`；child/session = `8abb6c32-9dc8-444c-ae3e-f8d9f062f7b5`；runtime 由 Harness session JSONL request.config 机械验证 = deepseek-official / **deepseek-v4-pro** / high；overall_decision = **PASS**、confidence = **HIGH**；freshness = VERIFIED、read_only = VERIFIED。先前 Flash reviewer 保留为 **ADVISORY_NONQUALIFYING_MACRO_REVIEW**（未用作 qualifying acceptance）。
+- **G2-03 / G2-04 promotion to accepted**：G2-03（deterministic DES + 独立 CP-SAT + DES/CP-SAT/hand 三方对拍，spec V1.0.2）与 G2-04（独立 replay/checker/evidence，governed run `32913efa`，spec V1.0）均在 Whole G2 Macro L3 + Human Gate 下 PASSED / ACCEPTED。
+- **G2 registry（G2 层 accepted）**：C01-C05、C06（G2 最小层）/G3 full DEFERRED_BY_REGISTRY、C08-C12、C16（G2 键骨架层）/G3 experiment DEFERRED、C17（G2 最小层）/G3 full DEFERRED、C18-C21、C27（document part）——未过度声明 scope，G3-only/full 层全部保留 DEFERRED。
+- **KNOWN_NONBLOCKING_DOCUMENTATION_FOLLOWUPS（3 项，不阻塞、不重开 G2）**：① C20 manifest 措辞略强于独立负面注入证据；② canonical 序列化字节计数呈现有次要文档级差异；③ G2-03 spec 一处 provenance 引用措辞。全部不影响数学/冻结语义/DES/CP-SAT/checker 结果/accepted hashes/Whole G2 PASS；本 state-landing 不授权修复。
+- 本条目为 state-landing only：无数学/代码/证据变更，无 settings 变更，无结果再生成。
+
+### 影响与边界
+
+- AUTOPILOT PILOT #1 = COMPLETED AT MACRO STOP；G3 = NOT STARTED；H1 formal = NOT STARTED；H2 = NOT STARTED；100-device formal = NOT STARTED；Q2/Q3/Q4 formal work = NOT STARTED。下一阶段（G3 等）需新 Human Gate。
+
 ## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-01 CLEAN REISSUE + G2-02 V1.0.5 PROVENANCE REBIND`
 
 ### 修改
