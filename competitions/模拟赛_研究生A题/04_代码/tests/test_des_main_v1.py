@@ -1,11 +1,32 @@
 """Unit tests for the G2-03 deterministic minimal parallel DES (stdlib only).
 
-Covers the 22 frozen items: F1-F12 loadability and semantics, K9 authoritative
-timeline (CR-V3.1/C08), Fraction exactness, no-float canonical time,
-deterministic event order, repeat determinism, explicit MISSING_SCRIPTED_OUTCOME
-failure, FCFS release-time immutability, squad exclusion from the FCFS key,
-no ortools/third-party import in the main DES, and event-log field sufficiency
-for an independent replay (G2-04 seam).
+Rebound to G2-03-SPEC-V1.0.2:
+
+* F3 reworked to a B first-failure construction (T=8 -> T=7): B retest
+  [2,4) genuinely overlaps A/C [0,2.5) on [2,2.5);
+* F4 restored to the t*=7.5 cross-device same-tick PASS (device1 A2 second
+  abnormal vs device2 C2 PASS at the same timestamp: batch settle/observe/
+  classify first, then device1 EXITED; the old unreachable NOTE is deleted);
+* F4b cancellation subcase: device1 B2 second abnormal at 6.0 cancels the
+  running A2/C2 (elapsed 1h each, outcome NONE, DEVICE_EXIT, attempt stays 2);
+* F7/F9/F10 fixed to batch=3/preloaded=[1,2] (SEM-21);
+* F9b SEM-23 concurrent-transport subcase (batch=4): on [6.0,6.5) bay1
+  TRANSPORT_IN and bay2 TRANSPORT_OUT are simultaneous; expected T=15 is
+  confirmed mechanically by the engine run (never hand-patched);
+* D materialization moved to the E2 substep: D_CREATED at the A/B/C all-PASS
+  timestamp, before the same-timestamp E TASK_RELEASE (D_CREATED.seq <
+  TASK_RELEASE.seq); E ACTIVITY_START never creates/changes D; E retests never
+  regenerate D; same-tick second-abnormal exits never get D;
+* SEM-21 initial-state rule: batch_size==1 => preloaded==[1]; batch_size>=2 =>
+  preloaded==[1,2]; anything else raises DesPreloadRuleError.
+
+Covers: F1-F12 loadability and semantics, concrete subcases F4b/F9b, K9
+authoritative timeline (CR-V3.1/C08), Fraction exactness, no-float canonical
+time, deterministic event order, repeat determinism, explicit
+MISSING_SCRIPTED_OUTCOME failure, FCFS release-time immutability, squad
+exclusion from the FCFS key, no ortools/third-party import in the main DES,
+event-log field sufficiency for an independent replay (G2-04 seam), D
+materialization timing, and the SEM-21 initial-state rule.
 
 All expected values are read from the frozen fixture file
 (des_fixtures_F1_F12_v1.json); no formal competition numbers are produced.
@@ -41,6 +62,13 @@ REQUIRED_EVENT_TYPES = {
     "SHIFT_CHANGE", "SIMULATION_END",
 }
 
+# F1..F12 logical families plus the two concrete subcases F4b (F4 family) and
+# F9b (F9 family); the subcases are NOT registered as F13/F14.
+FIXTURES_ORDER = [
+    "F1", "F2", "F3", "F4", "F4b", "F5", "F6", "F7", "F8", "F9", "F9b",
+    "F10", "F11", "F12",
+]
+
 
 def frac(value: str) -> Fraction:
     return Fraction(value)
@@ -50,7 +78,6 @@ class DesMainTestCase(unittest.TestCase):
     """Shared fixture loading and run helpers."""
 
     fixtures: dict[str, dict]
-    fixtures_order: list[str]
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -83,12 +110,24 @@ class DesMainTestCase(unittest.TestCase):
     def assert_metric(self, result: de.DesRunResult, key: str, expected) -> None:
         self.assertEqual(result.metrics[key], expected, f"metrics.{key}")
 
+    def assert_d_created_before_e_release(self, log: list[dict], device_id: int) -> None:
+        """V1.0.2 E2 rule: D_CREATED and E TASK_RELEASE share one timestamp and
+        D_CREATED.seq < TASK_RELEASE(E).seq."""
+        d_recs = self.recs_for(log, "D_CREATED", device_id=device_id)
+        self.assertEqual(len(d_recs), 1, f"device {device_id} D_CREATED")
+        e_rel = self.recs_for(log, "TASK_RELEASE", device_id=device_id,
+                              process="E", effective_attempt_no=1)
+        self.assertEqual(len(e_rel), 1, f"device {device_id} E TASK_RELEASE")
+        self.assertEqual(d_recs[0]["event_time"], e_rel[0]["event_time"],
+                         "D_CREATED and E TASK_RELEASE share one timestamp")
+        self.assertLess(d_recs[0]["seq"], e_rel[0]["seq"],
+                        "D_CREATED.seq < TASK_RELEASE(E).seq")
+
     # ------------------------------------------------------------------
-    # 1. F1-F12 all loadable
+    # 1. All fixtures loadable (F1..F12 + subcases F4b/F9b)
     # ------------------------------------------------------------------
     def test_01_all_fixtures_loadable(self) -> None:
-        self.assertEqual(self.fixtures_order,
-                         ["F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12"])
+        self.assertEqual(self.fixtures_order, FIXTURES_ORDER)
         for fixture_id in self.fixtures_order:
             fixture = self.fixture(fixture_id)
             config = de.DesConfig.from_dict(fixture["config"])
@@ -99,6 +138,10 @@ class DesMainTestCase(unittest.TestCase):
             self.assertIn(fixture_id, scripted.fixture_id or "", fixture_id)
             self.assertTrue(config.batch_size >= 1, fixture_id)
             self.assertFalse(config.random_enabled, fixture_id)
+            # SEM-21: every fixture config obeys the preload rule
+            expected_preload = [1] if config.batch_size == 1 else [1, 2]
+            self.assertEqual(list(config.preloaded_devices), expected_preload,
+                             f"{fixture_id} SEM-21 preload rule")
 
     # ------------------------------------------------------------------
     # 2. F1 true parallelism
@@ -125,6 +168,8 @@ class DesMainTestCase(unittest.TestCase):
         self.assert_metric(result, "PL", 0)
         self.assert_metric(result, "PW", 0)
         self.assertEqual(self.records(result.event_log, "TURNOVER_OUT_START"), [])
+        # D materialized at the A/B/C all-PASS timestamp (2.5), before E release
+        self.assert_d_created_before_e_release(result.event_log, 1)
 
     # ------------------------------------------------------------------
     # 3. F2 capacity + FCFS
@@ -148,63 +193,140 @@ class DesMainTestCase(unittest.TestCase):
         self.assert_metric(result, "S", 2)
 
     # ------------------------------------------------------------------
-    # 4. F3 retest semantics
+    # 4. F3 B first-failure (V1.0.2): retest overlaps A/C on [2,2.5)
     # ------------------------------------------------------------------
-    def test_04_F3_retest(self) -> None:
+    def test_04_F3_retest_b_first_failure(self) -> None:
         result = self.run_fixture("F3")
-        # A first abnormal at 2.5
-        obs_a1 = self.recs_for(result.event_log, "OBSERVATION_MATERIALIZED",
-                               process="A", effective_attempt_no=1)[0]
-        self.assertEqual(obs_a1["event_time"], "5/2")
-        self.assertEqual(obs_a1["outcome"], "ABNORMAL")
-        # A retest released at 2.5 with attempt 2 and release_time 2.5
-        rel = self.recs_for(result.event_log, "TASK_RELEASE", process="A",
-                            effective_attempt_no=2)[0]
-        self.assertEqual(rel["event_time"], "5/2")
-        self.assertEqual(rel["release_time"], "5/2")
-        # A retest PASS at 5.0
-        obs_a2 = self.recs_for(result.event_log, "OBSERVATION_MATERIALIZED",
-                               process="A", effective_attempt_no=2)[0]
-        self.assertEqual(obs_a2["event_time"], "5")
-        self.assertEqual(obs_a2["outcome"], "PASS")
-        # B/C not cancelled; E only after A PASSED
-        self.assertEqual(self.records(result.event_log, "TASK_CANCEL"), [])
-        e_start = self.recs_for(result.event_log, "ACTIVITY_START", process="E")[0]
-        self.assertEqual(e_start["event_time"], "5")
-        self.assert_metric(result, "T", "8")
+        log = result.event_log
+        # B initial ABNORMAL at 2.0
+        b1_obs = self.recs_for(log, "OBSERVATION_MATERIALIZED", process="B",
+                               effective_attempt_no=1)[0]
+        self.assertEqual(b1_obs["event_time"], "2")
+        self.assertEqual(b1_obs["outcome"], "ABNORMAL")
+        # B retest released at 2.0 with attempt 2, release_time 2.0, starts 2.0
+        b2_rel = self.recs_for(log, "TASK_RELEASE", process="B",
+                               effective_attempt_no=2)[0]
+        self.assertEqual(b2_rel["event_time"], "2")
+        self.assertEqual(b2_rel["release_time"], "2")
+        b2_start = self.recs_for(log, "ACTIVITY_START", process="B",
+                                 effective_attempt_no=2)[0]
+        self.assertEqual(b2_start["event_time"], "2")
+        # A/C run 0..2.5 and are NOT cancelled by the B first failure
+        a1_complete = self.recs_for(log, "ACTIVITY_COMPLETE", process="A")[0]
+        self.assertEqual(a1_complete["event_time"], "5/2")
+        self.assertEqual(
+            self.recs_for(log, "OBSERVATION_MATERIALIZED", process="A")[0]["outcome"],
+            "PASS")
+        self.assertEqual(
+            self.recs_for(log, "OBSERVATION_MATERIALIZED", process="C")[0]["outcome"],
+            "PASS")
+        self.assertEqual(self.records(log, "TASK_CANCEL"), [])
+        # genuine overlap [2,2.5): B retest started at 2.0 while A/C were still
+        # running (their ACTIVITY_COMPLETE is at 2.5, after b2_start)
+        self.assertLess(frac(b2_start["event_time"]), frac(a1_complete["event_time"]))
+        # B retest PASS at 4.0; ABC all PASSED at 4.0; E 4.0..7.0; T=7
+        b2_obs = self.recs_for(log, "OBSERVATION_MATERIALIZED", process="B",
+                               effective_attempt_no=2)[0]
+        self.assertEqual((b2_obs["event_time"], b2_obs["outcome"]), ("4", "PASS"))
+        e_start = self.recs_for(log, "ACTIVITY_START", process="E")[0]
+        self.assertEqual(e_start["event_time"], "4")
+        self.assert_d_created_before_e_release(log, 1)
+        self.assert_metric(result, "T", "7")
         self.assert_metric(result, "S", 1)
+        self.assert_metric(result, "PL", 0)
+        self.assert_metric(result, "PW", 0)
 
     # ------------------------------------------------------------------
-    # 5. F4 same-tick settlement before exit
+    # 5. F4 (V1.0.2): cross-device same-tick PASS at t*=7.5, settle first
     # ------------------------------------------------------------------
     def test_05_F4_same_tick_settle_before_exit(self) -> None:
         result = self.run_fixture("F4")
-        # device1 EXITED at 6.0 via B second abnormal
-        terminal = self.recs_for(result.event_log, "DEVICE_TERMINAL", device_id=1)[0]
-        self.assertEqual(terminal["event_time"], "6")
-        self.assertEqual(terminal["terminal_state"], "EXITED")
-        self.assertEqual(terminal["terminal_reason"], "process_second_abnormal")
-        # A/C retests cancelled at 6.0: outcome NONE, elapsed 1h, attempt unchanged
+        log = result.event_log
+        # device1 A1 ABNORMAL 0..2.5; A2 second ABNORMAL 5..7.5
+        a1 = self.recs_for(log, "OBSERVATION_MATERIALIZED", device_id=1,
+                           process="A", effective_attempt_no=1)[0]
+        self.assertEqual((a1["event_time"], a1["outcome"]), ("5/2", "ABNORMAL"))
+        a2 = self.recs_for(log, "OBSERVATION_MATERIALIZED", device_id=1,
+                           process="A", effective_attempt_no=2)[0]
+        self.assertEqual((a2["event_time"], a2["outcome"]), ("15/2", "ABNORMAL"))
+        # device2 C1 ABNORMAL 2.5..5; C2 PASS 5..7.5
+        c1 = self.recs_for(log, "OBSERVATION_MATERIALIZED", device_id=2,
+                           process="C", effective_attempt_no=1)[0]
+        self.assertEqual((c1["event_time"], c1["outcome"]), ("5", "ABNORMAL"))
+        c2 = self.recs_for(log, "OBSERVATION_MATERIALIZED", device_id=2,
+                           process="C", effective_attempt_no=2)[0]
+        self.assertEqual((c2["event_time"], c2["outcome"]), ("15/2", "PASS"))
+        # t*=7.5: both device1 A2 and device2 C2 complete at 15/2
+        d1a2_c = self.recs_for(log, "ACTIVITY_COMPLETE", device_id=1,
+                               process="A", effective_attempt_no=2)[0]
+        d2c2_c = self.recs_for(log, "ACTIVITY_COMPLETE", device_id=2,
+                               process="C", effective_attempt_no=2)[0]
+        self.assertEqual(d1a2_c["event_time"], "15/2")
+        self.assertEqual(d2c2_c["event_time"], "15/2")
+        # device2 C2 observation/classification precedes device1 terminal exit
+        dev_exit = self.recs_for(log, "DEVICE_EXIT", device_id=1)[0]
+        self.assertEqual(dev_exit["event_time"], "15/2")
+        self.assertLess(c2["seq"], dev_exit["seq"])
+        term1 = self.recs_for(log, "DEVICE_TERMINAL", device_id=1)[0]
+        self.assertEqual((term1["event_time"], term1["terminal_state"]),
+                         ("15/2", "EXITED"))
+        # device1 must NOT get a D (same-tick second abnormal exit); device2 does
+        self.assertEqual(self.recs_for(log, "D_CREATED", device_id=1), [])
+        self.assertEqual(result.summary["devices"]["1"]["d_state"], "not_created")
+        self.assert_d_created_before_e_release(log, 2)
+        # device2 E 7.5..10.5; T=10.5; S=1; PW=1
+        e_start = self.recs_for(log, "ACTIVITY_START", device_id=2, process="E")[0]
+        self.assertEqual(e_start["event_time"], "15/2")
+        e_obs = self.recs_for(log, "OBSERVATION_MATERIALIZED", device_id=2,
+                              process="E")[0]
+        self.assertEqual((e_obs["event_time"], e_obs["outcome"]), ("21/2", "PASS"))
+        self.assert_metric(result, "T", "21/2")
+        self.assert_metric(result, "S", 1)
+        self.assert_metric(result, "PL", 0)
+        self.assert_metric(result, "PW", 1)
+
+    # ------------------------------------------------------------------
+    # 5b. F4b cancellation branch
+    # ------------------------------------------------------------------
+    def test_05b_F4b_cancel_branch(self) -> None:
+        result = self.run_fixture("F4b")
+        log = result.event_log
+        # device1 B2 second ABNORMAL at 6.0 -> EXITED
+        b2 = self.recs_for(log, "OBSERVATION_MATERIALIZED", device_id=1,
+                           process="B", effective_attempt_no=2)[0]
+        self.assertEqual((b2["event_time"], b2["outcome"]), ("6", "ABNORMAL"))
+        term1 = self.recs_for(log, "DEVICE_TERMINAL", device_id=1)[0]
+        self.assertEqual((term1["event_time"], term1["terminal_state"]),
+                         ("6", "EXITED"))
+        self.assertEqual(term1["terminal_reason"], "process_second_abnormal")
+        # running A2/C2 cancelled at 6.0: outcome NONE, DEVICE_EXIT, elapsed 1h
         for process in ("A", "C"):
-            cancels = self.recs_for(result.event_log, "TASK_CANCEL",
-                                    device_id=1, process=process,
-                                    effective_attempt_no=2)
+            cancels = self.recs_for(log, "TASK_CANCEL", device_id=1,
+                                    process=process, effective_attempt_no=2)
             self.assertEqual(len(cancels), 1, process)
             self.assertEqual(cancels[0]["event_time"], "6")
             self.assertEqual(cancels[0]["cancel_reason"], "DEVICE_EXIT")
             self.assertEqual(cancels[0]["outcome"], "NONE")
             self.assertEqual(cancels[0]["elapsed_hours"], "1")
+            self.assertEqual(cancels[0]["effective_attempt_no"], 2)
             # no completion / observation for the cancelled fragments
             self.assertEqual(
-                self.recs_for(result.event_log, "ACTIVITY_COMPLETE",
-                              device_id=1, process=process,
-                              effective_attempt_no=2), [],
+                self.recs_for(log, "ACTIVITY_COMPLETE", device_id=1,
+                              process=process, effective_attempt_no=2), [],
                 f"cancelled {process} retest must not complete")
-        # device2 results preserved; E completes PASS at 8.0
-        e_obs = self.recs_for(result.event_log, "OBSERVATION_MATERIALIZED",
-                              device_id=2, process="E")[0]
-        self.assertEqual(e_obs["event_time"], "8")
-        self.assertEqual(e_obs["outcome"], "PASS")
+            self.assertEqual(
+                self.recs_for(log, "OBSERVATION_MATERIALIZED", device_id=1,
+                              process=process, effective_attempt_no=2), [],
+                f"cancelled {process} retest must have no observation")
+        # device1 never gets a D; device2 D at 5.0
+        self.assertEqual(self.recs_for(log, "D_CREATED", device_id=1), [])
+        self.assert_d_created_before_e_release(log, 2)
+        d2 = self.recs_for(log, "D_CREATED", device_id=2)[0]
+        self.assertEqual(d2["event_time"], "5")
+        # device2 E 5..8 PASS; T=8; S=1; PW=1
+        e_obs = self.recs_for(log, "OBSERVATION_MATERIALIZED", device_id=2,
+                              process="E")[0]
+        self.assertEqual((e_obs["event_time"], e_obs["outcome"]), ("8", "PASS"))
         self.assert_metric(result, "T", "8")
         self.assert_metric(result, "S", 1)
         self.assert_metric(result, "PW", 1)
@@ -242,34 +364,66 @@ class DesMainTestCase(unittest.TestCase):
         self.assertEqual(e2_obs["event_time"], "12")
         self.assertEqual(e2_obs["outcome"], "PASS")
         self.assert_metric(result, "T", "12")
+        # D created exactly once at the E release timestamp (5.0, E2 substep);
+        # the E retest never regenerates D
+        d_recs = self.records(result.event_log, "D_CREATED")
+        self.assertEqual(len(d_recs), 1)
+        self.assertEqual(d_recs[0]["event_time"], "5")
+        self.assert_d_created_before_e_release(result.event_log, 1)
 
     # ------------------------------------------------------------------
-    # 8. F7 exactly-at-shift-end allowed
+    # 8. F7 exactly-at-shift-end allowed (batch=3, preloaded [1,2])
     # ------------------------------------------------------------------
     def test_08_F7_exact_shift_end_allowed(self) -> None:
         result = self.run_fixture("F7")
-        # device2 A/C start 6.5, complete exactly 9.0
-        d2a_start = self.recs_for(result.event_log, "ACTIVITY_START",
-                                  device_id=2, process="A")[0]
-        self.assertEqual(d2a_start["event_time"], "13/2")
-        d2a_obs = self.recs_for(result.event_log, "OBSERVATION_MATERIALIZED",
-                                device_id=2, process="A")[0]
-        self.assertEqual(d2a_obs["event_time"], "9")
-        self.assertEqual(d2a_obs["outcome"], "PASS")
-        # settle before shift change (seq ordering)
-        shift = self.records(result.event_log, "SHIFT_CHANGE")[1]  # second shift change (9.0)
-        self.assertEqual(shift["event_time"], "9")
-        self.assertEqual(shift["on_duty_squad"], 2)
-        self.assertLess(d2a_obs["seq"], shift["seq"])
-        # E starts at 9.0 in shift 2
-        d2e_start = self.recs_for(result.event_log, "ACTIVITY_START",
-                                  device_id=2, process="E")[0]
-        self.assertEqual(d2e_start["event_time"], "9")
+        log = result.event_log
+        self.assertEqual(result.config.batch_size, 3)
+        self.assertEqual(result.config.preloaded_devices, (1, 2))
+        # device1 terminal 5.5; bay1 turnover 5.5..6.5 -> device3 entry 6.5
+        out_start = self.recs_for(log, "TURNOVER_OUT_START", bay_id=1)[0]
+        self.assertEqual(out_start["event_time"], "11/2")
+        self.assertEqual(self.recs_for(log, "TURNOVER_OUT_COMPLETE", bay_id=1)[0]["event_time"], "6")
+        self.assertEqual(self.recs_for(log, "TURNOVER_IN_START", bay_id=1)[0]["event_time"], "6")
+        self.assertEqual(self.recs_for(log, "TURNOVER_IN_COMPLETE", bay_id=1)[0]["event_time"], "13/2")
+        d3a_rel = self.recs_for(log, "TASK_RELEASE", device_id=3, process="A")[0]
+        self.assertEqual(d3a_rel["release_time"], "13/2")
+        # device3 A/C start 6.5, complete exactly at 9.0 == shift end (legal)
+        d3a_start = self.recs_for(log, "ACTIVITY_START", device_id=3, process="A")[0]
+        self.assertEqual(d3a_start["event_time"], "13/2")
+        for proc in ("A", "C"):
+            obs = self.recs_for(log, "OBSERVATION_MATERIALIZED", device_id=3,
+                                process=proc, effective_attempt_no=1)[0]
+            self.assertEqual(obs["event_time"], "9")
+            self.assertEqual(obs["outcome"], "PASS")
+        # settle before shift change: obs seq < SHIFT_CHANGE seq at 9.0
+        shift_at_9 = [r for r in self.records(log, "SHIFT_CHANGE")
+                      if r["event_time"] == "9"]
+        self.assertEqual(len(shift_at_9), 1)
+        self.assertEqual(shift_at_9[0]["on_duty_squad"], 2)
+        for proc in ("A", "C"):
+            obs = self.recs_for(log, "OBSERVATION_MATERIALIZED", device_id=3,
+                                process=proc, effective_attempt_no=1)[0]
+            self.assertLess(obs["seq"], shift_at_9[0]["seq"])
+        # E2 order at 9.0: D_CREATED -> SHIFT_CHANGE -> E TASK_RELEASE -> E start
+        d3 = self.recs_for(log, "D_CREATED", device_id=3)[0]
+        self.assertEqual(d3["event_time"], "9")
+        self.assertLess(d3["seq"], shift_at_9[0]["seq"])
+        e_rel = self.recs_for(log, "TASK_RELEASE", device_id=3, process="E")[0]
+        self.assertEqual(e_rel["event_time"], "9")
+        self.assertLess(shift_at_9[0]["seq"], e_rel["seq"])
+        d3e_start = self.recs_for(log, "ACTIVITY_START", device_id=3, process="E")[0]
+        self.assertEqual(d3e_start["event_time"], "9")
+        self.assertEqual(d3e_start["squad_id"], 2)
+        d3e_obs = self.recs_for(log, "OBSERVATION_MATERIALIZED", device_id=3,
+                                process="E")[0]
+        self.assertEqual((d3e_obs["event_time"], d3e_obs["outcome"]), ("12", "PASS"))
         self.assert_metric(result, "T", "12")
-        self.assert_metric(result, "S", 2)
+        self.assert_metric(result, "S", 3)
+        self.assert_metric(result, "PL", 0)
+        self.assert_metric(result, "PW", 0)
 
     # ------------------------------------------------------------------
-    # 9. F8 K9 authoritative timeline
+    # 9. F8 K9 authoritative timeline (+ V1.0.2 D_CREATED re-assertion)
     # ------------------------------------------------------------------
     def test_09_F8_K9_authoritative_timeline(self) -> None:
         # The authoritative hand-timeline file must exist and be referenced.
@@ -357,6 +511,17 @@ class DesMainTestCase(unittest.TestCase):
                                 process=proc, effective_attempt_no=1)[0]
             self.assertLess(obs["seq"], shift_at_9[0]["seq"])
 
+        # V1.0.2 E2 D materialization timing (allowed to differ from the old
+        # implementation): D_CREATED at the A/B/C all-PASS timestamp, same
+        # timestamp as the E TASK_RELEASE, D_CREATED.seq < TASK_RELEASE.seq.
+        # device1 2.5; device2 5.0 (was E start 5.5 in the V1.0.1 impl);
+        # device3 11.0.
+        self.assert_d_created_before_e_release(log, 1)
+        self.assert_d_created_before_e_release(log, 2)
+        self.assert_d_created_before_e_release(log, 3)
+        self.assertEqual(self.recs_for(log, "D_CREATED", device_id=2)[0]["event_time"], "5")
+        self.assertEqual(self.recs_for(log, "D_CREATED", device_id=3)[0]["event_time"], "11")
+
         # E 11..14, terminal 14, SIMULATION_END 14
         self.assertEqual(
             self.recs_for(log, "ACTIVITY_START", device_id=3, process="E")[0]["event_time"], "11")
@@ -374,11 +539,13 @@ class DesMainTestCase(unittest.TestCase):
                          "TERMINAL_OCCUPIED_UNTIL_STOP")
 
     # ------------------------------------------------------------------
-    # 10. F9 1h literal turnover
+    # 10. F9 1h literal turnover (batch=3, preloaded [1,2])
     # ------------------------------------------------------------------
     def test_10_F9_turnover_1h(self) -> None:
         result = self.run_fixture("F9")
         log = result.event_log
+        self.assertEqual(result.config.batch_size, 3)
+        self.assertEqual(result.config.preloaded_devices, (1, 2))
         self.assertEqual(self.recs_for(log, "TURNOVER_OUT_START", bay_id=1)[0]["event_time"], "11/2")
         self.assertEqual(self.recs_for(log, "TURNOVER_OUT_COMPLETE", bay_id=1)[0]["event_time"], "6")
         self.assertEqual(self.recs_for(log, "TURNOVER_IN_START", bay_id=1)[0]["event_time"], "6")
@@ -387,27 +554,95 @@ class DesMainTestCase(unittest.TestCase):
         for r in self.records(log, "ACTIVITY_START"):
             if r["bay_id"] == 1 and "11/2" < r["event_time"] < "13/2":
                 self.fail(f"test started on bay 1 during turnover: {r}")
-        # device2 enters at 6.5
+        # device3 enters at 6.5
         self.assertEqual(
-            self.recs_for(log, "TASK_RELEASE", device_id=2, process="A")[0]["release_time"], "13/2")
+            self.recs_for(log, "TASK_RELEASE", device_id=3, process="A")[0]["release_time"], "13/2")
+        # device3 E 9..12; T=12; S=3
+        d3e_start = self.recs_for(log, "ACTIVITY_START", device_id=3, process="E")[0]
+        self.assertEqual(d3e_start["event_time"], "9")
+        d3e_obs = self.recs_for(log, "OBSERVATION_MATERIALIZED", device_id=3,
+                                process="E")[0]
+        self.assertEqual((d3e_obs["event_time"], d3e_obs["outcome"]), ("12", "PASS"))
         self.assert_metric(result, "T", "12")
-        self.assert_metric(result, "S", 2)
+        self.assert_metric(result, "S", 3)
 
     # ------------------------------------------------------------------
-    # 11. F10 0.5h overlap turnover (isolated profile)
+    # 10b. F9b SEM-23 concurrent transport (batch=4)
+    # ------------------------------------------------------------------
+    def test_10b_F9b_concurrent_transport(self) -> None:
+        result = self.run_fixture("F9b")
+        log = result.event_log
+        self.assertEqual(result.config.batch_size, 4)
+        self.assertEqual(result.config.preloaded_devices, (1, 2))
+        # device1 terminal 5.5 -> bay1 OUT 5.5..6.0, IN 6.0..6.5
+        self.assertEqual(self.recs_for(log, "TURNOVER_OUT_START", bay_id=1)[0]["event_time"], "11/2")
+        self.assertEqual(self.recs_for(log, "TURNOVER_OUT_COMPLETE", bay_id=1)[0]["event_time"], "6")
+        bay1_in_start = self.recs_for(log, "TURNOVER_IN_START", bay_id=1)[0]
+        bay1_in_end = self.recs_for(log, "TURNOVER_IN_COMPLETE", bay_id=1)[0]
+        self.assertEqual(bay1_in_start["event_time"], "6")
+        self.assertEqual(bay1_in_end["event_time"], "13/2")
+        # device2 B2 second ABNORMAL at 6.0 -> EXIT -> bay2 OUT 6.0..6.5
+        b2 = self.recs_for(log, "OBSERVATION_MATERIALIZED", device_id=2,
+                           process="B", effective_attempt_no=2)[0]
+        self.assertEqual((b2["event_time"], b2["outcome"]), ("6", "ABNORMAL"))
+        term2 = self.recs_for(log, "DEVICE_TERMINAL", device_id=2)[0]
+        self.assertEqual((term2["event_time"], term2["terminal_state"]), ("6", "EXITED"))
+        bay2_out_start = self.recs_for(log, "TURNOVER_OUT_START", bay_id=2)[0]
+        bay2_out_end = self.recs_for(log, "TURNOVER_OUT_COMPLETE", bay_id=2)[0]
+        self.assertEqual(bay2_out_start["event_time"], "6")
+        self.assertEqual(bay2_out_end["event_time"], "13/2")
+        # SEM-23: [6.0,6.5) bay1 TRANSPORT_IN and bay2 TRANSPORT_OUT are
+        # simultaneous (both intervals [6,6.5); no global transport capacity)
+        self.assertEqual(bay1_in_start["event_time"], bay2_out_start["event_time"])
+        self.assertEqual(bay1_in_end["event_time"], bay2_out_end["event_time"])
+        self.assertEqual(
+            frac(bay1_in_start["event_time"]), frac("6"))
+        self.assertEqual(
+            frac(bay1_in_end["event_time"]), frac("13/2"))
+        self.assertLess(frac(bay1_in_start["event_time"]), frac(bay1_in_end["event_time"]))
+        # device2 never gets a D (second abnormal exit; no E)
+        self.assertEqual(self.recs_for(log, "D_CREATED", device_id=2), [])
+        # device3 entry 6.5 (bay1); device4 entry 7.0 (bay2 IN 6.5..7.0)
+        self.assertEqual(
+            self.recs_for(log, "TASK_RELEASE", device_id=3, process="A")[0]["release_time"], "13/2")
+        self.assertEqual(
+            self.recs_for(log, "TASK_RELEASE", device_id=4, process="A")[0]["release_time"], "7")
+        # expected T=15, mechanically confirmed by the engine run (not hand-patched)
+        d4e_start = self.recs_for(log, "ACTIVITY_START", device_id=4, process="E")[0]
+        self.assertEqual(d4e_start["event_time"], "12")
+        d4e_obs = self.recs_for(log, "OBSERVATION_MATERIALIZED", device_id=4,
+                                process="E")[0]
+        self.assertEqual((d4e_obs["event_time"], d4e_obs["outcome"]), ("15", "PASS"))
+        self.assert_metric(result, "T", "15")
+        self.assert_metric(result, "S", 3)
+        self.assert_metric(result, "PL", 0)
+        self.assert_metric(result, "PW", 1)
+
+    # ------------------------------------------------------------------
+    # 11. F10 0.5h overlap turnover (isolated profile, batch=3)
     # ------------------------------------------------------------------
     def test_11_F10_turnover_overlap(self) -> None:
         result = self.run_fixture("F10")
         log = result.event_log
         self.assertEqual(result.config.turnover_profile, "0.5h_overlap")
+        self.assertEqual(result.config.batch_size, 3)
+        self.assertEqual(result.config.preloaded_devices, (1, 2))
         self.assertEqual(self.recs_for(log, "TURNOVER_OUT_START", bay_id=1)[0]["event_time"], "11/2")
         for event_type in ("TURNOVER_OUT_COMPLETE", "TURNOVER_IN_START", "TURNOVER_IN_COMPLETE"):
             self.assertEqual(self.recs_for(log, event_type, bay_id=1)[0]["event_time"], "6")
-        # device2 enters at 6.0
+        # device3 enters at 6.0; A/C 6.0..8.5 (B 6.0..8.0), E 8.5..11.5
         self.assertEqual(
-            self.recs_for(log, "TASK_RELEASE", device_id=2, process="A")[0]["release_time"], "6")
+            self.recs_for(log, "TASK_RELEASE", device_id=3, process="A")[0]["release_time"], "6")
+        d3a_obs = self.recs_for(log, "OBSERVATION_MATERIALIZED", device_id=3,
+                                process="A")[0]
+        self.assertEqual(d3a_obs["event_time"], "17/2")
+        d3e_rel = self.recs_for(log, "TASK_RELEASE", device_id=3, process="E")[0]
+        self.assertEqual(d3e_rel["event_time"], "17/2")
+        d3e_obs = self.recs_for(log, "OBSERVATION_MATERIALIZED", device_id=3,
+                                process="E")[0]
+        self.assertEqual((d3e_obs["event_time"], d3e_obs["outcome"]), ("23/2", "PASS"))
         self.assert_metric(result, "T", "23/2")
-        self.assert_metric(result, "S", 2)
+        self.assert_metric(result, "S", 3)
         # profile isolation vs F9 (manifest separation)
         self.assertEqual(self.run_fixture("F9").config.turnover_profile, "1h_literal")
 
@@ -726,6 +961,104 @@ class DesMainTestCase(unittest.TestCase):
             self.assertEqual(intervals[-1][1], frac(result.metrics["T"]), f"bay {bay_id}")
             for i in range(len(intervals) - 1):
                 self.assertEqual(intervals[i][1], intervals[i + 1][0], f"bay {bay_id}")
+
+    # ------------------------------------------------------------------
+    # 23. D materialization timing: E queue-wait (F2)
+    # ------------------------------------------------------------------
+    def test_23_D_materialization_timing_e_queue_wait(self) -> None:
+        # F2 realizes the required E queue-wait construction: device2's A/B/C
+        # flow first becomes fully PASSED at t1=5.0 while the E resource is
+        # busy with device1 E (2.5..5.5), so device2 E ACTIVITY_START = t2=5.5
+        # > t1. V1.0.2: D_CREATED at t1 (with the E TASK_RELEASE), NOT at t2.
+        result = self.run_fixture("F2")
+        log = result.event_log
+        d2 = self.recs_for(log, "D_CREATED", device_id=2)
+        self.assertEqual(len(d2), 1)
+        self.assertEqual(d2[0]["event_time"], "5")       # t1 = 5.0
+        self.assertEqual(d2[0]["d_state"], "normal")
+        e_rel = self.recs_for(log, "TASK_RELEASE", device_id=2, process="E")[0]
+        self.assertEqual(e_rel["event_time"], "5")       # same timestamp as D
+        self.assertLess(d2[0]["seq"], e_rel["seq"])      # D_CREATED.seq < TASK_RELEASE.seq
+        e_start = self.recs_for(log, "ACTIVITY_START", device_id=2, process="E")[0]
+        self.assertEqual(e_start["event_time"], "11/2")  # t2 = 5.5 > t1
+        # during [5.0, 5.5) D is already CREATED (never not_created at the
+        # E start; no D-related state change appears between the two events)
+        self.assertLess(frac(d2[0]["event_time"]), frac(e_start["event_time"]))
+        self.assertEqual(result.summary["devices"]["2"]["d_state"], "normal")
+        # exactly one D_CREATED per device; E retest regeneration is covered by
+        # F6 (device1 E retest at 9.0 does not add a D_CREATED)
+        self.assertEqual(len(self.records(log, "D_CREATED")), 2)
+
+    # ------------------------------------------------------------------
+    # 24. Same-tick second abnormal exit must not generate D
+    # ------------------------------------------------------------------
+    def test_24_same_tick_exit_no_d(self) -> None:
+        # F4: at t*=7.5 device1 A2 (second abnormal -> EXIT) and device2 C2
+        # (PASS) complete strictly simultaneously; device1 must NOT get a D
+        # even though its B1/C1 are already PASSED (E2 skips EXITED devices).
+        result = self.run_fixture("F4")
+        log = result.event_log
+        self.assertEqual(self.recs_for(log, "D_CREATED", device_id=1), [])
+        self.assertEqual(len(self.records(log, "D_CREATED")), 1)
+        self.assertEqual(self.recs_for(log, "D_CREATED", device_id=2)[0]["event_time"], "15/2")
+        self.assertEqual(result.summary["devices"]["1"]["d_state"], "not_created")
+        # F4b: same rule via the B2 second abnormal at 6.0 (device1 never
+        # becomes E-eligible; A2/C2 cancelled, D stays not_created)
+        result_b = self.run_fixture("F4b")
+        self.assertEqual(self.recs_for(result_b.event_log, "D_CREATED", device_id=1), [])
+        self.assertEqual(result_b.summary["devices"]["1"]["d_state"], "not_created")
+        # F5: early exit before E-eligibility keeps d_state=not_created
+        result_c = self.run_fixture("F5")
+        self.assertEqual(self.records(result_c.event_log, "D_CREATED"), [])
+        self.assertEqual(result_c.summary["devices"]["1"]["d_state"], "not_created")
+
+    # ------------------------------------------------------------------
+    # 25. SEM-21 initial-state rule (batch/preload matrix)
+    # ------------------------------------------------------------------
+    def test_25_initial_state_rule_sem21(self) -> None:
+        base_config = self.fixture("F1")["config"]
+
+        def build_config(batch_size: int, preloaded: list[int]) -> dict:
+            config = dict(base_config)
+            config["batch_size"] = batch_size
+            initial = dict(base_config["deterministic_initial_state"])
+            initial["preloaded_devices"] = list(preloaded)
+            config["deterministic_initial_state"] = initial
+            return config
+
+        # valid: batch_size==1 => [1]; batch_size>=2 => [1,2]
+        for batch_size, preloaded in [(1, [1]), (2, [1, 2]), (3, [1, 2])]:
+            config = de.DesConfig.from_dict(build_config(batch_size, preloaded))
+            self.assertEqual(config.batch_size, batch_size)
+            self.assertEqual(config.preloaded_devices, tuple(preloaded))
+        # invalid: SEM-21 rule violations are an explicit FAIL
+        # (DesPreloadRuleError, a DesConfigError subclass)
+        invalid = [
+            (1, [1, 2]),
+            (1, [1, 1]),
+            (1, [2]),
+            (2, [1]),
+            (2, [1, 1]),
+            (2, [2, 1]),
+            (2, [1, 2, 3]),
+            (3, [1]),
+            (3, [1, 2, 3]),
+            (3, [1, 1]),
+            (4, [1]),
+            (4, [1, 2, 3]),
+        ]
+        for batch_size, preloaded in invalid:
+            with self.assertRaises(de.DesPreloadRuleError,
+                                   msg=f"batch={batch_size} preloaded={preloaded}"):
+                de.DesConfig.from_dict(build_config(batch_size, preloaded))
+        # structurally invalid preloads (empty list / non-positive ids) fail
+        # as DesConfigError before the SEM-21 rule applies
+        with self.assertRaises(de.DesConfigError):
+            de.DesConfig.from_dict(build_config(2, []))
+        with self.assertRaises(de.DesConfigError):
+            de.DesConfig.from_dict(build_config(1, [0]))
+        # DesPreloadRuleError is a DesConfigError (config-level failure)
+        self.assertTrue(issubclass(de.DesPreloadRuleError, de.DesConfigError))
 
 
 if __name__ == "__main__":

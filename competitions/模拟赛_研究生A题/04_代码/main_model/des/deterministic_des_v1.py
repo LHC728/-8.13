@@ -1,15 +1,16 @@
 """G2-03 deterministic minimal parallel DES engine (Python standard library only).
 
-Implements the frozen G2-03-SPEC-V1.0.1 semantics:
+Implements the frozen G2-03-SPEC-V1.0.2 semantics:
 
 * frozen_event_engine_semantics SEM-01..SEM-24 (see module docstrings of each
   method and the completion report);
-* same_timestamp_event_order A..I: settle_completed_activities ->
-  materialize_observations -> classify_outcomes -> apply_device_exit ->
-  cancel_unfinished -> release_tasks -> recompute_legal_candidates ->
-  dispatch_by_fcfs -> liveness_closure (with the shift change inserted after
-  cancel_unfinished and before release_tasks, per the frozen "settle
-  completions first, then shift change" rule of the K9 hand timeline);
+* same_timestamp_event_order A..I (V1.0.2 executable refinement):
+  A settle_completed_activities -> B materialize_test_observations ->
+  C classify_outcomes -> D apply_device_exit -> E cancel_unfinished ->
+  E2 materialize_D_for_newly_E_eligible_devices -> SHIFT_CHANGE -> F
+  release_tasks -> G recompute_legal_candidates -> H dispatch_by_fcfs ->
+  I liveness_closure (completion always settles before the shift change;
+  D_CREATED is emitted before the same-timestamp E TASK_RELEASE);
 * explicit state objects from ``state_models_v1`` (never hidden in locals);
 * FCFS key (release_time, device_id, process_order, effective_attempt_no) with
   squad_id/execution_no/restart_no excluded; release_time frozen at creation;
@@ -18,9 +19,15 @@ Implements the frozen G2-03-SPEC-V1.0.1 semantics:
 * scripted outcomes: every completed effective test MUST have a scripted
   (device, process, effective_attempt_no) outcome, otherwise an explicit
   MissingScriptedOutcome failure is raised; there is no default PASS/NORMAL;
-* D generation: exactly once, at the first E ACTIVITY_START (physical
-  connection) of a device; early-exit devices keep d_state=not_created and E
-  retests never regenerate D;
+* D generation (V1.0.2): materialized exactly once, in the E2 substep, at the
+  same timestamp where the device's A/B/C flow first becomes fully PASSED (=
+  its E logical release timestamp), BEFORE the E TASK_RELEASE is emitted and
+  never at/from the E ACTIVITY_START; E retests never regenerate D; early-exit
+  devices keep d_state=not_created; devices marked device_exit in the same
+  closure never get D;
+* SEM-21 initial-state rule: batch_size==1 => preloaded_devices == [1];
+  batch_size>=2 => preloaded_devices == [1,2]; anything else raises
+  DesPreloadRuleError (explicit FAIL, no EMPTY-bay bypass for batch>=2);
 * event_log: append-only, deterministic (seq strictly increasing), every time
   serialized as an exact fraction/integer string, sufficient for the future
   G2-04 checker to recompute bay/resource occupancy, release/start/end,
@@ -57,6 +64,17 @@ class DesError(Exception):
 
 class DesConfigError(DesError):
     """Invalid input configuration."""
+
+
+class DesPreloadRuleError(DesConfigError):
+    """SEM-21 (G2-03-SPEC-V1.0.2) initial-state rule violation.
+
+    batch_size==1 requires deterministic_initial_state.preloaded_devices == [1]
+    and batch_size>=2 requires exactly [1,2]. Any other preload (including a
+    prefix like [1] for batch>=2, which would leave a bay EMPTY and bypass the
+    frozen "first two devices already in the hall" initial state) is an
+    explicit FAIL.
+    """
 
 
 class DesFixtureError(DesError):
@@ -161,12 +179,21 @@ class DesConfig:
         preloaded = initial.get("preloaded_devices")
         if not isinstance(preloaded, list) or not preloaded:
             raise DesConfigError("deterministic_initial_state.preloaded_devices must be a non-empty list")
-        if len(preloaded) > 2:
-            raise DesConfigError("preloaded_devices may contain at most two devices (two bays)")
-        if preloaded != sorted(preloaded) or preloaded[0] != 1:
-            raise DesConfigError("preloaded_devices must be a prefix [1] or [1, 2]")
-        if preloaded[-1] > batch_size:
-            raise DesConfigError("preloaded_devices exceed batch_size")
+        if any(not isinstance(p, int) or p < 1 for p in preloaded):
+            raise DesConfigError("preloaded_devices must contain positive integers")
+        # SEM-21 (G2-03-SPEC-V1.0.2, Human Gate final ruling): the t=0 initial
+        # state is frozen to exactly [1] for batch_size==1 (bay2=EMPTY legal)
+        # and exactly [1,2] for batch_size>=2 (bay1=device1, bay2=device2).
+        # Anything else — including the V1.0.1-era prefix [1] for batch>=2 —
+        # is an explicit FAIL; batch>=2 must never bypass the first-two
+        # preloaded devices through an EMPTY bay.
+        expected_preload = [1] if batch_size == 1 else [1, 2]
+        if preloaded != expected_preload:
+            raise DesPreloadRuleError(
+                f"SEM-21 initial-state rule: batch_size=={batch_size} requires "
+                f"deterministic_initial_state.preloaded_devices == "
+                f"{expected_preload!r}, got {preloaded!r}"
+            )
 
         return cls(
             scenario_id=scenario_id,
@@ -298,7 +325,7 @@ class DesRunResult:
 def make_fcfs_key(release_time: Fraction, device_id: int, process: str,
                   attempt_no: int) -> tuple:
     """Frozen canonical FCFS key: (release_time, device_id, process_order,
-    effective_attempt_no) with dictionary order (G2-03-SPEC-V1.0.1 section 7).
+    effective_attempt_no) with dictionary order (G2-03-SPEC-V1.0.2 section 7).
 
     squad_id / execution_no / restart_no are deliberately not parameters and
     never enter the key (SEM-17, CR-V3.1/C11)."""
@@ -531,7 +558,7 @@ class DeterministicDesEngine:
             return False
         return True
 
-    # -- same-timestamp closure (frozen order A..I) -------------------------
+    # -- same-timestamp closure (frozen order A..I; V1.0.2 E2 refinement) -----
 
     def _closure(self, t: Fraction) -> None:
         self.now = t
@@ -752,7 +779,48 @@ class DeterministicDesEngine:
                         elapsed_hours=Fraction(0),
                     )
 
-        # --- shift change (settle first, then shift; K9 rule) ----------------
+        # --- E2. materialize_D_for_newly_E_eligible_devices (V1.0.2) ---------
+        # D is generated exactly once, at the timestamp where the A/B/C flow
+        # first becomes fully PASSED (== the E logical release timestamp),
+        # BEFORE the E TASK_RELEASE (step F) so that
+        # D_CREATED.seq < TASK_RELEASE(E).seq at the same timestamp.
+        # E ACTIVITY_START must never create/change D; E retests never
+        # regenerate D; devices marked device_exit in this same closure
+        # (terminal_state != PENDING) never get D; early-exit devices keep
+        # d_state=not_created.
+        for device_id in sorted(self.devices):
+            device = self.devices[device_id]
+            if device.terminal_state != sm.TerminalState.PENDING:
+                continue  # includes same-timestamp second-abnormal exits
+            if device.d_state != sm.DState.NOT_CREATED:
+                continue  # already materialized (E retest / later closures)
+            if not all(
+                device.process_state[p].process_status == sm.ProcessStatus.PASSED
+                for p in ("A", "B", "C")
+            ):
+                continue  # not yet E-eligible
+            e_task_id = self._task_id(device_id, "E", 1)
+            if e_task_id in self.tasks:
+                continue  # E initial task already produced (defensive)
+            d_script = self.scripted.d_script(device_id)
+            if d_script == "not_created":
+                raise DesFixtureError(
+                    f"device {device_id} becomes E-eligible but scripted D is "
+                    "'not_created' (fixture inconsistency)"
+                )
+            device.d_state = sm.DState(d_script)
+            squad = None
+            if self.shift_state.active_shift is not None:
+                squad = self.shift_state.active_shift.on_duty_squad
+            self._emit(
+                sm.EventType.D_CREATED,
+                device_id=device_id,
+                d_state=device.d_state.value,
+                bay_id=device.bay_id,
+                squad_id=squad,
+            )
+
+        # --- SHIFT_CHANGE (settle first, then shift; K9 rule) ----------------
         new_shift = self._shift_at(t)
         if new_shift != self.shift_state.active_shift:
             self.shift_state.active_shift = new_shift
@@ -859,23 +927,9 @@ class DeterministicDesEngine:
 
         starts.sort(key=lambda item: item[0])
         for _key, payload, attempt in starts:
-            device = self.devices[attempt.device_id]
-            if attempt.process == "E" and attempt.effective_attempt_no == 1:
-                if device.d_state == sm.DState.NOT_CREATED:
-                    d_script = self.scripted.d_script(attempt.device_id)
-                    if d_script == "not_created":
-                        raise DesFixtureError(
-                            f"device {attempt.device_id} reaches E but scripted D is "
-                            "'not_created' (fixture inconsistency)"
-                        )
-                    device.d_state = sm.DState(d_script)
-                    self._emit(
-                        sm.EventType.D_CREATED,
-                        device_id=attempt.device_id,
-                        d_state=device.d_state.value,
-                        bay_id=device.bay_id,
-                        squad_id=attempt.result_squad_id,
-                    )
+            # V1.0.2: the E ACTIVITY_START must never create or change D.
+            # D is materialized earlier in this closure (E2 substep), at the
+            # A/B/C all-PASS timestamp, before the E TASK_RELEASE.
             self._emit(sm.EventType.ACTIVITY_START, **payload)
 
     # -- dispatch helpers ---------------------------------------------------

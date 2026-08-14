@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "des_config_v1.schema.json",
   "title": "G2-03 deterministic minimal parallel DES - input config",
-  "description": "Shared read-only input schema for the deterministic minimal parallel DES (G2-03-SPEC-V1.0.1 schemas_and_manifest_draft.input_config_schema). All rational quantities are strings (decimal or fraction form) to forbid binary-float preprocessing; random_enabled is frozen to false (no RNG in G2-03). Structural constraints only; positivity of durations/transport is enforced by the engine and marked SCHEMA_CONSTRAINT_DEFERRED where not mechanically expressed here.",
+  "description": "Shared read-only input schema for the deterministic minimal parallel DES (G2-03-SPEC-V1.0.2 schemas_and_manifest_draft.input_config_schema). All rational quantities are strings (decimal or fraction form) to forbid binary-float preprocessing; random_enabled is frozen to false (no RNG in G2-03). SEM-21 (V1.0.2) initial-state rule: batch_size==1 requires preloaded_devices == [1]; batch_size>=2 requires preloaded_devices == [1,2]; anything else fails schema validation (engine additionally raises DesPreloadRuleError). Structural constraints only; positivity of durations/transport is enforced by the engine and marked SCHEMA_CONSTRAINT_DEFERRED where not mechanically expressed here.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -19,6 +19,32 @@
     "deterministic_initial_state",
     "random_enabled",
     "key_schema_version"
+  ],
+  "allOf": [
+    {
+      "if": { "properties": { "batch_size": { "const": 1 } } },
+      "then": {
+        "properties": {
+          "deterministic_initial_state": {
+            "properties": {
+              "preloaded_devices": { "const": [1] }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "batch_size": { "minimum": 2 } } },
+      "then": {
+        "properties": {
+          "deterministic_initial_state": {
+            "properties": {
+              "preloaded_devices": { "const": [1, 2] }
+            }
+          }
+        }
+      }
+    }
   ],
   "properties": {
     "schema_version": { "const": "des_config_v1" },
