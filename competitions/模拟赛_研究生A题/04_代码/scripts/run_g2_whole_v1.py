@@ -112,7 +112,7 @@ def run_crosscheck_fixture(fixture: dict, des_result):
 def write_json(path: Path, obj: dict | list) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(obj, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-                    encoding="utf-8")
+                    encoding="utf-8", newline="\n")
 
 
 def write_file_hashes(run_dir: Path) -> None:
@@ -123,7 +123,8 @@ def write_file_hashes(run_dir: Path) -> None:
         if p.is_file() and p.name != "file_hashes.sha256":
             rel = p.relative_to(run_dir).as_posix()
             lines.append(f"{sha256_file(p)}  {rel}")
-    (run_dir / "file_hashes.sha256").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    (run_dir / "file_hashes.sha256").write_text("\n".join(lines) + "\n",
+                                                encoding="utf-8", newline="\n")
 
 
 def main() -> int:

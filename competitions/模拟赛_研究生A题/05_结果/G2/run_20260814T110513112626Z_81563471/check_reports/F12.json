@@ -1,0 +1,162 @@
+{
+  "envelope_type": "des_check_report",
+  "fixture_id": "F12",
+  "issues": [],
+  "metadata": {
+    "batch_size": 1,
+    "check_ids": [
+      "C08",
+      "C09",
+      "C10",
+      "C11",
+      "C12",
+      "C17",
+      "C18",
+      "C19",
+      "C20",
+      "C21"
+    ],
+    "event_log_records": 20,
+    "registry_version": "CR-V3.1",
+    "scenario": "isolated_small_case",
+    "task_package_ref": "G2-03-SPEC-V1.0.2",
+    "turnover_profile": "1h_literal"
+  },
+  "recomputed": {
+    "PL": 0,
+    "PW": 0,
+    "S": 1,
+    "T_h": "11/2",
+    "T_ticks": 33,
+    "YXB_A": "1/400000",
+    "YXB_B": "1/500000",
+    "YXB_C": "1/400000",
+    "YXB_E": "3/1000000",
+    "bay_coverage": {
+      "1": {
+        "gapless": true,
+        "intervals": [
+          [
+            "0",
+            "11/2"
+          ]
+        ]
+      }
+    },
+    "devices": {
+      "1": {
+        "bay_id": 1,
+        "d_state": "normal",
+        "terminal_h": "11/2",
+        "terminal_state": "PASSED"
+      }
+    },
+    "elapsed_by_process": {
+      "A": "5/2",
+      "B": "2",
+      "C": "5/2",
+      "E": "3"
+    },
+    "fcfs_keys": {
+      "D001_A_1": [
+        "0",
+        1,
+        0,
+        1
+      ],
+      "D001_B_1": [
+        "0",
+        1,
+        1,
+        1
+      ],
+      "D001_C_1": [
+        "0",
+        1,
+        2,
+        1
+      ],
+      "D001_E_1": [
+        "5/2",
+        1,
+        3,
+        1
+      ]
+    },
+    "resource_busy": {
+      "A": {
+        "intervals": [
+          [
+            "0",
+            "5/2"
+          ]
+        ],
+        "total_h": "5/2"
+      },
+      "B": {
+        "intervals": [
+          [
+            "0",
+            "2"
+          ]
+        ],
+        "total_h": "2"
+      },
+      "C": {
+        "intervals": [
+          [
+            "0",
+            "5/2"
+          ]
+        ],
+        "total_h": "5/2"
+      },
+      "E": {
+        "intervals": [
+          [
+            "5/2",
+            "11/2"
+          ]
+        ],
+        "total_h": "3"
+      }
+    },
+    "shift_count": 1,
+    "tasks": {
+      "D001_A_1": {
+        "finish_h": "5/2",
+        "outcome": "PASS",
+        "release_h": "0",
+        "start_h": "0",
+        "status": "COMPLETED"
+      },
+      "D001_B_1": {
+        "finish_h": "2",
+        "outcome": "PASS",
+        "release_h": "0",
+        "start_h": "0",
+        "status": "COMPLETED"
+      },
+      "D001_C_1": {
+        "finish_h": "5/2",
+        "outcome": "PASS",
+        "release_h": "0",
+        "start_h": "0",
+        "status": "COMPLETED"
+      },
+      "D001_E_1": {
+        "finish_h": "11/2",
+        "outcome": "PASS",
+        "release_h": "5/2",
+        "start_h": "5/2",
+        "status": "COMPLETED"
+      }
+    },
+    "yxb_denominator_h": "1000000"
+  },
+  "registry_version": "CR-V3.1",
+  "scenario_id": "fixture_F12",
+  "schema_version": "des_check_report_v1",
+  "special_assertions": [],
+  "verdict": "PASS"
+}

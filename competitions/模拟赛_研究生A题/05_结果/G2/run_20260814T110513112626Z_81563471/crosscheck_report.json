@@ -1,0 +1,7418 @@
+{
+  "F1": {
+    "des_T_h": "11/2",
+    "des_T_tick": 33,
+    "device_rows": [
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "d_created": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "device_id": 1,
+        "match": true,
+        "terminal": [
+          "11/2",
+          "11/2",
+          "11/2"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      }
+    ],
+    "diffs": [],
+    "fixture_id": "F1",
+    "hand_T_h": "11/2",
+    "hand_T_tick": 33,
+    "metric_rows": [
+      {
+        "des": 1,
+        "hand": 1,
+        "match": true,
+        "metric": "S",
+        "oracle": 1
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PL",
+        "oracle": 0
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PW",
+        "oracle": 0
+      }
+    ],
+    "oracle_T_h": "11/2",
+    "oracle_T_tick": 33,
+    "rows": [
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "key": [
+          1,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          "0"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "2",
+          "2",
+          "2"
+        ],
+        "key": [
+          1,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          "0"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "key": [
+          1,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          "0"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "11/2",
+          "11/2",
+          "11/2"
+        ],
+        "key": [
+          1,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      }
+    ],
+    "special_assertions": [],
+    "turnover_rows": [],
+    "verdict": "PASS"
+  },
+  "F10": {
+    "des_T_h": "23/2",
+    "des_T_tick": 69,
+    "device_rows": [
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "d_created": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "device_id": 1,
+        "match": true,
+        "terminal": [
+          "11/2",
+          "11/2",
+          "11/2"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          2
+        ],
+        "d_created": [
+          "5",
+          "5",
+          "5"
+        ],
+        "device_id": 2,
+        "match": true,
+        "terminal": [
+          "17/2",
+          "17/2",
+          "17/2"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "d_created": [
+          "17/2",
+          "17/2",
+          "17/2"
+        ],
+        "device_id": 3,
+        "match": true,
+        "terminal": [
+          "23/2",
+          "23/2",
+          "23/2"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      }
+    ],
+    "diffs": [],
+    "fixture_id": "F10",
+    "hand_T_h": "23/2",
+    "hand_T_tick": 69,
+    "metric_rows": [
+      {
+        "des": 3,
+        "hand": 3,
+        "match": true,
+        "metric": "S",
+        "oracle": 3
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PL",
+        "oracle": 0
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PW",
+        "oracle": 0
+      }
+    ],
+    "oracle_T_h": "23/2",
+    "oracle_T_tick": 69,
+    "rows": [
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "key": [
+          1,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "2",
+          "2",
+          null
+        ],
+        "key": [
+          1,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "key": [
+          1,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "11/2",
+          "11/2",
+          "11/2"
+        ],
+        "key": [
+          1,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5",
+          "5",
+          null
+        ],
+        "key": [
+          2,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "4",
+          "4",
+          null
+        ],
+        "key": [
+          2,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "2",
+          "2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5",
+          "5",
+          null
+        ],
+        "key": [
+          2,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "17/2",
+          "17/2",
+          "17/2"
+        ],
+        "key": [
+          2,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "5",
+          "5",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "11/2",
+          "11/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "17/2",
+          "17/2",
+          "17/2"
+        ],
+        "key": [
+          3,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "6",
+          "6",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "6",
+          "6",
+          "6"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "8",
+          "8",
+          "8"
+        ],
+        "key": [
+          3,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "6",
+          "6",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "6",
+          "6",
+          "6"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "17/2",
+          "17/2",
+          "17/2"
+        ],
+        "key": [
+          3,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "6",
+          "6",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "6",
+          "6",
+          "6"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "23/2",
+          "23/2",
+          "23/2"
+        ],
+        "key": [
+          3,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "17/2",
+          "17/2",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "17/2",
+          "17/2",
+          "17/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      }
+    ],
+    "special_assertions": [],
+    "turnover_rows": [
+      {
+        "bay_id": 1,
+        "interval": [
+          "11/2..6",
+          "11/2..6",
+          "11/2..6"
+        ],
+        "kind": "OVERLAP",
+        "match": true
+      }
+    ],
+    "verdict": "PASS"
+  },
+  "F11": {
+    "des_T_h": "12",
+    "des_T_tick": 72,
+    "device_rows": [
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "d_created": [
+          "5",
+          "5",
+          "5"
+        ],
+        "device_id": 1,
+        "match": true,
+        "terminal": [
+          "12",
+          "12",
+          "12"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      }
+    ],
+    "diffs": [],
+    "fixture_id": "F11",
+    "hand_T_h": "12",
+    "hand_T_tick": 72,
+    "metric_rows": [
+      {
+        "des": 1,
+        "hand": 1,
+        "match": true,
+        "metric": "S",
+        "oracle": 1
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PL",
+        "oracle": 0
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PW",
+        "oracle": 0
+      }
+    ],
+    "oracle_T_h": "12",
+    "oracle_T_tick": 72,
+    "rows": [
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "key": [
+          1,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "ABNORMAL",
+          "ABNORMAL",
+          "ABNORMAL"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5",
+          "5",
+          null
+        ],
+        "key": [
+          1,
+          "A",
+          2
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "2",
+          "2",
+          null
+        ],
+        "key": [
+          1,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "key": [
+          1,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "8",
+          "8",
+          "8"
+        ],
+        "key": [
+          1,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "ABNORMAL",
+          "ABNORMAL",
+          "ABNORMAL"
+        ],
+        "release": [
+          "5",
+          "5",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "5",
+          "5",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "12",
+          "12",
+          "12"
+        ],
+        "key": [
+          1,
+          "E",
+          2
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "8",
+          "8",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "9",
+          "9",
+          "9"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      }
+    ],
+    "special_assertions": [],
+    "turnover_rows": [],
+    "verdict": "PASS"
+  },
+  "F12": {
+    "des_T_h": "11/2",
+    "des_T_tick": 33,
+    "device_rows": [
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "d_created": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "device_id": 1,
+        "match": true,
+        "terminal": [
+          "11/2",
+          "11/2",
+          "11/2"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      }
+    ],
+    "diffs": [],
+    "fixture_id": "F12",
+    "hand_T_h": "11/2",
+    "hand_T_tick": 33,
+    "metric_rows": [
+      {
+        "des": 1,
+        "hand": 1,
+        "match": true,
+        "metric": "S",
+        "oracle": 1
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PL",
+        "oracle": 0
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PW",
+        "oracle": 0
+      }
+    ],
+    "oracle_T_h": "11/2",
+    "oracle_T_tick": 33,
+    "rows": [
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "key": [
+          1,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          "0"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "2",
+          "2",
+          "2"
+        ],
+        "key": [
+          1,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          "0"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "key": [
+          1,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          "0"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "11/2",
+          "11/2",
+          "11/2"
+        ],
+        "key": [
+          1,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      }
+    ],
+    "special_assertions": [],
+    "turnover_rows": [],
+    "verdict": "PASS"
+  },
+  "F2": {
+    "des_T_h": "17/2",
+    "des_T_tick": 51,
+    "device_rows": [
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "d_created": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "device_id": 1,
+        "match": true,
+        "terminal": [
+          "11/2",
+          "11/2",
+          "11/2"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          2
+        ],
+        "d_created": [
+          "5",
+          "5",
+          "5"
+        ],
+        "device_id": 2,
+        "match": true,
+        "terminal": [
+          "17/2",
+          "17/2",
+          "17/2"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      }
+    ],
+    "diffs": [],
+    "fixture_id": "F2",
+    "hand_T_h": "17/2",
+    "hand_T_tick": 51,
+    "metric_rows": [
+      {
+        "des": 2,
+        "hand": 2,
+        "match": true,
+        "metric": "S",
+        "oracle": 2
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PL",
+        "oracle": 0
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PW",
+        "oracle": 0
+      }
+    ],
+    "oracle_T_h": "17/2",
+    "oracle_T_tick": 51,
+    "rows": [
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "key": [
+          1,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          "0"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "2",
+          "2",
+          null
+        ],
+        "key": [
+          1,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          "0"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "key": [
+          1,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          "0"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "11/2",
+          "11/2",
+          "11/2"
+        ],
+        "key": [
+          1,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5",
+          "5",
+          null
+        ],
+        "key": [
+          2,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "4",
+          "4",
+          null
+        ],
+        "key": [
+          2,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "2",
+          "2",
+          "2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5",
+          "5",
+          null
+        ],
+        "key": [
+          2,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "17/2",
+          "17/2",
+          "17/2"
+        ],
+        "key": [
+          2,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "5",
+          "5",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "11/2",
+          "11/2",
+          "11/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      }
+    ],
+    "special_assertions": [],
+    "turnover_rows": [],
+    "verdict": "PASS"
+  },
+  "F3": {
+    "des_T_h": "7",
+    "des_T_tick": 42,
+    "device_rows": [
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "d_created": [
+          "4",
+          "4",
+          "4"
+        ],
+        "device_id": 1,
+        "match": true,
+        "terminal": [
+          "7",
+          "7",
+          "7"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      }
+    ],
+    "diffs": [],
+    "fixture_id": "F3",
+    "hand_T_h": "7",
+    "hand_T_tick": 42,
+    "metric_rows": [
+      {
+        "des": 1,
+        "hand": 1,
+        "match": true,
+        "metric": "S",
+        "oracle": 1
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PL",
+        "oracle": 0
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PW",
+        "oracle": 0
+      }
+    ],
+    "oracle_T_h": "7",
+    "oracle_T_tick": 42,
+    "rows": [
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "key": [
+          1,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "2",
+          "2",
+          "2"
+        ],
+        "key": [
+          1,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "ABNORMAL",
+          "ABNORMAL",
+          "ABNORMAL"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "4",
+          "4",
+          "4"
+        ],
+        "key": [
+          1,
+          "B",
+          2
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "2",
+          "2",
+          "2"
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "2",
+          "2",
+          "2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "key": [
+          1,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "7",
+          "7",
+          "7"
+        ],
+        "key": [
+          1,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "4",
+          "4",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "4",
+          "4",
+          "4"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      }
+    ],
+    "special_assertions": [],
+    "turnover_rows": [],
+    "verdict": "PASS"
+  },
+  "F4": {
+    "des_T_h": "21/2",
+    "des_T_tick": 63,
+    "device_rows": [
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "d_created": [
+          null,
+          null,
+          null
+        ],
+        "device_id": 1,
+        "match": true,
+        "terminal": [
+          "15/2",
+          "15/2",
+          "15/2"
+        ],
+        "terminal_state": [
+          "EXITED",
+          "EXITED",
+          "EXITED"
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          2
+        ],
+        "d_created": [
+          "15/2",
+          "15/2",
+          "15/2"
+        ],
+        "device_id": 2,
+        "match": true,
+        "terminal": [
+          "21/2",
+          "21/2",
+          "21/2"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      }
+    ],
+    "diffs": [],
+    "fixture_id": "F4",
+    "hand_T_h": "21/2",
+    "hand_T_tick": 63,
+    "metric_rows": [
+      {
+        "des": 1,
+        "hand": 1,
+        "match": true,
+        "metric": "S",
+        "oracle": 1
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PL",
+        "oracle": 0
+      },
+      {
+        "des": 1,
+        "hand": 1,
+        "match": true,
+        "metric": "PW",
+        "oracle": 1
+      }
+    ],
+    "oracle_T_h": "21/2",
+    "oracle_T_tick": 63,
+    "rows": [
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "key": [
+          1,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "ABNORMAL",
+          "ABNORMAL",
+          "ABNORMAL"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "15/2",
+          "15/2",
+          "15/2"
+        ],
+        "key": [
+          1,
+          "A",
+          2
+        ],
+        "match": true,
+        "outcome": [
+          "ABNORMAL",
+          "ABNORMAL",
+          "ABNORMAL"
+        ],
+        "release": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "5",
+          "5",
+          "5"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "2",
+          "2",
+          null
+        ],
+        "key": [
+          1,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "key": [
+          1,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          null,
+          null,
+          null
+        ],
+        "exists": [
+          false,
+          false,
+          false
+        ],
+        "finish": [
+          null,
+          null,
+          null
+        ],
+        "key": [
+          1,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          null,
+          null,
+          null
+        ],
+        "release": [
+          null,
+          null,
+          null
+        ],
+        "resource": [
+          null,
+          null,
+          null
+        ],
+        "start": [
+          null,
+          null,
+          null
+        ],
+        "status": [
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5",
+          "5",
+          "5"
+        ],
+        "key": [
+          2,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "4",
+          "4",
+          null
+        ],
+        "key": [
+          2,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "2",
+          "2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5",
+          "5",
+          "5"
+        ],
+        "key": [
+          2,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "ABNORMAL",
+          "ABNORMAL",
+          "ABNORMAL"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "15/2",
+          "15/2",
+          "15/2"
+        ],
+        "key": [
+          2,
+          "C",
+          2
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "5",
+          "5",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "5",
+          "5",
+          "5"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "21/2",
+          "21/2",
+          "21/2"
+        ],
+        "key": [
+          2,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "15/2",
+          "15/2",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "15/2",
+          "15/2",
+          "15/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      }
+    ],
+    "special_assertions": [],
+    "turnover_rows": [],
+    "verdict": "PASS"
+  },
+  "F4b": {
+    "des_T_h": "8",
+    "des_T_tick": 48,
+    "device_rows": [
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "d_created": [
+          null,
+          null,
+          null
+        ],
+        "device_id": 1,
+        "match": true,
+        "terminal": [
+          "6",
+          "6",
+          "6"
+        ],
+        "terminal_state": [
+          "EXITED",
+          "EXITED",
+          "EXITED"
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          2
+        ],
+        "d_created": [
+          "5",
+          "5",
+          "5"
+        ],
+        "device_id": 2,
+        "match": true,
+        "terminal": [
+          "8",
+          "8",
+          "8"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      }
+    ],
+    "diffs": [],
+    "fixture_id": "F4b",
+    "hand_T_h": "8",
+    "hand_T_tick": 48,
+    "metric_rows": [
+      {
+        "des": 1,
+        "hand": 1,
+        "match": true,
+        "metric": "S",
+        "oracle": 1
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PL",
+        "oracle": 0
+      },
+      {
+        "des": 1,
+        "hand": 1,
+        "match": true,
+        "metric": "PW",
+        "oracle": 1
+      }
+    ],
+    "oracle_T_h": "8",
+    "oracle_T_tick": 48,
+    "rows": [
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "key": [
+          1,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "ABNORMAL",
+          "ABNORMAL",
+          "ABNORMAL"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "6",
+          "6",
+          "6"
+        ],
+        "key": [
+          1,
+          "A",
+          2
+        ],
+        "match": true,
+        "outcome": [
+          "NONE",
+          "NONE",
+          "NONE"
+        ],
+        "release": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "5",
+          "5",
+          "5"
+        ],
+        "status": [
+          "CANCELLED",
+          "CANCELLED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "2",
+          "2",
+          "2"
+        ],
+        "key": [
+          1,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "ABNORMAL",
+          "ABNORMAL",
+          "ABNORMAL"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "6",
+          "6",
+          "6"
+        ],
+        "key": [
+          1,
+          "B",
+          2
+        ],
+        "match": true,
+        "outcome": [
+          "ABNORMAL",
+          "ABNORMAL",
+          "ABNORMAL"
+        ],
+        "release": [
+          "2",
+          "2",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "4",
+          "4",
+          "4"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "key": [
+          1,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "ABNORMAL",
+          "ABNORMAL",
+          "ABNORMAL"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "6",
+          "6",
+          "6"
+        ],
+        "key": [
+          1,
+          "C",
+          2
+        ],
+        "match": true,
+        "outcome": [
+          "NONE",
+          "NONE",
+          "NONE"
+        ],
+        "release": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "5",
+          "5",
+          "5"
+        ],
+        "status": [
+          "CANCELLED",
+          "CANCELLED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          null,
+          null,
+          null
+        ],
+        "exists": [
+          false,
+          false,
+          false
+        ],
+        "finish": [
+          null,
+          null,
+          null
+        ],
+        "key": [
+          1,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          null,
+          null,
+          null
+        ],
+        "release": [
+          null,
+          null,
+          null
+        ],
+        "resource": [
+          null,
+          null,
+          null
+        ],
+        "start": [
+          null,
+          null,
+          null
+        ],
+        "status": [
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5",
+          "5",
+          null
+        ],
+        "key": [
+          2,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "4",
+          "4",
+          null
+        ],
+        "key": [
+          2,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "2",
+          "2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5",
+          "5",
+          null
+        ],
+        "key": [
+          2,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "8",
+          "8",
+          "8"
+        ],
+        "key": [
+          2,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "5",
+          "5",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "5",
+          "5",
+          "5"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      }
+    ],
+    "special_assertions": [],
+    "turnover_rows": [],
+    "verdict": "PASS"
+  },
+  "F5": {
+    "des_T_h": "5",
+    "des_T_tick": 30,
+    "device_rows": [
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "d_created": [
+          null,
+          null,
+          null
+        ],
+        "device_id": 1,
+        "match": true,
+        "terminal": [
+          "5",
+          "5",
+          "5"
+        ],
+        "terminal_state": [
+          "EXITED",
+          "EXITED",
+          "EXITED"
+        ]
+      }
+    ],
+    "diffs": [],
+    "fixture_id": "F5",
+    "hand_T_h": "5",
+    "hand_T_tick": 30,
+    "metric_rows": [
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "S",
+        "oracle": 0
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PL",
+        "oracle": 0
+      },
+      {
+        "des": 1,
+        "hand": 1,
+        "match": true,
+        "metric": "PW",
+        "oracle": 1
+      }
+    ],
+    "oracle_T_h": "5",
+    "oracle_T_tick": 30,
+    "rows": [
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "key": [
+          1,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "ABNORMAL",
+          "ABNORMAL",
+          "ABNORMAL"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5",
+          "5",
+          "5"
+        ],
+        "key": [
+          1,
+          "A",
+          2
+        ],
+        "match": true,
+        "outcome": [
+          "ABNORMAL",
+          "ABNORMAL",
+          "ABNORMAL"
+        ],
+        "release": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "2",
+          "2",
+          null
+        ],
+        "key": [
+          1,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "key": [
+          1,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          null,
+          null,
+          null
+        ],
+        "exists": [
+          false,
+          false,
+          false
+        ],
+        "finish": [
+          null,
+          null,
+          null
+        ],
+        "key": [
+          1,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          null,
+          null,
+          null
+        ],
+        "release": [
+          null,
+          null,
+          null
+        ],
+        "resource": [
+          null,
+          null,
+          null
+        ],
+        "start": [
+          null,
+          null,
+          null
+        ],
+        "status": [
+          null,
+          null,
+          null
+        ]
+      }
+    ],
+    "special_assertions": [],
+    "turnover_rows": [],
+    "verdict": "PASS"
+  },
+  "F6": {
+    "des_T_h": "12",
+    "des_T_tick": 72,
+    "device_rows": [
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "d_created": [
+          "5",
+          "5",
+          "5"
+        ],
+        "device_id": 1,
+        "match": true,
+        "terminal": [
+          "12",
+          "12",
+          "12"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      }
+    ],
+    "diffs": [],
+    "fixture_id": "F6",
+    "hand_T_h": "12",
+    "hand_T_tick": 72,
+    "metric_rows": [
+      {
+        "des": 1,
+        "hand": 1,
+        "match": true,
+        "metric": "S",
+        "oracle": 1
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PL",
+        "oracle": 0
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PW",
+        "oracle": 0
+      }
+    ],
+    "oracle_T_h": "12",
+    "oracle_T_tick": 72,
+    "rows": [
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "key": [
+          1,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "ABNORMAL",
+          "ABNORMAL",
+          "ABNORMAL"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5",
+          "5",
+          null
+        ],
+        "key": [
+          1,
+          "A",
+          2
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "2",
+          "2",
+          null
+        ],
+        "key": [
+          1,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "key": [
+          1,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "8",
+          "8",
+          "8"
+        ],
+        "key": [
+          1,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "ABNORMAL",
+          "ABNORMAL",
+          "ABNORMAL"
+        ],
+        "release": [
+          "5",
+          "5",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "5",
+          "5",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "12",
+          "12",
+          "12"
+        ],
+        "key": [
+          1,
+          "E",
+          2
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "8",
+          "8",
+          "8"
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "9",
+          "9",
+          "9"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      }
+    ],
+    "special_assertions": [],
+    "turnover_rows": [],
+    "verdict": "PASS"
+  },
+  "F7": {
+    "des_T_h": "12",
+    "des_T_tick": 72,
+    "device_rows": [
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "d_created": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "device_id": 1,
+        "match": true,
+        "terminal": [
+          "11/2",
+          "11/2",
+          "11/2"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          2
+        ],
+        "d_created": [
+          "5",
+          "5",
+          "5"
+        ],
+        "device_id": 2,
+        "match": true,
+        "terminal": [
+          "17/2",
+          "17/2",
+          "17/2"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "d_created": [
+          "9",
+          "9",
+          "9"
+        ],
+        "device_id": 3,
+        "match": true,
+        "terminal": [
+          "12",
+          "12",
+          "12"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      }
+    ],
+    "diffs": [],
+    "fixture_id": "F7",
+    "hand_T_h": "12",
+    "hand_T_tick": 72,
+    "metric_rows": [
+      {
+        "des": 3,
+        "hand": 3,
+        "match": true,
+        "metric": "S",
+        "oracle": 3
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PL",
+        "oracle": 0
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PW",
+        "oracle": 0
+      }
+    ],
+    "oracle_T_h": "12",
+    "oracle_T_tick": 72,
+    "rows": [
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "key": [
+          1,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "2",
+          "2",
+          null
+        ],
+        "key": [
+          1,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "key": [
+          1,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "11/2",
+          "11/2",
+          "11/2"
+        ],
+        "key": [
+          1,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5",
+          "5",
+          null
+        ],
+        "key": [
+          2,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "4",
+          "4",
+          null
+        ],
+        "key": [
+          2,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "2",
+          "2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5",
+          "5",
+          null
+        ],
+        "key": [
+          2,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "17/2",
+          "17/2",
+          "17/2"
+        ],
+        "key": [
+          2,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "5",
+          "5",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "11/2",
+          "11/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "9",
+          "9",
+          "9"
+        ],
+        "key": [
+          3,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "13/2",
+          "13/2",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "13/2",
+          "13/2",
+          "13/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "17/2",
+          "17/2",
+          null
+        ],
+        "key": [
+          3,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "13/2",
+          "13/2",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "13/2",
+          "13/2",
+          "13/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "9",
+          "9",
+          "9"
+        ],
+        "key": [
+          3,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "13/2",
+          "13/2",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "13/2",
+          "13/2",
+          "13/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "12",
+          "12",
+          "12"
+        ],
+        "key": [
+          3,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "9",
+          "9",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "9",
+          "9",
+          "9"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      }
+    ],
+    "special_assertions": [],
+    "turnover_rows": [
+      {
+        "bay_id": 1,
+        "interval": [
+          "6..13/2",
+          "6..13/2",
+          "6..13/2"
+        ],
+        "kind": "IN",
+        "match": true
+      },
+      {
+        "bay_id": 1,
+        "interval": [
+          "11/2..6",
+          "11/2..6",
+          "11/2..6"
+        ],
+        "kind": "OUT",
+        "match": true
+      }
+    ],
+    "verdict": "PASS"
+  },
+  "F8": {
+    "des_T_h": "14",
+    "des_T_tick": 84,
+    "device_rows": [
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "d_created": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "device_id": 1,
+        "match": true,
+        "terminal": [
+          "11/2",
+          "11/2",
+          "11/2"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          2
+        ],
+        "d_created": [
+          "5",
+          "5",
+          "5"
+        ],
+        "device_id": 2,
+        "match": true,
+        "terminal": [
+          "17/2",
+          "17/2",
+          "17/2"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "d_created": [
+          "11",
+          "11",
+          "11"
+        ],
+        "device_id": 3,
+        "match": true,
+        "terminal": [
+          "14",
+          "14",
+          "14"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      }
+    ],
+    "diffs": [],
+    "fixture_id": "F8",
+    "hand_T_h": "14",
+    "hand_T_tick": 84,
+    "metric_rows": [
+      {
+        "des": 3,
+        "hand": 3,
+        "match": true,
+        "metric": "S",
+        "oracle": 3
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PL",
+        "oracle": 0
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PW",
+        "oracle": 0
+      },
+      {
+        "des": "5/12",
+        "hand": "5/12",
+        "match": true,
+        "metric": "YXB_A",
+        "oracle": "5/12"
+      },
+      {
+        "des": "4/9",
+        "hand": "4/9",
+        "match": true,
+        "metric": "YXB_B",
+        "oracle": "4/9"
+      },
+      {
+        "des": "5/12",
+        "hand": "5/12",
+        "match": true,
+        "metric": "YXB_C",
+        "oracle": "5/12"
+      },
+      {
+        "des": "1/2",
+        "hand": "1/2",
+        "match": true,
+        "metric": "YXB_E",
+        "oracle": "1/2"
+      }
+    ],
+    "oracle_T_h": "14",
+    "oracle_T_tick": 84,
+    "rows": [
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "key": [
+          1,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          "0"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "2",
+          "2",
+          "2"
+        ],
+        "key": [
+          1,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          "0"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "key": [
+          1,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          "0"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "11/2",
+          "11/2",
+          "11/2"
+        ],
+        "key": [
+          1,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5",
+          "5",
+          "5"
+        ],
+        "key": [
+          2,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "4",
+          "4",
+          "4"
+        ],
+        "key": [
+          2,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "2",
+          "2",
+          "2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5",
+          "5",
+          "5"
+        ],
+        "key": [
+          2,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "17/2",
+          "17/2",
+          "17/2"
+        ],
+        "key": [
+          2,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "5",
+          "5",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "11/2",
+          "11/2",
+          "11/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "9",
+          "9",
+          "9"
+        ],
+        "key": [
+          3,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "13/2",
+          "13/2",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "13/2",
+          "13/2",
+          "13/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "17/2",
+          "17/2",
+          "17/2"
+        ],
+        "key": [
+          3,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "ABNORMAL",
+          "ABNORMAL",
+          "ABNORMAL"
+        ],
+        "release": [
+          "13/2",
+          "13/2",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "13/2",
+          "13/2",
+          "13/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "11",
+          "11",
+          "11"
+        ],
+        "key": [
+          3,
+          "B",
+          2
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "17/2",
+          "17/2",
+          "17/2"
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "9",
+          "9",
+          "9"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "9",
+          "9",
+          "9"
+        ],
+        "key": [
+          3,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "13/2",
+          "13/2",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "13/2",
+          "13/2",
+          "13/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "14",
+          "14",
+          "14"
+        ],
+        "key": [
+          3,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          "PASS"
+        ],
+        "release": [
+          "11",
+          "11",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "11",
+          "11",
+          "11"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      }
+    ],
+    "special_assertions": [
+      {
+        "detail": "T = 84 ticks = 14 h",
+        "name": "K9_T_84",
+        "ok": true
+      },
+      {
+        "detail": "d3 B1 finish = 51 ticks (8.5h) ABNORMAL",
+        "name": "K9_d3_B1_finish_51_ABNORMAL",
+        "ok": true
+      },
+      {
+        "detail": "d3 B2 release = 51 ticks (8.5h), never rewritten",
+        "name": "K9_d3_B2_release_51",
+        "ok": true
+      },
+      {
+        "detail": "d3 B2 start = 54 ticks (9h), shift 2",
+        "name": "K9_d3_B2_start_54",
+        "ok": true
+      },
+      {
+        "detail": "d3 B2 finish = 66 ticks (11h) PASS",
+        "name": "K9_d3_B2_finish_66",
+        "ok": true
+      },
+      {
+        "detail": "d3 B2 effective_attempt_no = 2",
+        "name": "K9_d3_B2_attempt_2",
+        "ok": true
+      },
+      {
+        "detail": "d3 E start = 66 ticks (11h)",
+        "name": "K9_d3_E_start_66",
+        "ok": true
+      },
+      {
+        "detail": "d3 E finish = 84 ticks (14h)",
+        "name": "K9_d3_E_finish_84",
+        "ok": true
+      }
+    ],
+    "turnover_rows": [
+      {
+        "bay_id": 1,
+        "interval": [
+          "6..13/2",
+          "6..13/2",
+          "6..13/2"
+        ],
+        "kind": "IN",
+        "match": true
+      },
+      {
+        "bay_id": 1,
+        "interval": [
+          "11/2..6",
+          "11/2..6",
+          "11/2..6"
+        ],
+        "kind": "OUT",
+        "match": true
+      }
+    ],
+    "verdict": "PASS"
+  },
+  "F9": {
+    "des_T_h": "12",
+    "des_T_tick": 72,
+    "device_rows": [
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "d_created": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "device_id": 1,
+        "match": true,
+        "terminal": [
+          "11/2",
+          "11/2",
+          "11/2"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          2
+        ],
+        "d_created": [
+          "5",
+          "5",
+          "5"
+        ],
+        "device_id": 2,
+        "match": true,
+        "terminal": [
+          "17/2",
+          "17/2",
+          "17/2"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "d_created": [
+          "9",
+          "9",
+          "9"
+        ],
+        "device_id": 3,
+        "match": true,
+        "terminal": [
+          "12",
+          "12",
+          "12"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      }
+    ],
+    "diffs": [],
+    "fixture_id": "F9",
+    "hand_T_h": "12",
+    "hand_T_tick": 72,
+    "metric_rows": [
+      {
+        "des": 3,
+        "hand": 3,
+        "match": true,
+        "metric": "S",
+        "oracle": 3
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PL",
+        "oracle": 0
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PW",
+        "oracle": 0
+      }
+    ],
+    "oracle_T_h": "12",
+    "oracle_T_tick": 72,
+    "rows": [
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "key": [
+          1,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "2",
+          "2",
+          null
+        ],
+        "key": [
+          1,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "key": [
+          1,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "11/2",
+          "11/2",
+          "11/2"
+        ],
+        "key": [
+          1,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5",
+          "5",
+          null
+        ],
+        "key": [
+          2,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "4",
+          "4",
+          null
+        ],
+        "key": [
+          2,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "2",
+          "2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5",
+          "5",
+          null
+        ],
+        "key": [
+          2,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "17/2",
+          "17/2",
+          "17/2"
+        ],
+        "key": [
+          2,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "5",
+          "5",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "11/2",
+          "11/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "9",
+          "9",
+          "9"
+        ],
+        "key": [
+          3,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "13/2",
+          "13/2",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "13/2",
+          "13/2",
+          "13/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "17/2",
+          "17/2",
+          "17/2"
+        ],
+        "key": [
+          3,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "13/2",
+          "13/2",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "13/2",
+          "13/2",
+          "13/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "9",
+          "9",
+          "9"
+        ],
+        "key": [
+          3,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "13/2",
+          "13/2",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "13/2",
+          "13/2",
+          "13/2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "12",
+          "12",
+          "12"
+        ],
+        "key": [
+          3,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "9",
+          "9",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "9",
+          "9",
+          "9"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      }
+    ],
+    "special_assertions": [],
+    "turnover_rows": [
+      {
+        "bay_id": 1,
+        "interval": [
+          "6..13/2",
+          "6..13/2",
+          "6..13/2"
+        ],
+        "kind": "IN",
+        "match": true
+      },
+      {
+        "bay_id": 1,
+        "interval": [
+          "11/2..6",
+          "11/2..6",
+          "11/2..6"
+        ],
+        "kind": "OUT",
+        "match": true
+      }
+    ],
+    "verdict": "PASS"
+  },
+  "F9b": {
+    "des_T_h": "15",
+    "des_T_tick": 90,
+    "device_rows": [
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "d_created": [
+          "5/2",
+          "5/2",
+          "5/2"
+        ],
+        "device_id": 1,
+        "match": true,
+        "terminal": [
+          "11/2",
+          "11/2",
+          "11/2"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          2
+        ],
+        "d_created": [
+          null,
+          null,
+          null
+        ],
+        "device_id": 2,
+        "match": true,
+        "terminal": [
+          "6",
+          "6",
+          "6"
+        ],
+        "terminal_state": [
+          "EXITED",
+          "EXITED",
+          "EXITED"
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "d_created": [
+          "9",
+          "9",
+          "9"
+        ],
+        "device_id": 3,
+        "match": true,
+        "terminal": [
+          "12",
+          "12",
+          "12"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          2
+        ],
+        "d_created": [
+          "23/2",
+          "23/2",
+          "23/2"
+        ],
+        "device_id": 4,
+        "match": true,
+        "terminal": [
+          "15",
+          "15",
+          "15"
+        ],
+        "terminal_state": [
+          "PASSED",
+          "PASSED",
+          "PASSED"
+        ]
+      }
+    ],
+    "diffs": [],
+    "fixture_id": "F9b",
+    "hand_T_h": "15",
+    "hand_T_tick": 90,
+    "metric_rows": [
+      {
+        "des": 3,
+        "hand": 3,
+        "match": true,
+        "metric": "S",
+        "oracle": 3
+      },
+      {
+        "des": 0,
+        "hand": 0,
+        "match": true,
+        "metric": "PL",
+        "oracle": 0
+      },
+      {
+        "des": 1,
+        "hand": 1,
+        "match": true,
+        "metric": "PW",
+        "oracle": 1
+      }
+    ],
+    "oracle_T_h": "15",
+    "oracle_T_tick": 90,
+    "rows": [
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "key": [
+          1,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "2",
+          "2",
+          null
+        ],
+        "key": [
+          1,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "key": [
+          1,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "0",
+          "0",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "11/2",
+          "11/2",
+          "11/2"
+        ],
+        "key": [
+          1,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5",
+          "5",
+          null
+        ],
+        "key": [
+          2,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "4",
+          "4",
+          "4"
+        ],
+        "key": [
+          2,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "ABNORMAL",
+          "ABNORMAL",
+          "ABNORMAL"
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "2",
+          "2",
+          "2"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "6",
+          "6",
+          "6"
+        ],
+        "key": [
+          2,
+          "B",
+          2
+        ],
+        "match": true,
+        "outcome": [
+          "ABNORMAL",
+          "ABNORMAL",
+          "ABNORMAL"
+        ],
+        "release": [
+          "4",
+          "4",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "4",
+          "4",
+          "4"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          null
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "5",
+          "5",
+          null
+        ],
+        "key": [
+          2,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "0",
+          "0",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "5/2",
+          "5/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          null,
+          null,
+          null
+        ],
+        "exists": [
+          false,
+          false,
+          false
+        ],
+        "finish": [
+          null,
+          null,
+          null
+        ],
+        "key": [
+          2,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          null,
+          null,
+          null
+        ],
+        "release": [
+          null,
+          null,
+          null
+        ],
+        "resource": [
+          null,
+          null,
+          null
+        ],
+        "start": [
+          null,
+          null,
+          null
+        ],
+        "status": [
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "9",
+          "9",
+          null
+        ],
+        "key": [
+          3,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "13/2",
+          "13/2",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "13/2",
+          "13/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "17/2",
+          "17/2",
+          null
+        ],
+        "key": [
+          3,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "13/2",
+          "13/2",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "13/2",
+          "13/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "9",
+          "9",
+          null
+        ],
+        "key": [
+          3,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "13/2",
+          "13/2",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "13/2",
+          "13/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          1,
+          1,
+          1
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "12",
+          "12",
+          null
+        ],
+        "key": [
+          3,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "9",
+          "9",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "9",
+          "9",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          2
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "23/2",
+          "23/2",
+          null
+        ],
+        "key": [
+          4,
+          "A",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "7",
+          "7",
+          null
+        ],
+        "resource": [
+          "A",
+          "A",
+          null
+        ],
+        "start": [
+          "9",
+          "9",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          2
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "21/2",
+          "21/2",
+          null
+        ],
+        "key": [
+          4,
+          "B",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "7",
+          "7",
+          null
+        ],
+        "resource": [
+          "B",
+          "B",
+          null
+        ],
+        "start": [
+          "17/2",
+          "17/2",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          2
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "23/2",
+          "23/2",
+          null
+        ],
+        "key": [
+          4,
+          "C",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "7",
+          "7",
+          null
+        ],
+        "resource": [
+          "C",
+          "C",
+          null
+        ],
+        "start": [
+          "9",
+          "9",
+          null
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      },
+      {
+        "bay": [
+          2,
+          2,
+          2
+        ],
+        "exists": [
+          true,
+          true,
+          true
+        ],
+        "finish": [
+          "15",
+          "15",
+          "15"
+        ],
+        "key": [
+          4,
+          "E",
+          1
+        ],
+        "match": true,
+        "outcome": [
+          "PASS",
+          "PASS",
+          null
+        ],
+        "release": [
+          "23/2",
+          "23/2",
+          null
+        ],
+        "resource": [
+          "E",
+          "E",
+          null
+        ],
+        "start": [
+          "12",
+          "12",
+          "12"
+        ],
+        "status": [
+          "COMPLETED",
+          "COMPLETED",
+          null
+        ]
+      }
+    ],
+    "special_assertions": [],
+    "turnover_rows": [
+      {
+        "bay_id": 1,
+        "interval": [
+          "6..13/2",
+          "6..13/2",
+          "6..13/2"
+        ],
+        "kind": "IN",
+        "match": true
+      },
+      {
+        "bay_id": 1,
+        "interval": [
+          "11/2..6",
+          "11/2..6",
+          "11/2..6"
+        ],
+        "kind": "OUT",
+        "match": true
+      },
+      {
+        "bay_id": 2,
+        "interval": [
+          "13/2..7",
+          "13/2..7",
+          "13/2..7"
+        ],
+        "kind": "IN",
+        "match": true
+      },
+      {
+        "bay_id": 2,
+        "interval": [
+          "6..13/2",
+          "6..13/2",
+          "6..13/2"
+        ],
+        "kind": "OUT",
+        "match": true
+      }
+    ],
+    "verdict": "PASS"
+  }
+}

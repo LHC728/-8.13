@@ -1,0 +1,8 @@
+{
+  "checker": "python 04_代码/checker/des_checker_v1.py --event-log <log> --config <cfg> --fixture <fid>",
+  "crosscheck": "python -m tests.three_way_crosscheck_v1 (crosscheck_all)",
+  "des": "python -m des.deterministic_des_v1 (via runner)",
+  "run_id": "20260814T110513112626Z_81563471",
+  "runner": "python 04_代码/scripts/run_g2_whole_v1.py",
+  "unittest": "python -m unittest discover -s 04_代码/tests -p 'test_*.py'"
+}
