@@ -2,6 +2,22 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-03 S1 FINAL PASS / S2 CP-SAT ACTIVE`
+
+### 修改
+
+- **G2-03 S1 deterministic DES baseline = FINAL PASS / ACCEPTED**（Human Gate 2026-08-14）。
+- spec = `G2-03-SPEC-V1.0.2`；accepted S1 commit = `31b0bffb72d6b805ae313ddb9e5e0ae9a83c16ab`（V1.0.2 rebind）。
+- 验收记录：24 semantics implemented；F1-F12 family + F4b + F9b PASS；F8 K9 PASS（T=14）；py_compile PASS；unittest 27/27 PASS；main DES stdlib-only；D E2 timing / SEM21 / SEM23 PASS。
+- historical `a515960cfd4f0c14e8c1952a558a56a59f87ef9f` retained（pre-V1.0.2 implementation candidate，不得 reset/revert/amend/force-push）。
+- **G2-03 S2 独立 CP-SAT oracle = IMPLEMENTATION ACTIVE**（本轮授权实现；OR-Tools 9.15.6755 仅 CR-V3.1/C08 独立验证侧，不传播到 main DES/G3/H1/H2/100-device formal run）。
+- G2-03 overall = NOT PASS（CP-SAT oracle 尚未实现/验收，C08 三方对拍未闭合）；无 formal evidence。
+
+### 影响与边界
+
+- G2-04 = NOT STARTED；DES formal evidence = NOT STARTED；100-device formal run = NOT STARTED；G3 / H1 formal / H2 = NOT STARTED。
+- 下一授权：S2 CP-SAT oracle 实现 + 机械验收；最终 DES-vs-CP-SAT-vs-hand 三方对拍待后续 Human Gate。
+
 ## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-03-SPEC-V1.0.2`
 
 ### 修改
