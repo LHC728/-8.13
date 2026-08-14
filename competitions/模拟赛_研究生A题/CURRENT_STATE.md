@@ -2,7 +2,7 @@
 
 > 最后更新：2026-08-14
 > 状态版本：`STATE-2026-08-13-G2.4`
-> 当前 Gate：**G2 最小可验证基线：G2-01（观测核标定）与 G2-02（Q1 概率与质量解析链）已通过并验收；G2 剩余（无随机最小并行 DES、1—4 台对拍、最小独立 checker 与故障注入）仍待闭合**
+> 当前 Gate：**G2-03 IMPLEMENTATION ACTIVE：确定性最小并行 DES 实现已获授权（spec `G2-03-SPEC-V1.0.1` 已冻结），实现未完成、未运行正式证据；G2-01/G2-02 已通过并验收；G2-04 checker 与 whole G2 Gate 仍待闭合**
 > 当前检查注册表：[`CR-V3.1`](01_审计/检查注册表_V3.1.md)
 
 ## 1. 新对话只需先读
@@ -66,7 +66,14 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
   - 本范围检查全部 PASS：`CR-V3.1/C01、C02、C03、C04、C05、C19、C21、C27`。
   - evidence SHA：run_manifest `b7219b85…`；single check_report `092c4e1f…`；chain check_report `c761e828…`；file_hashes `f8145e75…`。
   - 历史失败（保留为不可变证据，未修改）：① `run_20260814T043709752483Z_99f602bd`（V1.0.3 frozen runtime dependency snapshot gap → V1.0.4 快照 9→10 + RUNNER rebind 闭合）；② `run_20260814T053311144723Z_a694e8f9`（E1 route_agreement 错误输出代表值而非三路线最大绝对偏差 → L3 semantic adjudication + E1 correction 闭合）。
-  - 限制：**whole G2 Gate != PASS**；DES = NOT STARTED；G3 = NOT STARTED；H2 = NOT STARTED；不发布论文正式数字；Q2/Q3 尚未开始。
+  - 限制：**whole G2 Gate != PASS**；G2-03 见下节（IMPLEMENTATION ACTIVE，未完成）；G2-04 = NOT STARTED；G3 = NOT STARTED；H1 formal experiment = NOT STARTED；H2 = NOT STARTED；100-device formal run = NOT STARTED；不发布论文正式数字；Q2/Q3 尚未开始。
+
+- **`G2-03`（确定性最小并行 DES）= IMPLEMENTATION ACTIVE**（2026-08-14 Human Gate 授权；仅状态切换，本轮未写任何代码）：
+  - 任务包：`G2-03-SPEC-V1.0.1`（freeze commit `cecaa97e21d1a7f70a61e96455deabc15aded783`；V1.0.1 governance consistency commit `37150f2af0b047725b84ef6fa802638d329f1447`）。
+  - scope：确定性最小并行 DES + F1-F12 + K9 + C08 CP-SAT oracle + C09/C10/C11/C12/C18；G2-03/G2-04 split 保持（G2-04 = NOT STARTED）。
+  - 状态：**implementation authorized = YES**；**implementation completed = NO**；**DES formal evidence = NOT STARTED**；无任何 `04_代码` 变更。
+  - 依赖锁定：OR-Tools 9.15.6755 仅 C08 独立 CP-SAT oracle 专用（主 DES stdlib-only）；Python 3.12.10。
+  - 不得宣称：G2-03 PASSED、G2 COMPLETE、G3 allowed、Q2 formal result available。
 
 1. 实现并诊断单次无条件主观测核（G2-01 已完成）；
 2. 实现标准链关键替代观测核（G2-01 已完成）；

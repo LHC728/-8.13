@@ -2,6 +2,22 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-03 IMPLEMENTATION ACTIVE`
+
+### 修改
+
+- **Human Gate approved `G2-03-SPEC-V1.0.1`** 并授权进入 G2-03 确定性最小并行 DES 实现阶段（仅状态切换，本轮未写任何代码）。
+- V1.0 freeze commit 保留：`cecaa97e21d1a7f70a61e96455deabc15aded783`（message `freeze G2-03 deterministic DES spec v1.0`）。
+- V1.0.1 仅修正 governance/documentation consistency（commit `37150f2af0b047725b84ef6fa802638d329f1447`，message `correct G2-03 spec v1.0.1 governance consistency`）：`draft_notes` → `freeze_notes`；删除非法 `CR-V3.1/C28` 占位；stdlib-only 政策表述收敛为任务包自身边界；`out_of_scope` 按 stage 修正（C18 的 G2 部分明确 IN_SCOPE，C06/C16/C17 保留 G2-04 reservation）；H1 wording 修正为"不构成 H1 正式实验/参数冻结"。
+- **无数学/事件语义变更**：24 semantics、same_timestamp_event_order、FCFS 键、F1-F12、K9、CP-SAT oracle 14 条边界、release_independence（exogenous/endogenous、no_des_derived_input、FCFS independent encoding）、schemas/event_log_contract/ownership_draft、G2-03/G2-04 split 全部不变。
+- **CP-SAT 依赖未变**：OR-Tools 9.15.6755（仅 C08 独立 oracle）、Python 3.12.10、10 min/tick、6 ticks/hour；主 DES stdlib-only。
+- `CURRENT_STATE.md` 切换：**G2-03 IMPLEMENTATION ACTIVE**（implementation authorized = YES；completed = NO；DES formal evidence = NOT STARTED）。
+
+### 影响与边界
+
+- 无任何 `04_代码` 文件创建；未运行 DES / CP-SAT fixture / formal evidence；未启动 G3 / H1 formal experiment / H2 / 100-device formal run。
+- 不得宣称 G2-03 PASSED、G2 COMPLETE、G3 allowed 或 Q2 formal result available；whole G2 Gate != PASS；G2-04 = NOT STARTED。
+
 ## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-02 D Acceptance PASS`
 
 ### 修改
