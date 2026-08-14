@@ -1,0 +1,143 @@
+# G2-04 任务包：独立日志重放与 Whole G2 证据（SPEC V1.0）
+
+task_package_version: "G2-04-SPEC-V1.0"
+task_id: "G2-04"
+title: "独立日志重放 checker、最小键/账本/故障注入与 Whole G2 一键复现证据"
+status: "FROZEN_PENDING_REBIND"
+frozen_date: "2026-08-14"
+frozen_by: "Human Gate（WHOLE_G2_GOVERNANCE_AND_EVIDENCE_REPAIR）"
+governance_binding:
+  state_version: "STATE-2026-08-13-G2.4"
+  registry_version: "CR-V3.1"
+  upstream_frozen_dependency:
+    task_package_ref: "G2-03-SPEC-V1.0.2"
+    path: "08_项目管理/任务包/G2-03_无随机最小并行DES.yaml"
+    role: "G2-03 确定性最小并行 DES 引擎/夹具/三方对拍已完成（S1 accepted 31b0bff、S2 689d0c2、S3 add9509）；本包对其 C08/C09/C10/C11/C12/C18 做独立 replay 侧复核，不重写语义。"
+  autopilot: "08_项目管理/全流程自动推进计划_AUTOPILOT-PLAN-V1.1.md（Pilot #1；本包修复阶段为 WHOLE_G2_GOVERNANCE_AND_EVIDENCE_REPAIR，不扩大范围）"
+
+# ============================================================================
+# 1. 冻结范围（只做这些；禁止超出）
+# ============================================================================
+frozen_scope:
+  checks_in_scope:
+    - id: "CR-V3.1/C06"
+      layer: "G2 最小例部分"
+      claim_limit: "仅验固定观测核 + 必做流程 + 合法排程下终局质量分布不应被纯排程机制改变的 G2 最小确定性/解析接缝。不得声称键控随机逐台全等完整证明已完成（属 G3）。"
+    - id: "CR-V3.1/C16"
+      layer: "G2 键单测 / 键骨架部分"
+      claim_limit: "key schema / canonical-key unit skeleton、random_enabled=false 路径、容器顺序不得污染 deterministic canonical result 的最小接口检查。不得生成随机 U、运行 CRN experiment、执行 pilot/tuning/holdout（属 G3）。"
+    - id: "CR-V3.1/C17"
+      layer: "G2 最小独立日志重放与账本复算"
+      claim_limit: "容量、前置、班历、年龄、周转、终止、S/PL/PW/YXB 的 G2 最小确定性重算；每资源/台位互斥状态覆盖 [0,T)。不得声称 G3 完整随机复验完成。"
+    - id: "CR-V3.1/C19"
+      layer: "G2 前文档 + G2 验收"
+      claim_limit: "checker 隔离与 canonical 接口：共享只读参数/schema，不共享主模型的求根、转移、可行性或指标函数。"
+    - id: "CR-V3.1/C20"
+      layer: "G2 最小故障注入"
+      claim_limit: "registry 明列错误族全部覆盖（见 fault_injection 节）；不得删减族。"
+    - id: "CR-V3.1/C21"
+      layer: "G2 一键复现 / immutable evidence 骨架"
+      claim_limit: "一键验证生成不可变检查报告、失败样本和 schema/config/code/key/log 哈希，记录 CR-V3.1。"
+    - id: "CR-V3.1/C08|C09|C10|C11|C12|C18"
+      layer: "对 G2-03 已冻结项的独立 replay 侧复核"
+      claim_limit: "以独立日志重放复核 G2-03 已冻结的确定性小例对拍、并行与前置、同刻/有效尝试/终态、FCFS/释放/跨队重测、班历/周转/终止、事件活性；不重新定义验收。"
+  out_of_scope:
+    - "不得宣称：C06 G3 full PASS、C16 G3 experiment PASS、C17 G3 full PASS。"
+    - "不得运行：random DES、keyed stochastic experiment、equipment lifetime、100 devices、H1 formal、H2、Q2 formal、Q3、Q4。"
+    - "不得修改：main DES、CP-SAT oracle、fixtures、hand oracle、CR-V3.1、问题契约、G2-03 spec、数学模型。"
+    - "不得进入 G3。"
+
+# ============================================================================
+# 2. checker 冻结接口（canonical interface）
+# ============================================================================
+checker_interface:
+  path: "04_代码/checker/des_checker_v1.py"
+  allowed_reads:
+    - "immutable event_log"
+    - "frozen des_config"
+    - "scripted fixture"
+    - "parameters.csv"
+    - "shared read-only schemas"
+    - "optional metrics block（仅作为被核对对象，不作为求解输入）"
+  forbidden:
+    - "import 04_代码/main_model/**"
+    - "读取主 DES 内存状态"
+    - "调用主 DES transition"
+    - "调用主 dispatch loop"
+    - "共享主指标函数"
+    - "读取主模型派生内部对象"
+    - "subprocess 调用主模型重新生成答案后对拍"
+  time_rule: "exact rational / frozen integer tick semantics；禁止 float epsilon。1 tick=10min=1/6h；tick*6 必须整数，否则显式 FAIL。"
+
+# ============================================================================
+# 3. replay acceptance（必须独立复算至少）
+# ============================================================================
+replay_acceptance:
+  must_recompute:
+    - "bay occupancy"
+    - "A/B/C/E resource occupancy"
+    - "task release/start/end"
+    - "effective_attempt_no"
+    - "PASS/ABNORMAL observation"
+    - "cancel reason"
+    - "shift boundary"
+    - "turnover"
+    - "device terminal state"
+    - "D creation timing（E2：ABC 全 PASS 同 timestamp、E release 之前、D_CREATED.seq < TASK_RELEASE(E).seq；E start 不生成；early exit not_created）"
+    - "T"
+    - "S"
+    - "PL"
+    - "PW"
+    - "YXB ledger seam"
+    - "FCFS release_time frozenness"
+    - "K9 cross-shift retest assertions"
+    - "event liveness observable consequences"
+
+# ============================================================================
+# 4. C20 故障注入（至少 registry 明列族；不得删减）
+# ============================================================================
+fault_injection:
+  required_fault_families:
+    - "中断/取消错误增加有效尝试号"
+    - "D 过早生成"
+    - "顺序相关 RNG / 顺序依赖污染的可检测接口"
+    - "遗漏同刻完成结算"
+  rule: "可以有额外 fault injection，但不得删掉 registry 明列族。若 G2 deterministic 范围无法真实触发某随机类 fault：必须明确标注 G2_INTERFACE_ONLY / G3_FULL，不得伪造随机测试。"
+
+# ============================================================================
+# 5. Whole G2 evidence interface
+# ============================================================================
+whole_g2_evidence:
+  formal_run_required:
+    - "新 run_id（UTC YYYYMMDDTHHMMSSffffffZ_ + 8hex；禁止复用既有 run_id）"
+    - "immutable directory（05_结果/G2/run_<run_id>/）"
+    - "snapshot: G2-04-SPEC-V1.0 本包 + upstream G2-03-SPEC-V1.0.2 + parameters.csv + fixtures + schemas + relevant code"
+    - "event logs（14 concrete fixtures）"
+    - "checker reports（14/14 PASS）"
+    - "three-way crosscheck report（14/14 PASS）"
+    - "commands.json"
+    - "file_hashes.sha256（小写 SHA-256、两空格、POSIX 路径、按 Unicode code-point 排序、LF、排除自身、不列目录）"
+    - "run_manifest.json"
+  manifest_binding:
+    task_package_ref: "G2-04-SPEC-V1.0"
+    spec_hash: "G2-04-SPEC-V1.0 实际文件 SHA-256"
+    upstream_frozen_dependency:
+      task_package_ref: "G2-03-SPEC-V1.0.2"
+      spec_hash: "G2-03-SPEC-V1.0.2 实际文件 SHA-256"
+    rule: "若现有 manifest schema 能表达上述字段，不得改 schema；若 schema 明确无法表达 task package + upstream frozen dependency：停止 G2_04_MANIFEST_INTERFACE_GAP 等 Human Gate，不得自行扩 schema。"
+  failed_runs: "任何失败 run 保留不可覆盖。"
+
+# ============================================================================
+# 6. 状态与治理
+# ============================================================================
+status_notes:
+  - "本包冻结时，既有实现/证据（des_checker_v1.py、run_g2_04_verification_v1.py、run_g2_whole_v1.py、tests、05_结果/G2/run_20260814T110423672057Z_032dfffc、run_20260814T110513112626Z_81563471）为 pre-G2-04-spec historical candidates；需按本 spec 逐条 diff audit 后 rebind。"
+  - "旧 run（032dfffc、81563471）不得删除、不得覆盖、不得冒充为 governed current evidence；标注 PRE_G2_04_SPEC_HISTORICAL_CANDIDATE。"
+  - "Whole G2 在 fresh qualifying Macro L3（deepseek-v4-pro/high，可独立验证）完成前 = NOT PASS。"
+  - "本包不授权 G3/H1/H2/100-device/Q2/Q3/Q4/G7。"
+
+decision_required: []
+must_not_change:
+  - "main DES、CP-SAT、fixtures、hand oracle、CR-V3.1、问题契约、G2-03 spec、数学模型"
+  - "不得为通过检查修改 fixture/oracle/acceptance truth"
+no_pass_claim_yet: "本包 FROZEN_PENDING_REBIND 只冻结接口与验收口径；不构成任何检查 PASS 或 Whole G2 PASS。"

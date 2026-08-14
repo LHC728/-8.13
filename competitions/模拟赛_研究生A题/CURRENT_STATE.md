@@ -2,7 +2,7 @@
 
 > 最后更新：2026-08-14
 > 状态版本：`STATE-2026-08-13-G2.4`
-> 当前 Gate：**AUTOPILOT PILOT #1 ACTIVE：S1 deterministic DES = ACCEPTED（`31b0bff`）；S2 CP-SAT oracle = COMPLETED（`689d0c2`）；S3 三方对拍 = PASS（`add9509`，14/14 一致）；G2-03 收口完成（C08 对拍子项闭合候选）；G2-04 = ACTIVE；Whole G2 = NOT PASS；Pilot #1 Macro Stop = Whole G2（无条件停机）**
+> 当前 Gate：**AUTOPILOT PILOT #1 = STOPPED（Macro Stop 已到达）；WHOLE_G2_GOVERNANCE_AND_EVIDENCE_REPAIR 授权执行中：G2-04-SPEC-V1.0 已冻结（FROZEN_PENDING_REBIND），rebind 与新 qualifying Macro L3 待完成；Whole G2 = NOT PASS；G3/H1/H2/100-device/Q2/Q3/Q4 = NOT STARTED**
 > 当前检查注册表：[`CR-V3.1`](01_审计/检查注册表_V3.1.md)
 
 ## 1. 新对话只需先读
@@ -66,22 +66,23 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
   - 本范围检查全部 PASS：`CR-V3.1/C01、C02、C03、C04、C05、C19、C21、C27`。
   - evidence SHA：run_manifest `b7219b85…`；single check_report `092c4e1f…`；chain check_report `c761e828…`；file_hashes `f8145e75…`。
   - 历史失败（保留为不可变证据，未修改）：① `run_20260814T043709752483Z_99f602bd`（V1.0.3 frozen runtime dependency snapshot gap → V1.0.4 快照 9→10 + RUNNER rebind 闭合）；② `run_20260814T053311144723Z_a694e8f9`（E1 route_agreement 错误输出代表值而非三路线最大绝对偏差 → L3 semantic adjudication + E1 correction 闭合）。
-  - 限制：**whole G2 Gate != PASS**；G2-03 见下节（IMPLEMENTATION ACTIVE，未完成）；G2-04 = NOT STARTED；G3 = NOT STARTED；H1 formal experiment = NOT STARTED；H2 = NOT STARTED；100-device formal run = NOT STARTED；不发布论文正式数字；Q2/Q3 尚未开始。
+  - 限制：**whole G2 Gate != PASS**；G2-03/G2-04 见下节（candidates，均未最终验收）；G3 = NOT STARTED；H1 formal experiment = NOT STARTED；H2 = NOT STARTED；100-device formal run = NOT STARTED；不发布论文正式数字；Q2/Q3 尚未开始。
 
-- **`G2-03`（确定性最小并行 DES）= IMPLEMENTATION ACTIVE → AUTOPILOT PILOT #1**：
+- **`G2-03`（确定性最小并行 DES）= COMPLETED_CANDIDATE**（AUTOPILOT PILOT #1 已 Macro Stop；最终整体判定待 Whole G2）：
   - 任务包：`G2-03-SPEC-V1.0.2`（V1.0 freeze commit `cecaa97e21d1a7f70a61e96455deabc15aded783`；V1.0.1 governance commit `37150f2af0b047725b84ef6fa802638d329f1447`；V1.0.2 L3 fixture adjudication commit `e89a237aca095965863cf6248321d6a203730307`）。
   - **S1 deterministic DES baseline = ACCEPTED**：accepted commit `31b0bffb72d6b805ae313ddb9e5e0ae9a83c16ab`（V1.0.2 rebind）。验收记录：24 semantics implemented；F1-F12 family PASS；F4b PASS；F9b PASS（SEM-23 并发运输，T=15）；F8 K9 PASS（T=14）；py_compile PASS；unittest 27/27 PASS；main DES stdlib-only；D E2 timing PASS；SEM21 PASS；SEM23 PASS。
   - **S2 independent CP-SAT oracle = COMPLETED**：commit `689d0c253be63a889c163b2e473f9226b0899c3e`（独立约束模型；OR-Tools 9.15.6755 版本守卫；14 concrete fixtures + K9 全 PASS；unittest 72/72；无 DES import/读取；num_search_workers=1、random_seed=0）。
   - **S3 三方对拍 = PASS**：commit `add95095c31d7743d70554847b8288f59584c70f`（比较器 `04_代码/tests/three_way_crosscheck_v1.py`；DES/CP-SAT/hand 14/14 一致；F8 K9 T=84 ticks、B2 release=51/start=54/finish=66、E 66..84 三方对齐；unittest 24/24；全量回归 123/123）。**C08 确定性小例对拍子项 = 闭合候选**。
-  - **G2-03 收口完成（candidate）**：C08（手算 K9 + CP-SAT 对拍）/C09/C10/C11/C12/C18 引擎侧验收齐备；G2-03 overall 最终判定待 Whole G2 L3。
-  - **G2-04 = ACTIVE**（独立 event-log replay checker / accounting replay / keyed checks / checker isolation / fault injection / reproducibility / one-command verification）。
   - **`a515960cfd4f0c14e8c1952a558a56a59f87ef9f` = historical pre-V1.0.2 implementation candidate**（保留，不得 reset/revert/amend/force-push）。
-  - **`AUTOPILOT-PLAN-V1.1-FINAL` = ACTIVE FOR PILOT #1**（Bootstrap 2026-08-14；治理文件见 `08_项目管理/全流程自动推进计划_AUTOPILOT-PLAN-V1.1.md`）。Pilot #1 start checkpoint = `689d0c2`；Pilot #1 Macro Stop = **Whole G2**（无条件停机，禁止自动进入 G3）。
-  - **G2-03 overall = NOT PASS**（C08 三方对拍未闭合）。
-  - 状态：G2-04 = NOT STARTED；DES formal evidence = NOT STARTED；100-device formal run = NOT STARTED；G3 = NOT STARTED；H1 formal = NOT STARTED；H2 = NOT STARTED。
-  - 依赖锁定：主 DES stdlib-only；OR-Tools 9.15.6755 仅 C08 独立 CP-SAT oracle 专用（不得传播到 main DES/G3/H1/H2/100-device formal run）；Python 3.12.10。
-  - runtime budget：来源为 launch parameters（soft_budget=¥10、hard_budget=¥20，timebox=NONE），非本文写死金额。
-  - 不得宣称：G2-03 PASSED、G2 COMPLETE、G3 allowed、Q2 formal result available。
+  - **`AUTOPILOT-PLAN-V1.1-FINAL` = STOPPED FOR PILOT #1**（治理文件见 `08_项目管理/全流程自动推进计划_AUTOPILOT-PLAN-V1.1.md`；Pilot #1 start checkpoint = `689d0c2`；Macro Stop = Whole G2 已到达，无条件停机）。
+  - **G2-03 overall = NOT PASS（最终判定待 Whole G2 L3）**。
+
+- **`G2-04`（独立日志重放与 Whole G2 证据）= COMPLETED_CANDIDATE + pre-existing task-package governance gap 已发现**（Human Gate 2026-08-14 确认：既有实现/证据先于 G2-04 冻结任务包存在，不能直接作为 governed accepted evidence）：
+  - 历史实现（pre-spec candidate）：`04_代码/checker/des_checker_v1.py`、`04_代码/tests/test_des_checker_v1.py`、`04_代码/scripts/run_g2_04_verification_v1.py`、`04_代码/scripts/run_g2_whole_v1.py`；commit `961b64ddd3360d8335380c4a01465ecd105f7db9`。
+  - 历史 formal runs（pre-G2-04-spec candidates，保留不可覆盖）：`05_结果/G2/run_20260814T110423672057Z_032dfffc`（CRLF 变体，commit `2cee5e6`）、`05_结果/G2/run_20260814T110513112626Z_81563471`（LF-clean，commit `f0daa43`）。
+  - **current G2-04 task package = `G2-04-SPEC-V1.0`，status = FROZEN_PENDING_REBIND**（`08_项目管理/任务包/G2-04_独立日志重放与WholeG2证据.yaml`）；rebind 与 governed formal run 待 WHOLE_G2_GOVERNANCE_AND_EVIDENCE_REPAIR Phase B。
+  - **Whole G2 = NOT PASS**。当前 blocker：① G2-04 spec/evidence rebind pending；② fresh qualifying Pro/high Macro L3 pending。
+  - 状态：G3 = NOT STARTED；H1 formal = NOT STARTED；H2 = NOT STARTED；100-device formal run = NOT STARTED；Q2/Q3/Q4 = NOT STARTED。
 
 1. 实现并诊断单次无条件主观测核（G2-01 已完成）；
 2. 实现标准链关键替代观测核（G2-01 已完成）；

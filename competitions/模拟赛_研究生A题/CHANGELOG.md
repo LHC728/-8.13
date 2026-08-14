@@ -2,6 +2,25 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-14 / `STATE-2026-08-13-G2.4` / `WHOLE G2 MACRO STOP / GOVERNANCE REPAIR AUTHORIZED`
+
+### 修改
+
+- **AUTOPILOT PILOT #1 到达 Macro Stop**（Human Gate 审阅 Macro Report 后裁决：WHOLE G2 = BLOCKED_PENDING_GOVERNANCE_REPAIR；授权有界 `WHOLE_G2_GOVERNANCE_AND_EVIDENCE_REPAIR`，不重新启动 AUTOPILOT，不扩大到 G3）。
+- **G2-04 implementation candidate 已存在**（commit `961b64d`：des_checker_v1.py、test_des_checker_v1.py、run_g2_04_verification_v1.py、run_g2_whole_v1.py）；**formal candidate 已存在**（CRLF run `...032dfffc` commit `2cee5e6`；LF run `...81563471` commit `f0daa43`）。
+- **prior Macro review = ADVISORY_NONQUALIFYING**：原 Whole G2 L3 reviewer 模型来源为 INHERITED（报告 deepseek-v4-flash/high），exact runtime model 未独立验证，不满足 Pilot #1 D/Macro = fresh deepseek-v4-pro/high 冻结要求；其结论不得作为 formal Whole G2 D/L3 acceptance。
+- **missing G2-04 task package 由 Human Gate 发现**（BLOCKER-A）：`08_项目管理/任务包/` 原只有 G2-01/G2-02/G2-03；AGENTS.md 要求运行前必须有冻结任务包；G2-03-SPEC-V1.0.2 ownership_draft 明确 des_checker_v1.py 属 G2-04 任务包。既有 G2-04 实现/formal candidate 保留为历史 candidate，不能直接作为 governed accepted evidence。
+- **BLOCKER-B**：原 Macro reviewer 不满足 D/Macro runtime mapping（fresh deepseek-v4-pro/high 可独立验证）。
+- **G2-04-SPEC-V1.0 已冻结**：`08_项目管理/任务包/G2-04_独立日志重放与WholeG2证据.yaml`（status FROZEN_PENDING_REBIND；scope=C06 G2 最小/C16 G2 键骨架/C17 G2 最小/C19/C20 G2 最小/C21 G2 骨架 + 对 G2-03 C08-C12/C18 的 replay 复核；checker 冻结接口；replay acceptance；fault injection 明列族；Whole G2 evidence interface 绑定 G2-04-SPEC-V1.0 + upstream G2-03-SPEC-V1.0.2）。
+- **旧 formal runs 保留**：`...032dfffc`、`...81563471` 标 PRE_G2_04_SPEC_HISTORICAL_CANDIDATE，不删除、不覆盖、不冒充 governed current evidence。
+- **Whole G2 仍 NOT PASS**；G3 未授权。
+
+### 影响与边界
+
+- 修复阶段允许修改：`08_项目管理/任务包/G2-04_独立日志重放与WholeG2证据.yaml`、`CURRENT_STATE.md`、`CHANGELOG.md`、`07_AI使用记录/AI使用日志.md`（Phase A）；Phase B 仅机械 rebind runner/evidence metadata；Phase C fresh qualifying Pro/high Macro L3。
+- 不写 Whole G2 PASS / G2-04 accepted / formal evidence accepted（Phase A 阶段）。
+- G3 / H1 formal / H2 / 100-device / Q2 / Q3 / Q4 = NOT STARTED。
+
 ## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-03 S3 THREE-WAY CROSSCHECK PASS`
 
 ### 修改
