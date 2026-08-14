@@ -1,4 +1,4 @@
-task_package_version: "G2-02-SPEC-V1.0.4"
+task_package_version: "G2-02-SPEC-V1.0.5"
 task_id: "G2-02"
 title: "Q1 概率与质量解析链闭合：q_E、E 核标定、终局四格、E[S]/E[PL]/E[PW] 与 lambda 两语义全链"
 status: "FROZEN_PENDING_HUMAN_APPROVAL"
@@ -8,6 +8,22 @@ frozen_date: "2026-08-13"
 approval_gate: "人工批准后才能派单 E1/E2/RUNNER；批准前不运行任何 G2-02 数值实现。"
 
 revision_history:
+  - version: "G2-02-SPEC-V1.0.5"
+    date: "2026-08-14"
+    change_type: "provenance-clean upstream rebind only"
+    detail: >-
+      G2-01 evidence provenance repair：historical G2-01 run run_20260813T134251279572Z_f1290916 的
+      file_hashes.sha256 inventory 被发现 6 项 hash mismatch（HASH_INVENTORY_MISMATCH，旧 run 保留不改，
+      分类 HISTORICAL_INVALIDATED_EVIDENCE）。数学输出 preserved（response 355af00c…/e71473ce… 逐字保留）。
+      Human Gate 裁决 OPTION B（PROVENANCE_ONLY_FULL_UPSTREAM_REBIND）：禁止混合 upstream，整体指向
+      新 clean G2-01 run run_20260814T130221390333Z_8babb503。新旧 G2-01 response 数学 payload 逐字段一致，
+      raw-byte 差异仅 request_id.run_id（归一化后 byte-identical）。本修订仅 rebind canonical upstream
+      provenance：shared_read_only_artifacts.upstream_g2_01_run、frozen_sha256.upstream_single_response、
+      frozen_sha256.upstream_chain_response、frozen_sha256.upstream_file_hashes 及 active read/CLI 引用。
+      数学公式、q_E、E kernel、lambda、tilde、schema、fixture/oracle truth、tolerance、parameters、算法路线、
+      检查口径均未改变；no mathematical semantics changed。
+      G2-01 runner/checker 的 evidence-finalization LF newline 修正（非数学）随新 run frozen/code 快照进入。
+    approved_by: "人工 Gate：OPTION B APPROVED（PROVENANCE_ONLY_FULL_UPSTREAM_REBIND）"
   - version: "G2-02-SPEC-V1.0.4"
     date: "2026-08-14"
     change_type: "runtime dependency snapshot closure correction only"
@@ -152,15 +168,15 @@ shared_read_only_artifacts:
   schema: "04_代码/src/schemas/q1_quality_v1.schema.json"
   oracle_fixture: "04_代码/tests/fixtures/q1_quality_oracles_v1.json"
   parameter_file: "02_数据/parameters.csv"
-  upstream_g2_01_run: "05_结果/G2/run_20260813T134251279572Z_f1290916/"
+  upstream_g2_01_run: "05_结果/G2/run_20260814T130221390333Z_8babb503/"
   ownership: "schema 与 fixture 由 D 冻结；E1 可读两者与 parameters；E2 只可读 task package、parameters、schema 与上游 response，禁止读外部 fixture。任何变更必须升级。"
   frozen_sha256:
     parameters_csv: "0461da2e0de09090673192d9eb0fde6fe5e70b1d22ef61fe13cdb878c449f07e"
     schema: "0bb93b122572b85833c539bc6f2bee273e04a6c0984933aafa5ed6d3e66dec4d"
     oracle_fixture: "13efa773aaa2b057be33d2c511e4bc4be078a6817d47e2dc09aad9da2db5fb0f"
-    upstream_single_response: "355af00ce77791208af17303912ed5972619ad89116f3d0d05f46494d534d0ea"
-    upstream_chain_response: "e71473ce391da82d7711ceff872b031ec307aa6d8e524f3ff1cd5c5a440542fd"
-    upstream_file_hashes: "d9f030a2e79935360ee10c4991f35a6890f53c4522cb1e0dd150c02b1586717e"
+    upstream_single_response: "afc6f8b20635af3a6414ff41f5d2a86c39892103c272d603e557817b5db993c7"
+    upstream_chain_response: "49bad533cdacd2309c697f52636ebca8a895795c6247aea65e711911bcddae76"
+    upstream_file_hashes: "2a1e30fb116b47e01d01051435ea85d25ee1484d7793db038c65193de602b8b6"
     task_package: "NOT_SELF_REFERENCED_RECORD_IN_RUN_MANIFEST"
 
 objective: >-
@@ -435,8 +451,8 @@ dispatches:
       - "04_代码/src/schemas/q1_quality_v1.schema.json"
       - "04_代码/tests/fixtures/q1_quality_oracles_v1.json"
       - "04_代码/main_model/observation_calibration_v1.py"
-      - "05_结果/G2/run_20260813T134251279572Z_f1290916/single_test_unconditional_v1/response.json"
-      - "05_结果/G2/run_20260813T134251279572Z_f1290916/standard_chain_v1/response.json"
+      - "05_结果/G2/run_20260814T130221390333Z_8babb503/single_test_unconditional_v1/response.json"
+      - "05_结果/G2/run_20260814T130221390333Z_8babb503/standard_chain_v1/response.json"
     allowed_write_paths:
       - "04_代码/main_model/q1_quality_v1.py"
       - "04_代码/main_model/q1_routes/closed_form_v1.py"
@@ -528,14 +544,14 @@ dispatches:
       - "04_代码/main_model/q1_routes/absorption_chain_v1.py"
       - "04_代码/main_model/observation_calibration_v1.py"
       - "04_代码/checker/q1_quality_checker_v1.py"
-      - "05_结果/G2/run_20260813T134251279572Z_f1290916/single_test_unconditional_v1/response.json"
-      - "05_结果/G2/run_20260813T134251279572Z_f1290916/standard_chain_v1/response.json"
-      - "05_结果/G2/run_20260813T134251279572Z_f1290916/file_hashes.sha256"
+      - "05_结果/G2/run_20260814T130221390333Z_8babb503/single_test_unconditional_v1/response.json"
+      - "05_结果/G2/run_20260814T130221390333Z_8babb503/standard_chain_v1/response.json"
+      - "05_结果/G2/run_20260814T130221390333Z_8babb503/file_hashes.sha256"
     allowed_write_paths:
       - "04_代码/scripts/run_g2_02_v1.py"
       - "04_代码/tests/test_run_g2_02_v1.py"
       - "05_结果/G2/run_<immutable_run_id>/**"
-    exact_cli: "python 04_代码/scripts/run_g2_02_v1.py --parameters 02_数据/parameters.csv --task-package 08_项目管理/任务包/G2-02_Q1概率与质量解析链.yaml --schema 04_代码/src/schemas/q1_quality_v1.schema.json --fixture 04_代码/tests/fixtures/q1_quality_oracles_v1.json --upstream-run-root 05_结果/G2/run_20260813T134251279572Z_f1290916 --output-root 05_结果/G2"
+    exact_cli: "python 04_代码/scripts/run_g2_02_v1.py --parameters 02_数据/parameters.csv --task-package 08_项目管理/任务包/G2-02_Q1概率与质量解析链.yaml --schema 04_代码/src/schemas/q1_quality_v1.schema.json --fixture 04_代码/tests/fixtures/q1_quality_oracles_v1.json --upstream-run-root 05_结果/G2/run_20260814T130221390333Z_8babb503 --output-root 05_结果/G2"
     implementation_limits:
       - "仅编排 subprocess、复制冻结输入与十份代码/测试快照（9 份 G2-02 + G2-01 求解器 observation_calibration_v1.py）与上游文件、生成两个 canonical request、记录 stdout/stderr/退出码、哈希与 manifest。"
       - "不得导入 E1/E2 模块、实现公式、复算任何数值、改变子进程输出或根据数字决定 PASS。"
@@ -649,7 +665,7 @@ integration_acceptance:
     - "python -m json.tool 04_代码/tests/fixtures/q1_quality_oracles_v1.json"
     - "python -m unittest discover -s 04_代码/tests -p 'test_q1_quality_*_v1.py' -v"
     - "python -m unittest 04_代码/tests/test_run_g2_02_v1.py -v"
-    - "python 04_代码/scripts/run_g2_02_v1.py --parameters 02_数据/parameters.csv --task-package 08_项目管理/任务包/G2-02_Q1概率与质量解析链.yaml --schema 04_代码/src/schemas/q1_quality_v1.schema.json --fixture 04_代码/tests/fixtures/q1_quality_oracles_v1.json --upstream-run-root 05_结果/G2/run_20260813T134251279572Z_f1290916 --output-root 05_结果/G2"
+    - "python 04_代码/scripts/run_g2_02_v1.py --parameters 02_数据/parameters.csv --task-package 08_项目管理/任务包/G2-02_Q1概率与质量解析链.yaml --schema 04_代码/src/schemas/q1_quality_v1.schema.json --fixture 04_代码/tests/fixtures/q1_quality_oracles_v1.json --upstream-run-root 05_结果/G2/run_20260814T130221390333Z_8babb503 --output-root 05_结果/G2"
     - "git diff --check -- 08_项目管理/任务包/G2-02_Q1概率与质量解析链.yaml 04_代码/src/schemas/q1_quality_v1.schema.json 04_代码/tests/fixtures/q1_quality_oracles_v1.json 04_代码/main_model/q1_quality_v1.py 04_代码/main_model/q1_routes/closed_form_v1.py 04_代码/main_model/q1_routes/enumeration_v1.py 04_代码/main_model/q1_routes/absorption_chain_v1.py 04_代码/checker/q1_quality_checker_v1.py 04_代码/tests/test_q1_quality_main_v1.py 04_代码/tests/test_q1_quality_checker_v1.py"
   required_tests:
     - "fixture 全案例（O1-O6 与 O1c/O2c/O3c/O5c）在两个语义下与冻结分数期望按 1e-15 一致，status/free_parameters 精确匹配。"
@@ -679,7 +695,7 @@ integration_acceptance:
 post_run_state_governance:
   current_files_this_task: "CURRENT_STATE.md 与 CHANGELOG.md 在实现阶段只读/不修改；本规格冻结不代表 G2-02 已执行或通过。"
   update_preconditions:
-    - "必须产生 task_package_version 与本任务包顶层 task_package_version 字段精确相同（当前为 G2-02-SPEC-V1.0.4），并引用当前冻结 parameters/schema/fixture/上游 hash 的全新不可变 run；不得复用或修补旧 run。"
+    - "必须产生 task_package_version 与本任务包顶层 task_package_version 字段精确相同（当前为 G2-02-SPEC-V1.0.5），并引用当前冻结 parameters/schema/fixture/上游 hash 的全新不可变 run；不得复用或修补旧 run。"
     - "该 run 的两个语义 checker_status=PASS、runner manifest=PASS、证据包通过本任务全部 acceptance，且最终 L3 语义审计明确 PASS。"
     - "最终 L3 PASS 报告必须给出 run_id、manifest/check report/hash inventory 路径与 SHA-256，并确认未进入 DES/G3、未发布正式数字。"
   permitted_update_after_pass:
