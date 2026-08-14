@@ -4,10 +4,16 @@
 The runner implements orchestration structure ONLY: it never imports E1/E2
 modules, never computes formulas, and never decides PASS from numeric values.
 These tests exercise the runner's pure internal functions (run_id rules,
-V1.0.3 bindings, envelope-level schema validation, freeze/snapshot hashing,
+V1.0.4 bindings, envelope-level schema validation, freeze/snapshot hashing,
 manifest/commands/inventory shapes, run-dir collision handling, structural
 evaluation) with temporary files; no CLI options are added for testing, and
 no formal canonical run is ever created (all run output goes to temp dirs).
+
+V1.0.4 rebind: the frozen code/test snapshot set is ten files -- the nine
+G2-02 files plus the G2-01 accepted solver observation_calibration_v1.py,
+guarded identically (hash-before == snapshot-hash == hash-after).  The
+process-level harness tests prove the frozen E1 imports the frozen solver
+from a temp run structure with no working-tree fallback.
 """
 
 from __future__ import annotations
@@ -46,8 +52,12 @@ UPSTREAM_RUN_ID = "20260813T134251279572Z_f1290916"
 
 OLD_SCHEMA_HASH = "94157e00e59a07100441084daa8bc31755c0aad54df3c824a705733aff7776e2"
 OLD_FIXTURE_HASH = "fadefcedddc1e1233d75f16fc9d596284d43681f4120721be2ff47d4aff2b4ad"
-# Old spec version built dynamically so no pre-V1.0.3 literal stays in source.
+# Old spec versions built dynamically so no pre-V1.0.3 literal stays in source.
 OLD_SPEC_VERSION = "G2-02-SPEC-V1.0.%d" % 2
+V103_SPEC_VERSION = "G2-02-SPEC-V1.0.%d" % 3
+
+SOLVER_REL = "04_代码/main_model/observation_calibration_v1.py"
+SOLVER_FROZEN_REL = "frozen/code/" + SOLVER_REL
 
 
 def sha(data):
@@ -417,16 +427,17 @@ class EnvelopeTests(unittest.TestCase):
 
 
 class ArtifactTests(unittest.TestCase):
-    def test_layout_covers_23_semantic_artifacts(self):
+    def test_layout_covers_24_semantic_artifacts(self):
         roles = [role for _, role in runner.ARTIFACT_LAYOUT]
-        # 23-item semantic minimum from evidence_package_contract
+        # 24-item semantic minimum from evidence_package_contract (V1.0.4:
+        # 10 code/test snapshots incl. the G2-01 solver)
         self.assertIn("task_package", roles)
         self.assertIn("parameters", roles)
         self.assertIn("schema", roles)
         self.assertIn("fixture", roles)
         self.assertEqual(roles.count("upstream_response"), 2)
         self.assertIn("upstream_file_hashes", roles)
-        self.assertEqual(roles.count("source_code"), 6)
+        self.assertEqual(roles.count("source_code"), 7)   # E1 main+3 routes+checker+runner+solver
         self.assertEqual(roles.count("test_code"), 3)
         self.assertEqual(roles.count("request"), 2)
         self.assertEqual(roles.count("response"), 2)
@@ -518,22 +529,27 @@ class FrozenInputLayoutTests(unittest.TestCase):
         for _name, rel, _key in runner.FROZEN_INPUTS:
             self.assertNotIn("\\", rel)
 
-    def test_nine_code_snapshots(self):
+    def test_ten_code_snapshots_include_solver(self):
         rels = [rel for rel, _ in runner.CODE_SNAPSHOTS]
-        self.assertEqual(len(rels), 9)
+        self.assertEqual(len(rels), 10)
         for rel in rels:
             self.assertTrue(rel.startswith("04_代码/"))
+        # V1.0.4: the G2-01 solver is the 10th snapshot, with NO exemption
+        self.assertIn(SOLVER_REL, rels)
+        self.assertEqual(rels.count(SOLVER_REL), 1)
+        self.assertEqual(rels.index(SOLVER_REL), 4)  # after the 3 routes, before checker
+        self.assertIn(SOLVER_FROZEN_REL, [p for p, _ in runner.ARTIFACT_LAYOUT])
 
 
 class SpecBindingTests(unittest.TestCase):
-    def test_spec_version_and_hashes_match_v103(self):
-        """V1.0.3 spec/schema/fixture hashes correct => PASS."""
+    def test_spec_version_and_hashes_match_v104(self):
+        """V1.0.4 spec/schema/fixture hashes correct => PASS."""
         with open(REAL_TASK_PACKAGE, encoding="utf-8") as f:
             tp_text = f.read()
-        self.assertEqual(runner.SPEC_VERSION, "G2-02-SPEC-V1.0.3")
-        self.assertEqual(runner.extract_task_package_version(tp_text), "G2-02-SPEC-V1.0.3")
+        self.assertEqual(runner.SPEC_VERSION, "G2-02-SPEC-V1.0.4")
+        self.assertEqual(runner.extract_task_package_version(tp_text), "G2-02-SPEC-V1.0.4")
         self.assertEqual(runner.FROZEN_SPEC_COMMIT,
-                         "4936327440238b442ec02edaba8226b90426300b")
+                         "c10c803ecd3a4c91918a165686b16e95f400ee7c")
         self.assertEqual(runner.IMPLEMENTATION_BASELINE,
                          "d644e58f5beaa6d203d5a48179b2d3066d192a21")
         fs = runner.extract_frozen_sha256(tp_text)
@@ -549,6 +565,8 @@ class SpecBindingTests(unittest.TestCase):
                          "355af00ce77791208af17303912ed5972619ad89116f3d0d05f46494d534d0ea")
         self.assertEqual(fs["upstream_chain_response"],
                          "e71473ce391da82d7711ceff872b031ec307aa6d8e524f3ff1cd5c5a440542fd")
+        self.assertEqual(fs["upstream_file_hashes"],
+                         "d9f030a2e79935360ee10c4991f35a6890f53c4522cb1e0dd150c02b1586717e")
         # the actual frozen files hash to the declared values
         self.assertEqual(runner.sha256_file(REAL_SCHEMA), runner.SCHEMA_SHA256_FROZEN)
         self.assertEqual(runner.sha256_file(REAL_FIXTURE), runner.FIXTURE_SHA256_FROZEN)
@@ -560,13 +578,16 @@ class SpecBindingTests(unittest.TestCase):
         good = {"schema": runner.SCHEMA_SHA256_FROZEN,
                 "oracle_fixture": runner.FIXTURE_SHA256_FROZEN}
         self.assertEqual(
-            runner.check_spec_bindings('task_package_version: "G2-02-SPEC-V1.0.3"\n', good), [])
+            runner.check_spec_bindings('task_package_version: "G2-02-SPEC-V1.0.4"\n', good), [])
         bad = dict(good)
         bad["schema"] = "9" * 64
-        errs = runner.check_spec_bindings('task_package_version: "G2-02-SPEC-V1.0.3"\n', bad)
+        errs = runner.check_spec_bindings('task_package_version: "G2-02-SPEC-V1.0.4"\n', bad)
         self.assertTrue(any("schema" in e for e in errs))
         errs2 = runner.check_spec_bindings('task_package_version: "%s"\n' % OLD_SPEC_VERSION, good)
         self.assertTrue(any("task_package_version" in e for e in errs2))
+        errs3 = runner.check_spec_bindings('task_package_version: "%s"\n' % V103_SPEC_VERSION, good)
+        self.assertTrue(any("task_package_version" in e for e in errs3),
+                        "V1.0.3 must NOT be an active binding in V1.0.4")
 
     def _dry_run_with_task_package(self, replacements):
         """Run the real main() against a temp-modified task package copy with
@@ -614,12 +635,24 @@ class SpecBindingTests(unittest.TestCase):
         self.assertFalse(has_commands)
 
     def test_wrong_spec_version_fails(self):
-        """A non-V1.0.3 task package is refused (FAIL), never auto-updated."""
+        """A non-V1.0.4 task package is refused (FAIL), never auto-updated."""
         code, manifest, has_commands = self._dry_run_with_task_package(
-            [("G2-02-SPEC-V1.0.3", OLD_SPEC_VERSION)])
+            [("G2-02-SPEC-V1.0.4", OLD_SPEC_VERSION)])
         self.assertEqual(code, 1)
         self.assertEqual(manifest["overall_status"], "FAIL")
         self.assertTrue(any("task_package_version" in n for n in manifest["notes"]))
+        self.assertFalse(has_commands)
+
+    def test_v103_active_binding_fails(self):
+        """V1.0.4 rebind: a task package still bound to the previous active
+        spec G2-02-SPEC-V1.0.3 must FAIL (no active V1.0.3 binding), and no
+        E1/E2 subprocess may start (no commands.json written)."""
+        code, manifest, has_commands = self._dry_run_with_task_package(
+            [("G2-02-SPEC-V1.0.4", V103_SPEC_VERSION)])
+        self.assertEqual(code, 1)
+        self.assertEqual(manifest["overall_status"], "FAIL")
+        self.assertTrue(any("task_package_version" in n for n in manifest["notes"]),
+                        manifest["notes"])
         self.assertFalse(has_commands)
 
     def test_no_old_version_bindings_in_sources(self):
@@ -878,6 +911,169 @@ class CliTests(unittest.TestCase):
             self.assertEqual(code, 1)
 
 
+def _refuse_children():
+    """Fake subprocess whose ``run`` raises if any child would start."""
+
+    def run(*args, **kwargs):
+        raise AssertionError("child must not start: %r" % (args,))
+
+    return _FakeSubprocess(run)
+
+
+class SolverGuardTests(unittest.TestCase):
+    """V1.0.4: the G2-01 solver observation_calibration_v1.py is snapshotted
+    and guarded identically to the other nine files -- no exemption.  Any
+    solver failure (mutation during copy, missing source) must FAIL/INCOMPLETE
+    and no E1/E2 subprocess may start."""
+
+    BASE = ["--parameters", REAL_PARAMETERS, "--task-package", REAL_TASK_PACKAGE,
+            "--schema", REAL_SCHEMA, "--fixture", REAL_FIXTURE,
+            "--upstream-run-root", REAL_UPSTREAM_ROOT]
+
+    def test_solver_mutation_during_copy_fails_no_children(self):
+        """Solver hash-after differs from hash-before => INCOMPLETE, no
+        commands.json, no E1/E2 subprocess."""
+        with open(runner.code_source_path(SOLVER_REL), "rb") as f:
+            solver_bytes = f.read()
+        real_sha = runner.sha256_bytes
+        seen = {"n": 0}
+
+        def flaky(data):
+            if data == solver_bytes:
+                seen["n"] += 1
+                if seen["n"] == 3:  # the hash-after read of the solver
+                    return "f" * 64  # source "mutated" inside the copy window
+            return real_sha(data)
+
+        with tempfile.TemporaryDirectory() as tmp_out:
+            with mock.patch.object(runner, "sha256_bytes", side_effect=flaky):
+                with mock.patch.object(runner, "subprocess", _refuse_children()):
+                    code = runner.main(self.BASE + ["--output-root", tmp_out])
+            self.assertEqual(code, 1)
+            run_dir = find_run_dir(tmp_out)
+            with open(os.path.join(run_dir, "run_manifest.json"), encoding="utf-8") as f:
+                manifest = json.load(f)
+            self.assertEqual(manifest["overall_status"], "INCOMPLETE")
+            self.assertTrue(any("observation_calibration" in n
+                                or "snapshot" in n for n in manifest["notes"]),
+                            manifest["notes"])
+            # no child ever started and no command log was fabricated
+            self.assertFalse(os.path.exists(os.path.join(run_dir, "commands.json")))
+
+    def test_solver_source_missing_fails_no_children(self):
+        """Working-tree solver missing => INCOMPLETE, no commands.json, no
+        E1/E2 subprocess (the solver has no missing-file exemption)."""
+        real_csp = runner.code_source_path
+
+        def missing_solver(rel):
+            if rel == SOLVER_REL:
+                return os.path.join(tempfile.gettempdir(), "no_such_solver_%s.py"
+                                    % ("missing",))
+            return real_csp(rel)
+
+        with tempfile.TemporaryDirectory() as tmp_out:
+            with mock.patch.object(runner, "code_source_path",
+                                   side_effect=missing_solver):
+                with mock.patch.object(runner, "subprocess", _refuse_children()):
+                    code = runner.main(self.BASE + ["--output-root", tmp_out])
+            self.assertEqual(code, 1)
+            run_dir = find_run_dir(tmp_out)
+            with open(os.path.join(run_dir, "run_manifest.json"), encoding="utf-8") as f:
+                manifest = json.load(f)
+            self.assertEqual(manifest["overall_status"], "INCOMPLETE")
+            self.assertFalse(os.path.exists(os.path.join(run_dir, "commands.json")))
+
+
+class FrozenClosureTests(unittest.TestCase):
+    """Controlled process-level harness for the V1.0.4 runtime closure: the
+    frozen E1 (main + three routes + the G2-01 solver) is rebuilt in a temp
+    run structure using the runner's own snapshot guard, then executed in a
+    clean interpreter whose cwd and sys.path point only at the temp tree.
+    Proves frozen E1 imports the frozen solver with no working-tree fallback.
+    No formal run directory is ever created (all output stays in tmp)."""
+
+    E1_CLOSURE = [
+        "04_代码/main_model/q1_quality_v1.py",
+        "04_代码/main_model/q1_routes/closed_form_v1.py",
+        "04_代码/main_model/q1_routes/enumeration_v1.py",
+        "04_代码/main_model/q1_routes/absorption_chain_v1.py",
+        SOLVER_REL,
+    ]
+
+    def _build_frozen_closure(self, tmp, include_solver=True):
+        """Byte-copy the E1 closure into tmp/frozen/code/04_代码/main_model/
+        with the runner's own snapshot_code triple-hash guard (mirrors the
+        runner's frozen/code layout)."""
+        mm = os.path.join(tmp, "frozen", "code", "04_代码", "main_model")
+        rels = list(self.E1_CLOSURE)
+        if not include_solver:
+            rels.remove(SOLVER_REL)
+        for rel in rels:
+            src = runner.code_source_path(rel)
+            dst = os.path.join(mm, *rel.split("/")[2:])
+            before, snap, after = runner.snapshot_code(src, dst)
+            self.assertEqual(before, snap)
+            self.assertEqual(after, snap)
+        return mm
+
+    def _probe(self, frozen_mm, cwd):
+        """Run a clean interpreter with only frozen_mm on sys.path (plus
+        stdlib/site-packages), cwd pointing at the temp tree, PYTHONPATH
+        emptied and user site disabled.  Reports whether the frozen E1 module
+        loaded the calibrator and which file the solver import resolved to."""
+        probe = (
+            "import json, sys\n"
+            "sys.path.insert(0, %r)\n"
+            "try:\n"
+            "    import observation_calibration_v1 as _cal\n"
+            "    cal_file = _cal.__file__\n"
+            "except Exception as _exc:\n"
+            "    cal_file = 'IMPORT_ERROR:' + type(_exc).__name__\n"
+            "import q1_quality_v1 as _e1\n"
+            "print(json.dumps({'calibrator_loaded': _e1._calibrator is not None,"
+            "'cal_file': cal_file}))\n"
+        ) % (frozen_mm,)
+        env = dict(os.environ)
+        env["PYTHONPATH"] = ""
+        env.pop("PYTHONHOME", None)
+        env["PYTHONNOUSERSITE"] = "1"
+        return subprocess.run([sys.executable, "-c", probe], cwd=cwd, env=env,
+                              capture_output=True, text=True)
+
+    def _probe_result(self, proc, expect_loaded):
+        self.assertEqual(proc.returncode, 0,
+                         "probe failed: rc=%s stderr=%s" % (proc.returncode, proc.stderr))
+        out = json.loads(proc.stdout.strip().splitlines()[-1])
+        self.assertEqual(out["calibrator_loaded"], expect_loaded, out)
+        return out
+
+    def test_frozen_e1_imports_frozen_solver(self):
+        """(9) Frozen E1 in a temp run structure imports the frozen solver."""
+        with tempfile.TemporaryDirectory() as tmp:
+            frozen_mm = self._build_frozen_closure(tmp, include_solver=True)
+            out = self._probe_result(self._probe(frozen_mm, cwd=tmp), True)
+            self.assertTrue(out["calibrator_loaded"], out)
+            frozen_solver = os.path.join(frozen_mm, "observation_calibration_v1.py")
+            self.assertEqual(os.path.normcase(out["cal_file"]),
+                             os.path.normcase(frozen_solver),
+                             "solver must resolve to the frozen copy: %s" % out)
+
+    def test_no_worktree_fallback(self):
+        """(10) When the frozen solver copy is absent and only the temp run
+        tree is visible, frozen E1 must NOT fall back to the working-tree
+        solver: the import fails and _calibrator stays None, even though the
+        working-tree solver exists on disk."""
+        self.assertTrue(os.path.isfile(runner.code_source_path(SOLVER_REL)),
+                        "negative control requires the worktree solver to exist")
+        with tempfile.TemporaryDirectory() as tmp:
+            frozen_mm = self._build_frozen_closure(tmp, include_solver=False)
+            self.assertFalse(os.path.isfile(
+                os.path.join(frozen_mm, "observation_calibration_v1.py")))
+            out = self._probe_result(self._probe(frozen_mm, cwd=tmp), False)
+            self.assertFalse(out["calibrator_loaded"], out)
+            self.assertIn("IMPORT_ERROR", out["cal_file"], out)
+
+
 class FullRunSmokeTests(unittest.TestCase):
     """End-to-end main() flows with a mocked subprocess; all run output goes
     to a temp output root -- no formal canonical run is ever created."""
@@ -936,6 +1132,23 @@ class FullRunSmokeTests(unittest.TestCase):
                 full = os.path.join(run_dir, *art["path"].split("/"))
                 self.assertTrue(os.path.isfile(full), art["path"])
                 self.assertEqual(art["sha256"], runner.sha256_file(full))
+            # V1.0.4: the G2-01 solver is the 10th code snapshot; its frozen
+            # copy is byte-identical to the working-tree source and its
+            # before/snapshot/after guard passed (source == snapshot == source)
+            solver_src = runner.code_source_path(SOLVER_REL)
+            self.assertTrue(os.path.isfile(solver_src), solver_src)
+            solver_arts = [a for a in manifest["artifacts"]
+                           if a["path"] == SOLVER_FROZEN_REL]
+            self.assertEqual(len(solver_arts), 1,
+                             "solver must appear in the manifest inventory")
+            solver_art = solver_arts[0]
+            self.assertEqual(solver_art["role"], "source_code")
+            self.assertEqual(solver_art["sha256"], runner.sha256_file(solver_src))
+            self.assertEqual(solver_art["source_sha256_before"], solver_art["sha256"])
+            self.assertEqual(solver_art["source_sha256_after"], solver_art["sha256"])
+            solver_frozen = os.path.join(run_dir, *SOLVER_FROZEN_REL.split("/"))
+            self.assertTrue(os.path.isfile(solver_frozen))
+            self.assertEqual(runner.sha256_file(solver_frozen), runner.sha256_file(solver_src))
             # commands: exactly 4 in frozen order, all exit 0, argv[1] = frozen copy
             with open(os.path.join(run_dir, "commands.json"), encoding="utf-8") as f:
                 cmds = json.load(f)["commands"]
@@ -985,6 +1198,8 @@ class FullRunSmokeTests(unittest.TestCase):
             paths = [ln.split("  ", 1)[1] for ln in lines]
             self.assertEqual(paths, sorted(paths))
             self.assertNotIn("file_hashes.sha256", paths)
+            # file_hashes inventory includes the 10th solver snapshot
+            self.assertIn(SOLVER_FROZEN_REL, paths)
 
     def test_full_flow_e1_nonzero_fails(self):
         with tempfile.TemporaryDirectory() as tmp_out:

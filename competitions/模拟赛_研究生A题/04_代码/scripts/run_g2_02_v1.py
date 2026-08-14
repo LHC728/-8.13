@@ -4,11 +4,13 @@
 Role
 ----
 Orchestrates one immutable canonical run for task package
-G2-02-SPEC-V1.0.3 (V1.0.3 rebind: NA/null interface contract, frozen
-2026-08-14; frozen spec commit 4936327440238b442ec02edaba8226b90426300b,
-implementation baseline d644e58f5beaa6d203d5a48179b2d3066d192a21):
-it freezes the frozen inputs and the nine source/test files, generates the
-two canonical requests, executes the frozen E1/E2 copies via subprocess
+G2-02-SPEC-V1.0.4 (V1.0.4 rebind: runtime dependency snapshot closure, frozen
+2026-08-14; frozen spec commit c10c803ecd3a4c91918a165686b16e95f400ee7c;
+implementation baseline d644e58f5beaa6d203d5a48179b2d3066d192a21, runner
+baseline ee107d137cb002f7e884ae0d1f181372a25562ae):
+it freezes the frozen inputs and the ten source/test files (the nine G2-02
+files plus the G2-01 accepted solver observation_calibration_v1.py), generates
+the two canonical requests, executes the frozen E1/E2 copies via subprocess
 (``shell=False``, exact argv arrays), and builds the evidence package
 (run_manifest.json, commands.json, file_hashes.sha256) under
 ``05_结果/G2/run_<run_id>/``.
@@ -20,9 +22,11 @@ Boundaries (frozen)
   PASS/FAIL from numeric content.  PASS requires structural evidence: both E1
   and both E2 subprocesses exit 0, both ``check_report.json`` exist with
   ``checker_status == "PASS"``, both response/check_report envelopes conform
-  to the V1.0.3 schema (envelope level), the nine code snapshots have
-  hash-before == snapshot-hash == hash-after, frozen input hashes match the
-  task package ``frozen_sha256``, and every declared artifact exists.
+  to the frozen schema (envelope level), the ten code snapshots have
+  hash-before == snapshot-hash == hash-after (the G2-01 solver
+  observation_calibration_v1.py is guarded identically to the other nine),
+  frozen input hashes match the task package ``frozen_sha256``, and every
+  declared artifact exists.
 * V1.0.3 compatibility: lambda NA (na=true) is expressed with null main
   leaves, sum and max_abs_deviation (never numeric 0); q_E is never judged
   numerically (no ``q_E == "0"`` string check); standard_chain_v1 responses
@@ -65,11 +69,14 @@ UPSTREAM_RUN_ROOT_PREFIX = "run_"
 RUN_DIR_PREFIX = "run_"
 RUN_ID_RE = re.compile(r"^[0-9]{8}T[0-9]{12}Z_[0-9a-f]{8}$")
 
-# ---- V1.0.3 frozen bindings (documented + enforced for spec/version/hashes) ----
-SPEC_VERSION = "G2-02-SPEC-V1.0.3"
+# ---- V1.0.4 frozen bindings (documented + enforced for spec/version/hashes) ----
+# V1.0.4 = runtime dependency snapshot closure only: schema/fixture/parameters
+# and both upstream hashes are unchanged from V1.0.3; the snapshot set grows
+# from 9 to 10 with the G2-01 solver observation_calibration_v1.py.
+SPEC_VERSION = "G2-02-SPEC-V1.0.4"
 SCHEMA_SHA256_FROZEN = "0bb93b122572b85833c539bc6f2bee273e04a6c0984933aafa5ed6d3e66dec4d"
 FIXTURE_SHA256_FROZEN = "13efa773aaa2b057be33d2c511e4bc4be078a6817d47e2dc09aad9da2db5fb0f"
-FROZEN_SPEC_COMMIT = "4936327440238b442ec02edaba8226b90426300b"
+FROZEN_SPEC_COMMIT = "c10c803ecd3a4c91918a165686b16e95f400ee7c"
 IMPLEMENTATION_BASELINE = "d644e58f5beaa6d203d5a48179b2d3066d192a21"
 
 SCENARIO_ROLES = ("canonical_g2_02", "generic", "test_oracle")
@@ -83,11 +90,17 @@ DECIMAL_SIGNED_RE = re.compile(r"^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 # (project-relative source path, manifest role)
+# Ten frozen code/test snapshots (V1.0.4): the nine G2-02 files plus the
+# G2-01 accepted solver observation_calibration_v1.py, ordered to mirror
+# evidence_package_contract.exact_layout (routes, then solver, then checker).
+# Every entry is guarded identically by snapshot_code (hash-before ==
+# snapshot-hash == hash-after); the solver has NO exemption.
 CODE_SNAPSHOTS = [
     ("04_代码/main_model/q1_quality_v1.py", "source_code"),
     ("04_代码/main_model/q1_routes/closed_form_v1.py", "source_code"),
     ("04_代码/main_model/q1_routes/enumeration_v1.py", "source_code"),
     ("04_代码/main_model/q1_routes/absorption_chain_v1.py", "source_code"),
+    ("04_代码/main_model/observation_calibration_v1.py", "source_code"),
     ("04_代码/checker/q1_quality_checker_v1.py", "source_code"),
     ("04_代码/scripts/run_g2_02_v1.py", "source_code"),
     ("04_代码/tests/test_q1_quality_main_v1.py", "test_code"),
@@ -240,8 +253,8 @@ def extract_task_package_version(yaml_text):
 
 
 def check_spec_bindings(tp_text, frozen_sha256):
-    """V1.0.3 binding checks: task package version and the frozen schema /
-    fixture SHA-256 values must equal the frozen V1.0.3 bindings.
+    """V1.0.4 binding checks: task package version and the frozen schema /
+    fixture SHA-256 values must equal the frozen V1.0.4 bindings.
 
     Returns a list of error strings (empty == bound).  A mismatch means the
     runner must not start E1/E2.
@@ -252,11 +265,11 @@ def check_spec_bindings(tp_text, frozen_sha256):
         errors.append("task_package_version %r != frozen %s" % (ver, SPEC_VERSION))
     if frozen_sha256.get("schema") != SCHEMA_SHA256_FROZEN:
         errors.append(
-            "frozen_sha256.schema %s != V1.0.3 binding %s"
+            "frozen_sha256.schema %s != V1.0.4 binding %s"
             % (frozen_sha256.get("schema"), SCHEMA_SHA256_FROZEN))
     if frozen_sha256.get("oracle_fixture") != FIXTURE_SHA256_FROZEN:
         errors.append(
-            "frozen_sha256.oracle_fixture %s != V1.0.3 binding %s"
+            "frozen_sha256.oracle_fixture %s != V1.0.4 binding %s"
             % (frozen_sha256.get("oracle_fixture"), FIXTURE_SHA256_FROZEN))
     return errors
 
@@ -355,14 +368,15 @@ for _sem in SEMANTICS:
 ARTIFACT_LAYOUT.append(("commands.json", "commands"))
 # NOTE: file_hashes.sha256 is deliberately NOT in the layout: it is created
 # after the manifest (the manifest's hash is recorded inside it), it is not
-# one of the 23 semantic artifacts, and requiring it here would make the
-# PASS presence check impossible (it does not exist at evaluation time).
+# one of the 24 semantic artifacts (V1.0.4 minimum), and requiring it here
+# would make the PASS presence check impossible (it does not exist at
+# evaluation time).
 
 
 def collect_artifacts(run_root, code_snapshot_hashes=None):
     """Build the manifest artifacts array in frozen order; only existing files
     are included.  ``code_snapshot_hashes`` maps the frozen code relative path
-    to (hash_before, hash_snapshot, hash_after) for the nine code files."""
+    to (hash_before, hash_snapshot, hash_after) for the ten code files."""
     code_snapshot_hashes = code_snapshot_hashes or {}
     artifacts = []
     for rel, role in ARTIFACT_LAYOUT:
@@ -404,7 +418,8 @@ def utc_now_iso():
 
 
 # --------------------------------------------------------------------------
-# V1.0.3 envelope-level schema validation (structural only)
+# Envelope-level schema validation (structural only; V1.0.3+ NA/null, q_E
+# lexical-zero and chain e_max_E compatibility retained in V1.0.4)
 # --------------------------------------------------------------------------
 
 def _is_str(v):
@@ -426,9 +441,9 @@ def _is_sha256(v):
 
 
 def _check_lambda_block(lam, errors):
-    """V1.0.3 lambda rules: na=true requires null main A..D, sum and
-    max_abs_deviation (NA must never be written as numeric 0); na=false
-    requires decimal main/sum/max_abs_deviation; tilde leaves are
+    """Frozen lambda rules (V1.0.3+ compatibility): na=true requires null main
+    A..D, sum and max_abs_deviation (NA must never be written as numeric 0);
+    na=false requires decimal main/sum/max_abs_deviation; tilde leaves are
     decimal-or-null.  q_E is never judged numerically here."""
     if not isinstance(lam, dict):
         errors.append("lambda must be an object")
@@ -466,7 +481,7 @@ def _check_lambda_block(lam, errors):
 
 def _check_e_kernel(ek, errors):
     """E_kernel block.  e_max_E is optional and may be omitted entirely
-    (standard_chain_v1 responses omit it -- V1.0.3)."""
+    (standard_chain_v1 responses omit it -- V1.0.3+ compatibility)."""
     if not isinstance(ek, dict):
         errors.append("E_kernel must be an object")
         return
@@ -676,7 +691,7 @@ def _check_commands(obj, errors):
 
 def validate_formal_envelope(obj, kind, run_id=None, semantics=None,
                              scenario_role=None):
-    """Envelope-level V1.0.3 schema conformance checks for the four formal
+    """Envelope-level frozen schema conformance checks for the four formal
     envelope types (q1_response / q1_check_report / q1_run_manifest /
     q1_command_log).
 
@@ -684,7 +699,7 @@ def validate_formal_envelope(obj, kind, run_id=None, semantics=None,
     recomputes anything, never "corrects" E1/E2 output.  Returns a list of
     error strings (empty == conformant).
 
-    V1.0.3 compatibility:
+    V1.0.3+ compatibility (retained in V1.0.4):
     * lambda.na=true requires lambda.main A..D, sum, max_abs_deviation and
       route_agreement.lambda_A..D to be null (NA must never be written as 0).
     * q_E is not judged numerically -- no ``q_E == "0"`` string check;
@@ -739,7 +754,7 @@ def run_evaluate(commands, run_root, run_id, code_snapshot_hashes=None):
     notes).
 
     Orchestration-only: command exit codes, response/check_report envelope
-    validity (V1.0.3), check_report checker_status == "PASS", artifact
+    validity (frozen rules), check_report checker_status == "PASS", artifact
     presence and E2 preflight-failure detection.  Never judges numeric
     content, never modifies any E1/E2 output.
     """
@@ -876,7 +891,7 @@ def main(argv=None):
     overall_status = "INCOMPLETE"
     hash_mismatch = False
 
-    # ---- V1.0.3 binding checks: spec version + frozen schema/fixture SHAs ----
+    # ---- V1.0.4 binding checks: spec version + frozen schema/fixture SHAs ----
     freeze_errors = check_spec_bindings(tp_text, frozen_sha256)
     if freeze_errors:
         hash_mismatch = True
@@ -931,7 +946,7 @@ def main(argv=None):
 
     code_snapshot_hashes = {}
     if not freeze_errors:
-        # ---- snapshot the nine code/test files (hash-before=snapshot=after) ----
+        # ---- snapshot the ten code/test files (hash-before=snapshot=after) ----
         for rel, _role in CODE_SNAPSHOTS:
             src = code_source_path(rel)
             dst = os.path.join(run_root, "frozen", "code", *rel.split("/"))
@@ -985,7 +1000,7 @@ def main(argv=None):
         cmds_env = build_commands(commands)
         write_json(os.path.join(run_root, "commands.json"), cmds_env)
 
-        # ---- structural evaluation (V1.0.3 envelope validation included) ----
+        # ---- structural evaluation (frozen envelope validation included) ----
         overall_status, notes = run_evaluate(commands, run_root, run_id,
                                              code_snapshot_hashes)
         self_errs = validate_formal_envelope(cmds_env, "commands")
