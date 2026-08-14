@@ -1,20 +1,22 @@
-task_package_version: "G2-03-SPEC-V1.0"
+task_package_version: "G2-03-SPEC-V1.0.1"
 task_id: "G2-03"
 title: "无随机最小并行 DES：确定性事件引擎、1—4 台手算夹具与 K=9 跨班重测时间线"
 status: "FROZEN_PENDING_IMPLEMENTATION"
 drafted_by_role: "D / G2_03_DETERMINISTIC_DES_SPEC_DESIGN / L3 决策分析"
 drafted_date: "2026-08-14"
 approval_gate: >-
-  本包已冻结为 G2-03-SPEC-V1.0（2026-08-14 Human Gate 批准）。dispatches / allowed_read_paths /
+  本包已冻结为 G2-03-SPEC-V1.0（2026-08-14 Human Gate 批准），V1.0.1 为 V1.0 后的
+  governance/documentation consistency correction。dispatches / allowed_read_paths /
   allowed_write_paths / exact_cli 等派单级字段在实现 Gate（G2-03 IMPLEMENTATION ACTIVE）补。
   冻结不代表实现完成；实现/运行需下一 Human Gate 授权。
 
 # ============================================================================
-# 0. 草稿自述
+# 0. 冻结说明
 # ============================================================================
-draft_notes:
-  - "这是 SPEC DESIGN 草稿，不是实现任务包；只冻结语义与接口，不冻结 FINAL 版本号。"
-  - "本包不 spawn 子代理、不跑 workflow、不实现 DES/checker、不运行正式仿真、不 commit/push。"
+freeze_notes:
+  - "本包已经 Human Gate 冻结（V1.0 freeze commit cecaa97e21d1a7f70a61e96455deabc15aded783）；冻结只授权规格，不代表实现完成。"
+  - "V1.0.1 是 V1.0 后的机械一致性修正：仅修正 governance/documentation 表述，不改变任何数学/事件/FCFS/夹具/CP-SAT 语义，不改变依赖锁定。"
+  - "DES/checker/formal run 尚未开始；实现需要 IMPLEMENTATION ACTIVE 状态（另见 CURRENT_STATE.md）。历史 commit/push 已发生。"
   - "CP-SAT 交叉核对依赖已经人工 Gate 裁决：OPT-A（OR-Tools 9.15.6755 仅 C08 独立 oracle 专用，主 DES 不依赖）；见 cp_sat_dependency_decision 与 checker_optional_dependencies。"
   - "FCFS 键的装置 ID 方案在本包显式冻结为批次序号（1..N，按入台顺序，1/2 号在 t=0 预置）；判断为可完全规格化，不构成开放决策项（见 fcfs_key）。"
   - "调度列出的『事件引擎语义 1-26』实际枚举出 24 条独立语义；本包逐条冻结全部 24 条（见 deviations）。"
@@ -103,7 +105,7 @@ governance_binding:
       claim_limit: "发布前一致性。"
     - id: "CR-V3.1/C23"
       applicability: "NOT_APPLICABLE"
-      claim_limit: "H2 专属；本包为 H1 无延迟基线。"
+      claim_limit: "C23 为 H2 专属，不适用于本包；G2-03 仅构建确定性 DES / 固定 FCFS 验证基线，不构成 H1 正式实验或 H1 参数冻结。"
     - id: "CR-V3.1/C24"
       applicability: "NOT_APPLICABLE"
       claim_limit: "H2 机会预算属 G3 出口。"
@@ -113,9 +115,6 @@ governance_binding:
     - id: "CR-V3.1/C26"
       applicability: "NOT_APPLICABLE"
       claim_limit: "H1 预防更换策略属 G3。"
-    - id: "CR-V3.1/C28"
-      applicability: "NOT_APPLICABLE"
-      claim_limit: "注册表无 C28；占位防误用。"
 
 # ============================================================================
 # 2. 来源分层
@@ -133,7 +132,7 @@ source_layering:
   strategy_or_governance_limit:
     - "CURRENT_STATE.md：G2 只证明最小事件引擎算对；DES=NOT STARTED；不运行 100 台正式实验、不启用 H2。"
     - "CR-V3.1/C19：主实现与 checker 核心计算隔离。"
-    - "项目既定政策：仅 Python 标准库；不得新增依赖（2026-08-14 人工 Gate 批准 OPT-A：OR-Tools 9.15.6755 仅限 C08 独立 CP-SAT oracle，见 checker_optional_dependencies；主 DES 仍 stdlib-only）。"
+    - "G2-03 主 DES 冻结为 Python stdlib-only；CR-V3.1/C08 的独立 CP-SAT oracle 经 Human Gate 允许使用 pinned OR-Tools 9.15.6755；该例外不传播到主 DES 或其他阶段。"
   prohibited_wording:
     - "不得把队伍闭合的班末禁启写成弱支配定理（CURRENT_STATE.md §6、问题契约 §1.3.3）。"
     - "不得把手算夹具数值写成正式 100 台运行结果（问题契约、K9 文件声明）。"
@@ -157,9 +156,10 @@ scope:
     - "C06 最小质量分离 + 逐台 oracle、C16 键骨架、C17 指标/账本复算、C19 隔离强制、C20 故障注入、C21 复现证据。"
     - "CP-SAT oracle 的 G2-04 侧辅助验证（若最终文件职责更清晰；首选归属 G2-03 validation/oracle）。"
   out_of_scope:
+    - "G2-03 OUT OF SCOPE：CR-V3.1/C06 的随机/逐台键控全量部分；CR-V3.1/C16-C17 的 G3 全量随机复验部分；CR-V3.1/C07；CR-V3.1/C13-C15；CR-V3.1/C24；CR-V3.1/C26；H2 CR-V3.1/C23-C25。"
+    - "CR-V3.1/C18 的 G2 确定性事件活性检查仍属于 G2-03 IN_SCOPE；CR-V3.1/C06/C16/C17 的 G2 最小接口/检查部分按现有 G2-04 reservation 保留。"
     - "随机设备寿命抽样、120/240h 随机故障、随机缺陷生成、随机测手观测、100 台正式实验、H1 调参、H2、rollout、最优 K、正式敏感性。"
     - "G2 小例一律用确定性初始状态 + 确定性脚本化/强制结果；禁止 RNG 伪造测试结果。"
-    - "G3 全部内容（C06-C07/C13-C18/C24/C26）、H2（C23-C25）。"
 
 # ============================================================================
 # 4. 冻结事件引擎语义（24 条，逐条引用权威来源）
