@@ -1,0 +1,371 @@
+# G3 任务包：公共随机 DES 与 H1 基线（SPEC V1.0）
+
+task_package_version: "G3-SPEC-V1.0"
+task_id: "G3"
+title: "键控随机公共 DES：设备寿命/再生、H1 固定 FCFS 基线、质量分离 oracle 与 G3 出口仪表"
+status: "FROZEN_FOR_IMPLEMENTATION"
+drafted_date: "2026-08-14"
+drafted_by_role: "D / G3 SPEC 起草（基于已签字权威文档 + Human Gate 决策落文）"
+approval_gate: >-
+  本包已冻结为 G3-SPEC-V1.0（2026-08-14 Human Gate：G3_SPEC_DRAFT CONDITIONAL PASS → Phase A 落文
+  全部 Human Gate 决策 → Phase B fresh verified Pro/high 终审 PASS/HIGH/implementation_ready=YES
+  → 冻结）。AUTOPILOT PILOT #2 自 G3 实现启动至 G3 Macro Gate，无条件停机。
+  本阶段仍不实现 random DES、不运行 100-device 正式实验、不实现 H2、不产出 Q2/Q3 正式结果；
+  Q2 FORMAL/Q3/H2 仍非授权。
+
+# ============================================================================
+# 0. 权威来源（本草案唯一语义来源；不得使用 99_归档/旧评审/聊天摘要）
+# ============================================================================
+authority:
+  - "AGENTS.md"
+  - "CURRENT_STATE.md（仅阶段事实）"
+  - "01_审计/问题契约.md"
+  - "01_审计/检查注册表_V3.1.md"
+  - "01_审计/小问依赖与检查器接口.md"
+  - "02_数据/parameters.csv"
+  - "03_模型/00_模型总览.md"
+  - "03_模型/02_H1基线与离散事件模型.md"
+  - "03_模型/模型方案思路_评审冻结版_V3.1.md"
+  - "accepted G2 task packages（仅作为 upstream 接口）：G2-01-SPEC-V1.1.11 / G2-02-SPEC-V1.0.5 / G2-03-SPEC-V1.0.2 / G2-04-SPEC-V1.0"
+  - "G2 accepted evidence（仅接口事实）：run_..._8babb503 / run_..._4bb92eda / G2-03 accepted / run_..._32913efa"
+
+# ============================================================================
+# 1. G3 registry scope
+# ============================================================================
+registry_scope:
+  in_scope:
+    - id: "CR-V3.1/C06"
+      layer: "full G3 layer（键控随机逐台全等 oracle）"
+    - id: "CR-V3.1/C07"
+      layer: "统计烟测（四格 vs 解析多项分布锚）"
+    - id: "CR-V3.1/C13"
+      layer: "寿命抽样（120/240 CDF 节点、U>F(240) 右删失）"
+    - id: "CR-V3.1/C14"
+      layer: "120/240 与再生（a+d 三边界、换新校准、年龄归零）"
+    - id: "CR-V3.1/C15"
+      layer: "Q3 初态重置与七 K 配对随机世界（接口/重置测试；不跑七 K 正式实验）"
+    - id: "CR-V3.1/C16"
+      layer: "G3 experiment layer（CRN/pilot/tuning/holdout 分离）"
+    - id: "CR-V3.1/C17"
+      layer: "G3 full layer（完整随机重放/账本）"
+    - id: "CR-V3.1/C18"
+      layer: "事件活性（G3 随机扩展下显式要求，见 c18_liveness）"
+    - id: "CR-V3.1/C26"
+      layer: "H1 预防更换政策（Human Gate 已冻结决策集，见 c26）"
+  exit_gate:
+    - id: "CR-V3.1/C24"
+      layer: "G3 出口 H2 准入仪表（不实现 H2）"
+  future_conditional_only:
+    - "CR-V3.1/C23（H2 信息/动作边界）、CR-V3.1/C25（H2 留出准入）：未来条件门，本包不实现 H2"
+  out_of_scope:
+    - "H2 实现"
+    - "Q2/Q3 正式结果"
+    - "Q2 FORMAL 100-device 正式评估（G3 tuning/holdout 100-device 批次属授权验证/调优，非 Q2 正式）"
+    - "K 推荐"
+
+# ============================================================================
+# 2. 不得改变的 G2 accepted 语义（仅随机扩展，不重解释）
+# ============================================================================
+frozen_upstream_semantics:
+  - "两个 device bays；A/B/C/E 各容量 1"
+  - "同装置 A/B/C 可并行；E 等全部 A/B/C flow-pass"
+  - "无维修；首次异常 → 同工序完整重测；第二次有效异常 → 装置退出"
+  - "中断/取消无观测、不推进 effective_attempt_no；片段计年龄/YXB"
+  - "D 仅 A/B/C 全 PASS 且装置仍 pending 时物化一次；E 重测不重抽 D"
+  - "FCFS 键 (release_time, device_id, process_order, effective_attempt_no)；release_time 不可改；squad_id 排除"
+  - "测试/换新—校准/周转不可跨班；恰班末完成允许；1h literal / 0.5h overlap 周转"
+  - "Q3 跨班待重测保留原 release 与 attempt=2"
+
+g2_layer_cross_reference: >-
+  CR-V3.1/C06 G2 最小层（分布不变主命题）由 G2-02 闭合；CR-V3.1/C16 G2 键骨架层、
+  CR-V3.1/C17 G2 最小重放层由 G2-04 闭合。G3 在这些层之上**扩展**而非重定义。
+
+# ============================================================================
+# 3. 随机键架构（key_schema_v1；Human Gate G3-DEC-05 冻结）
+# ============================================================================
+random_key_architecture:
+  key_schema_version: "key_schema_v1"
+  canonical_key: "key_schema_v1 | master_seed | namespace | replicate_id | entity_id | process_or_subsystem | attempt_or_generation"
+  mapping: "U = (uint64_be(SHA256(UTF8(canonical_key))[0:8]) + 0.5) / 2^64"
+  streams:
+    U_X_device_true_state: "(namespace, replicate_id, device_id, subsystem)；subsystem 显式区分 A/B/C"
+    U_D_d_materialization: "(namespace, replicate_id, device_id)；仅 D 合法物化时消费（D 专用流，不并入 ABC 槽）"
+    U_Y_observation: "(namespace, replicate_id, device_id, process, effective_attempt_no)；仅有效完成消费"
+    U_L_equipment_lifetime: "(namespace, replicate_id, resource, generation_no)；每设备代次恰一个 U_L"
+    H2_future_stream: "reserved only；G3 不实现 H2"
+  forbidden_in_physical_keys:
+    - "run_id"
+    - "execution_no"
+    - "restart_no"
+    - "wall-clock timestamp"
+    - "container iteration order"
+    - "event insertion order"
+    - "strategy_id"
+    - "policy_id"
+    - "squad_id"
+    - "worker_id"
+    - "agent_id"
+  no_observation_u_consumed_by:
+    - "failure interruption"
+    - "terminal cancellation"
+    - "shift deferral"
+    - "never-started task"
+  crn_rule: >-
+    意图 CRN 配对的策略/情景共享同一底层 canonical U world；scenario/config 标识不得注入物理 U 键。
+    配置可在冻结分布参数不同时对同一 U 做不同变换。禁止静默引入执行相关熵。
+  experiment_namespaces（六不相交）:
+    development_unit: "namespace=development_unit"
+    pilot: "namespace=pilot"
+    h1_tuning: "namespace=h1_tuning"
+    g3_holdout: "namespace=g3_holdout"
+    q2_formal: "namespace=q2_formal"
+    q3_formal: "namespace=q3_formal"
+  order_independence: "键不依赖容器遍历顺序/资源迭代顺序/事件插入顺序/squad_id；命名空间与字段序按 UTF-8 固定规范化；禁止语言运行时默认 hash()"
+
+# ============================================================================
+# 4. C13 设备寿命模型（主模型 = 分段线性 CDF；常风险 = 敏感性）
+# ============================================================================
+lifetime_model:
+  main: "分段线性 CDF：F(t)=F_120*t/120 (0<=t<=120)；F_120+(F_240-F_120)(t-120)/120 (120<t<=240)"
+  sensitivity: "常风险构造：h1=-ln(1-F_120)/120、h2=-ln((1-F_240)/(1-F_120))/120；仅敏感性，非 G3 主模型"
+  per_generation: "每设备代次恰抽一个 U_L"
+  inverse_cdf_cases:
+    - "0..120 h：t = 120*U/F_120"
+    - "120..240 h：t = 120 + 120*(U-F_120)/(F_240-F_120)"
+    - "U > F(240)：右删失寿命 >240 h（随机寿命超过 240；设备仍 240 确定性强制更换）"
+  forbid: "禁止把 [0,240] 内 CDF 重新归一化到 U∈[0,F(240)]"
+  oracle_units_required:
+    - "A/B/C/E 各自的 F(120)、F(240)、节点下方/上方邻域、U>F(240) 分支"
+    - "独立单位/oracle 测试命中上述全部 case"
+
+# ============================================================================
+# 5. C14 再生语义（a=当前年龄，d=请求时长；Human Gate 决策）
+# ============================================================================
+regeneration_semantics:
+  cases:
+    - "a+d < 240：任务可启动（受其他约束）"
+    - "a+d = 240：可完成；同刻完成先结算，随后强制换新"
+    - "a+d > 240：启动前强制换新 + 校准"
+    - "随机故障早于任务完成：片段中断、计年龄/YXB、无观测、attempt 不变、设备不可用、换新+校准"
+  replacement:
+    - "new generation_no；age 归零；新代次抽新 U_L"
+  calibration:
+    - "时长 = parameters.csv 冻结资源校准时长（30/20/20/40 min）"
+    - "不计设备测试年龄；不可跨班"
+  event_order:
+    - "同刻：先结算完成，再处理故障/240 强制换新"
+    - "DES 事件规范按 V3.1 §10：完成→观测→判定→退出→取消→更新故障/换新/校准/周转/资源/班历→批量 FCFS 派工"
+  illegal_crossing_fallback: "底层状态机保留『非法任务运行至 240h 时强制中断』的兜底检查，并配套故障注入用例（与 V3.1 §7 一致）"
+
+# ============================================================================
+# 6. H1 强制基线（H1/R1）
+# ============================================================================
+h1_baseline:
+  core_dispatch: "固定全局 FCFS；每个事件闭包后启动所有互不冲突、可在本班完成的合法 FCFS 队首"
+  no_added_policies: "禁止 SPT/LPT/ATC/metaheuristic"
+  only_new_policy_dimension: "预防更换（C26）为 G3 唯一新增 H1 策略维度"
+  q2_calendar_interface:
+    - "N=100；单班 12h/天；班外全部停工"
+    - "初态：首两台在台位、设备已校准、age=0、代次初始化一致"
+    - "T 保持日历时间语义"
+    - "不发布 Q2 正式数字"
+  q3_interface:
+    - "N=100 全新独立批次；年龄/代次/寿命流完全重置"
+    - "K ∈ {9,9.5,10,10.5,11,11.5,12}；两班连续/天；停工 24-2K"
+    - "仅接口支持；不枚举 K、不推荐 K"
+
+# ============================================================================
+# 7. C26 预防更换政策（Human Gate 冻结决策集）
+# ============================================================================
+c26_preventive_replacement:
+  frozen_constraints:
+    - "预防更换仅当 age >= 120h"
+    - "a+d>240 是强制更换，永远不是预防选择"
+    - "预防更换只能发生在合法空闲决策点"
+    - "换新+校准必须满足班界规则"
+    - "H1 保持 FCFS"
+  coarse_candidates（G3-DEC-01 冻结）:
+    - "120"
+    - "144"
+    - "168"
+    - "192"
+    - "216"
+    - "NO_PM_BEFORE_MANDATORY（永不预防更换；只执行冻结强制年龄规则）"
+  no_240_as_preventive: "240h 行为属强制更换语义；不把 240 编码为普通预防阈值；NO_PM_BEFORE_MANDATORY 是独立政策基线，非 tau_pm=240"
+  local_refinement（G3-DEC-02 冻结）:
+    rule: "若最佳粗候选为数值 tau_pm：恰一轮局部细化，center=最佳粗值、window=±12h、step=6h，裁剪到合法预防域 tau_pm∈[120,240)，去重已评估候选"
+    no_fake_grid: "若粗胜者为 NO_PM_BEFORE_MANDATORY：不在 240 周围构造假局部网格；不进行第二轮细化"
+  positive_preventive_trigger（Human Gate §2 冻结，逐条）:
+    - "A. 资源空闲"
+    - "B. 确定当前冻结 FCFS 队首"
+    - "C. 评估全部普通前置/资源/状态要求"
+    - "D. 强制更换优先：a+d>240 → 任务前强制换新+校准（非预防）"
+    - "E. 边界：a+d==240 → 可完成；完成先结算；随后强制换新"
+    - "F. 否则若 a>=tau_pm（数值预防政策）→ 先预防换新+校准再服务队首"
+    - "G. NO_PM_BEFORE_MANDATORY 下 F 永不触发"
+    - "H. 换新+校准须遵守 no-cross-shift；若无法在本班合法完成：不非法启动、不消费任务观测随机性、保留队列/release 语义并在下一合法班唤醒"
+    - "校准后：age=0、generation_no+1、新代次绑定新 U_L、派工重估保留的 FCFS 状态"
+    - "禁止实现者自定义任意预防行为"
+  tuning_objective（Human Gate §1 冻结）:
+    primary: "minimize mean batch completion time T on h1_tuning worlds"
+    quality_is_constraint: "质量指标为验证约束而非调优目标（在 accepted 质量分离条件下）"
+  tie_break（Human Gate §1 冻结）:
+    - "仅当 canonical 存储的 mean T 精确相等时触发"
+    - "次序：1. 更少预防更换；2. 更大 tau_pm；3. NO_PM_BEFORE_MANDATORY 视为最不激进政策"
+    - "禁止任意 epsilon tie；禁止用 CI 重叠作调优 tie；禁止用 holdout 破 tie"
+
+# ============================================================================
+# 8. 数据分离（C16；G3-DEC-03/04/05 冻结）
+# ============================================================================
+data_separation:
+  tuning_repetitions（G3-DEC-03）: "每候选 20 独立 100-device 批次；同一次调优比较中全部候选使用完全相同 20 个 canonical CRN worlds；namespace=h1_tuning"
+  holdout（G3-DEC-04）: "100 独立 100-device 批次；namespace=g3_holdout；仅在粗搜索+局部细化+tie-break+最终 H1 候选冻结完成后使用；禁止因 holdout 结果改 tau_pm/候选集/策略逻辑/键 schema/统计程序；holdout 暴露真实实现/语义失败 → 失效并回治理，不在 holdout 上重调"
+  namespaces: "development_unit / pilot / h1_tuning / g3_holdout / q2_formal / q3_formal（六不相交）"
+  pilot_role: "namespace=pilot 用于实现阶段小规模调试/烟测运行（如关键路径冒烟、键 schema 校验）；正式重复数已由 G3-DEC-03/04 冻结，pilot 不产生任何被采纳的候选或数字"
+  rules:
+    - "各命名空间使用独立 seed 池，不得碰撞"
+    - "禁止因结果好看而事后选择正式重复数"
+
+# ============================================================================
+# 9. C06 full 质量分离 oracle（主证明 = 确定性配对路径相等）
+# ============================================================================
+c06_quality_separation:
+  primary_proof: "同一 canonical 随机世界下，独立 oracle 与 DES 逐装置一致：true terminal state、D 生成、final pass/exit、GP/BP/GE/BE 类别、PL contribution、PW contribution（合法排程/策略变体下，分离命题假设适用处）"
+  not_replace_with: "不得仅用 Monte Carlo 置信区间替代上述确定性配对路径相等证明"
+  scope_limits: "YXB 不在分离命题覆盖范围；策略只改变 T/YXB/取消片段/设备年龄/换新次数/经验 hat e"
+
+# ============================================================================
+# 10. C07 统计烟测
+# ============================================================================
+c07_smoke:
+  terminal_four_category: "终局四类别批次计数 vs 冻结解析多项分布锚"
+  empirical_lambda: "批次（100 台）为聚类单位；禁止逐批比率简单平均"
+  analytic_lambda: "不报 Monte Carlo CI"
+  miss_handling: "单次普通 95% 未覆盖触发调查，不自动判程序错误"
+  diagnostics_only: "规定诊断输出，不挑结果"
+
+# ============================================================================
+# 11. C16 G3 experiment-level 随机检查
+# ============================================================================
+c16_experiment_checks:
+  - "容器遍历置换不改变 canonical 生成的 U/事件"
+  - "意图 CRN 比较的策略共享底层随机世界"
+  - "中断片段不消费观测 U"
+  - "pilot/tuning/holdout/formal 命名空间不可碰撞"
+  - "同 seed + config + code → 字节/canonical 可复现输出（显式列出的 run metadata 除外）"
+
+# ============================================================================
+# 12. C17 full replay/checker
+# ============================================================================
+c17_full_replay:
+  must_replay_independently:
+    - "resource occupancy / bay occupancy / shift calendar"
+    - "task release/start/end / attempt / observation / cancellation"
+    - "equipment age / equipment generation / sampled lifetime / failure interruption / replacement / calibration / turnover"
+    - "terminal state / T / S / PL / PW / YXB"
+    - "resource ledger coverage over [0,T)"
+  isolation: "checker 与主 DES transition/feasibility/metric 代码隔离（沿用 G2-04 C19 原则）"
+
+# ============================================================================
+# 13. C18 G3 活性（NOTE-02 显式落文）
+# ============================================================================
+c18_liveness:
+  - "未完成工作 ⇒ 存在未来事件或合法下一班唤醒"
+  - "不同时间戳闭包之间时间严格前进"
+  - "同时间戳闭包有限终止"
+  - "随机故障/换新/校准不得产生零时间循环"
+  - "设备不可用状态必须总有定义好的未来恢复/唤醒路径（除非批次终态）"
+
+# ============================================================================
+# 14. C15 边界（NOTE-07 显式落文）
+# ============================================================================
+c15_boundaries:
+  - "Q3 是全新独立批次"
+  - "设备年龄/代次/寿命状态完全重置"
+  - "Q3 永不读取 Q2 终态设备状态"
+  - "后续 K 集合恰为 {9,9.5,10,10.5,11,11.5,12}"
+  - "七 K 必须完整枚举（G3 之后）；K=12 支配不是授权捷径"
+  - "G3 仅提供接口与重置测试"
+  - "G3 不运行七 K 正式实验"
+
+# ============================================================================
+# 15. C24 G3 出口仪表（H2 不实现）
+# ============================================================================
+c24_exit_instrumentation:
+  h2_implemented: "NO"
+  log_required:
+    - "decision-point density"
+    - "legal action count"
+    - "waiting-opportunity count"
+    - "preventive-replacement opportunity count"
+    - "estimated rollout branching burden"
+  purpose: "G3 出口时决定 H2 是否值得实现（仅作为下一 Human Gate 的证据）"
+  rollout_M: "不选；C24 数值待真实 H1 日志存在后冻结"
+
+# ============================================================================
+# 16. 统计同时推断（G3-DEC-06 冻结；用于未来正式比较，非调优）
+# ============================================================================
+simultaneous_inference:
+  procedure: "paired batch-level bootstrap + Bonferroni family-wise correction"
+  resampling_unit: "一个完整 100-device 批次"
+  bootstrap_B: "10000"
+  family_wise_confidence: "95%"
+  rules:
+    - "比较族在读取正式结果前声明"
+    - "对预声明冻结参考比较，不用机会主义全对族"
+    - "使用独立分析重采样 seed namespace（非 DES 物理随机流，不改 key_schema_v1 物理 world）"
+    - "H1 调优候选选择不使用这些置信区间（用冻结调优目标 + 确定性 tie-break）"
+
+# ============================================================================
+# 17. 运行时预算（G3-DEC-07 冻结）
+# ============================================================================
+runtime_budget:
+  soft_wall_clock_checkpoint: "4 h（停止非必要探索/额外 reviewer/可选敏感性/不必要 Pro；仅继续必需验收）"
+  hard_wall_clock_cap: "8 h（无条件停止并回 Human Gate；不自动提高）"
+
+# ============================================================================
+# 18. 实现所有权映射（未来 G3 实现，非本阶段）
+# ============================================================================
+ownership_map:
+  main_random_des: "04_代码/main_model/**"
+  independent_random_replay_checker: "04_代码/checker/**"
+  tests: "04_代码/tests/**"
+  runners: "04_代码/scripts/**"
+  schemas: "04_代码/src/schemas/**（既有 canonical 位置或显式新增）"
+  configs: "02_数据/configs/**"
+  rule: "主/checker 不共享 transition 逻辑"
+
+# ============================================================================
+# 19. 证据/复现设计（本阶段不生成证据）
+# ============================================================================
+evidence_design:
+  required_fields:
+    - "run_id / task_package_ref / registry version"
+    - "config hash / code hash / schema hash"
+    - "key-schema version/hash"
+    - "log hash / checker report / failure samples / commands"
+    - "environment/runtime versions / file_hashes.sha256"
+    - "failed runs preserved"
+  no_generation_now: "本设计阶段不生成任何 evidence"
+
+# ============================================================================
+# 20. 决策清单（Human Gate 已全部裁决 → 空）
+# ============================================================================
+decision_required: []
+# Human Gate 2026-08-14 已全部裁决（G3_SPEC_DRAFT CONDITIONAL PASS）：
+# G3-DEC-01（粗网格 120/144/168/192/216 + NO_PM_BEFORE_MANDATORY）、
+# G3-DEC-02（±12h/6h 单轮细化，NO_PM 胜者不造假网格）、G3-DEC-03（调优 20 配对批次）、
+# G3-DEC-04（holdout 100 批次）、G3-DEC-05（六命名空间 + 物理键禁执行元数据 + 流键结构）、
+# G3-DEC-06（配对批次 bootstrap + Bonferroni，B=10000，95% 族水平，调优不用 CI）、
+# G3-DEC-07（软 4h / 硬 8h）。无任何未决语义/随机/政策/样本/统计/预算/tie-break/寿命决策留给实现者。
+# 终审（G3_SPEC_FINAL_L3_REVIEWER，session f5550518-edfa-48cc-9213-da37ffd789bd，
+# verified deepseek-v4-pro/high）：overall=PASS / confidence=HIGH / implementation_ready=YES。
+# 终审 5 条 NOTE 处置：NOTE-1 决策落文 → 本包 + CURRENT_STATE/CHANGELOG 落文；NOTE-2 tau_pm 记号 →
+# 本包采用 NO_PM_BEFORE_MANDATORY（不回写 03_模型，因本包不修改数学模型权威）；NOTE-3 canonical 键序 →
+# 本包冻结 master_seed|namespace|replicate_id|... 为 G3 实现唯一序；NOTE-4 240h 兜底 → 已补
+# regeneration_semantics.illegal_crossing_fallback；NOTE-5 pilot 职责 → 已补 data_separation.pilot_role。
+
+no_pass_claim_yet: >-
+  本包 G3-SPEC-V1.0 冻结仅表示规格可执行；不构成任何 G3 检查 PASS，不表示实现完成或 Q2/Q3 正式结果可用。
+  Pilot #2 实现与 G3 Macro Gate 需按流程执行。
+must_not_change: "G2 accepted 代码/证据/specs；问题契约；CR-V3.1；数学模型；fixtures/oracles/tolerances"

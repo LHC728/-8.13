@@ -20,6 +20,20 @@
 - 无语义变化（INVALIDATION_REPORT：changed_semantics=NO）；未改 checker/tests/fixtures/schemas/specs/CR-V3.1。
 - G3 / H1 formal / H2 / 100-device / Q2 / Q3 / Q4 = NOT STARTED。
 
+## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G3-SPEC-V1.0 FROZEN / PILOT #2 ACTIVE`
+
+### 修改
+
+- **G3-SPEC-V1.0 冻结**（FROZEN_FOR_IMPLEMENTATION）：Human Gate G3_SPEC_DRAFT CONDITIONAL PASS → Phase A 落文全部决策（G3-DEC-01 粗网格 120/144/168/192/216 + NO_PM_BEFORE_MANDATORY、DEC-02 ±12h/6h 单轮细化、DEC-03 调优 20 配对批次、DEC-04 holdout 100 批次、DEC-05 六命名空间 + 物理键禁执行元数据 + 流键结构、DEC-06 paired bootstrap+Bonferroni B=10000/95%、DEC-07 软 4h/硬 8h）→ Phase B fresh verified Pro/high 终审（`G3_SPEC_FINAL_L3_REVIEWER`，session `f5550518-edfa-48cc-9213-da37ffd789bd`，request.config 机械验证 deepseek-v4-pro/high）overall=PASS/confidence=HIGH/implementation_ready=YES → 冻结。decision_required=[]；终审 5 条 NOTE 已闭合（决策落文、NO_PM 记号、canonical 键序冻结、C14 240h 兜底、pilot 职责）。
+- **AUTOPILOT PILOT #2 = ACTIVE**：G3 实现（S1 key_schema → S2 寿命/再生 → S3 随机 DES+H1 → S4 C06 oracle → S5 C17 replay → S6 C16 实验分离 → S7 H1 tuning（C26）→ S8 holdout → S9 evidence）至 **G3 Macro Gate 无条件停机**。
+- **CURRENT_STATE**：G3 = IMPLEMENTATION ACTIVE、Pilot #2 ACTIVE；H1 formal/H2/100-device formal Q2/Q3 formal/Q4 均 NOT STARTED。
+- **G3 tuning/holdout 100-device 批次属授权验证/调优，与 Q2 FORMAL 明确区分**；Q2 formal/Q3/H2 非授权。
+
+### 影响与边界
+
+- 软墙钟 4h / 硬墙钟 8h（hard cap 无条件停止）；禁止发布/冻结 Q2 正式数字、写论文、实现 H2、枚举 K、推荐 K。
+- G3 Macro Gate 后无条件停机；Pilot #2 结束需新 Human Gate。
+
 ## 2026-08-14 / `STATE-2026-08-13-G2.4` / `WHOLE G2 FINAL PASS`
 
 ### 修改

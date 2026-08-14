@@ -2,7 +2,7 @@
 
 > 最后更新：2026-08-14
 > 状态版本：`STATE-2026-08-13-G2.4`
-> 当前 Gate：**Whole G2 = FINAL PASS（Human Gate 2026-08-14 正式接受）；U0 = CLOSED、U1 = CLOSED；G2-01 = PASSED、G2-02 = PASSED、G2-03 = PASSED、G2-04 = PASSED；AUTOPILOT PILOT #1 = COMPLETED AT MACRO STOP；G3 = NOT STARTED；H1 formal = NOT STARTED；H2 = NOT STARTED；100-device formal = NOT STARTED；Q2/Q3/Q4 formal work = NOT STARTED；下一阶段需新 Human Gate**
+> 当前 Gate：**Whole G2 = FINAL PASS；G3 = IMPLEMENTATION ACTIVE（task package `G3-SPEC-V1.0` 已冻结，AUTOPILOT PILOT #2 ACTIVE，至 G3 Macro Gate 无条件停机）；H1 formal = NOT STARTED；H2 = NOT STARTED；100-device formal Q2 = NOT STARTED；Q3 formal = NOT STARTED；Q4 = NOT STARTED**
 > 当前检查注册表：[`CR-V3.1`](01_审计/检查注册表_V3.1.md)
 
 ## 1. 新对话只需先读
@@ -86,7 +86,15 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
   - **current G2-04 task package = `G2-04-SPEC-V1.0`，status = FROZEN（PASSED/ACCEPTED）**（`08_项目管理/任务包/G2-04_独立日志重放与WholeG2证据.yaml`）。
   - **G2-04 = PASSED / ACCEPTED（rebind 后）**：runner `run_g2_whole_v1.py` 已机械 rebind（task_package_ref=G2-04-SPEC-V1.0、spec_hash=G2-04 实际 hash、upstream G2-03-SPEC-V1.0.2 进 code_snapshots/notes/frozen；fault_injection 族③标注 G2_INTERFACE_ONLY/G3_FULL 于 manifest notes；checker core changed = NO）。**accepted governed formal run = `05_结果/G2/run_20260814T114143591701Z_32913efa/`**（checker 14/14 + crosscheck 14/14、exit 0、file_hashes 匹配）。
   - 旧 formal runs（`...032dfffc`、`...81563471`）= **PRE_G2_04_SPEC_HISTORICAL_CANDIDATE**，保留不可覆盖，不冒充 governed evidence。
-  - 状态：G3 = NOT STARTED；H1 formal = NOT STARTED；H2 = NOT STARTED；100-device formal run = NOT STARTED；Q2/Q3/Q4 = NOT STARTED。
+  - 状态：G2-04 完成（PASSED/ACCEPTED）。
+
+- **`G3`（公共随机 DES 与 H1 基线）= IMPLEMENTATION ACTIVE**（AUTOPILOT PILOT #2 ACTIVE，至 G3 Macro Gate 无条件停机）：
+  - 任务包：`G3-SPEC-V1.0`（status FROZEN_FOR_IMPLEMENTATION；`08_项目管理/任务包/G3_公共随机DES与H1基线.yaml`）。Human Gate G3_SPEC_DRAFT CONDITIONAL PASS → 全部决策（G3-DEC-01..07）落文 → fresh verified Pro/high 终审（session `f5550518-edfa-48cc-9213-da37ffd789bd`，deepseek-v4-pro/high）PASS/HIGH/implementation_ready=YES → 冻结。
+  - Pilot #2 范围：G3-SPEC-V1.0 实现 S1→S9（key_schema → 寿命/再生 → 随机 DES+H1 → C06 oracle → C17 replay → C16 实验分离 → H1 tuning（C26）→ holdout → evidence）至 G3 Macro Gate；**无条件停机，不跨入 Q2 formal**。
+  - **G3 tuning/holdout 100-device 批次（授权验证/调优）与 Q2 FORMAL 100-device 评估（未授权）明确区分**。
+  - 状态：H1 formal = NOT STARTED；H2 = NOT STARTED；100-device formal Q2 = NOT STARTED；Q3 formal = NOT STARTED；Q4 = NOT STARTED。
+  - Pilot #2 预算：软墙钟 4h / 硬墙钟 8h；hard cap 无条件停止回 Human Gate。
+  - 禁止：发布/冻结 Q2 正式数字（T/S/PL/PW/YXB/管理建议）、写论文、实现 H2、枚举 K、推荐 K。
 
 1. 实现并诊断单次无条件主观测核（G2-01 已完成）；
 2. 实现标准链关键替代观测核（G2-01 已完成）；
