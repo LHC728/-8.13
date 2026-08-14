@@ -1,8 +1,8 @@
 # CURRENT_STATE
 
-> 最后更新：2026-08-13  
+> 最后更新：2026-08-14  
 > 状态版本：`STATE-2026-08-13-G2.4`
-> 当前 Gate：**G2 最小可验证基线：G2-01 观测核标定最小基线已通过，其他 G2 项仍待闭合**
+> 当前 Gate：**G2 最小可验证基线：G2-01（观测核标定）与 G2-02（Q1 概率与质量解析链）已通过并验收；G2 剩余（无随机最小并行 DES、1—4 台对拍、最小独立 checker 与故障注入）仍待闭合**
 > 当前检查注册表：[`CR-V3.1`](01_审计/检查注册表_V3.1.md)
 
 ## 1. 新对话只需先读
@@ -61,13 +61,16 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
 已完成子任务：
 
 - `G2-01-SPEC-V1.1.11` 观测核标定最小基线已通过最终 L3 验收；不可变证据目录为 `05_结果/G2/run_20260813T134251279572Z_f1290916/`。
-- `CR-V3.1/C01`、`C02`、`C19`、`C21` 仅在 G2-01 canonical A/B/C 标定子范围内通过。
-- `CR-V3.1/C03`、`C04`、canonical E 与 `q_E` 仍为 DEFERRED；不得猜测或手填 `q_E`，也不得据此宣告整个 G2 Gate 通过。
-- `G2-02-SPEC-V1.0.4`（Q1 概率与质量解析链）任务包已冻结，**等待 RUNNER V1.0.4 rebind 后重跑 canonical**；冻结物：`08_项目管理/任务包/G2-02_Q1概率与质量解析链.yaml`、`04_代码/src/schemas/q1_quality_v1.schema.json`、`04_代码/tests/fixtures/q1_quality_oracles_v1.json`。`V1.0.4` 为 **runtime dependency snapshot closure correction only**：V1.0.3 首次 canonical attempt（run_id `20260814T043709752483Z_99f602bd`，失败证据已不可变保留）暴露 frozen/code 快照缺少 G2-01 求解器 `observation_calibration_v1.py`（E1 合法依赖），本修订将其加入 RUNNER allowed_read_paths 与 exact_layout（快照 9→10）；数学公式、q_E、E kernel 语义、lambda、tilde、schema、fixture、tolerance、parameters、upstream 均未改变。**S1/S2 实现仍保持已验证（V1.0.3 rebind 通过）；RUNNER 需按 V1.0.4 rebind；不得称 G2-02 PASS；S4/D acceptance 尚未完成；下一次 canonical 必须等待 runner V1.0.4 rebind + 人工 Gate。**
+- **`G2-02`（Q1 概率与质量解析链）= PASSED**：Q1 闭式解析链、16 状态枚举、吸收链、E2 独立 checker 均完成；两种观测语义（`single_test_unconditional_v1` / `standard_chain_v1`）均完成正式 canonical 并通过 D/L3 Semantic Acceptance（PASS / HIGH）。**G2-02 / Q1 正式运行结果已验收**。
+  - 任务包：`G2-02-SPEC-V1.0.4`；accepted run：`05_结果/G2/run_20260814T062114478293Z_52f4ebc4/`（evidence commit `700898bfabbf4cf169049baf91084f79cc61a488`）。
+  - 本范围检查全部 PASS：`CR-V3.1/C01、C02、C03、C04、C05、C19、C21、C27`。
+  - evidence SHA：run_manifest `b7219b85…`；single check_report `092c4e1f…`；chain check_report `c761e828…`；file_hashes `f8145e75…`。
+  - 历史失败（保留为不可变证据，未修改）：① `run_20260814T043709752483Z_99f602bd`（V1.0.3 frozen runtime dependency snapshot gap → V1.0.4 快照 9→10 + RUNNER rebind 闭合）；② `run_20260814T053311144723Z_a694e8f9`（E1 route_agreement 错误输出代表值而非三路线最大绝对偏差 → L3 semantic adjudication + E1 correction 闭合）。
+  - 限制：**whole G2 Gate != PASS**；DES = NOT STARTED；G3 = NOT STARTED；H2 = NOT STARTED；不发布论文正式数字；Q2/Q3 尚未开始。
 
 1. 实现并诊断单次无条件主观测核（G2-01 已完成）；
 2. 实现标准链关键替代观测核（G2-01 已完成）；
-3. 完成 Q1 闭式、16 状态枚举、吸收链与独立回代（G2-02 任务包已冻结，待人工批准派单）；
+3. 完成 Q1 闭式、16 状态枚举、吸收链与独立回代（G2-02 已完成并验收）；
 4. 完成无随机的最小并行 DES；
 5. 对拍 1—4 台手算小例，包括 K=9 三台跨班重测；
 6. 建立最小独立 checker 和故障注入；

@@ -2,6 +2,21 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-02 D Acceptance PASS`
+
+### 修改
+
+- **G2-02 / Q1 概率与质量解析链正式验收**：D/L3 Semantic Acceptance = PASS（confidence HIGH）。
+- 任务包：`G2-02-SPEC-V1.0.4`；accepted run_id：`20260814T062114478293Z_52f4ebc4`；successful evidence commit：`700898bfabbf4cf169049baf91084f79cc61a488`。
+- accepted checks（G2-02 范围）：`CR-V3.1/C01、C02、C03、C04、C05、C19、C21、C27` 全部 PASS。
+- evidence SHA：run_manifest `b7219b85aede18857611075a059d609dca00bd0f4bb3637939a4d70c12c5250d`（`05_结果/G2/run_20260814T062114478293Z_52f4ebc4/run_manifest.json`）；single check_report `092c4e1f468882ff6a6bef6a711df836f4d5f74626404be56ab3cb78e54130e6`；chain check_report `c761e8281baf9c58d46eb30e2acabdf504fae26a125e9cf8a29547f976028cf6`；file_hashes `f8145e754cf5f279c3e45dcca861113e8d247523d2dddcb06af0189238bb7aba`。
+- 历史失败证据保留（未修改）：`run_20260814T043709752483Z_99f602bd`（V1.0.3 frozen runtime dependency snapshot gap，V1.0.4 快照 9→10 + RUNNER rebind 闭合）、`run_20260814T053311144723Z_a694e8f9`（E1 route_agreement 输出代表值而非偏差，L3 adjudication + E1 correction 闭合）。
+
+### 影响与边界
+
+- **whole G2 Gate = NOT PASS**；DES = NOT STARTED；G3 = NOT STARTED；H2 = NOT STARTED；H1/R1 仍为强制基线，H2 仅条件候选。
+- 未发布论文正式数字；`G2-02 / Q1` 正式运行结果仅在本题 G2-02 范围内 accepted；Q2/Q3 尚未开始。
+
 ## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-02-SPEC-V1.0.4`
 
 ### 修改
