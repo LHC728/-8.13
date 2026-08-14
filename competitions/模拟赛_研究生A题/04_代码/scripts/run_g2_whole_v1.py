@@ -39,6 +39,10 @@ CODE_DIR = PROJECT_ROOT / "04_代码"
 RESULT_ROOT = PROJECT_ROOT / "05_结果" / "G2"
 FIXTURES_PATH = CODE_DIR / "tests/fixtures/des_fixtures_F1_F12_v1.json"
 PARAMETERS_PATH = PROJECT_ROOT / "02_数据/parameters.csv"
+# G2-04-SPEC-V1.0 is the governing task package for this runner (rebind).
+SPEC_PATH_G2_04 = PROJECT_ROOT / "08_项目管理/任务包/G2-04_独立日志重放与WholeG2证据.yaml"
+# Upstream frozen dependency (G2-03-SPEC-V1.0.2): frozen into the evidence
+# package but is NOT the governing task package of this runner.
 SPEC_PATH = PROJECT_ROOT / "08_项目管理/任务包/G2-03_无随机最小并行DES.yaml"
 CHECKER_PATH = CODE_DIR / "checker/des_checker_v1.py"
 MAIN_DES_PATH = CODE_DIR / "main_model/des/deterministic_des_v1.py"
@@ -55,6 +59,9 @@ FIXTURES_ORDER = [
 CODE_SNAPSHOT_PATHS = [
     MAIN_DES_PATH, STATE_MODELS_PATH, CHECKER_PATH, CP_SAT_PATH,
     CROSSCHECK_PATH, Path(__file__),
+    # G2-04-SPEC-V1.0 (governing task package) + G2-03-SPEC-V1.0.2 (upstream
+    # frozen dependency): both are part of the evidence snapshot.
+    SPEC_PATH_G2_04, SPEC_PATH,
 ]
 SCHEMA_PATHS = [
     SCHEMA_DIR / "des_config_v1.schema.json",
@@ -159,7 +166,8 @@ def main() -> int:
     # ---- land evidence package ----
     frozen_dir = run_dir / "frozen"
     frozen_dir.mkdir(parents=True, exist_ok=True)
-    (frozen_dir / "task_package_G2_03.yaml").write_bytes(SPEC_PATH.read_bytes())
+    (frozen_dir / "task_package_G2_04.yaml").write_bytes(SPEC_PATH_G2_04.read_bytes())
+    (frozen_dir / "task_package_G2_03_upstream.yaml").write_bytes(SPEC_PATH.read_bytes())
     (frozen_dir / "parameters.csv").write_bytes(PARAMETERS_PATH.read_bytes())
     (frozen_dir / "fixtures_des_F1_F12_v1.json").write_bytes(FIXTURES_PATH.read_bytes())
     for sp in SCHEMA_PATHS:
@@ -184,13 +192,21 @@ def main() -> int:
     manifest = {
         "run_id": run_id,
         "registry_version": "CR-V3.1",
-        "task_package_ref": "G2-03-SPEC-V1.0.2",
+        "task_package_ref": "G2-04-SPEC-V1.0",
         "scenario_ids": {fid: fixtures[fid]["config"]["scenario_id"] for fid in FIXTURES_ORDER},
         "config_hash": sha256_bytes(config_blob.encode("utf-8")),
         "event_log_hash": sha256_bytes(log_blob.encode("utf-8")),
         "scripted_fixture_hash": sha256_file(FIXTURES_PATH),
         "parameters_hash": sha256_file(PARAMETERS_PATH),
-        "spec_hash": sha256_file(SPEC_PATH),
+        "spec_hash": sha256_file(SPEC_PATH_G2_04),
+        "notes": [
+            "task_package: G2-04-SPEC-V1.0 sha256=" + sha256_file(SPEC_PATH_G2_04),
+            "upstream_frozen_dependency: G2-03-SPEC-V1.0.2 sha256=" + sha256_file(SPEC_PATH),
+            "fault_injection_coverage: family3_order_dependent_rng = G2_INTERFACE_ONLY / G3_FULL "
+            "(G2 deterministic has random_enabled=false, no RNG; no fake stochastic test)",
+            "fault_injection_coverage: family1_attempt_on_cancel / family2_early_D / "
+            "family4_missing_same_tick_settle = checker-caught FAIL in tests",
+        ],
         "code_snapshots": [
             {"path": p.relative_to(PROJECT_ROOT).as_posix(), "sha256": sha256_file(p)}
             for p in CODE_SNAPSHOT_PATHS

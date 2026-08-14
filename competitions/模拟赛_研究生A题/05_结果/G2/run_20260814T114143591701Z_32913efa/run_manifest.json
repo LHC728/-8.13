@@ -1,0 +1,134 @@
+{
+  "T_h": {
+    "F1": "11/2",
+    "F10": "23/2",
+    "F11": "12",
+    "F12": "11/2",
+    "F2": "17/2",
+    "F3": "7",
+    "F4": "21/2",
+    "F4b": "8",
+    "F5": "5",
+    "F6": "12",
+    "F7": "12",
+    "F8": "14",
+    "F9": "12",
+    "F9b": "15"
+  },
+  "checker_issues": {},
+  "code_snapshots": [
+    {
+      "path": "04_代码/main_model/des/deterministic_des_v1.py",
+      "sha256": "8bee5941686cfea0df6cc7a9b6abbc02285b44787d1cb84323cbbfcf90e05702"
+    },
+    {
+      "path": "04_代码/main_model/des/state_models_v1.py",
+      "sha256": "7f53399e18b1c7e9b175868c4997f65ac6bee1ec74f9ef18ae9ac2aa4eee46e6"
+    },
+    {
+      "path": "04_代码/checker/des_checker_v1.py",
+      "sha256": "7ccae718a7bf54e07e6b192b9ff7b3514c68b6a304add0fc1ab00d6085ea17ba"
+    },
+    {
+      "path": "04_代码/tests/cp_sat_oracle_v1.py",
+      "sha256": "ddfbfeab07712335774788b0f7f513d0acb48bf4c39c845274c02275555efd43"
+    },
+    {
+      "path": "04_代码/tests/three_way_crosscheck_v1.py",
+      "sha256": "2f25144dfe603349d94a0bbcd4a94a5d30acaf9118fe9e30310dee3b1bcae1cf"
+    },
+    {
+      "path": "04_代码/scripts/run_g2_whole_v1.py",
+      "sha256": "bf6ed660a5ed4fea0190453d49c7cd507fdad711c70f996b8fb3597d9863e4ed"
+    },
+    {
+      "path": "08_项目管理/任务包/G2-04_独立日志重放与WholeG2证据.yaml",
+      "sha256": "20e173c2398e303e5111c3b449a0d865e04a79db2b0fa07870fe5936cc1d8073"
+    },
+    {
+      "path": "08_项目管理/任务包/G2-03_无随机最小并行DES.yaml",
+      "sha256": "eebdaa94ae89b69803da39caa2de61ffacf59c33cee985e6b60274221336fd2b"
+    }
+  ],
+  "config_hash": "0daa555370dad23c4c857dc6baacc0de3c8ff3093a79d1d1a2532e1e84d1db59",
+  "crosscheck_passed_count": 14,
+  "crosscheck_results": {
+    "F1": "PASS",
+    "F10": "PASS",
+    "F11": "PASS",
+    "F12": "PASS",
+    "F2": "PASS",
+    "F3": "PASS",
+    "F4": "PASS",
+    "F4b": "PASS",
+    "F5": "PASS",
+    "F6": "PASS",
+    "F7": "PASS",
+    "F8": "PASS",
+    "F9": "PASS",
+    "F9b": "PASS"
+  },
+  "event_log_hash": "87fada9dd0f9013d6251a50af7416b89b25690ffc24eb58fae6b357a4c0f1c27",
+  "evidence_root": "05_结果/G2/run_20260814T114143591701Z_32913efa",
+  "exit_code": 0,
+  "fixture_results": {
+    "F1": "PASS",
+    "F10": "PASS",
+    "F11": "PASS",
+    "F12": "PASS",
+    "F2": "PASS",
+    "F3": "PASS",
+    "F4": "PASS",
+    "F4b": "PASS",
+    "F5": "PASS",
+    "F6": "PASS",
+    "F7": "PASS",
+    "F8": "PASS",
+    "F9": "PASS",
+    "F9b": "PASS"
+  },
+  "notes": [
+    "task_package: G2-04-SPEC-V1.0 sha256=20e173c2398e303e5111c3b449a0d865e04a79db2b0fa07870fe5936cc1d8073",
+    "upstream_frozen_dependency: G2-03-SPEC-V1.0.2 sha256=eebdaa94ae89b69803da39caa2de61ffacf59c33cee985e6b60274221336fd2b",
+    "fault_injection_coverage: family3_order_dependent_rng = G2_INTERFACE_ONLY / G3_FULL (G2 deterministic has random_enabled=false, no RNG; no fake stochastic test)",
+    "fault_injection_coverage: family1_attempt_on_cancel / family2_early_D / family4_missing_same_tick_settle = checker-caught FAIL in tests"
+  ],
+  "parameters_hash": "0461da2e0de09090673192d9eb0fde6fe5e70b1d22ef61fe13cdb878c449f07e",
+  "passed_count": 14,
+  "registry_version": "CR-V3.1",
+  "run_id": "20260814T114143591701Z_32913efa",
+  "scenario_ids": {
+    "F1": "fixture_F1",
+    "F10": "fixture_F10",
+    "F11": "fixture_F11",
+    "F12": "fixture_F12",
+    "F2": "fixture_F2",
+    "F3": "fixture_F3",
+    "F4": "fixture_F4",
+    "F4b": "fixture_F4b",
+    "F5": "fixture_F5",
+    "F6": "fixture_F6",
+    "F7": "fixture_F7",
+    "F8": "fixture_F8_K9",
+    "F9": "fixture_F9",
+    "F9b": "fixture_F9b"
+  },
+  "schema_snapshots": [
+    {
+      "path": "04_代码/src/schemas/des_config_v1.schema.json",
+      "sha256": "e8881cbc46c88ab7d1e88452ebafe5e586e7517dcdb03b6e2ef03881ccd91ac9"
+    },
+    {
+      "path": "04_代码/src/schemas/des_event_log_v1.schema.json",
+      "sha256": "b4cc8f1727dafed446da9364d50e410652053d7bd72c5a1e4a80dd41331a7c5e"
+    },
+    {
+      "path": "04_代码/src/schemas/des_run_manifest_v1.schema.json",
+      "sha256": "16adbc4c89b6dcdc73176ab0dedd41716aebc40011837fdee5ddb219c76ed0eb"
+    }
+  ],
+  "scripted_fixture_hash": "6784083f33c59f4f4a68e02ca6a20c3cae9b1851ea0ed329a2b23856fb2a8a45",
+  "spec_hash": "20e173c2398e303e5111c3b449a0d865e04a79db2b0fa07870fe5936cc1d8073",
+  "task_package_ref": "G2-04-SPEC-V1.0",
+  "total_count": 14
+}

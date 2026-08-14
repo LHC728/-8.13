@@ -1,0 +1,858 @@
+task_package_version: "G2-03-SPEC-V1.0.2"
+task_id: "G2-03"
+title: "无随机最小并行 DES：确定性事件引擎、1—4 台手算夹具与 K=9 跨班重测时间线"
+status: "FROZEN_PENDING_IMPLEMENTATION"
+drafted_by_role: "D / G2_03_DETERMINISTIC_DES_SPEC_DESIGN / L3 决策分析"
+drafted_date: "2026-08-14"
+approval_gate: >-
+  本包已冻结为 G2-03-SPEC-V1.0（2026-08-14 Human Gate 批准）；V1.0.1 为 governance/documentation
+  consistency correction；V1.0.2 为 fixture / executable event-order semantic correction
+  （来源：G2_03_S1_FIXTURE_SEMANTIC_ADJUDICATOR fresh Pro/high L3 adjudication + 2026-08-14
+  Human Gate final ruling）。dispatches / allowed_read_paths / allowed_write_paths / exact_cli
+  等派单级字段在实现 Gate（G2-03 IMPLEMENTATION ACTIVE）补。冻结不代表实现完成；
+  实现/运行需下一 Human Gate 授权。
+
+# ============================================================================
+# 0. 冻结说明
+# ============================================================================
+freeze_notes:
+  - "本包已经 Human Gate 冻结（V1.0 freeze commit cecaa97e21d1a7f70a61e96455deabc15aded783）；冻结只授权规格，不代表实现完成。"
+  - "V1.0.1 是 V1.0 后的机械一致性修正：仅修正 governance/documentation 表述，不改变任何数学/事件/FCFS/夹具/CP-SAT 语义，不改变依赖锁定。"
+  - "V1.0.2 是 fixture / executable event-order semantic correction（非纯机械修正）：core process semantics unchanged，但 F3/F4/F7/F9/F10 夹具定义、D materialization substep（E2）、initial-state edge-case contract（SEM-21/EMPTY）、SEM-23 解释与 0.5h overlap 日志表示发生冻结澄清与修正。来源：G2_03_S1_FIXTURE_SEMANTIC_ADJUDICATOR（fresh Pro/high L3 adjudication，overall=SPEC_AND_IMPLEMENTATION_PATCH_REQUIRED，confidence=HIGH）+ 2026-08-14 Human Gate final ruling。"
+  - "DES/checker/formal run 尚未开始；实现需要 IMPLEMENTATION ACTIVE 状态（另见 CURRENT_STATE.md）。历史 commit/push 已发生。"
+  - "CP-SAT 交叉核对依赖已经人工 Gate 裁决：OPT-A（OR-Tools 9.15.6755 仅 C08 独立 oracle 专用，主 DES 不依赖）；见 cp_sat_dependency_decision 与 checker_optional_dependencies。"
+  - "FCFS 键的装置 ID 方案在本包显式冻结为批次序号（1..N，按入台顺序，1/2 号在 t=0 预置）；判断为可完全规格化，不构成开放决策项（见 fcfs_key）。"
+  - "调度列出的『事件引擎语义 1-26』实际枚举出 24 条独立语义；本包逐条冻结全部 24 条（见 deviations）。"
+
+# ============================================================================
+# 1. 治理绑定
+# ============================================================================
+governance_binding:
+  state_version: "STATE-2026-08-13-G2.4"
+  registry_version: "CR-V3.1"
+  upstream_task_packages:
+    - "G2-01-SPEC-V1.1.11（观测核标定，本包不依赖其数值输出，仅共用 parameters.csv 与 schema 目录约定）"
+    - "G2-02-SPEC-V1.0.4（Q1 概率与质量解析链，本包不依赖其数值输出）"
+  required_checks:
+    - id: "CR-V3.1/C08"
+      applicability: "IN_SCOPE_PARTIAL"
+      claim_limit: >-
+        关闭随机性的 1—4 台手算时间线 + 手算样例_K9跨班重测.md（3 台跨班）逐事件一致，属于本包；
+        『确定性 CP-SAT 小例对拍』子项已经人工 Gate 裁决 OPT-A（OR-Tools 9.15.6755 独立 oracle），
+        不得静默以暴力枚举/事件重放/主 DES 自跑/手算样例 alone 顶替；CR-V3.1/C08 原文含义不变。
+    - id: "CR-V3.1/C09"
+      applicability: "IN_SCOPE"
+      claim_limit: "两台位；A/B/C/E 各容量 1；同装置 A/B/C 并行；同工序不重叠；E 前置与 D 生成正确。"
+    - id: "CR-V3.1/C10"
+      applicability: "IN_SCOPE"
+      claim_limit: "同刻批量结算；退出仅取消未完成片段；中断/取消无观测且不增加有效尝试号；片段计年龄/YXB。"
+    - id: "CR-V3.1/C11"
+      applicability: "IN_SCOPE"
+      claim_limit: "FCFS 选择最小键；release_time 不可改；跨班待重测保留首败 release_time/effective_attempt_no=2、不插队、持续占台；squad_id 不进键。"
+    - id: "CR-V3.1/C12"
+      applicability: "IN_SCOPE"
+      claim_limit: "测试/换新—校准/复合周转不可跨班；恰好班末结束可启动；t=0 与末台不运出；1h/0.5h 周转配置与 manifest 隔离。"
+    - id: "CR-V3.1/C18"
+      applicability: "IN_SCOPE"
+      claim_limit: "任务未完成时事件日历非空或存在下一班唤醒；时间严格前进；同刻闭包有限。"
+    - id: "CR-V3.1/C06"
+      applicability: "RESERVED_INTERFACE"
+      claim_limit: "排程质量分离与逐台全等由后续 checker 任务包闭合；本包仅保留 event_log 到质量 oracle 的接口预留，不声称完成。"
+    - id: "CR-V3.1/C16"
+      applicability: "RESERVED_INTERFACE"
+      claim_limit: "键控随机单测不在本包；本包固定 random_enabled=false，仅预留键 schema 版本字段。"
+    - id: "CR-V3.1/C17"
+      applicability: "RESERVED_INTERFACE"
+      claim_limit: "独立日志重放与指标/账本复算由 checker 任务包闭合；本包只冻结 event_log 契约使复算可行。"
+    - id: "CR-V3.1/C19"
+      applicability: "RESERVED_INTERFACE_DOCUMENTATION"
+      claim_limit: "本包冻结 main/checker 隔离接口（event_log 唯一接口）；其强制执行由 checker 任务包验收。"
+    - id: "CR-V3.1/C20"
+      applicability: "RESERVED_INTERFACE"
+      claim_limit: "故障注入由 checker 任务包闭合；本包不实现。"
+    - id: "CR-V3.1/C21"
+      applicability: "RESERVED_INTERFACE"
+      claim_limit: "一键验证/不可变证据包由 checker+runner 任务包闭合；本包仅起草 run_manifest 与 hash inventory 约定。"
+    - id: "CR-V3.1/C27"
+      applicability: "IN_SCOPE_DOCUMENTATION"
+      claim_limit: "来源分层已列明；不宣称题意只有一种解释；不把队伍闭合假设写成题面明文。"
+    - id: "CR-V3.1/C01"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "观测核标定属 G2-01/G2-02；本包不重标定。"
+    - id: "CR-V3.1/C02"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "同上。"
+    - id: "CR-V3.1/C03"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "q_E/D 生成的解析侧属 G2-02；本包仅事件层『D 联接时生成一次』。"
+    - id: "CR-V3.1/C04"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "Q1 解析链属 G2-02。"
+    - id: "CR-V3.1/C05"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "lambda 属 G2-02。"
+    - id: "CR-V3.1/C07"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "G3 正式实验统计烟测。"
+    - id: "CR-V3.1/C13"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "设备寿命抽样属 G3。"
+    - id: "CR-V3.1/C14"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "120/240h 再生属 G3。"
+    - id: "CR-V3.1/C15"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "Q3 七个 K 枚举属 G3。"
+    - id: "CR-V3.1/C22"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "发布前一致性。"
+    - id: "CR-V3.1/C23"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "C23 为 H2 专属，不适用于本包；G2-03 仅构建确定性 DES / 固定 FCFS 验证基线，不构成 H1 正式实验或 H1 参数冻结。"
+    - id: "CR-V3.1/C24"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "H2 机会预算属 G3 出口。"
+    - id: "CR-V3.1/C25"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "H2 收益准入。"
+    - id: "CR-V3.1/C26"
+      applicability: "NOT_APPLICABLE"
+      claim_limit: "H1 预防更换策略属 G3。"
+
+# ============================================================================
+# 2. 来源分层
+# ============================================================================
+source_layering:
+  problem_statement_or_data:
+    - "02_数据/parameters.csv：P001 台位 2、P002-P005 容量 1、P006-P009 时长 2.5/2/2.5/3h、P014/P015 运出/运入 0.5h、P036 两次有效异常退出、P037 N=100、P038 H_2=12、P041/P042 Q3 两班 K。"
+  problem_statement_strong_support:
+    - "两个驻留台位、A/B/C/E 专用设备、同一装置 A/B/C 并行、E 前置、初测—重测—退出、无维修、D 联接时生成一次、初始首两台已到位、末台不计运出。"
+  team_signed_interpretation:
+    - "01_审计/问题契约.md §7『已冻结的 G2 状态机输入』1-9 条：首次异常不取消其他任务、重测并行、第二次异常退出、同刻先结算后退出、FCFS 键、班末禁启、周转/换新校准不可跨班、release_time 不可改、Q3 换班只改值班分队。"
+    - "03_模型/02_H1基线与离散事件模型.md §2-4：FCFS 键元组、同刻事件顺序、班界与周转。"
+    - "01_审计/小问依赖与检查器接口.md §5：预定小实例 1-14 与事件表预签字要求。"
+    - "01_审计/手算样例_K9跨班重测.md：C08 的 3 台 K=9 跨班重测权威时间线。"
+  strategy_or_governance_limit:
+    - "CURRENT_STATE.md：G2 只证明最小事件引擎算对；DES=NOT STARTED；不运行 100 台正式实验、不启用 H2。"
+    - "CR-V3.1/C19：主实现与 checker 核心计算隔离。"
+    - "G2-03 主 DES 冻结为 Python stdlib-only；CR-V3.1/C08 的独立 CP-SAT oracle 经 Human Gate 允许使用 pinned OR-Tools 9.15.6755；该例外不传播到主 DES 或其他阶段。"
+  prohibited_wording:
+    - "不得把队伍闭合的班末禁启写成弱支配定理（CURRENT_STATE.md §6、问题契约 §1.3.3）。"
+    - "不得把手算夹具数值写成正式 100 台运行结果（问题契约、K9 文件声明）。"
+    - "不得宣称本包完成 C06/C16/C17/C19/C20/C21。"
+    - "不得把暴力枚举/事件重放/主 DES 自跑冒充 CP-SAT 交叉核对（cp_sat_dependency_decision 已裁决 OPT-A）。"
+
+# ============================================================================
+# 3. 范围：G2-03_ENGINE_SCOPE vs NEXT_CHECKER_SCOPE
+# ============================================================================
+scope:
+  g2_03_engine_scope:
+    - "确定性并行 DES 内核：状态机 + 事件日历 + 同刻闭包 + FCFS 派工 + 班历/周转 + 终止规则。"
+    - "确定性初始状态：两台位、四资源、首两台预置、全部已校准。"
+    - "确定性脚本化结果夹具 F1-F12（含 K=9 跨班重测），无 RNG。"
+    - "不可变 event_log 契约（供未来 checker 独立重放，无需 import 主状态机）。"
+    - "输入配置 schema、脚本化结果 fixture schema、event_log schema、run_manifest schema 草稿。"
+    - "C08（手算部分 + CP-SAT 小例对拍 oracle）/C09/C10/C11/C12/C18 的引擎侧验收；C19 接口文档。"
+    - "CP-SAT 小例 oracle：OR-Tools 9.15.6755 异源独立核验（见 cp_sat_oracle_spec），仅确定性 fixture。"
+  next_checker_scope:
+    - "独立日志重放 checker（重算台位/资源占用、任务时序、release_time、尝试号、结果、取消原因、班界、周转、终态、T、YXB）。"
+    - "C06 最小质量分离 + 逐台 oracle、C16 键骨架、C17 指标/账本复算、C19 隔离强制、C20 故障注入、C21 复现证据。"
+    - "CP-SAT oracle 的 G2-04 侧辅助验证（若最终文件职责更清晰；首选归属 G2-03 validation/oracle）。"
+  out_of_scope:
+    - "G2-03 OUT OF SCOPE：CR-V3.1/C06 的随机/逐台键控全量部分；CR-V3.1/C16-C17 的 G3 全量随机复验部分；CR-V3.1/C07；CR-V3.1/C13-C15；CR-V3.1/C24；CR-V3.1/C26；H2 CR-V3.1/C23-C25。"
+    - "CR-V3.1/C18 的 G2 确定性事件活性检查仍属于 G2-03 IN_SCOPE；CR-V3.1/C06/C16/C17 的 G2 最小接口/检查部分按现有 G2-04 reservation 保留。"
+    - "随机设备寿命抽样、120/240h 随机故障、随机缺陷生成、随机测手观测、100 台正式实验、H1 调参、H2、rollout、最优 K、正式敏感性。"
+    - "G2 小例一律用确定性初始状态 + 确定性脚本化/强制结果；禁止 RNG 伪造测试结果。"
+
+# ============================================================================
+# 4. 冻结事件引擎语义（24 条，逐条引用权威来源）
+# ============================================================================
+frozen_event_engine_semantics:
+  - id: SEM-01
+    text: "大厅有两个驻留测试台；装置从进入直到最终通过/退出持续占一个台位，场外无额外缓冲位。"
+    source: "问题契约 §1.1；parameters.csv P001"
+  - id: SEM-02
+    text: "A/B/C/E 四类专业组及专用设备各一套，同类资源容量均为 1。"
+    source: "问题契约 §1.1；parameters.csv P002-P005"
+  - id: SEM-03
+    text: "同一装置的 A/B/C 可在不同专用资源上同时测试；同一道工序不能与自身重叠。"
+    source: "问题契约 §1.1；02_H1 §1"
+  - id: SEM-04
+    text: "E 必须等 A/B/C 均得到有效通过结果后才可开始，且不与该装置的 A/B/C 并行。"
+    source: "问题契约 §1.1；02_H1 §1"
+  - id: SEM-05
+    text: "首次异常只释放该工序自身的重测，不取消其他已运行工序；重测可与不同工序并行。"
+    source: "问题契约 §7.2；02_H1 §1"
+  - id: SEM-06
+    text: "重测并行执行，不等待本装置其他工序；E 仍等全部 A/B/C 通过。"
+    source: "问题契约 §7.2；02_H1 §1"
+  - id: SEM-07
+    text: "终端退出仅由『同一道工序的完整重测再次异常』触发（第二次有效异常，同工序）。"
+    source: "问题契约 §7.3；02_H1 §1；parameters.csv P036"
+  - id: SEM-08
+    text: "同刻事件先批量结算全部已完成任务，再执行终端退出与取消；改变日志插入顺序不得改变结局。"
+    source: "问题契约 §7.4；02_H1 §3.1-3.2；小问依赖 §5.5"
+  - id: SEM-09
+    text: "退出仅取消尚未完成片段/任务；已完成任务的结果保留。"
+    source: "问题契约 §7.4；02_H1 §3.4"
+  - id: SEM-10
+    text: "被取消或班界中断的片段无观测结果，且不增加有效尝试号。"
+    source: "问题契约 §1.2；02_H1 §3.5；CR-V3.1/C10"
+  - id: SEM-11
+    text: "已运行片段（含完成、重测、取消、中断片段）计入时间/年龄/YXB 账本接口；G2 未启用完整随机寿命，但账本接口必须记录运行片段时长。"
+    source: "问题契约 §1.2；02_H1 §5；CR-V3.1/C10/C17"
+  - id: SEM-12
+    text: "effective_attempt_no 仅在有效完成的测试上推进（初测 1，重测 2）；取消/中断片段不推进。"
+    source: "问题契约 §7.8；02_H1 §2；CR-V3.1/C10"
+  - id: SEM-13
+    text: "重测 FCFS，不因身份插队。"
+    source: "问题契约 §7.5；02_H1 §2"
+  - id: SEM-14
+    text: "任务逻辑 release_time 一经生成不因资源占用改写；故障/重启不改变 release_time；重测以首败完成时刻为 release_time。"
+    source: "问题契约 §7.8；02_H1 §2"
+  - id: SEM-15
+    text: "Q3 跨班待重测保留首败记录、原 release_time 与 effective_attempt_no=2，可由下一班另一分队从头完整执行。"
+    source: "问题契约 §7.9；parameters.csv P063；CR-V3.1/C11"
+  - id: SEM-16
+    text: "换班只更新 on_duty_squad，不清空全局就绪队列。"
+    source: "问题契约 §7.9；02_H1 §4；parameters.csv P063"
+  - id: SEM-17
+    text: "squad_id 不进 FCFS 键、不进观测随机键、不进任务身份；只进物理执行片段日志。"
+    source: "问题契约 §1.2、§7.9；parameters.csv P061/P063"
+  - id: SEM-18
+    text: "测试、换新—校准、复合周转均不可跨班暂停续做（non-preemptive within shift）。"
+    source: "问题契约 §7.7；parameters.csv P062；CR-V3.1/C12"
+  - id: SEM-19
+    text: "恰好班末完成允许启动（start+duration == shift_end 合法）。"
+    source: "问题契约 §7.7；02_H1 §4；parameters.csv P062"
+  - id: SEM-20
+    text: "班末剩余时间不足以完整完成的活动禁止启动（操作约束，非最优性定理）。"
+    source: "问题契约 §1.3.3、§7.7；02_H1 §4"
+  - id: SEM-21
+    text: "t=0 初始状态显式冻结：首两台已到位并占台位、设备已校准、四资源空闲、全局队列空。批次初态规则（V1.0.2 冻结）：batch_size>=2 => preloaded_devices 必须严格为 [1,2]（bay1=device1、bay2=device2），不得 [1]、[] 或其他 prefix；batch_size==1 => preloaded_devices=[1]（bay1=device1，bay2=EMPTY）。"
+    source: "问题契约 §1.1；02_H1 §1；G2-03 V1.0.2 Human Gate（SEM21/EMPTY 最终冻结）"
+  - id: SEM-22
+    text: "最后一台得到终端判定时停止计时，不计其运出（无意义末台运出不得发生）。"
+    source: "问题契约 §1.1；K9 §2；CR-V3.1/C12"
+  - id: SEM-23
+    text: "主周转为同台位顺序运出 0.5h + 运入 0.5h = 1h；不同 bay 的 turnover/transport 不共享全局运输容量资源，bay1 与 bay2 的运输区间允许时间重叠（V1.0.2 解释：不要求 OUT/OUT 或 IN/IN 同子相；例如 bay1 TRANSPORT_IN 与 bay2 TRANSPORT_OUT 可同时发生；不得引入 global_transport_capacity=1）。"
+    source: "问题契约 §1.1；parameters.csv P014/P015/P059；G2-03 V1.0.2 Human Gate（SEM-23 最终解释）"
+  - id: SEM-24
+    text: "0.5h 完整重叠周转仅为隔离配置小例，绝不与 1h 主周转混用。"
+    source: "问题契约 §1.1；parameters.csv P049；CR-V3.1/C12"
+
+# ============================================================================
+# 5. 同刻事件顺序（机器可执行 A..I）
+# ============================================================================
+same_timestamp_event_order:
+  description: >-
+    单一事件时间戳上的确定性闭包。所有活动区间为半开 [start,end)。时间戳相等用精确有理数比较，禁止浮点 epsilon。
+    V1.0.2：可执行顺序增加 E2（materialize_D_for_newly_E_eligible_devices）与 SHIFT_CHANGE refinement，
+    均为对冻结 A..I 的细化（L3 裁决：SHIFT_CHANGE 为合法细化，NO SPEC CHANGE REQUIRED 之外补 E2 显式步骤）。
+  steps:
+    - step: "A"
+      name: "settle_completed_activities"
+      action: "对所有 scheduled_end == 当前时间戳的活动标记 COMPLETED，写入 end_time，并把已运行片段时长计入年龄/YXB 账本。"
+    - step: "B"
+      name: "materialize_test_observations"
+      action: "对所有同刻完成的有效测试按脚本化结果物化观测（PASS/ABNORMAL）。"
+    - step: "C"
+      name: "classify_outcomes"
+      action: "对每个装置/工序分类：PASS -> 工序 PASSED；首次 ABNORMAL -> 释放该工序重测（effective_attempt_no=2，release_time=该失败完成时刻）；重测 ABNORMAL（第二次有效异常）-> 标记 device_exit。"
+    - step: "D"
+      name: "apply_device_exit"
+      action: "对每个标记 device_exit 的装置统一置 EXITED 终态；在同刻所有完成先结算后再执行，保证不抢在同刻兄弟工序完成之前退出。"
+    - step: "E"
+      name: "cancel_unfinished"
+      action: "对每个退出装置取消其全部未完成片段（运行中或就绪的其他工序任务）；取消片段无观测、不推进 effective_attempt_no、已运行部分计年龄/YXB。"
+    - step: "E2"
+      name: "materialize_D_for_newly_E_eligible_devices"
+      action: "对每个 terminal_state==PENDING 且 A/B/C process_status 全部 PASSED 且 D==not_created 且 E initial task 尚未产生的装置，在当前 timestamp 生成 D_CREATED（not_created -> normal|problem，仅一次）。同刻已被标 device_exit 的装置不得生成 D。"
+    - step: "SHIFT_CHANGE"
+      name: "shift_change_and_calendar_update"
+      action: "若当前时间戳为班界：结算后更新 on_duty_squad 与班历状态（换班只改值班分队，不清空队列）。V1.0.2 冻结顺序：A 完成 -> B 观测 -> C 分类 -> D 退出 -> E 取消 -> E2 D 物化 -> SHIFT_CHANGE -> F 释放；完成永远先于换班；新班 squad 只影响随后启动的物理片段。"
+    - step: "F"
+      name: "release_tasks"
+      action: "释放：重测任务（attempt 2）、E 任务（A/B/C 全 PASSED 后；E initial release_time=当前 timestamp，D_CREATED.seq 必须早于 E TASK_RELEASE.seq，同一 timestamp）、周转任务（装置终态且存在下一台待入装置；末台不运出）。"
+    - step: "G"
+      name: "recompute_legal_candidates"
+      action: "对每类资源取队列头（最小 FCFS 键），检查合法性：前置满足 + 资源空闲 + 台位可用 + 能在本班完整结束。"
+    - step: "H"
+      name: "dispatch_by_fcfs"
+      action: "H1 无延迟：同时启动所有互不冲突、前置满足、能在本班完整结束的合法队首；记录 ACTIVITY_START，end=start+duration。"
+    - step: "I"
+      name: "liveness_closure"
+      action: "若本时间戳无可执行项（无未来活动、无合法候选）但仍有未完成任务/未终态装置，跳到下一事件时间或下一班唤醒；日历空且任务全完成且装置全终态 -> SIMULATION_END。"
+  d_creation_rules:
+    - "D 不在 E ACTIVITY_START 生成；E ACTIVITY_START 绝不得重新生成 D；E retest 绝不得重新生成 D。"
+    - "canonical_D_creation_time = A/B/C flow 首次全部 PASS 的同一 timestamp = E logical release timestamp（E2 在 F 之前执行）。"
+    - "若 E 已 release 但 E resource busy 或班界导致等待 2 小时：D 在这 2 小时内为 CREATED（非 NOT_CREATED）。"
+    - "early exit：D 保持 not_created。"
+  liveness_audit:
+    - "time_monotonic：duration>0，dispatch 只产生 end_time=now+duration>now 的未来事件；时间严格前进。"
+    - "same_timestamp_closure_finite：结算/取消幂等、effective_attempt_no<=2、退出不可重复、D 仅生成一次，闭包在有限步内终止，无零时无限环。"
+    - "no_empty_calendar_with_unfinished：存在 READY 任务或非终态装置时，日历必非空或存在 next_shift_wake_up（C18）。"
+    - "no_zero_time_loop：任何事件不得以相同状态在同一时间戳重复调度自身。"
+
+# ============================================================================
+# 6. 显式状态模型（不得藏状态于局部变量）
+# ============================================================================
+time_representation:
+  rule: "G2 全部时长是 1/6h 的整数倍（2.5/2/2.5/3/0.5/0.5/0.5/1/3/2/3/1/6...）；用精确有理数（Fraction）表示与比较，禁止 float 与 epsilon。"
+  half_open: "所有活动区间为 [start,end)。"
+
+state_models:
+  DEVICE_STATE:
+    unique_id: "device_id（批次序号 1..N）"
+    fields:
+      - "device_id: int"
+      - "entry_time: 有理数（1/2 号=0；k>=3 号=其周转运入完成时刻）"
+      - "bay_id: 1|2（入场起至终态持续占用）"
+      - "process_state[A|B|C|E]: {effective_attempt_no, first_failure_time|null, outcome_history[], process_status}"
+      - "d_state: not_created|normal|problem（V1.0.2：在 E2 substep——A/B/C 全 PASS 的同一 timestamp、E release 之前——生成一次；不在 E ACTIVITY_START 生成；E retest 不重新生成）"
+      - "terminal_state: PENDING|PASSED|EXITED"
+      - "exit_reason: null|process_second_abnormal"
+    process_status_enum: "NOT_STARTED|IN_PROGRESS|AWAITING_RETEST|PASSED"
+    creation: "device 1/2 在 t=0 创建；device k>=3 在其台位周转运入完成时创建。"
+    modification: "工序状态推进、D 生成、终态写入。"
+    termination: "PASSED（E 通过）或 EXITED（同工序第二次有效异常）。"
+  RESOURCE_STATE:
+    unique_id: "resource_id in {A,B,C,E}"
+    fields:
+      - "resource_id: A|B|C|E"
+      - "capacity: 1（常量）"
+      - "status: IDLE|BUSY"
+      - "current_activity: {task_id, device_id, process, attempt_no, start_time, end_time}|null"
+    creation: "t=0 全部 IDLE（已校准）。"
+    modification: "启动/完成/取消。"
+    termination: "SIMULATION_END。"
+  BAY_STATE:
+    unique_id: "bay_id in {1,2}"
+    fields:
+      - "bay_id: 1|2"
+      - "status: OCCUPIED_TESTING|OCCUPIED_TRANSPORT_OUT|OCCUPIED_TRANSPORT_IN|TERMINAL_OCCUPIED_UNTIL_STOP|EMPTY"
+      - "current_device_id: int|null"
+      - "transport_phase: none|out|in"
+      - "turnover_profile: 1h_literal|0.5h_overlap（场景常量，隔离）"
+    creation: "t=0 bay1=装置1、bay2=装置2（batch_size>=2）；batch_size==1 时 bay2=EMPTY。"
+    empty_rule: "BAY_STATE.EMPTY 仅允许：batch_size==1 导致物理上不存在第二台装置的退化小例；或后续装置已不存在且该 bay 不再参与系统的显式终止状态设计（如已有冻结状态覆盖则优先使用已有状态）。不得利用 EMPTY 规避 batch_size>=2 时首两台 t=0 已到位的 SEM-21。"
+    modification: "装置终态 -> 有下一台：transport_out(0.5h)->transport_in(0.5h)->新装置 OCCUPIED_TESTING；无下一台：TERMINAL_OCCUPIED_UNTIL_STOP。"
+    termination: "SIMULATION_END。"
+  TASK_STATE:
+    unique_id: "task_id（稳定唯一）"
+    fields:
+      - "task_id: str"
+      - "resource_id: A|B|C|E"
+      - "device_id: int"
+      - "process: A|B|C|E"
+      - "effective_attempt_no: 1|2"
+      - "release_time: 有理数（生成时冻结，不改写）"
+      - "status: READY|RUNNING|COMPLETED|CANCELLED"
+      - "outcome: PASS|ABNORMAL|NONE"
+    creation: "首测：装置入台（A/B/C）或 A/B/C 全 PASSED（E）时释放；重测：首败完成时刻释放，attempt=2。"
+    modification: "状态推进。"
+    termination: "COMPLETED（有效测试完成）或 CANCELLED（装置退出取消未完成片段）。"
+  TEST_ATTEMPT_STATE:
+    unique_id: "attempt_id"
+    fields:
+      - "attempt_id: str"
+      - "device_id, process, effective_attempt_no"
+      - "status: SCHEDULED|RUNNING|COMPLETED|CANCELLED"
+      - "start_time, end_time|null"
+      - "outcome: PASS|ABNORMAL|NONE"
+      - "result_squad_id: 1|2（物理执行片段记录者）"
+    creation: "任务启动时。"
+    modification: "完成（写结果）或取消（无结果）。"
+    termination: "COMPLETED/CANCELLED。"
+  SHIFT_CALENDAR_STATE:
+    unique_id: "shift_index"
+    fields:
+      - "scenario: q2_single_shift|q3_two_shift|isolated_small_case"
+      - "shift_index: int"
+      - "shift_start, shift_end（半开）"
+      - "on_duty_squad: 1|2"
+      - "next_shift_wake_up_time: 有理数|null"
+    creation: "t=0 冻结初态；Q3 两班各 K h 后停工 24-2K h。"
+    modification: "换班只改 on_duty_squad，不清空队列。"
+    termination: "SIMULATION_END。"
+  QUEUE_ENTRY:
+    unique_id: "queue_id(per resource) + task_id"
+    fields:
+      - "queue_id: A|B|C|E"
+      - "task_id"
+      - "fcfs_key: (release_time, device_id, process_order, effective_attempt_no)"
+      - "status: WAITING|DISPATCHED|REMOVED"
+    creation: "任务释放。"
+    modification: "派工/取消。"
+    termination: "DISPATCHED 或 REMOVED。"
+  EVENT:
+    unique_id: "event_id（单调递增，确定性）"
+    fields:
+      - "event_id: int"
+      - "event_time: 有理数"
+      - "event_type: ACTIVITY_START|ACTIVITY_COMPLETE|OBSERVATION_MATERIALIZED|D_CREATED|TASK_RELEASE|DEVICE_EXIT|TASK_CANCEL|TURNOVER_OUT_START|TURNOVER_OUT_COMPLETE|TURNOVER_IN_START|TURNOVER_IN_COMPLETE|SHIFT_CHANGE|WAKE_UP|DEVICE_TERMINAL|SIMULATION_END"
+      - "payload: {device_id, process, effective_attempt_no, resource_id, bay_id, squad_id, outcome, cancel_reason, ...}"
+    creation: "同刻闭包/派工产生。"
+    termination: "SIMULATION_END。"
+  LOG_RECORD:
+    unique_id: "log_record_id（seq，单调，确定性）"
+    fields:
+      - "seq: int"
+      - "event_time: 有理数（序列化为 decimal 字符串或分数字符串）"
+      - "event_type: enum（同 EVENT）"
+      - "device_id, process, effective_attempt_no, resource_id, bay_id, squad_id"
+      - "attempt_start_time, attempt_end_time|null"
+      - "outcome: PASS|ABNORMAL|NONE"
+      - "cancel_reason: NONE|DEVICE_EXIT|SHIFT_INTERRUPT|..."
+      - "release_time（释放类事件）"
+      - "d_state（D_CREATED 事件）"
+      - "terminal_state, terminal_reason（终态事件）"
+      - "elapsed_hours（该片段运行时长，供年龄/YXB）"
+    creation: "每个事件物化一条日志记录；append-only 不可变。"
+    termination: "SIMULATION_END。"
+  note: "所有可观察状态必须物化为上述显式对象或日志记录；禁止把台位/资源/工序关键状态只放在函数局部变量中。"
+
+# ============================================================================
+# 7. FCFS 键冻结
+# ============================================================================
+fcfs_key:
+  canonical_tuple: "(release_time, device_id, process_order, effective_attempt_no)"
+  source: "问题契约 §1.3.2、§7.5；02_H1 §2；CR-V3.1/C11"
+  component_spec:
+    release_time: "精确有理数；任务生成时冻结，不改写；重测=首败完成时刻。比较用精确有理数。"
+    device_id: "批次序号（1..N），按入台顺序；device 1/2 在 t=0 预置，device k>=3 为第 k 台入台。全序递增。"
+    process_order: "固定全序 A < B < C < E。同类资源队列内 process 恒定，此分量只影响跨资源 canonical 事件日志排序，不影响派工结果。"
+    effective_attempt_no: "正整数；1 < 2。"
+  comparison: "字典序：先 release_time（精确有理数），再 device_id（int），再 process_order（A<B<C<E），再 effective_attempt_no（int）；取最小键。"
+  device_id_derivation: "批次语义（P037/P040 固定批次）+ 首两台预置（问题契约 §1.1）+ K9 手算使用 装置1/2/3 三处一致支撑；判断为可完全规格化，非未定义。"
+  squad_id_exclusion: "squad_id/execution_no/restart_no 均不进键。"
+  status: "FROZEN（无开放决策项）"
+
+# ============================================================================
+# 8. 确定性夹具 F1-F12
+# ============================================================================
+deterministic_fixtures:
+  fixture_schema_note: "每个夹具由 scripted_outcomes 与 scripted_real_states 完全确定，无 RNG。见 schemas_and_manifest_draft.scripted_outcome_schema。"
+  fixture_family_count: "12（F1..F12 逻辑 family）；允许 concrete scenarios：F4/F4b、F9/F9b；F4b/F9b 不注册为 F13/F14。"
+  cases:
+    - id: "F1"
+      name: "单装置 A/B/C 同刻并行"
+      device_count: 1
+      calendar: "isolated_small_case（单班，时长足够）"
+      turnover: "n/a（末台不运出）"
+      scripted: "装置1 A/B/C/E 全 PASS；真实状态全 normal。"
+      checks: ["CR-V3.1/C09", "CR-V3.1/C12"]
+      acceptance: "t=0 A/B/C 同启；B 2.0、A/C 2.5 完成；E 2.5 起 5.5 通过；T=5.5h；S=1；末台不运出。"
+    - id: "F2"
+      name: "双装置资源竞争 + FCFS"
+      device_count: 2
+      preloaded: "[1,2]"
+      calendar: "isolated_small_case"
+      turnover: "n/a"
+      scripted: "装置1/2 全 PASS；真实状态全 normal。"
+      checks: ["CR-V3.1/C09", "CR-V3.1/C11"]
+      acceptance: "A/B/C/E 各容量 1；同资源上 device_id 小者先派；装置1 A/B/C 先于装置2；同装置不自身重叠。"
+    - id: "F3"
+      name: "首次异常不取消其他工序 + 重测与其他工序并行（B 首败）"
+      device_count: 1
+      preloaded: "[1]"
+      calendar: "isolated_small_case"
+      turnover: "n/a"
+      scripted: "装置1：A1=PASS、B1=ABNORMAL（首次）、B2=PASS、C1=PASS、E1=PASS；真实状态全 normal。"
+      checks: ["CR-V3.1/C09", "CR-V3.1/C10", "CR-V3.1/C11"]
+      acceptance: >-
+        t=0 A1/B1/C1 同启；B1 0..2 ABNORMAL（首败不取消 A/C，A/C 继续运行）；B2 release_time=2、start=2、
+        finish=4 PASS，在 [2,2.5) 与 A1/C1（0..2.5）真实并行；ABC 全 PASS 于 t=4；E 4..7；
+        T=7h；S=1、PL=0、PW=0。删除旧 A1-abnormal / T=8 构造。
+    - id: "F4"
+      name: "第二次异常与其他装置有效通过严格同刻（先结算后退出）"
+      device_count: 2
+      preloaded: "[1,2]"
+      calendar: "isolated_small_case"
+      turnover: "n/a"
+      scripted: "装置1：A1=ABNORMAL、A2=ABNORMAL（第二次）、B1=PASS、C1=PASS；装置2：A1=PASS、B1=PASS、C1=ABNORMAL、C2=PASS、E1=PASS；其余正常。"
+      checks: ["CR-V3.1/C10"]
+      acceptance: >-
+        装置1 A1 0..2.5 ABNORMAL；装置2 A1 2.5..5 PASS、C1 2.5..5 ABNORMAL；装置1 A2 5..7.5 ABNORMAL（第二次）；
+        装置2 C2 5..7.5 PASS；t*=7.5 装置1 A2 与装置2 C2 严格同刻完成：先批量 settle/observation/classify
+        （保留装置2 C2 PASS），再装置1 EXITED；装置2 E 7.5..10.5；T=10.5h；S=1、PW=1。
+        本 fixture 不再包含错误 NOTE『literal alignment unreachable』。
+    - id: "F4b"
+      name: "F4 family 取消分支：退出取消运行中片段（不声称跨装置同刻 PASS）"
+      device_count: 2
+      preloaded: "[1,2]"
+      calendar: "isolated_small_case"
+      turnover: "n/a"
+      scripted: "装置1：A1=ABNORMAL、B1=ABNORMAL、B2=ABNORMAL（第二次）、C1=ABNORMAL；装置2：A1/B1/C1/E1=PASS。"
+      checks: ["CR-V3.1/C10"]
+      acceptance: >-
+        装置1 A/C retest 在 5..7.5 运行；装置1 B2 4..6 second ABNORMAL；t=6 装置1 EXIT，取消其正在运行的 A2/C2；
+        outcome=NONE、cancel_reason=DEVICE_EXIT、elapsed=1h each、effective_attempt_no 保持 2、
+        无 ACTIVITY_COMPLETE、无 OBSERVATION。F4b 只验证 terminal cancellation branch，
+        不得声称具有 cross-device same-time PASS。
+    - id: "F5"
+      name: "D 未生成即退出（不提前生成 D）"
+      device_count: 1
+      preloaded: "[1]"
+      calendar: "isolated_small_case"
+      turnover: "n/a"
+      scripted: "装置1 A 初测异常、A 重测异常（退出）；真实 A/B/C 全 normal；未到达 E。"
+      checks: ["CR-V3.1/C09", "CR-V3.1/C10"]
+      acceptance: "退出时 d_state=not_created，不反事实生成 D；PW 只统计已生成真实状态（全 normal -> PW 计 1）。"
+    - id: "F6"
+      name: "班末剩余时间不足禁止启动"
+      device_count: 1
+      preloaded: "[1]"
+      calendar: "q3_two_shift K=9（[0,9),[9,18)）"
+      turnover: "n/a"
+      scripted: "某装置在班末时刻仅剩不足以完整完成某工序的时间，该任务保持 READY。"
+      checks: ["CR-V3.1/C12", "CR-V3.1/C18"]
+      acceptance: "start+duration>shift_end 时禁止启动；任务保留 FCFS 键；存在下一班唤醒；时间前进。"
+    - id: "F7"
+      name: "恰好班末完成允许启动（SEM-21 修正版：batch=3/preloaded [1,2]）"
+      device_count: 3
+      preloaded: "[1,2]"
+      calendar: "q3_two_shift K=9"
+      turnover: "1h_literal"
+      scripted: "装置1/2/3 均 deterministic PASS；主周转 1h literal；device1 terminal 5.5。"
+      checks: ["CR-V3.1/C12"]
+      acceptance: >-
+        device1 terminal 5.5；bay1 turnover 5.5..6.5；device3 entry 6.5；device3 A/C 6.5..9.0，
+        start+duration==shift_end 合法；9.0 先结算 A/C 完成再 SHIFT_CHANGE；device3 E 9..12；T=12h。
+        不得使用 batch=2 + preloaded=[1]。
+    - id: "F8"
+      name: "K=9 三装置跨班待重测（权威手算）"
+      device_count: 3
+      preloaded: "[1,2]"
+      calendar: "q3_two_shift K=9"
+      turnover: "1h_literal"
+      scripted: "装置3 B 初测 ABNORMAL、B 重测 PASS；其余全 PASS；真实状态全 normal；squad 1 班1 / squad 2 班2。"
+      fixture_file: "01_审计/手算样例_K9跨班重测.md"
+      checks: ["CR-V3.1/C08", "CR-V3.1/C09", "CR-V3.1/C11", "CR-V3.1/C12"]
+      acceptance: "逐事件匹配手算时间线；T=14h；S=3、PL=0、PW=0；YXB_A=7.5/18、YXB_B=8/18、YXB_C=7.5/18、YXB_E=9/18；B 重测 release_time 恒为 8.5、attempt=2、跨班不插队、持续占台；D_CREATED 事件按 V1.0.2 E2 时序重断言（允许相对旧实现 seq/time 变化）。"
+    - id: "F9"
+      name: "1h 主周转（SEM-21 修正版：batch=3/preloaded [1,2]）"
+      device_count: 3
+      preloaded: "[1,2]"
+      calendar: "isolated_small_case"
+      turnover: "1h_literal"
+      scripted: "装置1/2/3 全 PASS；真实状态全 normal。"
+      checks: ["CR-V3.1/C12"]
+      acceptance: "台位在周转期间不可测试；0.5 out + 0.5 in = 1h；device1 terminal 5.5；bay1 turnover OUT 5.5..6.0 + IN 6.0..6.5；device3 entry 6.5；device3 E 9..12；T=12h。"
+    - id: "F9b"
+      name: "SEM-23 并发运输覆盖（F9 family subcase）"
+      device_count: 4
+      preloaded: "[1,2]"
+      calendar: "isolated_small_case"
+      turnover: "1h_literal"
+      scripted: "device1：A1/B1/C1/E1=PASS；device2：A1=PASS、B1=ABNORMAL、B2=ABNORMAL（第二次）、C1=PASS、不生成 E；device3/4：全 PASS。"
+      checks: ["CR-V3.1/C12"]
+      acceptance: >-
+        device1 terminal 5.5 -> bay1 OUT 5.5..6.0、IN 6.0..6.5；device2 B1 2..4 ABNORMAL、B2 4..6 second ABNORMAL、
+        EXIT 6.0 -> bay2 OUT 6.0..6.5；[6.0,6.5) bay1 TRANSPORT_IN 与 bay2 TRANSPORT_OUT 同时存在（SEM-23 并发运输 positive coverage，
+        无全局运输容量冲突）。预计 T=15，但实现者必须按冻结规则运行确认，不得手改结果迎合 T=15；
+        若机械实现严格按上述冻结输入得不到 T=15：停止并报告，不得 silent patch。
+    - id: "F10"
+      name: "0.5h 重叠替代周转（隔离配置，SEM-21 修正版）"
+      device_count: 3
+      preloaded: "[1,2]"
+      calendar: "isolated_small_case"
+      turnover: "0.5h_overlap"
+      scripted: "同 F9 输入，仅 turnover_profile=0.5h_overlap。"
+      checks: ["CR-V3.1/C12"]
+      acceptance: "完整周转 0.5h；device1 terminal 5.5；overlap turnover 5.5..6.0；device3 entry 6.0；device3 ABC 6.0..8.5（B 6..8）；device3 E 8.5..11.5；T=11.5h；与本场景 1h 配置在 manifest 严格隔离，绝不混用。"
+      overlap_log_representation: "0.5h_overlap 真实 bay 占用周转区间为 [start, start+0.5h)；日志允许 TURNOVER_OUT_START at start，在 start+0.5h 同刻依次记录 TURNOVER_OUT_COMPLETE / TURNOVER_IN_START / TURNOVER_IN_COMPLETE；IN 子相日志为零时长表示；整个 turnover 物理占用仍严格 0.5h，不是额外 0.5h IN，checker 不得重复计算 bay occupancy。"
+    - id: "F11"
+      name: "活性：未完成任务 -> 下一班唤醒存在"
+      device_count: 1
+      preloaded: "[1]"
+      calendar: "q3_two_shift K=9"
+      turnover: "n/a"
+      scripted: "班末存在 READY 任务（不足以启动）。"
+      checks: ["CR-V3.1/C18"]
+      acceptance: "日历非空或存在 next_shift_wake_up；时间严格前进；下个班可启动，无死锁。"
+    - id: "F12"
+      name: "末台不运出（无意义末台运输不得发生）"
+      device_count: 1
+      preloaded: "[1]"
+      calendar: "isolated_small_case"
+      turnover: "n/a"
+      scripted: "单装置终态通过。"
+      checks: ["CR-V3.1/C12"]
+      acceptance: "末台终态时刻停止计时；不产生运出/空运入周转事件；无下一台则不调度周转。"
+  K9_fixture_status: "EXISTS -> C:/Users/观后感h/Documents/了解ai是否会在中间计算出错，并思考解决方法/competitions/模拟赛_研究生A题/01_审计/手算样例_K9跨班重测.md（由 CR-V3.1/C08 引用；本包 F8 直接引用其路径）。"
+
+# ============================================================================
+# 9. CP-SAT 依赖决策（人工 Gate）
+# ============================================================================
+cp_sat_dependency_decision:
+  id: "CP_SAT_DEPENDENCY_RULING_OPT_A"
+  status: "RESOLVED_OPT_A_APPROVED"
+  resolved_date: "2026-08-14"
+  resolved_by: "Human Gate（队伍正式裁决）"
+  final_ruling: "OPT-A：授权 OR-Tools/CP-SAT 仅作为 G2 C08 独立验证侧专用依赖。"
+  事实:
+    - "CR-V3.1/C08 明文要求『确定性 CP-SAT 小例对拍』，原验收含义不变，本轮不修改检查注册表。"
+    - "当前项目无任何 OR-Tools/CP-SAT 依赖；G2-01/G2-02 已冻结政策『仅 Python 标准库；不得新增依赖』。"
+    - "禁止静默以暴力枚举/事件重放/主 DES 自跑/手算样例 alone 顶替 CP-SAT。"
+    - "G2-03 引擎本身不依赖 CP-SAT（stdlib-only）；仅 C08 的交叉核对子项使用该依赖。"
+  选项:
+    - id: "OPT-A"
+      text: "批准为 C08 交叉核对单独引入 OR-Tools（python ortools）作为项目依赖，并在冻结依赖清单与复现证据中记录。"
+    - id: "OPT-B"
+      text: "经变更控制修订 CR-V3.1/C08 措辞，将『确定性 CP-SAT 小例对拍』改为『确定性小例的独立精确核对』（手算 + 独立精确枚举/无 ILP 依赖的独立 checker），不新增依赖。"
+  影响:
+    - "OPT-A：打破 stdlib-only 冻结政策，需新增依赖快照与复现验证；CP-SAT 仅用于小例交叉核对，不得进入主 DES 路径。"
+    - "OPT-B：需 CR-V3.1 版本变更（检查注册表措辞改动），可能削弱『CP-SAT』这一具体交叉核对口径，改为更通用的独立精确核对。"
+  建议: >-
+    原草案倾向 OPT-B（保持 stdlib-only）；2026-08-14 人工 Gate 正式裁决选择 OPT-A，
+    理由：CR-V3.1/C08 已冻结『确定性 CP-SAT 小例对拍』要求，异源计算范式核验不可降级为暴力枚举/重放。
+  ruling_details:
+    cr_v3_1_c08_changed: "NO（保持 CR-V3.1/C08 原验收含义不变）"
+    python_version: "3.12.10"
+    ortools_preexisting: "NO（探测时未安装）"
+    ortools_exact_version: "9.15.6755"
+    version_source: "python -m pip index versions ortools（当前 Python 兼容的最新稳定正式版；非 rc/beta/alpha/nightly/git HEAD）"
+    cp_sat_import_test: "见 checker_optional_dependencies.import_test"
+    dependency_scope: "G2 C08 独立验证侧专用依赖；允许归属 G2-03 validation/oracle 或（若最终职责更清晰）G2-04 checker auxiliary validation"
+    main_des_dependency: "false（CP-SAT 不属于主 DES 运行时依赖；禁止 04_代码/main_model/des/** import ortools）"
+    formal_large_run_dependency: "false（不进入正式 100 台计划）"
+    forbidden_uses:
+      - "生成正式 DES 时间线作为主结果"
+      - "替代主事件引擎"
+      - "求 100 台正式计划"
+      - "求 H1 / H2"
+      - "调最优 K"
+      - "生成正式竞赛数字"
+    sole_purpose: "为很小的确定性 fixture 提供异源时间可行性/最优或预定规则一致性核验"
+  异源独立规则:
+    - "CP-SAT 与 DES 属异源计算范式：DES=事件状态转移/event calendar；CP-SAT=变量 + precedence + capacity + calendar constraints。"
+    - "不得共享：event transition function、dispatch loop、queue mutation logic、DES scheduler implementation。"
+    - "允许共享只读：fixture data、durations、resource capacities、frozen semantics constants。"
+
+# ============================================================================
+# 9a. 依赖锁定契约（人工 Gate OPT-A 落文；版本来自实际环境机械探测）
+# ============================================================================
+checker_optional_dependencies:
+  ortools:
+    purpose: "CR-V3.1/C08 deterministic CP-SAT oracle only"
+    version: "9.15.6755"
+    main_des_dependency: false
+    formal_large_run_dependency: false
+    python_version: "3.12.10"
+    import_test: "python -c \"from ortools.sat.python import cp_model; print('ORTOOLS_CP_SAT_OK')\""
+    install_command: "python -m pip install \"ortools==9.15.6755\""
+    provenance_note: "安装后以 pip freeze 记录与 ortools 及其新引入直接/传递依赖相关的条目；不得安装其他新软件包。"
+    upgrade_policy: "禁止 rc/beta/alpha/nightly/git HEAD/unpinned；版本变更须走变更控制。"
+    runtime_version_guard: "CP-SAT oracle 启动时检查 ortools.__version__ == '9.15.6755'，不一致则显式 FAIL（与 cp_sat_oracle_spec.release_independence.runtime_version_guard 一致）。"
+    boundary: "CP-SAT 仅限确定性 scripted fixtures；禁止 random defect/observation/lifetime、equipment stochastic failure、keyed RNG、100 devices；随机寿命属 G3。"
+
+# ============================================================================
+# 9b. CP-SAT oracle 冻结建模边界（未来 oracle 必须遵守；异源、只读共享）
+# ============================================================================
+cp_sat_oracle_spec:
+  input_same_as_fixture:
+    - "device IDs"
+    - "process durations"
+    - "capacities"
+    - "scripted outcomes"
+    - "shift calendar"
+    - "turnover mode"
+    - "exogenous release times（仅限 fixture 初始条件直接给定者；内生 release 一律由 CP-SAT 独立推导，见 release_independence）"
+  must_represent_independently:
+    - "1. A/B/C/E intervals"
+    - "2. A/B/C/E 各容量 1"
+    - "3. bay capacity = 2"
+    - "4. A/B/C 可以同装置并行"
+    - "5. E 必须等待 A/B/C flow pass"
+    - "6. retest release after first abnormal"
+    - "7. second abnormal causes exit"
+    - "8. canceled/not-generated downstream task 不应强制存在"
+    - "9. shift-window feasibility"
+    - "10. no-cross-shift constraint"
+    - "11. exactly-at-shift-end allowed"
+    - "12. turnover occupancy"
+    - "13. K9 pending retest across shift"
+    - "14. FCFS canonical rule 在 fixture 中造成的固定顺序约束"
+  determinism_only:
+    - "只允许确定性 scripted fixtures"
+    - "禁止 random defect / random observation / random lifetime / equipment stochastic failure / keyed RNG / 100 devices"
+    - "设备随机寿命属于 G3，不得提前进入"
+  comparison_output:
+    - "每个适用 fixture 形成 fixture_id + hand_timeline + des_timeline + cp_sat_timeline"
+    - "逐项比较：task existence、start_time、finish_time、resource、bay、attempt number、terminal time、makespan"
+    - "多个同样合法的 CP-SAT 解不得仅因内部任务排列不同判 FAIL；只比较冻结 fixture 真正要求唯一的量"
+    - "若 C08 fixture 要求唯一 canonical FCFS timeline，CP-SAT 必须编码该 FCFS 顺序，再逐事件精确比较"
+  release_independence:
+    exogenous_release:
+      definition: "只有真正由 fixture 初始条件直接给定的时间才允许作为 CP-SAT oracle 输入。"
+      allowed_inputs:
+        - "t=0 已在大厅的首两台装置"
+        - "fixture 明确给定的初始 availability"
+        - "fixture 明确给定的 shift calendar"
+    endogenous_release:
+      definition: "由前序活动完成、scripted outcome、device terminal state 推导出的后续 task release_time，禁止由 DES/event_log/DES timeline/DES scheduler output 提供给 CP-SAT；CP-SAT 必须独立推导。"
+      must_derive_independently:
+        - "1. retest release_time"
+        - "2. E initial-test release_time"
+        - "3. turnover-completion 后产生的 A/B/C initial-task release_time"
+        - "4. 任何由前序活动完成、scripted outcome、device terminal state 推导出的后续 task release_time"
+      derivation_inputs: "fixture primitive inputs、scripted outcomes、durations、precedence、resource constraints、bay constraints、turnover constraints、shift/calendar constraints、frozen flow semantics"
+    retest_release_formula: "对某工序 j 的第一次有效测试异常：retest_release_time(j) = finish_time(first_effective_attempt(j))；finish_time 取自 CP-SAT 自身变量，不得读取 DES 提供的 retest release。"
+    e_release_formula: "E_release_time 当且仅当 A/B/C 三条 flow 均已获得 PASS 后形成；其时间由 CP-SAT 从自己的 A/B/C 时间变量和 scripted outcomes 独立导出；不得将 DES 算出的 E.release_time 作为 oracle input。"
+    turnover_release_formula: "新装置 A/B/C initial release 若由 turnover 完成产生，必须由 CP-SAT 自己的 turnover interval 结束时刻导出。"
+    no_des_derived_input:
+      rule: "CP-SAT oracle 求解输入阶段 MUST NOT READ：des_event_log、des_timeline、DES-computed release_time、DES-computed start_time、DES-computed finish_time、DES-computed queue order after dynamic release、DES terminal state。"
+      comparison_only: "DES timeline 只允许在 CP-SAT 求解完成之后进入 comparison stage，作为被比较对象。"
+    shared_inputs_only: "DES 与 CP-SAT 只允许共享：fixture_id、primitive fixture data、device IDs、frozen durations、resource capacities、bay capacity、scripted outcomes、shift calendar、turnover mode/duration、frozen FCFS key definition、frozen semantic constants。禁止共享任何由主 DES 执行后产生的派生状态。"
+    fcfs_independent_encoding:
+      rule: "CP-SAT 必须独立编码 canonical FCFS 键 (release_time, device_id, process_order, effective_attempt_no)，其中 release_time 必须使用 CP-SAT 自己独立推导出的 release_time；禁止直接读取 DES 排好的 queue order；若两个任务的动态 release_time 需由前序事件决定，CP-SAT 必须从自己的约束系统导出。"
+    oracle_role:
+      primary_purpose: "验证冻结 deterministic DES / FCFS canonical timeline；不是用来寻找自由策略空间中的全局最优调度。"
+      canonical_fcfs_fixture_rule: "对于要求 canonical FCFS timeline 的 fixture，必须编码冻结的 FCFS 顺序约束；不得因为 CP-SAT 找到 makespan 更短但违反冻结 FCFS 策略的解就判 DES FAIL。"
+      comparison_target: "task existence、release、start、finish、resource、bay、attempt、terminal time、makespan——均在相同冻结策略语义下比较。"
+    runtime_version_guard:
+      rule: "未来 CP-SAT oracle 启动时必须检查 ortools.__version__ == '9.15.6755'；不一致则显式 FAIL，禁止静默使用其他版本。"
+      main_des_ortools: "主 DES 不得 import ortools。"
+  integer_time_scaling:
+    rule: "CP-SAT 内部只使用整数 tick；输出按冻结规则反序列化；禁止 float 作为 canonical event time。"
+    scale_derivation: >-
+      机械求取：G2 全部确定性时长均为 1/6h 的整数倍（测试 2.5/2/2.5/3h、校准 30/20/20/40min、
+      运出/运入 0.5h、周转 1h 或 0.5h、班长 12h 与 q3 K∈{9,9.5,...,12}h）。
+      最小公共时间单位 = 10min = 1/6h（20min/40min 校准决定了 10min 粒度；无更细确定性粒度）。
+      ticks_per_hour = 6；1 tick = 10min。禁止随意写 scale=100 或 scale=1000。
+    serialization: "tick 数按冻结规则反序列化为 decimal/分数字符串，禁止 float。"
+    verification: "以 parameters.csv P006-P015/P038/P041/P049/P059 机械验证全部时长为 10min 整数倍。"
+
+# ============================================================================
+# 10. 主/检查器隔离与 event_log 契约
+# ============================================================================
+event_log_contract:
+  principle: >-
+    主 DES 只输出不可变 event_log；未来 checker 只凭 event_log + 冻结 config + scripted fixture + parameters
+    独立重算，绝不 import 主状态机。主 DES 不输出『只有最终 T』；event_log 必须足以复算以下全部量。
+  must_support_independent_recompute:
+    - "bay occupancy（每台位 [0,T) 的占用/运输状态覆盖）"
+    - "A/B/C/E 资源占用（每资源 [0,T) 的 IDLE/BUSY 覆盖）"
+    - "task start/end（每任务每片段）"
+    - "release_time（释放事件显式记录，含跨班不变断言）"
+    - "attempt number（effective_attempt_no）"
+    - "test outcome（PASS/ABNORMAL）"
+    - "cancel reason（DEVICE_EXIT/SHIFT_INTERRUPT/...）"
+    - "shift boundary（SHIFT_CHANGE 事件 + 半开区间）"
+    - "turnover（OUT_START/OUT_COMPLETE/IN_START/IN_COMPLETE + 台位）"
+    - "device terminal state（PASSED/EXITED + terminal_reason）"
+    - "T（最后一台终态判定时刻）"
+    - "YXB 账本缝（每测试片段 elapsed_hours 按组分 A/B/C/E 累计；年龄账本缝同源）"
+  immutability: "event_log 为 append-only；每 run 冻结后不可覆盖；以 SHA-256 进入 hash inventory。"
+
+# ============================================================================
+# 11. schema / manifest 草稿
+# ============================================================================
+schemas_and_manifest_draft:
+  input_config_schema:
+    id: "des_config_v1（草稿）"
+    fields:
+      - "schema_version: const des_config_v1"
+      - "scenario_id: 非空稳定字符串"
+      - "scenario: q2_single_shift|q3_two_shift|isolated_small_case"
+      - "batch_size: 正整数（夹具 1..4；正式 100）"
+      - "shift_length_h, shifts_per_day（q2 12h/1；q3 K/2；isolated 用足够长单班）"
+      - "durations: {A,B,C,E} 有理数（2.5/2/2.5/3）"
+      - "transport_out_h, transport_in_h, turnover_profile: 1h_literal|0.5h_overlap"
+      - "deterministic_initial_state: {preloaded_devices: batch_size==1 -> [1]；batch_size>=2 -> [1,2]（SEM-21 冻结，不得其他 prefix）, all_calibrated:true, queues_empty:true}"
+      - "random_enabled: false（固定）"
+      - "key_schema_version: P061 key_schema_v1（占位，G2 不启用随机流）"
+  scripted_outcome_schema:
+    id: "scripted_outcomes_v1（草稿）"
+    fields:
+      - "fixture_id: F1..F12"
+      - "devices: [{device_id, real_state:{A,B,C}, d_state:{normal|problem|not_created}}]"
+      - "outcomes: [{device_id, process, effective_attempt_no, outcome: PASS|ABNORMAL}]"
+      - "calendar, turnover_profile"
+    rule: "真实状态与观测结果均脚本化，禁止 RNG；不得以 RNG 伪造夹具期望。"
+  event_log_schema:
+    id: "des_event_log_v1（草稿）"
+    envelope: "schema_version + scenario_id + records[]"
+    record_fields: "见 state_models.LOG_RECORD；event_time 用十进制字符串或分数字符串，禁止 float。"
+    ordering: "records 按 seq 升序；确定性，不依赖容器遍历或哈希顺序。"
+  run_manifest_schema:
+    id: "des_run_manifest_v1（草稿）"
+    fields:
+      - "run_id: UTC YYYYMMDDTHHMMSSffffffZ_ + 8 位 secrets.token_hex(4)"
+      - "scenario_id, config_hash, event_log_hash, scripted_fixture_hash, parameters_hash"
+      - "task_package_ref, registry_version, code snapshots"
+      - "metrics: {T, S, PL, PW, YXB_A..YXB_E}"
+    rule: "run_id 冲突则失败不覆盖；manifest 不记录自身 hash（其 hash 在 file_hashes.sha256）。"
+  check_placeholder_interface:
+    id: "des_check_v1（预留，本包不实现）"
+    contract: "checker 读 event_log + config + scripted fixtures + parameters；独立重算台位/资源占用、时序、release_time、attempt、outcome、cancel、班界、周转、终态、T、YXB；禁止 import main_model 状态机。"
+    status: "RESERVED_INTERFACE"
+  immutable_evidence_root:
+    root: "05_结果/G2/run_<immutable_run_id>/"
+    layout: "run_manifest.json + commands.json + file_hashes.sha256 + frozen/{task_package, parameters.csv, schemas, fixtures} + event_log.jsonl + metrics.json"
+  hash_inventory:
+    rule: "file_hashes.sha256 小写 SHA-256、两个空格、POSIX 相对路径、按路径 Unicode code-point 升序、LF；排除自身；不列目录。"
+
+# ============================================================================
+# 12. 所有权草稿（最小，不过度设计）
+# ============================================================================
+ownership_draft:
+  layout:
+    engine: "04_代码/main_model/des/deterministic_des_v1.py（状态机 + 事件日历 + 同刻闭包 + 派工）"
+    state_models: "04_代码/main_model/des/state_models_v1.py（显式状态对象与常量枚举）"
+    fixtures: "04_代码/tests/fixtures/des_fixtures_F1_F12_v1.json（脚本化夹具 + K9 期望）"
+    engine_tests: "04_代码/tests/test_des_main_v1.py"
+    schemas: "04_代码/src/schemas/des_config_v1.schema.json / des_event_log_v1.schema.json / des_run_manifest_v1.schema.json（D 冻结的共享只读 schema）"
+    checker: "04_代码/checker/des_checker_v1.py（G2-04 任务包，本包不写）"
+    runner: "04_代码/scripts/run_g2_03_v1.py（G2-04 任务包，本包不写）"
+  role_separation:
+    engine_implementer: "只实现冻结状态机与夹具，不得实现 checker、不得新增依赖、不得写正式结果。"
+    checker_implementer: "G2-04；只读 event_log/config/fixtures/parameters，不得 import 主模型。"
+    d_acceptance: "语义验收 + C08-C12/C18 范围内结论强度；不得自行改容差或补数字。"
+  constraints:
+    - "仅 Python 标准库；不得新增依赖（含 CP-SAT，见 cp_sat_dependency_decision）。"
+    - "main_model 与 checker 分目录、分代码路径；共享只读参数与 schema，不共享核心状态转移/可行性/指标函数。"
+
+# ============================================================================
+# 13. 建议的 G2 拆分判断
+# ============================================================================
+proposed_split:
+  judgement: "ACCEPTABLE"
+  g2_03: "确定性并行 DES 内核 + F1-F12（含 K=9 跨班时间线）+ C08（手算部分）/C09/C10/C11/C12/C18 + event_log 契约 + schema 草稿。"
+  g2_04: "独立日志重放 checker + C06 最小质量分离 + C16 键骨架 + C17 指标/账本复算 + C19 隔离强制 + C20 故障注入 + C21 复现证据 +（可选）CP-SAT oracle 的 G2-04 侧辅助验证（首选归属 G2-03 validation/oracle）。"
+  rationale: >-
+    引擎先产出确定性 event_log 与手算夹具证据，checker 后独立重放；职责与证据链清晰，不把全部剩余 G2 塞进一个巨型任务。
+    若人工 Gate 认为 G2-03 仍过大，可再拆出『夹具/手算事件表预签字』为独立前置子任务，但当前拆分已可接受。
+
+# ============================================================================
+# 14. 决策请求清单
+# ============================================================================
+decision_required: []
+resolved_decisions:
+  - id: "CP_SAT_DEPENDENCY_RULING_OPT_A"
+    resolution: "OPT-A_APPROVED（2026-08-14 Human Gate）"
+    outcome: "OR-Tools 9.15.6755 仅作为 C08 独立 CP-SAT oracle 专用依赖；主 DES stdlib-only；CR-V3.1/C08 未修改。"
+    note: "FCFS 键、K9 夹具、班界语义、周转/台位占用、脚本化异常 vs 有效尝试、末台终止均已冻结，无需决策。"
+
+# ============================================================================
+# 15. 偏差记录
+# ============================================================================
+deviations:
+  - "调度所称『事件引擎语义 items 1-26』实际逐条展开为 24 条独立语义；本包冻结全部 24 条（frozen_event_engine_semantics SEM-01..SEM-24）。"
+  - "本包已冻结为 G2-03-SPEC-V1.0，不包含 dispatches / allowed_read_paths / allowed_write_paths / exact_cli 等派单级字段；这些在实现 Gate 补。"
+  - "V0.2（2026-08-14）：人工 Gate 裁决 CP-SAT 依赖为 OPT-A（OR-Tools 9.15.6755 仅 C08 独立 oracle 专用）；CP-SAT 依赖开放决策项关闭；新增 checker_optional_dependencies 与 cp_sat_oracle_spec（含整数时间刻度机械求取：1 tick=10min=1/6h）。"
+  - "V1.0（2026-08-14）：人工 Gate 冻结本包；唯一语义修正为 cp_sat_oracle_spec.release_independence（外生/内生 release 区分、禁读 DES 派生输入、FCFS 独立编码、版本运行时保护）。"
+  - "V1.0.2（2026-08-14）：fixture / executable event-order semantic correction（来源：G2_03_S1_FIXTURE_SEMANTIC_ADJUDICATOR Pro/high L3 adjudication + Human Gate final ruling）。F3 重构为 B 首败（T=8->7）；F4 恢复 t*=7.5 跨装置同刻 PASS 并新增 F4b 取消分支；F7/F9/F10 修正 SEM-21（batch=3、preloaded=[1,2]）；新增 F9b（SEM-23 并发运输，batch=4）；D 生成移至 E2 substep（A/B/C 全 PASS 的同一 timestamp、E release 之前，D_CREATED.seq < E TASK_RELEASE.seq）；EMPTY 状态冻结（仅 batch=1 或显式终止设计可用）；SEM-23 解释（不同 bay 运输可重叠，无全局运输容量）；0.5h overlap 日志零时长 IN 表示冻结。fixture_family_count=12，F4b/F9b 为 subcase 不注册新 family。"
+  - "本包不修改 CURRENT_STATE.md、CHANGELOG.md、问题契约、检查注册表、parameters.csv、03_模型/**、04_代码/**、05_结果/**、G2-01/G2-02 任务包或任何证据。"
+
+must_not_change:
+  - "问题契约 §7 已冻结状态机输入、02_H1 同刻事件顺序与班界周转语义。"
+  - "FCFS 键元组与 device_id=批次序号方案。"
+  - "K9 手算时间线与其验收量（T=14、S=3、PL=0、PW=0、YXB 四值）。"
+  - "仅 Python 标准库；不得新增依赖（OR-Tools 9.15.6755 例外：仅 C08 独立 CP-SAT oracle 专用，见 checker_optional_dependencies）。"
+  - "不得把班末禁启写成弱支配定理、不得把手算数写成正式结果、不得宣称 C06/C16/C17/C19/C20/C21 完成。"
+
+no_pass_claim_yet: >-
+  本包 V1.0 冻结只表示语义与接口可执行；CR-V3.1/C08-C12/C18 尚需引擎实现、夹具逐事件一致与 D 语义验收；
+  C08 的 CP-SAT 子项已获 OPT-A 裁决（OR-Tools 9.15.6755）但尚未实现。不构成任何检查 PASS 或 G2 Gate 通过。

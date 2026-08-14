@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "des_event_log_v1.schema.json",
+  "title": "G2-03 deterministic minimal parallel DES - event log",
+  "description": "Envelope + append-only records contract for the deterministic DES (G2-03-SPEC-V1.0.1 state_models.LOG_RECORD and event_log_contract). event_time and every other time field are exact rational strings (integer or fraction form); JSON floats are forbidden. Records are ordered by seq ascending and are deterministic for identical config+fixture. Structural constraints only; semantic completeness (e.g. every ACTIVITY_START has a matching ACTIVITY_COMPLETE or TASK_CANCEL) is enforced by the engine and by the future checker, and is marked SCHEMA_CONSTRAINT_DEFERRED here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "scenario_id", "records"],
+  "properties": {
+    "schema_version": { "const": "des_event_log_v1" },
+    "scenario_id": { "type": "string", "minLength": 1 },
+    "records": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/logRecord" }
+    }
+  },
+  "$defs": {
+    "rationalString": {
+      "type": "string",
+      "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:/[1-9][0-9]*)?$",
+      "description": "An exact non-negative rational string (\"0\", \"9\", \"2.5\", \"5/2\")."
+    },
+    "eventType": {
+      "enum": [
+        "ACTIVITY_START",
+        "ACTIVITY_COMPLETE",
+        "OBSERVATION_MATERIALIZED",
+        "D_CREATED",
+        "TASK_RELEASE",
+        "DEVICE_EXIT",
+        "TASK_CANCEL",
+        "TURNOVER_OUT_START",
+        "TURNOVER_OUT_COMPLETE",
+        "TURNOVER_IN_START",
+        "TURNOVER_IN_COMPLETE",
+        "SHIFT_CHANGE",
+        "WAKE_UP",
+        "DEVICE_TERMINAL",
+        "SIMULATION_END"
+      ]
+    },
+    "logRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["seq", "event_time", "event_type"],
+      "properties": {
+        "seq": { "type": "integer", "minimum": 1 },
+        "event_time": { "$ref": "#/$defs/rationalString" },
+        "event_type": { "$ref": "#/$defs/eventType" },
+        "device_id": { "type": ["integer", "null"], "minimum": 1 },
+        "process": { "type": ["string", "null"], "enum": ["A", "B", "C", "E", null] },
+        "effective_attempt_no": { "type": ["integer", "null"], "enum": [1, 2, null] },
+        "resource_id": { "type": ["string", "null"], "enum": ["A", "B", "C", "E", null] },
+        "bay_id": { "type": ["integer", "null"], "enum": [1, 2, null] },
+        "squad_id": { "type": ["integer", "null"], "enum": [1, 2, null] },
+        "task_id": { "type": ["string", "null"] },
+        "attempt_start_time": { "type": ["string", "null"], "$ref": "#/$defs/rationalString" },
+        "attempt_end_time": { "type": ["string", "null"], "$ref": "#/$defs/rationalString" },
+        "outcome": { "type": ["string", "null"], "enum": ["PASS", "ABNORMAL", "NONE", null] },
+        "cancel_reason": { "type": ["string", "null"], "enum": ["NONE", "DEVICE_EXIT", "SHIFT_INTERRUPT", null] },
+        "release_time": { "type": ["string", "null"], "$ref": "#/$defs/rationalString" },
+        "d_state": { "type": ["string", "null"], "enum": ["not_created", "normal", "problem", null] },
+        "terminal_state": { "type": ["string", "null"], "enum": ["PENDING", "PASSED", "EXITED", null] },
+        "terminal_reason": { "type": ["string", "null"], "enum": ["process_second_abnormal", null] },
+        "elapsed_hours": { "type": ["string", "null"], "$ref": "#/$defs/rationalString" },
+        "shift_index": { "type": ["integer", "null"], "minimum": 0 },
+        "shift_start": { "type": ["string", "null"], "$ref": "#/$defs/rationalString" },
+        "shift_end": { "type": ["string", "null"], "$ref": "#/$defs/rationalString" },
+        "on_duty_squad": { "type": ["integer", "null"], "enum": [1, 2, null] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "event_type": { "const": "ACTIVITY_START" } } },
+          "then": {
+            "required": ["device_id", "process", "effective_attempt_no", "resource_id", "bay_id", "squad_id", "attempt_start_time", "attempt_end_time", "release_time"]
+          }
+        },
+        {
+          "if": { "properties": { "event_type": { "const": "ACTIVITY_COMPLETE" } } },
+          "then": {
+            "required": ["device_id", "process", "effective_attempt_no", "resource_id", "bay_id", "attempt_start_time", "attempt_end_time", "elapsed_hours"]
+          }
+        },
+        {
+          "if": { "properties": { "event_type": { "const": "OBSERVATION_MATERIALIZED" } } },
+          "then": {
+            "required": ["device_id", "process", "effective_attempt_no", "outcome"],
+            "properties": { "outcome": { "enum": ["PASS", "ABNORMAL"] } }
+          }
+        },
+        {
+          "if": { "properties": { "event_type": { "const": "D_CREATED" } } },
+          "then": {
+            "required": ["device_id", "d_state"],
+            "properties": { "d_state": { "enum": ["normal", "problem"] } }
+          }
+        },
+        {
+          "if": { "properties": { "event_type": { "const": "TASK_RELEASE" } } },
+          "then": {
+            "required": ["device_id", "process", "effective_attempt_no", "release_time"]
+          }
+        },
+        {
+          "if": { "properties": { "event_type": { "const": "TASK_CANCEL" } } },
+          "then": {
+            "required": ["device_id", "process", "effective_attempt_no", "cancel_reason", "outcome"],
+            "properties": { "cancel_reason": { "enum": ["DEVICE_EXIT", "SHIFT_INTERRUPT"] } }
+          }
+        },
+        {
+          "if": { "properties": { "event_type": { "const": "DEVICE_TERMINAL" } } },
+          "then": {
+            "required": ["device_id", "terminal_state"],
+            "properties": {
+              "terminal_state": { "enum": ["PASSED", "EXITED"] },
+              "terminal_reason": { "enum": ["process_second_abnormal", null] }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "event_type": { "const": "SHIFT_CHANGE" } } },
+          "then": {
+            "required": ["shift_index", "shift_start", "shift_end", "on_duty_squad"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "enum": ["TURNOVER_OUT_START", "TURNOVER_OUT_COMPLETE", "TURNOVER_IN_START", "TURNOVER_IN_COMPLETE"]
+              }
+            }
+          },
+          "then": { "required": ["bay_id"] }
+        }
+      ]
+    }
+  }
+}

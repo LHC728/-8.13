@@ -2,7 +2,7 @@
 
 > 最后更新：2026-08-14
 > 状态版本：`STATE-2026-08-13-G2.4`
-> 当前 Gate：**AUTOPILOT PILOT #1 = STOPPED（Macro Stop 已到达）；WHOLE_G2_GOVERNANCE_AND_EVIDENCE_REPAIR 授权执行中：G2-04-SPEC-V1.0 已冻结（FROZEN_PENDING_REBIND），rebind 与新 qualifying Macro L3 待完成；Whole G2 = NOT PASS；G3/H1/H2/100-device/Q2/Q3/Q4 = NOT STARTED**
+> 当前 Gate：**AUTOPILOT PILOT #1 = STOPPED（Macro Stop 已到达）；WHOLE_G2_GOVERNANCE_AND_EVIDENCE_REPAIR：G2-04-SPEC-V1.0 已冻结（FROZEN_PENDING_REBIND）→ rebind 完成，governed formal run `run_20260814T114143591701Z_32913efa` 已生成（G2-04 = IMPLEMENTATION_AND_VERIFICATION_COMPLETED_CANDIDATE）；fresh qualifying Pro/high Macro L3 待完成；Whole G2 = NOT PASS；G3/H1/H2/100-device/Q2/Q3/Q4 = NOT STARTED**
 > 当前检查注册表：[`CR-V3.1`](01_审计/检查注册表_V3.1.md)
 
 ## 1. 新对话只需先读
@@ -80,8 +80,10 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
 - **`G2-04`（独立日志重放与 Whole G2 证据）= COMPLETED_CANDIDATE + pre-existing task-package governance gap 已发现**（Human Gate 2026-08-14 确认：既有实现/证据先于 G2-04 冻结任务包存在，不能直接作为 governed accepted evidence）：
   - 历史实现（pre-spec candidate）：`04_代码/checker/des_checker_v1.py`、`04_代码/tests/test_des_checker_v1.py`、`04_代码/scripts/run_g2_04_verification_v1.py`、`04_代码/scripts/run_g2_whole_v1.py`；commit `961b64ddd3360d8335380c4a01465ecd105f7db9`。
   - 历史 formal runs（pre-G2-04-spec candidates，保留不可覆盖）：`05_结果/G2/run_20260814T110423672057Z_032dfffc`（CRLF 变体，commit `2cee5e6`）、`05_结果/G2/run_20260814T110513112626Z_81563471`（LF-clean，commit `f0daa43`）。
-  - **current G2-04 task package = `G2-04-SPEC-V1.0`，status = FROZEN_PENDING_REBIND**（`08_项目管理/任务包/G2-04_独立日志重放与WholeG2证据.yaml`）；rebind 与 governed formal run 待 WHOLE_G2_GOVERNANCE_AND_EVIDENCE_REPAIR Phase B。
-  - **Whole G2 = NOT PASS**。当前 blocker：① G2-04 spec/evidence rebind pending；② fresh qualifying Pro/high Macro L3 pending。
+  - **current G2-04 task package = `G2-04-SPEC-V1.0`，status = FROZEN_PENDING_REBIND**（`08_项目管理/任务包/G2-04_独立日志重放与WholeG2证据.yaml`）。
+  - **G2-04 = IMPLEMENTATION_AND_VERIFICATION_COMPLETED_CANDIDATE（rebind 后）**：runner `run_g2_whole_v1.py` 已机械 rebind（task_package_ref=G2-04-SPEC-V1.0、spec_hash=G2-04 实际 hash、upstream G2-03-SPEC-V1.0.2 进 code_snapshots/notes/frozen；fault_injection 族③标注 G2_INTERFACE_ONLY/G3_FULL 于 manifest notes；checker core changed = NO）。**governed formal run = `05_结果/G2/run_20260814T114143591701Z_32913efa/`**（checker 14/14 + crosscheck 14/14、exit 0、file_hashes 匹配）。
+  - 旧 formal runs（`...032dfffc`、`...81563471`）= **PRE_G2_04_SPEC_HISTORICAL_CANDIDATE**，保留不可覆盖，不冒充 governed current evidence。
+  - **Whole G2 = NOT PASS**。当前 blocker：fresh qualifying Pro/high Macro L3 pending。
   - 状态：G3 = NOT STARTED；H1 formal = NOT STARTED；H2 = NOT STARTED；100-device formal run = NOT STARTED；Q2/Q3/Q4 = NOT STARTED。
 
 1. 实现并诊断单次无条件主观测核（G2-01 已完成）；

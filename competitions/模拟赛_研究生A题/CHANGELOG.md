@@ -2,6 +2,24 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-04 REBIND TO SPEC V1.0`
+
+### 修改
+
+- **G2-04 implementation/evidence rebind 到 G2-04-SPEC-V1.0 完成**（WHOLE_G2_GOVERNANCE_AND_EVIDENCE_REPAIR Phase B）：
+  - diff audit：checker core（des_checker_v1.py）完全符合 G2-04-SPEC-V1.0（checker_interface 合规、replay_acceptance 18 项全覆盖、fault_injection 族①②④ checker 真实捕获）；**checker core changed = NO**。
+  - runner `04_代码/scripts/run_g2_whole_v1.py` 机械修改：task_package_ref → `G2-04-SPEC-V1.0`；spec_hash → G2-04 实际 hash `20e173c2…`；code_snapshots 增加 G2-04 spec + upstream G2-03-SPEC-V1.0.2（8 条）；frozen/ 写 `task_package_G2_04.yaml` + `task_package_G2_03_upstream.yaml`；manifest notes 记录 task_package / upstream_frozen_dependency（`eebdaa94…`）/ fault_injection 族③ = G2_INTERFACE_ONLY / G3_FULL（G2 无 RNG，未伪造随机测试）/ 族①②④ = checker-caught FAIL。
+  - **governed formal run = `run_20260814T114143591701Z_32913efa`**（checker 14/14、crosscheck 14/14、exit 0、file_hashes 匹配）。
+  - rerun 全 PASS：DES 27 / CP-SAT 72 / crosscheck 24 / checker 12 / one-command exit 0。
+  - **G2-04 = IMPLEMENTATION_AND_VERIFICATION_COMPLETED_CANDIDATE**。
+- 旧 formal runs `...032dfffc`、`...81563471` = **PRE_G2_04_SPEC_HISTORICAL_CANDIDATE**，保留不可覆盖。
+- **Whole G2 = NOT PASS**（fresh qualifying Pro/high Macro L3 pending）。
+
+### 影响与边界
+
+- 无语义变化（INVALIDATION_REPORT：changed_semantics=NO）；未改 checker/tests/fixtures/schemas/specs/CR-V3.1。
+- G3 / H1 formal / H2 / 100-device / Q2 / Q3 / Q4 = NOT STARTED。
+
 ## 2026-08-14 / `STATE-2026-08-13-G2.4` / `WHOLE G2 MACRO STOP / GOVERNANCE REPAIR AUTHORIZED`
 
 ### 修改
