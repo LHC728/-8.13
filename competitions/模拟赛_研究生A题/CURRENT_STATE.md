@@ -2,7 +2,7 @@
 
 > 最后更新：2026-08-14
 > 状态版本：`STATE-2026-08-13-G2.4`
-> 当前 Gate：**G2-03 IMPLEMENTATION ACTIVE：S1 确定性最小并行 DES baseline = ACCEPTED（commit `31b0bff`）；S2 独立 CP-SAT oracle = IMPLEMENTATION ACTIVE；G2-03 overall = NOT PASS（C08 三方对拍未闭合）；G2-01/G2-02 已通过并验收；G2-04 checker 与 whole G2 Gate 仍待闭合**
+> 当前 Gate：**AUTOPILOT PILOT #1 ACTIVE：S1 deterministic DES = ACCEPTED（`31b0bff`）；S2 CP-SAT oracle = COMPLETED（`689d0c2`），待 S3 三方对拍；G2-03 overall = NOT PASS；G2-04/Whole G2 = NOT STARTED；Pilot #1 Macro Stop = Whole G2（无条件停机）**
 > 当前检查注册表：[`CR-V3.1`](01_审计/检查注册表_V3.1.md)
 
 ## 1. 新对话只需先读
@@ -68,15 +68,16 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
   - 历史失败（保留为不可变证据，未修改）：① `run_20260814T043709752483Z_99f602bd`（V1.0.3 frozen runtime dependency snapshot gap → V1.0.4 快照 9→10 + RUNNER rebind 闭合）；② `run_20260814T053311144723Z_a694e8f9`（E1 route_agreement 错误输出代表值而非三路线最大绝对偏差 → L3 semantic adjudication + E1 correction 闭合）。
   - 限制：**whole G2 Gate != PASS**；G2-03 见下节（IMPLEMENTATION ACTIVE，未完成）；G2-04 = NOT STARTED；G3 = NOT STARTED；H1 formal experiment = NOT STARTED；H2 = NOT STARTED；100-device formal run = NOT STARTED；不发布论文正式数字；Q2/Q3 尚未开始。
 
-- **`G2-03`（确定性最小并行 DES）= IMPLEMENTATION ACTIVE**（2026-08-14 Human Gate 授权）：
+- **`G2-03`（确定性最小并行 DES）= IMPLEMENTATION ACTIVE → AUTOPILOT PILOT #1**：
   - 任务包：`G2-03-SPEC-V1.0.2`（V1.0 freeze commit `cecaa97e21d1a7f70a61e96455deabc15aded783`；V1.0.1 governance commit `37150f2af0b047725b84ef6fa802638d329f1447`；V1.0.2 L3 fixture adjudication commit `e89a237aca095965863cf6248321d6a203730307`）。
   - **S1 deterministic DES baseline = ACCEPTED**：accepted commit `31b0bffb72d6b805ae313ddb9e5e0ae9a83c16ab`（V1.0.2 rebind）。验收记录：24 semantics implemented；F1-F12 family PASS；F4b PASS；F9b PASS（SEM-23 并发运输，T=15）；F8 K9 PASS（T=14）；py_compile PASS；unittest 27/27 PASS；main DES stdlib-only；D E2 timing PASS；SEM21 PASS；SEM23 PASS。
+  - **S2 independent CP-SAT oracle = COMPLETED**：commit `689d0c253be63a889c163b2e473f9226b0899c3e`（独立约束模型；OR-Tools 9.15.6755 版本守卫；14 concrete fixtures + K9 全 PASS；unittest 72/72；无 DES import/读取；num_search_workers=1、random_seed=0）。待 S3 三方对拍闭合 C08。
   - **`a515960cfd4f0c14e8c1952a558a56a59f87ef9f` = historical pre-V1.0.2 implementation candidate**（保留，不得 reset/revert/amend/force-push）。
-  - **S2 独立 CP-SAT oracle = IMPLEMENTATION ACTIVE**（本轮授权实现，OR-Tools 9.15.6755 仅 C08 独立验证侧；尚未做最终 DES-vs-CP-SAT bridge acceptance）。
-  - **G2-03 overall = NOT PASS**（CP-SAT oracle 尚未实现/验收，最终 C08 三方对拍尚未闭合）。
-  - scope：确定性最小并行 DES + F1-F12（含 F4b/F9b）+ K9 + C08 CP-SAT oracle + C09/C10/C11/C12/C18；G2-03/G2-04 split 保持。
+  - **`AUTOPILOT-PLAN-V1.1-FINAL` = ACTIVE FOR PILOT #1**（Bootstrap 2026-08-14；治理文件见 `08_项目管理/全流程自动推进计划_AUTOPILOT-PLAN-V1.1.md`）。Pilot #1 start checkpoint = `689d0c2`；Pilot #1 Macro Stop = **Whole G2**（无条件停机，禁止自动进入 G3）。
+  - **G2-03 overall = NOT PASS**（C08 三方对拍未闭合）。
   - 状态：G2-04 = NOT STARTED；DES formal evidence = NOT STARTED；100-device formal run = NOT STARTED；G3 = NOT STARTED；H1 formal = NOT STARTED；H2 = NOT STARTED。
   - 依赖锁定：主 DES stdlib-only；OR-Tools 9.15.6755 仅 C08 独立 CP-SAT oracle 专用（不得传播到 main DES/G3/H1/H2/100-device formal run）；Python 3.12.10。
+  - runtime budget：来源为 launch parameters（soft_budget=¥10、hard_budget=¥20，timebox=NONE），非本文写死金额。
   - 不得宣称：G2-03 PASSED、G2 COMPLETE、G3 allowed、Q2 formal result available。
 
 1. 实现并诊断单次无条件主观测核（G2-01 已完成）；

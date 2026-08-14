@@ -56,9 +56,20 @@
 
 ## 子 Agent 调用纪律（`SA-V1.0`）
 
-- 每次调用子 Agent 前，必须在 commentary 中向用户标明：Agent 名称、任务等级、任务类型、请求模型、reasoning effort、选择理由、上下文方式、允许读写路径及是否允许继续生成子 Agent。并行调用可合并为一张表，但不得省略任一 Agent。
+- 每次调用子 Agent 前，必须在 commentary 中向用户标明：Agent 名称、任务等级、任务类型、请求模型、reasoning effort、选择理由、上下文方式、允许读写路径及是否允许继续生成子 Agent。并行调用可合并为一张表，但不得省略任一 Agent。调用信息属于透明披露；在 `AUTOPILOT-PLAN-V1.1-FINAL` 激活的 GREEN 阶段，披露不等于需要等待用户逐个批准。
 - 默认显式指定模型和 reasoning effort。若因完整上下文继承而未显式指定，必须写“继承主 Agent，精确型号未独立验证”；不得把计划型号、主 Agent 型号或模型家族猜测成实际型号。
-- L0 优先使用确定性脚本，其次 `gpt-5.6-terra/low`；L1 默认 `gpt-5.6-terra/medium`；L2 默认 `gpt-5.6-terra/medium` 或 `high`；L3/L4 才默认使用 `gpt-5.6-sol`。机械任务使用 `sol` 必须单独说明必要性。
+- **D/E 角色抽象（Bootstrap 2026-08-14，`AUTOPILOT-PLAN-V1.1-FINAL`）**：治理层只冻结能力角色，不永久绑定产品名。`E=Execution`、`E2=Independent Execution/Checker`、`D=Decision/Reviewer`、`D-red=independent D reviewer`。Pilot #1 runtime mapping 冻结为：E/E1/E2 = `deepseek-v4-flash`（high），D/YELLOW、D/Macro = `deepseek-v4-pro`（high）。具体映射见 `08_项目管理/模型分级与任务路由规则.md` 与 `08_项目管理/全流程自动推进计划_AUTOPILOT-PLAN-V1.1.md`；未来模型变化只更新 mapping，不改风险规则。
+- **L2 放行规则（Bootstrap 2026-08-14）**：旧规则“所有 L2 必须 D 审阅”废止。满足 `AUTOPILOT-PLAN-V1.1-FINAL` §2.3 全部 10 条条件时 L2-GREEN 可经 `E1 + E2 + mechanical acceptance` 自动放行（不强制 D）；存在新接口接缝/可定位差异等为 L2-YELLOW（fresh D/Pro-high 只读审阅，最多 1 次 D adjudication + 1 次受限 patch/rebind，仍失败升 RED）；涉及题意/公式/状态转移/指标/容差/搜索空间/oracle 真实性/强结论为 L2-RED（立即 Human Gate，0 次静默自动修复）。
 - 子 Agent 默认 `may_spawn_children=false`，不得自行创建孙级 Agent；需要多级委派时，必须在派单包中给出原因、数量上限、模型路由和文件所有权。
 - 一个文件同一时刻只能有一个写入 Agent；未明确授予写权限的子 Agent 一律只读。checker Agent 只能读取冻结契约、参数、schema、原始输出和必要日志，不接收主实现者的推理摘要。
 - 子 Agent 完成后，主 Agent 必须汇报 Agent ID、请求模型、模型来源（显式/继承）、运行时型号是否可独立验证、实际改动、验收结果和是否生成下级 Agent。详细协议见 `08_项目管理/模型分级与任务路由规则.md`，派单必须使用 `执行模型派单模板.yaml`。
+
+## 自动驾驶治理（`AUTOPILOT-PLAN-V1.1-FINAL`，Pilot #1）
+
+- 当前自动推进治理依据：`08_项目管理/全流程自动推进计划_AUTOPILOT-PLAN-V1.1.md`。
+- Pilot #1 授权范围：G2-03 S2 完成节点 → Whole G2 Macro Gate（无条件停机）。禁止自动进入 G3 / H1 formal / H2 / 100-device formal run / Q2 正式结果 / Q3 K 推荐 / Q4 建议 / G7 提交。
+- 风险分级：GREEN（自动）/ YELLOW（fresh D 只读，最多一次受限 patch）/ RED（立即 Human Gate，0 次静默修复）。
+- 任何 patch / rebind / spec / config / checker / schema 变化后必须产出 `INVALIDATION_REPORT` 才能复用旧 PASS；禁止“修完 bug 后沿用修复前 formal PASS”。
+- 正式运行必须绑定 run_id + hash + immutable evidence 目录；失败 formal run 保留不覆盖；chat/debug/手算不得作为论文正式数字源。
+- 崩溃恢复只信磁盘与 Git（AGENTS.md → CURRENT_STATE → CHANGELOG → task package → Git HEAD/status → 最近 accepted commit → run manifest），禁止靠聊天记忆或 reset/clean 不明工作。
+- 预算：soft_budget 到达后停止非必要 D/Pro 与探索支线但继续必要硬检查；hard_budget 到达立即停止等 Human Gate；不得自行提高预算。

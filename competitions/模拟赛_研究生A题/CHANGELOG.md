@@ -2,6 +2,23 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-14 / `STATE-2026-08-13-G2.4` / `AUTOPILOT PILOT #1 BOOTSTRAP`
+
+### 修改
+
+- **AUTOPILOT PILOT #1 正式启动（Bootstrap）**：`AUTOPILOT-PLAN-V1.1-FINAL` 落库为 `08_项目管理/全流程自动推进计划_AUTOPILOT-PLAN-V1.1.md`（原样全文，未删减）。授权起点候选 `689d0c253be63a889c163b2e473f9226b0899c3e`；授权终点 = Whole G2 Macro Gate（无论 PASS/FAIL 均无条件停机）。
+- **D/E 角色抽象**：治理层只冻结能力角色（E=Execution、E2=Independent Execution/Checker、D=Decision/Reviewer、D-red=independent D reviewer），不再把具体 GPT 产品名写死为 L0–L4 唯一路由。Pilot #1 runtime mapping 冻结：E/E1/E2 = `deepseek-v4-flash`（high），D/YELLOW、D/Macro = `deepseek-v4-pro`（high）。同步更新 `AGENTS.md`（SA-V1.0 段）与 `08_项目管理/模型分级与任务路由规则.md`（§2.1/路由优先级/L2 行）。
+- **L2 放行规则**：旧规则“所有 L2 必须 D 审阅”废止，替换为风险驱动 L2-GREEN（10 条条件全满足时 E1+E2+mechanical acceptance 自动放行）/ L2-YELLOW（fresh D/Pro-high 只读，最多 1 次 D adjudication + 1 次受限 patch/rebind）/ L2-RED（涉及题意/公式/状态转移/指标/容差/搜索空间/oracle 真实性/强结论 → 立即 Human Gate，0 次静默修复）。
+- **旧 V1.0 草稿归档**：`08_项目管理/全流程自动推进计划_待审阅.md`（SHA-256 `8903f98622531727f11775b0171e9d997541af45309bb3e42c13a265d3db9113` 校验一致）无损归档至 `99_归档/自动推进计划/AUTOPILOT-PLAN-V1.0_待审阅_20260814.md`；`KNOWN_TOLERATED_UNTRACKED` 临时例外取消。
+- **S1/S2 状态落文**：S1 deterministic DES = ACCEPTED（`31b0bff`）；S2 independent CP-SAT oracle = COMPLETED（`689d0c2`），待 S3 三方对拍闭合 C08；G2-03 overall = NOT PASS。
+- 本条目即 **Bootstrap 治理 commit**（message `activate AUTOPILOT Pilot #1 governance`）。
+
+### 影响与边界
+
+- Pilot #1 自动范围：S3 三方对拍 → G2-03 收口 → G2-04（replay/accounting/keyed/isolation/fault injection/reproducibility/one-command）→ Whole G2 formal candidate evidence → fresh D/Pro-high Whole G2 只读 L3 → Whole G2 Macro Gate → 停机。
+- 禁止自动进入：G3 / H1 formal / H2 / 100-device formal run / Q2 正式结果 / Q3 K 推荐 / Q4 建议 / G7 提交。
+- runtime budget 来自 launch parameters（soft=¥10、hard=¥20、timebox=NONE），达到 hard budget 立即停机，不得自行提高。
+
 ## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-03 S1 FINAL PASS / S2 CP-SAT ACTIVE`
 
 ### 修改
