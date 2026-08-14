@@ -2,6 +2,19 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-02-SPEC-V1.0.4`
+
+### 修改
+
+- 任务包 `G2-02_Q1概率与质量解析链.yaml` 由 `G2-02-SPEC-V1.0.3` 升级至 `G2-02-SPEC-V1.0.4`，经人工 Gate 裁决（FROZEN_RUNTIME_DEPENDENCY_SNAPSHOT_GAP，批准升级）。
+- **runtime dependency snapshot closure correction only**：首次 V1.0.3 formal canonical attempt（failed run_id `20260814T043709752483Z_99f602bd`）暴露 frozen/code 快照缺少 G2-01 求解器 `04_代码/main_model/observation_calibration_v1.py`（E1 合法依赖，E1 allowed_read_paths 早已含该文件），正式 canonical 从 frozen/code 执行 E1 时 import 失败（E1 exit 4）。本修订：RUNNER allowed_read_paths 增加该文件；evidence_package_contract.exact_layout 增加 `frozen/code/04_代码/main_model/observation_calibration_v1.py`；正式 code/test 快照数量 9→10（solver 与其余冻结代码同执行 source-before=snapshot=source-after 守卫）。solver 静态 import 审计确认仅标准库（SINGLE_FILE_CONFIRMED）。
+- 失败证据已作为不可变 evidence 提交并推送：commit `472ed00a3d6a41f586ce2fe48ec72deb4f0d3eae`（g2-02-impl）。
+
+### 影响与边界
+
+- **math_semantics_changed = NO**；**schema_changed = NO**（SHA 保持 `0bb93b12…`）；**fixture_changed = NO**（SHA 保持 `13efa773…`）；parameters 与 upstream 哈希均不变。
+- S1/S2 数学实现仍保持已验证；RUNNER 需后续 V1.0.4 rebind；不得称 G2-02 PASS；S4/D acceptance 未完成；下一次 canonical 必须等待 runner V1.0.4 rebind + 人工 Gate。
+
 ## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-02-SPEC-V1.0.3`
 
 ### 修改

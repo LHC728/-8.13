@@ -63,7 +63,7 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
 - `G2-01-SPEC-V1.1.11` 观测核标定最小基线已通过最终 L3 验收；不可变证据目录为 `05_结果/G2/run_20260813T134251279572Z_f1290916/`。
 - `CR-V3.1/C01`、`C02`、`C19`、`C21` 仅在 G2-01 canonical A/B/C 标定子范围内通过。
 - `CR-V3.1/C03`、`C04`、canonical E 与 `q_E` 仍为 DEFERRED；不得猜测或手填 `q_E`，也不得据此宣告整个 G2 Gate 通过。
-- `G2-02-SPEC-V1.0.3`（Q1 概率与质量解析链）任务包已冻结，**等待重新派单/rebind**；冻结物：`08_项目管理/任务包/G2-02_Q1概率与质量解析链.yaml`、`04_代码/src/schemas/q1_quality_v1.schema.json`、`04_代码/tests/fixtures/q1_quality_oracles_v1.json`。`V1.0.3` 为 **NA/null interface contract correction**：lambda.na=true 时 main 四叶/sum/max_abs_deviation 全为 null（schema if/then 严格强制）；route_agreement.lambda_* 在 lambda=NA 时为 null；tilde 四叶及 route_agreement.tilde_* 在 q_E=0 时为 null；不新增 tilde_na；chain 语义 e_max_E 为 NOT_APPLICABLE（澄清，E2 代码更新待后续 rebind）；infeasible/indeterminate 下游保持省略/null 契约。数学公式、q_E、lambda 定义、λ 裁决、tolerance 均未改变；canonical 非 NA 输出不变。**S1/S2 需按 V1.0.3 重新 rebind；G2-02 未通过，S4 未开始。**
+- `G2-02-SPEC-V1.0.4`（Q1 概率与质量解析链）任务包已冻结，**等待 RUNNER V1.0.4 rebind 后重跑 canonical**；冻结物：`08_项目管理/任务包/G2-02_Q1概率与质量解析链.yaml`、`04_代码/src/schemas/q1_quality_v1.schema.json`、`04_代码/tests/fixtures/q1_quality_oracles_v1.json`。`V1.0.4` 为 **runtime dependency snapshot closure correction only**：V1.0.3 首次 canonical attempt（run_id `20260814T043709752483Z_99f602bd`，失败证据已不可变保留）暴露 frozen/code 快照缺少 G2-01 求解器 `observation_calibration_v1.py`（E1 合法依赖），本修订将其加入 RUNNER allowed_read_paths 与 exact_layout（快照 9→10）；数学公式、q_E、E kernel 语义、lambda、tilde、schema、fixture、tolerance、parameters、upstream 均未改变。**S1/S2 实现仍保持已验证（V1.0.3 rebind 通过）；RUNNER 需按 V1.0.4 rebind；不得称 G2-02 PASS；S4/D acceptance 尚未完成；下一次 canonical 必须等待 runner V1.0.4 rebind + 人工 Gate。**
 
 1. 实现并诊断单次无条件主观测核（G2-01 已完成）；
 2. 实现标准链关键替代观测核（G2-01 已完成）；
