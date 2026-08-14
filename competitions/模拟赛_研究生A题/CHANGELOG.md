@@ -2,6 +2,23 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G3 MACRO L3 PASS — PILOT #2 COMPLETED AT MACRO STOP`
+
+### 修改
+
+- **G3 Macro L3 终审 = PASS / HIGH**（commit 见下）：
+  - reviewer = `G3_MACRO_L3_REVIEWER`（workflow 派发恰 1 个 fresh child，无孙级）；session `b0f56d04-90aa-4ed8-a4bd-b5b7847f9a8c`，**runtime 机械验证 = deepseek-official / deepseek-v4-pro / high**（request/header + request/context + assistant source 三处一致）；freshness = VERIFIED、read_only = VERIFIED。
+  - 审阅 16 项全 PASS：key_schema/寿命再生/H1+C26/C16 分离/C06 oracle/C17 replay/C18 活性/C24 仪表/§16 无 CI tie/S7 run/S8 run/S9 evidence/范围边界/YELLOW 修复×2/GREEN 修复；**G3 全套 302 tests OK（skipped=1）**。
+  - 范围泄漏检查：无 Q2 formal 数字、无 H2、无 K 推荐、无论文；工作树干净；问题契约/CR-V3.1/数学模型/G2 accepted 未被 G3 链修改。
+  - 报告落文 `01_审计/MACRO_REPORT_G3_L3.md`。
+- **PILOT #2 = COMPLETED AT MACRO STOP**：S1-S9 全部完成（S1 `5a437dc`、S2 `7ccb550`、S3 `6418818`/`d88c7a3`/`617722e`、S4 `d88c7a3`、S5 `9a2b192`/`617722e`、S6 `2fdd332`、S7 `5b70446`、S8 `fad658f`、S9 `f279ae6`）；**无条件停机回 Human Gate**。
+
+### 影响与边界
+
+- G3 Macro Gate = PASSED（等待 Human Gate 接受）；终态标记 `G3_MACRO_L3_PASS_WAITING_FOR_HUMAN_GATE`。
+- H1 formal / H2 / 100-device formal Q2 / Q3 formal / Q4 = NOT STARTED；Q2 formal/Q3/H2 非授权。
+- 软墙钟 4h / 硬墙钟 8h 预算：已到达 Macro Stop，不再消耗。
+
 ## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G3 S9 EVIDENCE PACKAGE COMPLETED`
 
 ### 修改
