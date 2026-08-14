@@ -1,0 +1,262 @@
+{
+  "envelope_type": "des_check_report",
+  "fixture_id": "F4",
+  "issues": [],
+  "metadata": {
+    "batch_size": 2,
+    "check_ids": [
+      "C08",
+      "C09",
+      "C10",
+      "C11",
+      "C12",
+      "C17",
+      "C18",
+      "C19",
+      "C20",
+      "C21"
+    ],
+    "event_log_records": 42,
+    "registry_version": "CR-V3.1",
+    "scenario": "isolated_small_case",
+    "task_package_ref": "G2-03-SPEC-V1.0.2",
+    "turnover_profile": "1h_literal"
+  },
+  "recomputed": {
+    "PL": 0,
+    "PW": 1,
+    "S": 1,
+    "T_h": "21/2",
+    "T_ticks": 63,
+    "YXB_A": "3/400000",
+    "YXB_B": "1/250000",
+    "YXB_C": "3/400000",
+    "YXB_E": "3/1000000",
+    "bay_coverage": {
+      "1": {
+        "gapless": true,
+        "intervals": [
+          [
+            "0",
+            "21/2"
+          ]
+        ]
+      },
+      "2": {
+        "gapless": true,
+        "intervals": [
+          [
+            "0",
+            "21/2"
+          ]
+        ]
+      }
+    },
+    "devices": {
+      "1": {
+        "bay_id": 1,
+        "d_state": "not_created",
+        "terminal_h": "15/2",
+        "terminal_state": "EXITED"
+      },
+      "2": {
+        "bay_id": 2,
+        "d_state": "normal",
+        "terminal_h": "21/2",
+        "terminal_state": "PASSED"
+      }
+    },
+    "elapsed_by_process": {
+      "A": "15/2",
+      "B": "4",
+      "C": "15/2",
+      "E": "3"
+    },
+    "fcfs_keys": {
+      "D001_A_1": [
+        "0",
+        1,
+        0,
+        1
+      ],
+      "D001_A_2": [
+        "5/2",
+        1,
+        0,
+        2
+      ],
+      "D001_B_1": [
+        "0",
+        1,
+        1,
+        1
+      ],
+      "D001_C_1": [
+        "0",
+        1,
+        2,
+        1
+      ],
+      "D002_A_1": [
+        "0",
+        2,
+        0,
+        1
+      ],
+      "D002_B_1": [
+        "0",
+        2,
+        1,
+        1
+      ],
+      "D002_C_1": [
+        "0",
+        2,
+        2,
+        1
+      ],
+      "D002_C_2": [
+        "5",
+        2,
+        2,
+        2
+      ],
+      "D002_E_1": [
+        "15/2",
+        2,
+        3,
+        1
+      ]
+    },
+    "resource_busy": {
+      "A": {
+        "intervals": [
+          [
+            "0",
+            "5/2"
+          ],
+          [
+            "5/2",
+            "5"
+          ],
+          [
+            "5",
+            "15/2"
+          ]
+        ],
+        "total_h": "15/2"
+      },
+      "B": {
+        "intervals": [
+          [
+            "0",
+            "2"
+          ],
+          [
+            "2",
+            "4"
+          ]
+        ],
+        "total_h": "4"
+      },
+      "C": {
+        "intervals": [
+          [
+            "0",
+            "5/2"
+          ],
+          [
+            "5/2",
+            "5"
+          ],
+          [
+            "5",
+            "15/2"
+          ]
+        ],
+        "total_h": "15/2"
+      },
+      "E": {
+        "intervals": [
+          [
+            "15/2",
+            "21/2"
+          ]
+        ],
+        "total_h": "3"
+      }
+    },
+    "shift_count": 1,
+    "tasks": {
+      "D001_A_1": {
+        "finish_h": "5/2",
+        "outcome": "ABNORMAL",
+        "release_h": "0",
+        "start_h": "0",
+        "status": "COMPLETED"
+      },
+      "D001_A_2": {
+        "finish_h": "15/2",
+        "outcome": "ABNORMAL",
+        "release_h": "5/2",
+        "start_h": "5",
+        "status": "COMPLETED"
+      },
+      "D001_B_1": {
+        "finish_h": "2",
+        "outcome": "PASS",
+        "release_h": "0",
+        "start_h": "0",
+        "status": "COMPLETED"
+      },
+      "D001_C_1": {
+        "finish_h": "5/2",
+        "outcome": "PASS",
+        "release_h": "0",
+        "start_h": "0",
+        "status": "COMPLETED"
+      },
+      "D002_A_1": {
+        "finish_h": "5",
+        "outcome": "PASS",
+        "release_h": "0",
+        "start_h": "5/2",
+        "status": "COMPLETED"
+      },
+      "D002_B_1": {
+        "finish_h": "4",
+        "outcome": "PASS",
+        "release_h": "0",
+        "start_h": "2",
+        "status": "COMPLETED"
+      },
+      "D002_C_1": {
+        "finish_h": "5",
+        "outcome": "ABNORMAL",
+        "release_h": "0",
+        "start_h": "5/2",
+        "status": "COMPLETED"
+      },
+      "D002_C_2": {
+        "finish_h": "15/2",
+        "outcome": "PASS",
+        "release_h": "5",
+        "start_h": "5",
+        "status": "COMPLETED"
+      },
+      "D002_E_1": {
+        "finish_h": "21/2",
+        "outcome": "PASS",
+        "release_h": "15/2",
+        "start_h": "15/2",
+        "status": "COMPLETED"
+      }
+    },
+    "yxb_denominator_h": "1000000"
+  },
+  "registry_version": "CR-V3.1",
+  "scenario_id": "fixture_F4",
+  "schema_version": "des_check_report_v1",
+  "special_assertions": [],
+  "verdict": "PASS"
+}

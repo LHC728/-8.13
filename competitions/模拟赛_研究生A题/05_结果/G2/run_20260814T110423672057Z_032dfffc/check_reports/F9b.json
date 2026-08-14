@@ -1,0 +1,417 @@
+{
+  "envelope_type": "des_check_report",
+  "fixture_id": "F9b",
+  "issues": [],
+  "metadata": {
+    "batch_size": 4,
+    "check_ids": [
+      "C08",
+      "C09",
+      "C10",
+      "C11",
+      "C12",
+      "C17",
+      "C18",
+      "C19",
+      "C20",
+      "C21"
+    ],
+    "event_log_records": 82,
+    "registry_version": "CR-V3.1",
+    "scenario": "isolated_small_case",
+    "task_package_ref": "G2-03-SPEC-V1.0.2",
+    "turnover_profile": "1h_literal"
+  },
+  "recomputed": {
+    "PL": 0,
+    "PW": 1,
+    "S": 3,
+    "T_h": "15",
+    "T_ticks": 90,
+    "YXB_A": "1/100000",
+    "YXB_B": "1/100000",
+    "YXB_C": "1/100000",
+    "YXB_E": "9/1000000",
+    "bay_coverage": {
+      "1": {
+        "gapless": true,
+        "intervals": [
+          [
+            "0",
+            "11/2"
+          ],
+          [
+            "11/2",
+            "6"
+          ],
+          [
+            "6",
+            "13/2"
+          ],
+          [
+            "13/2",
+            "15"
+          ]
+        ]
+      },
+      "2": {
+        "gapless": true,
+        "intervals": [
+          [
+            "0",
+            "6"
+          ],
+          [
+            "6",
+            "13/2"
+          ],
+          [
+            "13/2",
+            "7"
+          ],
+          [
+            "7",
+            "15"
+          ]
+        ]
+      }
+    },
+    "devices": {
+      "1": {
+        "bay_id": 1,
+        "d_state": "normal",
+        "terminal_h": "11/2",
+        "terminal_state": "PASSED"
+      },
+      "2": {
+        "bay_id": 2,
+        "d_state": "not_created",
+        "terminal_h": "6",
+        "terminal_state": "EXITED"
+      },
+      "3": {
+        "bay_id": 1,
+        "d_state": "normal",
+        "terminal_h": "12",
+        "terminal_state": "PASSED"
+      },
+      "4": {
+        "bay_id": 2,
+        "d_state": "normal",
+        "terminal_h": "15",
+        "terminal_state": "PASSED"
+      }
+    },
+    "elapsed_by_process": {
+      "A": "10",
+      "B": "10",
+      "C": "10",
+      "E": "9"
+    },
+    "fcfs_keys": {
+      "D001_A_1": [
+        "0",
+        1,
+        0,
+        1
+      ],
+      "D001_B_1": [
+        "0",
+        1,
+        1,
+        1
+      ],
+      "D001_C_1": [
+        "0",
+        1,
+        2,
+        1
+      ],
+      "D001_E_1": [
+        "5/2",
+        1,
+        3,
+        1
+      ],
+      "D002_A_1": [
+        "0",
+        2,
+        0,
+        1
+      ],
+      "D002_B_1": [
+        "0",
+        2,
+        1,
+        1
+      ],
+      "D002_B_2": [
+        "4",
+        2,
+        1,
+        2
+      ],
+      "D002_C_1": [
+        "0",
+        2,
+        2,
+        1
+      ],
+      "D003_A_1": [
+        "13/2",
+        3,
+        0,
+        1
+      ],
+      "D003_B_1": [
+        "13/2",
+        3,
+        1,
+        1
+      ],
+      "D003_C_1": [
+        "13/2",
+        3,
+        2,
+        1
+      ],
+      "D003_E_1": [
+        "9",
+        3,
+        3,
+        1
+      ],
+      "D004_A_1": [
+        "7",
+        4,
+        0,
+        1
+      ],
+      "D004_B_1": [
+        "7",
+        4,
+        1,
+        1
+      ],
+      "D004_C_1": [
+        "7",
+        4,
+        2,
+        1
+      ],
+      "D004_E_1": [
+        "23/2",
+        4,
+        3,
+        1
+      ]
+    },
+    "resource_busy": {
+      "A": {
+        "intervals": [
+          [
+            "0",
+            "5/2"
+          ],
+          [
+            "5/2",
+            "5"
+          ],
+          [
+            "13/2",
+            "9"
+          ],
+          [
+            "9",
+            "23/2"
+          ]
+        ],
+        "total_h": "10"
+      },
+      "B": {
+        "intervals": [
+          [
+            "0",
+            "2"
+          ],
+          [
+            "2",
+            "4"
+          ],
+          [
+            "4",
+            "6"
+          ],
+          [
+            "13/2",
+            "17/2"
+          ],
+          [
+            "17/2",
+            "21/2"
+          ]
+        ],
+        "total_h": "10"
+      },
+      "C": {
+        "intervals": [
+          [
+            "0",
+            "5/2"
+          ],
+          [
+            "5/2",
+            "5"
+          ],
+          [
+            "13/2",
+            "9"
+          ],
+          [
+            "9",
+            "23/2"
+          ]
+        ],
+        "total_h": "10"
+      },
+      "E": {
+        "intervals": [
+          [
+            "5/2",
+            "11/2"
+          ],
+          [
+            "9",
+            "12"
+          ],
+          [
+            "12",
+            "15"
+          ]
+        ],
+        "total_h": "9"
+      }
+    },
+    "shift_count": 1,
+    "tasks": {
+      "D001_A_1": {
+        "finish_h": "5/2",
+        "outcome": "PASS",
+        "release_h": "0",
+        "start_h": "0",
+        "status": "COMPLETED"
+      },
+      "D001_B_1": {
+        "finish_h": "2",
+        "outcome": "PASS",
+        "release_h": "0",
+        "start_h": "0",
+        "status": "COMPLETED"
+      },
+      "D001_C_1": {
+        "finish_h": "5/2",
+        "outcome": "PASS",
+        "release_h": "0",
+        "start_h": "0",
+        "status": "COMPLETED"
+      },
+      "D001_E_1": {
+        "finish_h": "11/2",
+        "outcome": "PASS",
+        "release_h": "5/2",
+        "start_h": "5/2",
+        "status": "COMPLETED"
+      },
+      "D002_A_1": {
+        "finish_h": "5",
+        "outcome": "PASS",
+        "release_h": "0",
+        "start_h": "5/2",
+        "status": "COMPLETED"
+      },
+      "D002_B_1": {
+        "finish_h": "4",
+        "outcome": "ABNORMAL",
+        "release_h": "0",
+        "start_h": "2",
+        "status": "COMPLETED"
+      },
+      "D002_B_2": {
+        "finish_h": "6",
+        "outcome": "ABNORMAL",
+        "release_h": "4",
+        "start_h": "4",
+        "status": "COMPLETED"
+      },
+      "D002_C_1": {
+        "finish_h": "5",
+        "outcome": "PASS",
+        "release_h": "0",
+        "start_h": "5/2",
+        "status": "COMPLETED"
+      },
+      "D003_A_1": {
+        "finish_h": "9",
+        "outcome": "PASS",
+        "release_h": "13/2",
+        "start_h": "13/2",
+        "status": "COMPLETED"
+      },
+      "D003_B_1": {
+        "finish_h": "17/2",
+        "outcome": "PASS",
+        "release_h": "13/2",
+        "start_h": "13/2",
+        "status": "COMPLETED"
+      },
+      "D003_C_1": {
+        "finish_h": "9",
+        "outcome": "PASS",
+        "release_h": "13/2",
+        "start_h": "13/2",
+        "status": "COMPLETED"
+      },
+      "D003_E_1": {
+        "finish_h": "12",
+        "outcome": "PASS",
+        "release_h": "9",
+        "start_h": "9",
+        "status": "COMPLETED"
+      },
+      "D004_A_1": {
+        "finish_h": "23/2",
+        "outcome": "PASS",
+        "release_h": "7",
+        "start_h": "9",
+        "status": "COMPLETED"
+      },
+      "D004_B_1": {
+        "finish_h": "21/2",
+        "outcome": "PASS",
+        "release_h": "7",
+        "start_h": "17/2",
+        "status": "COMPLETED"
+      },
+      "D004_C_1": {
+        "finish_h": "23/2",
+        "outcome": "PASS",
+        "release_h": "7",
+        "start_h": "9",
+        "status": "COMPLETED"
+      },
+      "D004_E_1": {
+        "finish_h": "15",
+        "outcome": "PASS",
+        "release_h": "23/2",
+        "start_h": "12",
+        "status": "COMPLETED"
+      }
+    },
+    "yxb_denominator_h": "1000000"
+  },
+  "registry_version": "CR-V3.1",
+  "scenario_id": "fixture_F9b",
+  "schema_version": "des_check_report_v1",
+  "special_assertions": [],
+  "verdict": "PASS"
+}

@@ -1,0 +1,414 @@
+{
+  "envelope_type": "des_check_report",
+  "fixture_id": "F8",
+  "issues": [],
+  "metadata": {
+    "batch_size": 3,
+    "check_ids": [
+      "C08",
+      "C09",
+      "C10",
+      "C11",
+      "C12",
+      "C17",
+      "C18",
+      "C19",
+      "C20",
+      "C21"
+    ],
+    "event_log_records": 65,
+    "registry_version": "CR-V3.1",
+    "scenario": "q3_two_shift",
+    "task_package_ref": "G2-03-SPEC-V1.0.2",
+    "turnover_profile": "1h_literal"
+  },
+  "recomputed": {
+    "PL": 0,
+    "PW": 0,
+    "S": 3,
+    "T_h": "14",
+    "T_ticks": 84,
+    "YXB_A": "5/12",
+    "YXB_B": "4/9",
+    "YXB_C": "5/12",
+    "YXB_E": "1/2",
+    "bay_coverage": {
+      "1": {
+        "gapless": true,
+        "intervals": [
+          [
+            "0",
+            "11/2"
+          ],
+          [
+            "11/2",
+            "6"
+          ],
+          [
+            "6",
+            "13/2"
+          ],
+          [
+            "13/2",
+            "14"
+          ]
+        ]
+      },
+      "2": {
+        "gapless": true,
+        "intervals": [
+          [
+            "0",
+            "14"
+          ]
+        ]
+      }
+    },
+    "devices": {
+      "1": {
+        "bay_id": 1,
+        "d_state": "normal",
+        "terminal_h": "11/2",
+        "terminal_state": "PASSED"
+      },
+      "2": {
+        "bay_id": 2,
+        "d_state": "normal",
+        "terminal_h": "17/2",
+        "terminal_state": "PASSED"
+      },
+      "3": {
+        "bay_id": 1,
+        "d_state": "normal",
+        "terminal_h": "14",
+        "terminal_state": "PASSED"
+      }
+    },
+    "elapsed_by_process": {
+      "A": "15/2",
+      "B": "8",
+      "C": "15/2",
+      "E": "9"
+    },
+    "fcfs_keys": {
+      "D001_A_1": [
+        "0",
+        1,
+        0,
+        1
+      ],
+      "D001_B_1": [
+        "0",
+        1,
+        1,
+        1
+      ],
+      "D001_C_1": [
+        "0",
+        1,
+        2,
+        1
+      ],
+      "D001_E_1": [
+        "5/2",
+        1,
+        3,
+        1
+      ],
+      "D002_A_1": [
+        "0",
+        2,
+        0,
+        1
+      ],
+      "D002_B_1": [
+        "0",
+        2,
+        1,
+        1
+      ],
+      "D002_C_1": [
+        "0",
+        2,
+        2,
+        1
+      ],
+      "D002_E_1": [
+        "5",
+        2,
+        3,
+        1
+      ],
+      "D003_A_1": [
+        "13/2",
+        3,
+        0,
+        1
+      ],
+      "D003_B_1": [
+        "13/2",
+        3,
+        1,
+        1
+      ],
+      "D003_B_2": [
+        "17/2",
+        3,
+        1,
+        2
+      ],
+      "D003_C_1": [
+        "13/2",
+        3,
+        2,
+        1
+      ],
+      "D003_E_1": [
+        "11",
+        3,
+        3,
+        1
+      ]
+    },
+    "resource_busy": {
+      "A": {
+        "intervals": [
+          [
+            "0",
+            "5/2"
+          ],
+          [
+            "5/2",
+            "5"
+          ],
+          [
+            "13/2",
+            "9"
+          ]
+        ],
+        "total_h": "15/2"
+      },
+      "B": {
+        "intervals": [
+          [
+            "0",
+            "2"
+          ],
+          [
+            "2",
+            "4"
+          ],
+          [
+            "13/2",
+            "17/2"
+          ],
+          [
+            "9",
+            "11"
+          ]
+        ],
+        "total_h": "8"
+      },
+      "C": {
+        "intervals": [
+          [
+            "0",
+            "5/2"
+          ],
+          [
+            "5/2",
+            "5"
+          ],
+          [
+            "13/2",
+            "9"
+          ]
+        ],
+        "total_h": "15/2"
+      },
+      "E": {
+        "intervals": [
+          [
+            "5/2",
+            "11/2"
+          ],
+          [
+            "11/2",
+            "17/2"
+          ],
+          [
+            "11",
+            "14"
+          ]
+        ],
+        "total_h": "9"
+      }
+    },
+    "shift_count": 2,
+    "tasks": {
+      "D001_A_1": {
+        "finish_h": "5/2",
+        "outcome": "PASS",
+        "release_h": "0",
+        "start_h": "0",
+        "status": "COMPLETED"
+      },
+      "D001_B_1": {
+        "finish_h": "2",
+        "outcome": "PASS",
+        "release_h": "0",
+        "start_h": "0",
+        "status": "COMPLETED"
+      },
+      "D001_C_1": {
+        "finish_h": "5/2",
+        "outcome": "PASS",
+        "release_h": "0",
+        "start_h": "0",
+        "status": "COMPLETED"
+      },
+      "D001_E_1": {
+        "finish_h": "11/2",
+        "outcome": "PASS",
+        "release_h": "5/2",
+        "start_h": "5/2",
+        "status": "COMPLETED"
+      },
+      "D002_A_1": {
+        "finish_h": "5",
+        "outcome": "PASS",
+        "release_h": "0",
+        "start_h": "5/2",
+        "status": "COMPLETED"
+      },
+      "D002_B_1": {
+        "finish_h": "4",
+        "outcome": "PASS",
+        "release_h": "0",
+        "start_h": "2",
+        "status": "COMPLETED"
+      },
+      "D002_C_1": {
+        "finish_h": "5",
+        "outcome": "PASS",
+        "release_h": "0",
+        "start_h": "5/2",
+        "status": "COMPLETED"
+      },
+      "D002_E_1": {
+        "finish_h": "17/2",
+        "outcome": "PASS",
+        "release_h": "5",
+        "start_h": "11/2",
+        "status": "COMPLETED"
+      },
+      "D003_A_1": {
+        "finish_h": "9",
+        "outcome": "PASS",
+        "release_h": "13/2",
+        "start_h": "13/2",
+        "status": "COMPLETED"
+      },
+      "D003_B_1": {
+        "finish_h": "17/2",
+        "outcome": "ABNORMAL",
+        "release_h": "13/2",
+        "start_h": "13/2",
+        "status": "COMPLETED"
+      },
+      "D003_B_2": {
+        "finish_h": "11",
+        "outcome": "PASS",
+        "release_h": "17/2",
+        "start_h": "9",
+        "status": "COMPLETED"
+      },
+      "D003_C_1": {
+        "finish_h": "9",
+        "outcome": "PASS",
+        "release_h": "13/2",
+        "start_h": "13/2",
+        "status": "COMPLETED"
+      },
+      "D003_E_1": {
+        "finish_h": "14",
+        "outcome": "PASS",
+        "release_h": "11",
+        "start_h": "11",
+        "status": "COMPLETED"
+      }
+    },
+    "yxb_denominator_h": "18"
+  },
+  "registry_version": "CR-V3.1",
+  "scenario_id": "fixture_F8_K9",
+  "schema_version": "des_check_report_v1",
+  "special_assertions": [
+    {
+      "detail": "T = 84 ticks = 14 h (got 84)",
+      "name": "K9_T_84_ticks",
+      "ok": true
+    },
+    {
+      "detail": "d3 B initial finish = 51 ticks (8.5h) ABNORMAL (got 51)",
+      "name": "K9_d3_B1_finish_51_ABNORMAL",
+      "ok": true
+    },
+    {
+      "detail": "d3 B retest release = 51 ticks (8.5h), never rewritten (got 51)",
+      "name": "K9_d3_B2_release_51",
+      "ok": true
+    },
+    {
+      "detail": "d3 B retest start = 54 ticks (9h), shift 2 (got 54)",
+      "name": "K9_d3_B2_start_54",
+      "ok": true
+    },
+    {
+      "detail": "d3 B retest finish = 66 ticks (11h) PASS (got 66)",
+      "name": "K9_d3_B2_finish_66",
+      "ok": true
+    },
+    {
+      "detail": "d3 B retest effective_attempt_no = 2",
+      "name": "K9_d3_B2_attempt_2",
+      "ok": true
+    },
+    {
+      "detail": "d3 E start = 66 ticks (11h) (got 66)",
+      "name": "K9_d3_E_start_66",
+      "ok": true
+    },
+    {
+      "detail": "d3 E finish = 84 ticks (14h) (got 84)",
+      "name": "K9_d3_E_finish_84",
+      "ok": true
+    },
+    {
+      "detail": "YXB_A = 7.5/18 = 5/12 (got 5/12)",
+      "name": "K9_YXB_A_5_12",
+      "ok": true
+    },
+    {
+      "detail": "YXB_B = 8/18 = 4/9 (got 4/9)",
+      "name": "K9_YXB_B_4_9",
+      "ok": true
+    },
+    {
+      "detail": "YXB_C = 7.5/18 = 5/12 (got 5/12)",
+      "name": "K9_YXB_C_5_12",
+      "ok": true
+    },
+    {
+      "detail": "YXB_E = 9/18 = 1/2 (got 1/2)",
+      "name": "K9_YXB_E_1_2",
+      "ok": true
+    },
+    {
+      "detail": "bay2 must be TERMINAL_OCCUPIED_UNTIL_STOP (no turnover for the last device)",
+      "name": "K9_bay2_no_turnover",
+      "ok": true
+    }
+  ],
+  "verdict": "PASS"
+}
