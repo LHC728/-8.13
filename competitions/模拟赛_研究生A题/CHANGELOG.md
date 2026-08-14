@@ -2,6 +2,27 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-03-SPEC-V1.0.2`
+
+### 修改
+
+- **G2-03-SPEC-V1.0.2 L3 correction（fixture / executable event-order semantic correction）**：来源 = `G2_03_S1_FIXTURE_SEMANTIC_ADJUDICATOR`（fresh Pro/high L3 adjudication，overall=SPEC_AND_IMPLEMENTATION_PATCH_REQUIRED，confidence=HIGH）+ 2026-08-14 Human Gate final ruling。**core process semantics unchanged**，但以下发生冻结澄清与修正：
+  - **F3 corrected**：重构为 B 首败（B1 ABNORMAL@2.0、B2 retest 2..4 与 A/C 0..2.5 在 [2,2.5) 真实并行），T=8→7；删除旧 A-abnormal 构造。
+  - **F4 restored + F4b**：F4 恢复 t*=7.5 跨装置同刻 PASS（d1 A2 与 d2 C2 严格同刻，先结算后退出，T=10.5、S=1、PW=1）；F4b 为取消分支 subcase（B2 二次异常@6.0 退出，取消运行中 A2/C2，elapsed=1h each，无观测）；删除错误 NOTE『literal alignment unreachable』。
+  - **F7/F9/F10 SEM-21 corrected**：batch_size=3、preloaded=[1,2]（不再 batch=2+preloaded=[1]）；F7 T=12（d3 A/C 6.5..9.0 恰班末完成）；F9 T=12（d3 entry 6.5）；F10 T=11.5（d3 entry 6.0）。
+  - **F9b added for SEM-23 coverage**：batch=4、preloaded=[1,2]；[6.0,6.5) bay1 TRANSPORT_IN ∥ bay2 TRANSPORT_OUT 并发运输；预计 T=15（实现者须按冻结规则运行确认，不得手改）。
+  - **D timing clarified to E2 before E release**：D 不在 E ACTIVITY_START 生成；canonical_D_creation_time = A/B/C 全 PASS 的同一 timestamp = E logical release timestamp；D_CREATED.seq < E TASK_RELEASE.seq；E 等待期间 D=CREATED；同刻 second abnormal exit 不得生成 D；E retest 不重新生成 D；early exit 保持 not_created。
+  - **EMPTY edge case frozen**：BayStatus.EMPTY 仅允许 batch_size==1 或显式终止设计；batch_size>=2 必须 preloaded=[1,2]，不得用 EMPTY 规避 SEM-21。
+  - **shift ordering retained**：E2 → SHIFT_CHANGE → F；完成永远先于换班（L3：CURRENT_IMPLEMENTATION_CONFORMANT，NO SPEC CHANGE REQUIRED 之外补 E2 显式步骤）。
+  - **0.5h overlap log representation clarified**：真实占用 [start,start+0.5h)，IN 子相为零时长日志表示，非额外 0.5h IN。
+  - fixture_family_count=12（F4b/F9b 为 subcase，不注册 F13/F14）。
+- **`a515960cfd4f0c14e8c1952a558a56a59f87ef9f` 保留**为 historical S1 implementation candidate（基于 V1.0.1，需 V1.0.2 rebind；不是 accepted baseline）。
+
+### 影响与边界
+
+- S1 implementation 需按 V1.0.2 rebind（Phase B）；S1 是否最终 accepted 待下一 Human Gate。
+- 未实现 CP-SAT / checker / runner；无 formal evidence；G2-04 / G3 / H1 formal / H2 均 NOT STARTED；whole G2 Gate != PASS。
+
 ## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-03 IMPLEMENTATION ACTIVE`
 
 ### 修改

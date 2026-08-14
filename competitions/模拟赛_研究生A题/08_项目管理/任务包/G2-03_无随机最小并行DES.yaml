@@ -1,14 +1,16 @@
-task_package_version: "G2-03-SPEC-V1.0.1"
+task_package_version: "G2-03-SPEC-V1.0.2"
 task_id: "G2-03"
 title: "无随机最小并行 DES：确定性事件引擎、1—4 台手算夹具与 K=9 跨班重测时间线"
 status: "FROZEN_PENDING_IMPLEMENTATION"
 drafted_by_role: "D / G2_03_DETERMINISTIC_DES_SPEC_DESIGN / L3 决策分析"
 drafted_date: "2026-08-14"
 approval_gate: >-
-  本包已冻结为 G2-03-SPEC-V1.0（2026-08-14 Human Gate 批准），V1.0.1 为 V1.0 后的
-  governance/documentation consistency correction。dispatches / allowed_read_paths /
-  allowed_write_paths / exact_cli 等派单级字段在实现 Gate（G2-03 IMPLEMENTATION ACTIVE）补。
-  冻结不代表实现完成；实现/运行需下一 Human Gate 授权。
+  本包已冻结为 G2-03-SPEC-V1.0（2026-08-14 Human Gate 批准）；V1.0.1 为 governance/documentation
+  consistency correction；V1.0.2 为 fixture / executable event-order semantic correction
+  （来源：G2_03_S1_FIXTURE_SEMANTIC_ADJUDICATOR fresh Pro/high L3 adjudication + 2026-08-14
+  Human Gate final ruling）。dispatches / allowed_read_paths / allowed_write_paths / exact_cli
+  等派单级字段在实现 Gate（G2-03 IMPLEMENTATION ACTIVE）补。冻结不代表实现完成；
+  实现/运行需下一 Human Gate 授权。
 
 # ============================================================================
 # 0. 冻结说明
@@ -16,6 +18,7 @@ approval_gate: >-
 freeze_notes:
   - "本包已经 Human Gate 冻结（V1.0 freeze commit cecaa97e21d1a7f70a61e96455deabc15aded783）；冻结只授权规格，不代表实现完成。"
   - "V1.0.1 是 V1.0 后的机械一致性修正：仅修正 governance/documentation 表述，不改变任何数学/事件/FCFS/夹具/CP-SAT 语义，不改变依赖锁定。"
+  - "V1.0.2 是 fixture / executable event-order semantic correction（非纯机械修正）：core process semantics unchanged，但 F3/F4/F7/F9/F10 夹具定义、D materialization substep（E2）、initial-state edge-case contract（SEM-21/EMPTY）、SEM-23 解释与 0.5h overlap 日志表示发生冻结澄清与修正。来源：G2_03_S1_FIXTURE_SEMANTIC_ADJUDICATOR（fresh Pro/high L3 adjudication，overall=SPEC_AND_IMPLEMENTATION_PATCH_REQUIRED，confidence=HIGH）+ 2026-08-14 Human Gate final ruling。"
   - "DES/checker/formal run 尚未开始；实现需要 IMPLEMENTATION ACTIVE 状态（另见 CURRENT_STATE.md）。历史 commit/push 已发生。"
   - "CP-SAT 交叉核对依赖已经人工 Gate 裁决：OPT-A（OR-Tools 9.15.6755 仅 C08 独立 oracle 专用，主 DES 不依赖）；见 cp_sat_dependency_decision 与 checker_optional_dependencies。"
   - "FCFS 键的装置 ID 方案在本包显式冻结为批次序号（1..N，按入台顺序，1/2 号在 t=0 预置）；判断为可完全规格化，不构成开放决策项（见 fcfs_key）。"
@@ -226,14 +229,14 @@ frozen_event_engine_semantics:
     text: "班末剩余时间不足以完整完成的活动禁止启动（操作约束，非最优性定理）。"
     source: "问题契约 §1.3.3、§7.7；02_H1 §4"
   - id: SEM-21
-    text: "t=0 初始状态显式冻结：首两台已到位并占台位、设备已校准、四资源空闲、全局队列空。"
-    source: "问题契约 §1.1；02_H1 §1"
+    text: "t=0 初始状态显式冻结：首两台已到位并占台位、设备已校准、四资源空闲、全局队列空。批次初态规则（V1.0.2 冻结）：batch_size>=2 => preloaded_devices 必须严格为 [1,2]（bay1=device1、bay2=device2），不得 [1]、[] 或其他 prefix；batch_size==1 => preloaded_devices=[1]（bay1=device1，bay2=EMPTY）。"
+    source: "问题契约 §1.1；02_H1 §1；G2-03 V1.0.2 Human Gate（SEM21/EMPTY 最终冻结）"
   - id: SEM-22
     text: "最后一台得到终端判定时停止计时，不计其运出（无意义末台运出不得发生）。"
     source: "问题契约 §1.1；K9 §2；CR-V3.1/C12"
   - id: SEM-23
-    text: "主周转为同台位顺序运出 0.5h + 运入 0.5h = 1h；两台位可在同一运输阶段并行。"
-    source: "问题契约 §1.1；parameters.csv P014/P015/P059"
+    text: "主周转为同台位顺序运出 0.5h + 运入 0.5h = 1h；不同 bay 的 turnover/transport 不共享全局运输容量资源，bay1 与 bay2 的运输区间允许时间重叠（V1.0.2 解释：不要求 OUT/OUT 或 IN/IN 同子相；例如 bay1 TRANSPORT_IN 与 bay2 TRANSPORT_OUT 可同时发生；不得引入 global_transport_capacity=1）。"
+    source: "问题契约 §1.1；parameters.csv P014/P015/P059；G2-03 V1.0.2 Human Gate（SEM-23 最终解释）"
   - id: SEM-24
     text: "0.5h 完整重叠周转仅为隔离配置小例，绝不与 1h 主周转混用。"
     source: "问题契约 §1.1；parameters.csv P049；CR-V3.1/C12"
@@ -244,13 +247,15 @@ frozen_event_engine_semantics:
 same_timestamp_event_order:
   description: >-
     单一事件时间戳上的确定性闭包。所有活动区间为半开 [start,end)。时间戳相等用精确有理数比较，禁止浮点 epsilon。
+    V1.0.2：可执行顺序增加 E2（materialize_D_for_newly_E_eligible_devices）与 SHIFT_CHANGE refinement，
+    均为对冻结 A..I 的细化（L3 裁决：SHIFT_CHANGE 为合法细化，NO SPEC CHANGE REQUIRED 之外补 E2 显式步骤）。
   steps:
     - step: "A"
       name: "settle_completed_activities"
       action: "对所有 scheduled_end == 当前时间戳的活动标记 COMPLETED，写入 end_time，并把已运行片段时长计入年龄/YXB 账本。"
     - step: "B"
-      name: "materialize_observations"
-      action: "对所有同刻完成的有效测试按脚本化结果物化观测（PASS/ABNORMAL）；装置首次到达 E 的联接时刻物化 D（not_created -> normal|problem，仅一次）。"
+      name: "materialize_test_observations"
+      action: "对所有同刻完成的有效测试按脚本化结果物化观测（PASS/ABNORMAL）。"
     - step: "C"
       name: "classify_outcomes"
       action: "对每个装置/工序分类：PASS -> 工序 PASSED；首次 ABNORMAL -> 释放该工序重测（effective_attempt_no=2，release_time=该失败完成时刻）；重测 ABNORMAL（第二次有效异常）-> 标记 device_exit。"
@@ -260,9 +265,15 @@ same_timestamp_event_order:
     - step: "E"
       name: "cancel_unfinished"
       action: "对每个退出装置取消其全部未完成片段（运行中或就绪的其他工序任务）；取消片段无观测、不推进 effective_attempt_no、已运行部分计年龄/YXB。"
+    - step: "E2"
+      name: "materialize_D_for_newly_E_eligible_devices"
+      action: "对每个 terminal_state==PENDING 且 A/B/C process_status 全部 PASSED 且 D==not_created 且 E initial task 尚未产生的装置，在当前 timestamp 生成 D_CREATED（not_created -> normal|problem，仅一次）。同刻已被标 device_exit 的装置不得生成 D。"
+    - step: "SHIFT_CHANGE"
+      name: "shift_change_and_calendar_update"
+      action: "若当前时间戳为班界：结算后更新 on_duty_squad 与班历状态（换班只改值班分队，不清空队列）。V1.0.2 冻结顺序：A 完成 -> B 观测 -> C 分类 -> D 退出 -> E 取消 -> E2 D 物化 -> SHIFT_CHANGE -> F 释放；完成永远先于换班；新班 squad 只影响随后启动的物理片段。"
     - step: "F"
       name: "release_tasks"
-      action: "释放：重测任务（attempt 2）、E 任务（A/B/C 全 PASSED 后）、周转任务（装置终态且存在下一台待入装置；末台不运出）。"
+      action: "释放：重测任务（attempt 2）、E 任务（A/B/C 全 PASSED 后；E initial release_time=当前 timestamp，D_CREATED.seq 必须早于 E TASK_RELEASE.seq，同一 timestamp）、周转任务（装置终态且存在下一台待入装置；末台不运出）。"
     - step: "G"
       name: "recompute_legal_candidates"
       action: "对每类资源取队列头（最小 FCFS 键），检查合法性：前置满足 + 资源空闲 + 台位可用 + 能在本班完整结束。"
@@ -272,9 +283,14 @@ same_timestamp_event_order:
     - step: "I"
       name: "liveness_closure"
       action: "若本时间戳无可执行项（无未来活动、无合法候选）但仍有未完成任务/未终态装置，跳到下一事件时间或下一班唤醒；日历空且任务全完成且装置全终态 -> SIMULATION_END。"
+  d_creation_rules:
+    - "D 不在 E ACTIVITY_START 生成；E ACTIVITY_START 绝不得重新生成 D；E retest 绝不得重新生成 D。"
+    - "canonical_D_creation_time = A/B/C flow 首次全部 PASS 的同一 timestamp = E logical release timestamp（E2 在 F 之前执行）。"
+    - "若 E 已 release 但 E resource busy 或班界导致等待 2 小时：D 在这 2 小时内为 CREATED（非 NOT_CREATED）。"
+    - "early exit：D 保持 not_created。"
   liveness_audit:
     - "time_monotonic：duration>0，dispatch 只产生 end_time=now+duration>now 的未来事件；时间严格前进。"
-    - "same_timestamp_closure_finite：结算/取消幂等、effective_attempt_no<=2、退出不可重复，闭包在有限步内终止，无零时无限环。"
+    - "same_timestamp_closure_finite：结算/取消幂等、effective_attempt_no<=2、退出不可重复、D 仅生成一次，闭包在有限步内终止，无零时无限环。"
     - "no_empty_calendar_with_unfinished：存在 READY 任务或非终态装置时，日历必非空或存在 next_shift_wake_up（C18）。"
     - "no_zero_time_loop：任何事件不得以相同状态在同一时间戳重复调度自身。"
 
@@ -293,7 +309,7 @@ state_models:
       - "entry_time: 有理数（1/2 号=0；k>=3 号=其周转运入完成时刻）"
       - "bay_id: 1|2（入场起至终态持续占用）"
       - "process_state[A|B|C|E]: {effective_attempt_no, first_failure_time|null, outcome_history[], process_status}"
-      - "d_state: not_created|normal|problem（联接时生成一次）"
+      - "d_state: not_created|normal|problem（V1.0.2：在 E2 substep——A/B/C 全 PASS 的同一 timestamp、E release 之前——生成一次；不在 E ACTIVITY_START 生成；E retest 不重新生成）"
       - "terminal_state: PENDING|PASSED|EXITED"
       - "exit_reason: null|process_second_abnormal"
     process_status_enum: "NOT_STARTED|IN_PROGRESS|AWAITING_RETEST|PASSED"
@@ -314,11 +330,12 @@ state_models:
     unique_id: "bay_id in {1,2}"
     fields:
       - "bay_id: 1|2"
-      - "status: OCCUPIED_TESTING|OCCUPIED_TRANSPORT_OUT|OCCUPIED_TRANSPORT_IN|TERMINAL_OCCUPIED_UNTIL_STOP"
+      - "status: OCCUPIED_TESTING|OCCUPIED_TRANSPORT_OUT|OCCUPIED_TRANSPORT_IN|TERMINAL_OCCUPIED_UNTIL_STOP|EMPTY"
       - "current_device_id: int|null"
       - "transport_phase: none|out|in"
       - "turnover_profile: 1h_literal|0.5h_overlap（场景常量，隔离）"
-    creation: "t=0 bay1=装置1、bay2=装置2，status=OCCUPIED_TESTING。"
+    creation: "t=0 bay1=装置1、bay2=装置2（batch_size>=2）；batch_size==1 时 bay2=EMPTY。"
+    empty_rule: "BAY_STATE.EMPTY 仅允许：batch_size==1 导致物理上不存在第二台装置的退化小例；或后续装置已不存在且该 bay 不再参与系统的显式终止状态设计（如已有冻结状态覆盖则优先使用已有状态）。不得利用 EMPTY 规避 batch_size>=2 时首两台 t=0 已到位的 SEM-21。"
     modification: "装置终态 -> 有下一台：transport_out(0.5h)->transport_in(0.5h)->新装置 OCCUPIED_TESTING；无下一台：TERMINAL_OCCUPIED_UNTIL_STOP。"
     termination: "SIMULATION_END。"
   TASK_STATE:
@@ -416,6 +433,7 @@ fcfs_key:
 # ============================================================================
 deterministic_fixtures:
   fixture_schema_note: "每个夹具由 scripted_outcomes 与 scripted_real_states 完全确定，无 RNG。见 schemas_and_manifest_draft.scripted_outcome_schema。"
+  fixture_family_count: "12（F1..F12 逻辑 family）；允许 concrete scenarios：F4/F4b、F9/F9b；F4b/F9b 不注册为 F13/F14。"
   cases:
     - id: "F1"
       name: "单装置 A/B/C 同刻并行"
@@ -428,30 +446,54 @@ deterministic_fixtures:
     - id: "F2"
       name: "双装置资源竞争 + FCFS"
       device_count: 2
+      preloaded: "[1,2]"
       calendar: "isolated_small_case"
       turnover: "n/a"
       scripted: "装置1/2 全 PASS；真实状态全 normal。"
       checks: ["CR-V3.1/C09", "CR-V3.1/C11"]
       acceptance: "A/B/C/E 各容量 1；同资源上 device_id 小者先派；装置1 A/B/C 先于装置2；同装置不自身重叠。"
     - id: "F3"
-      name: "首次异常释放自身重测且不取消他人"
+      name: "首次异常不取消其他工序 + 重测与其他工序并行（B 首败）"
       device_count: 1
+      preloaded: "[1]"
       calendar: "isolated_small_case"
       turnover: "n/a"
-      scripted: "装置1 A 初测 ABNORMAL（首次），A 重测 PASS；B/C/E 全 PASS。"
+      scripted: "装置1：A1=PASS、B1=ABNORMAL（首次）、B2=PASS、C1=PASS、E1=PASS；真实状态全 normal。"
       checks: ["CR-V3.1/C09", "CR-V3.1/C10", "CR-V3.1/C11"]
-      acceptance: "A 首次异常时 B/C 已启动/继续，不被取消；A 重测 release_time=首败完成时刻、attempt=2；重测与 C 等可并行；重测 PASS 后 E 释放。"
+      acceptance: >-
+        t=0 A1/B1/C1 同启；B1 0..2 ABNORMAL（首败不取消 A/C，A/C 继续运行）；B2 release_time=2、start=2、
+        finish=4 PASS，在 [2,2.5) 与 A1/C1（0..2.5）真实并行；ABC 全 PASS 于 t=4；E 4..7；
+        T=7h；S=1、PL=0、PW=0。删除旧 A1-abnormal / T=8 构造。
     - id: "F4"
-      name: "第二次异常与其他任务同刻完成（先结算后取消）"
+      name: "第二次异常与其他装置有效通过严格同刻（先结算后退出）"
       device_count: 2
+      preloaded: "[1,2]"
       calendar: "isolated_small_case"
       turnover: "n/a"
-      scripted: "装置1 A 初测异常后 A 重测 ABNORMAL（第二次），恰在 t* 与装置2 某工序 PASS 同刻；其余正常。"
+      scripted: "装置1：A1=ABNORMAL、A2=ABNORMAL（第二次）、B1=PASS、C1=PASS；装置2：A1=PASS、B1=PASS、C1=ABNORMAL、C2=PASS、E1=PASS；其余正常。"
       checks: ["CR-V3.1/C10"]
-      acceptance: "同刻先结算装置2 完成（结果保留），再执行装置1 退出并取消其未完成片段；改变日志插入顺序不改变结局。"
+      acceptance: >-
+        装置1 A1 0..2.5 ABNORMAL；装置2 A1 2.5..5 PASS、C1 2.5..5 ABNORMAL；装置1 A2 5..7.5 ABNORMAL（第二次）；
+        装置2 C2 5..7.5 PASS；t*=7.5 装置1 A2 与装置2 C2 严格同刻完成：先批量 settle/observation/classify
+        （保留装置2 C2 PASS），再装置1 EXITED；装置2 E 7.5..10.5；T=10.5h；S=1、PW=1。
+        本 fixture 不再包含错误 NOTE『literal alignment unreachable』。
+    - id: "F4b"
+      name: "F4 family 取消分支：退出取消运行中片段（不声称跨装置同刻 PASS）"
+      device_count: 2
+      preloaded: "[1,2]"
+      calendar: "isolated_small_case"
+      turnover: "n/a"
+      scripted: "装置1：A1=ABNORMAL、B1=ABNORMAL、B2=ABNORMAL（第二次）、C1=ABNORMAL；装置2：A1/B1/C1/E1=PASS。"
+      checks: ["CR-V3.1/C10"]
+      acceptance: >-
+        装置1 A/C retest 在 5..7.5 运行；装置1 B2 4..6 second ABNORMAL；t=6 装置1 EXIT，取消其正在运行的 A2/C2；
+        outcome=NONE、cancel_reason=DEVICE_EXIT、elapsed=1h each、effective_attempt_no 保持 2、
+        无 ACTIVITY_COMPLETE、无 OBSERVATION。F4b 只验证 terminal cancellation branch，
+        不得声称具有 cross-device same-time PASS。
     - id: "F5"
       name: "D 未生成即退出（不提前生成 D）"
       device_count: 1
+      preloaded: "[1]"
       calendar: "isolated_small_case"
       turnover: "n/a"
       scripted: "装置1 A 初测异常、A 重测异常（退出）；真实 A/B/C 全 normal；未到达 E。"
@@ -460,47 +502,70 @@ deterministic_fixtures:
     - id: "F6"
       name: "班末剩余时间不足禁止启动"
       device_count: 1
+      preloaded: "[1]"
       calendar: "q3_two_shift K=9（[0,9),[9,18)）"
       turnover: "n/a"
       scripted: "某装置在班末时刻仅剩不足以完整完成某工序的时间，该任务保持 READY。"
       checks: ["CR-V3.1/C12", "CR-V3.1/C18"]
       acceptance: "start+duration>shift_end 时禁止启动；任务保留 FCFS 键；存在下一班唤醒；时间前进。"
     - id: "F7"
-      name: "恰好班末完成允许启动"
-      device_count: 1
+      name: "恰好班末完成允许启动（SEM-21 修正版：batch=3/preloaded [1,2]）"
+      device_count: 3
+      preloaded: "[1,2]"
       calendar: "q3_two_shift K=9"
-      turnover: "n/a"
-      scripted: "某装置 A/C 在 6.5 启动，9.0 恰好完成。"
+      turnover: "1h_literal"
+      scripted: "装置1/2/3 均 deterministic PASS；主周转 1h literal；device1 terminal 5.5。"
       checks: ["CR-V3.1/C12"]
-      acceptance: "start+duration==shift_end 合法；9.0 先结算完成再换班（同刻换班不取消完成）。"
+      acceptance: >-
+        device1 terminal 5.5；bay1 turnover 5.5..6.5；device3 entry 6.5；device3 A/C 6.5..9.0，
+        start+duration==shift_end 合法；9.0 先结算 A/C 完成再 SHIFT_CHANGE；device3 E 9..12；T=12h。
+        不得使用 batch=2 + preloaded=[1]。
     - id: "F8"
       name: "K=9 三装置跨班待重测（权威手算）"
       device_count: 3
+      preloaded: "[1,2]"
       calendar: "q3_two_shift K=9"
       turnover: "1h_literal"
       scripted: "装置3 B 初测 ABNORMAL、B 重测 PASS；其余全 PASS；真实状态全 normal；squad 1 班1 / squad 2 班2。"
       fixture_file: "01_审计/手算样例_K9跨班重测.md"
       checks: ["CR-V3.1/C08", "CR-V3.1/C09", "CR-V3.1/C11", "CR-V3.1/C12"]
-      acceptance: "逐事件匹配手算时间线；T=14h；S=3、PL=0、PW=0；YXB_A=7.5/18、YXB_B=8/18、YXB_C=7.5/18、YXB_E=9/18；B 重测 release_time 恒为 8.5、attempt=2、跨班不插队、持续占台。"
+      acceptance: "逐事件匹配手算时间线；T=14h；S=3、PL=0、PW=0；YXB_A=7.5/18、YXB_B=8/18、YXB_C=7.5/18、YXB_E=9/18；B 重测 release_time 恒为 8.5、attempt=2、跨班不插队、持续占台；D_CREATED 事件按 V1.0.2 E2 时序重断言（允许相对旧实现 seq/time 变化）。"
     - id: "F9"
-      name: "1h 主周转"
-      device_count: 2
+      name: "1h 主周转（SEM-21 修正版：batch=3/preloaded [1,2]）"
+      device_count: 3
+      preloaded: "[1,2]"
       calendar: "isolated_small_case"
       turnover: "1h_literal"
-      scripted: "装置1 先终态，运出 0.5h + 装置2 运入 0.5h。"
+      scripted: "装置1/2/3 全 PASS；真实状态全 normal。"
       checks: ["CR-V3.1/C12"]
-      acceptance: "台位在周转期间不可测试；0.5 out + 0.5 in = 1h；两台位运输可并行。"
+      acceptance: "台位在周转期间不可测试；0.5 out + 0.5 in = 1h；device1 terminal 5.5；bay1 turnover OUT 5.5..6.0 + IN 6.0..6.5；device3 entry 6.5；device3 E 9..12；T=12h。"
+    - id: "F9b"
+      name: "SEM-23 并发运输覆盖（F9 family subcase）"
+      device_count: 4
+      preloaded: "[1,2]"
+      calendar: "isolated_small_case"
+      turnover: "1h_literal"
+      scripted: "device1：A1/B1/C1/E1=PASS；device2：A1=PASS、B1=ABNORMAL、B2=ABNORMAL（第二次）、C1=PASS、不生成 E；device3/4：全 PASS。"
+      checks: ["CR-V3.1/C12"]
+      acceptance: >-
+        device1 terminal 5.5 -> bay1 OUT 5.5..6.0、IN 6.0..6.5；device2 B1 2..4 ABNORMAL、B2 4..6 second ABNORMAL、
+        EXIT 6.0 -> bay2 OUT 6.0..6.5；[6.0,6.5) bay1 TRANSPORT_IN 与 bay2 TRANSPORT_OUT 同时存在（SEM-23 并发运输 positive coverage，
+        无全局运输容量冲突）。预计 T=15，但实现者必须按冻结规则运行确认，不得手改结果迎合 T=15；
+        若机械实现严格按上述冻结输入得不到 T=15：停止并报告，不得 silent patch。
     - id: "F10"
-      name: "0.5h 重叠替代周转（隔离配置）"
-      device_count: 2
+      name: "0.5h 重叠替代周转（隔离配置，SEM-21 修正版）"
+      device_count: 3
+      preloaded: "[1,2]"
       calendar: "isolated_small_case"
       turnover: "0.5h_overlap"
       scripted: "同 F9 输入，仅 turnover_profile=0.5h_overlap。"
       checks: ["CR-V3.1/C12"]
-      acceptance: "完整周转 0.5h；与本场景 1h 配置在 manifest 严格隔离，绝不混用。"
+      acceptance: "完整周转 0.5h；device1 terminal 5.5；overlap turnover 5.5..6.0；device3 entry 6.0；device3 ABC 6.0..8.5（B 6..8）；device3 E 8.5..11.5；T=11.5h；与本场景 1h 配置在 manifest 严格隔离，绝不混用。"
+      overlap_log_representation: "0.5h_overlap 真实 bay 占用周转区间为 [start, start+0.5h)；日志允许 TURNOVER_OUT_START at start，在 start+0.5h 同刻依次记录 TURNOVER_OUT_COMPLETE / TURNOVER_IN_START / TURNOVER_IN_COMPLETE；IN 子相日志为零时长表示；整个 turnover 物理占用仍严格 0.5h，不是额外 0.5h IN，checker 不得重复计算 bay occupancy。"
     - id: "F11"
       name: "活性：未完成任务 -> 下一班唤醒存在"
       device_count: 1
+      preloaded: "[1]"
       calendar: "q3_two_shift K=9"
       turnover: "n/a"
       scripted: "班末存在 READY 任务（不足以启动）。"
@@ -509,6 +574,7 @@ deterministic_fixtures:
     - id: "F12"
       name: "末台不运出（无意义末台运输不得发生）"
       device_count: 1
+      preloaded: "[1]"
       calendar: "isolated_small_case"
       turnover: "n/a"
       scripted: "单装置终态通过。"
@@ -694,7 +760,7 @@ schemas_and_manifest_draft:
       - "shift_length_h, shifts_per_day（q2 12h/1；q3 K/2；isolated 用足够长单班）"
       - "durations: {A,B,C,E} 有理数（2.5/2/2.5/3）"
       - "transport_out_h, transport_in_h, turnover_profile: 1h_literal|0.5h_overlap"
-      - "deterministic_initial_state: {preloaded_devices:[1,2], all_calibrated:true, queues_empty:true}"
+      - "deterministic_initial_state: {preloaded_devices: batch_size==1 -> [1]；batch_size>=2 -> [1,2]（SEM-21 冻结，不得其他 prefix）, all_calibrated:true, queues_empty:true}"
       - "random_enabled: false（固定）"
       - "key_schema_version: P061 key_schema_v1（占位，G2 不启用随机流）"
   scripted_outcome_schema:
@@ -777,6 +843,7 @@ deviations:
   - "本包已冻结为 G2-03-SPEC-V1.0，不包含 dispatches / allowed_read_paths / allowed_write_paths / exact_cli 等派单级字段；这些在实现 Gate 补。"
   - "V0.2（2026-08-14）：人工 Gate 裁决 CP-SAT 依赖为 OPT-A（OR-Tools 9.15.6755 仅 C08 独立 oracle 专用）；CP-SAT 依赖开放决策项关闭；新增 checker_optional_dependencies 与 cp_sat_oracle_spec（含整数时间刻度机械求取：1 tick=10min=1/6h）。"
   - "V1.0（2026-08-14）：人工 Gate 冻结本包；唯一语义修正为 cp_sat_oracle_spec.release_independence（外生/内生 release 区分、禁读 DES 派生输入、FCFS 独立编码、版本运行时保护）。"
+  - "V1.0.2（2026-08-14）：fixture / executable event-order semantic correction（来源：G2_03_S1_FIXTURE_SEMANTIC_ADJUDICATOR Pro/high L3 adjudication + Human Gate final ruling）。F3 重构为 B 首败（T=8->7）；F4 恢复 t*=7.5 跨装置同刻 PASS 并新增 F4b 取消分支；F7/F9/F10 修正 SEM-21（batch=3、preloaded=[1,2]）；新增 F9b（SEM-23 并发运输，batch=4）；D 生成移至 E2 substep（A/B/C 全 PASS 的同一 timestamp、E release 之前，D_CREATED.seq < E TASK_RELEASE.seq）；EMPTY 状态冻结（仅 batch=1 或显式终止设计可用）；SEM-23 解释（不同 bay 运输可重叠，无全局运输容量）；0.5h overlap 日志零时长 IN 表示冻结。fixture_family_count=12，F4b/F9b 为 subcase 不注册新 family。"
   - "本包不修改 CURRENT_STATE.md、CHANGELOG.md、问题契约、检查注册表、parameters.csv、03_模型/**、04_代码/**、05_结果/**、G2-01/G2-02 任务包或任何证据。"
 
 must_not_change:
