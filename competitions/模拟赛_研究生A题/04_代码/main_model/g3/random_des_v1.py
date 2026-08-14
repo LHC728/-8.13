@@ -1101,10 +1101,22 @@ class RandomDesEngine:
         """C18 / 契约 1.1: the run stops at the instant the LAST device gets
         its terminal decision (末台终态停止计时; no transport-out after the
         last device). Stale calendar events (cancelled fragments of exited
-        devices) are ignored: they carry no work."""
+        devices) are ignored: they carry no work.
+
+        An in-flight turnover (OCCUPIED_TRANSPORT_OUT/IN) is NOT terminal:
+        its scheduled turnover_in_complete creates the next device, so the
+        run must continue even when no device is currently PENDING (a
+        turnover only starts while a next device within the batch exists).
+        """
         if any(d.terminal_state == sm.TerminalState.PENDING for d in self.devices.values()):
             return False
         if any(b.turnover_pending for b in self.bays.values()):
+            return False
+        if any(
+            b.status
+            in (sm.BayStatus.OCCUPIED_TRANSPORT_OUT, sm.BayStatus.OCCUPIED_TRANSPORT_IN)
+            for b in self.bays.values()
+        ):
             return False
         return True
 
@@ -1698,6 +1710,21 @@ class RandomDesEngine:
             if device.terminal_state == sm.TerminalState.PENDING:
                 continue
             if self._next_device_to_create() > self.config.batch_size:
+                bay.status = sm.BayStatus.TERMINAL_OCCUPIED_UNTIL_STOP
+                continue
+            # Slot accounting (SEM-22 / C12): only as many turnovers may be
+            # pending/in flight as there are devices still to create. Two bays
+            # can hold terminal devices simultaneously while only one next
+            # device remains; the extra bay must stop here (TERMINAL) rather
+            # than start a turnover whose transport-in would be empty.
+            inflight = sum(
+                1
+                for b in self.bays.values()
+                if b.turnover_pending
+                or b.status
+                in (sm.BayStatus.OCCUPIED_TRANSPORT_OUT, sm.BayStatus.OCCUPIED_TRANSPORT_IN)
+            )
+            if self._next_device_to_create() + inflight > self.config.batch_size:
                 bay.status = sm.BayStatus.TERMINAL_OCCUPIED_UNTIL_STOP
                 continue
             bay.turnover_pending = True

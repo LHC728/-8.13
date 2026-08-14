@@ -929,6 +929,79 @@ class TestQ3Interface(_Base):
             self.assertEqual(Fraction(shifts[1]["shift_start"]), k)
             self.assertEqual(Fraction(shifts[1]["shift_end"]), 2 * k)
 
+    def test_q3_full_batch_completion_all_k_batches_seeds(self) -> None:
+        """Regression for the oracle-detected premature-stop defect (checker
+        ``g3_quality_oracle_v1.test_q3_premature_stop_detected``): with the
+        q3_two_shift calendar and K <= 10, batch >= 4, the DES used to stop
+        after 3 devices -- ``_is_terminal`` treated in-flight turnovers
+        (OCCUPIED_TRANSPORT_OUT/IN) as no work, so devices 4..N were never
+        created (SIMULATION_END with a non-empty calendar; CR-V3.1/C18
+        liveness violation). Fixed by counting in-flight turnovers as
+        unfinished work and by the bay slot accounting (a second turnover is
+        never started when only one next device remains -- no empty
+        transport-in, C12). Every frozen K x batch 2..6 x seed must run the
+        FULL batch (设备数 == batch_size) with T == the last DEVICE_TERMINAL
+        time and no turnover after the last terminal (末台终态停止计时).
+        The oracle-side test now skips via its own condition (created ==
+        batch_size -> 'DES no longer reproduces the premature stop'); this
+        positive assertion is the replacement evidence."""
+        for k_str in ("9", "9.5", "10", "10.5", "11", "11.5", "12"):
+            for batch in range(2, 7):
+                for seed in (1, 7, 13):
+                    res = run(
+                        make_config(
+                            batch_size=batch, master_seed=seed,
+                            scenario="q3_two_shift",
+                            shift_length_h=k_str, shifts_per_day=2,
+                        )
+                    )
+                    log = res.event_log
+                    created = len(records(log, rd.EVENT_TRUE_STATE_GENERATED))
+                    self.assertEqual(
+                        created, batch,
+                        "K=%s batch=%d seed=%d: full batch must be created"
+                        % (k_str, batch, seed),
+                    )
+                    terms = [
+                        Fraction(r["event_time"])
+                        for r in records(log, sm.EventType.DEVICE_TERMINAL.value)
+                    ]
+                    self.assertEqual(len(terms), batch)
+                    ends = records(log, sm.EventType.SIMULATION_END.value)
+                    self.assertEqual(len(ends), 1)
+                    last_term = max(terms)
+                    # 末台终态停止计时: SIMULATION_END / T == last terminal
+                    self.assertEqual(Fraction(ends[0]["event_time"]), last_term)
+                    self.assertEqual(Fraction(res.metrics["T"]), last_term)
+                    # 末台不运出: no turnover of any kind after the last terminal
+                    after = [r for r in log if Fraction(r["event_time"]) > last_term]
+                    self.assertFalse(
+                        any("TURNOVER" in r["event_type"] for r in after),
+                        "turnover after last terminal K=%s batch=%d seed=%d"
+                        % (k_str, batch, seed),
+                    )
+                    self.assertEqual(res.metrics["S"] + res.metrics["exited"], batch)
+
+    def test_q3_racing_bays_single_slot_remains(self) -> None:
+        """Two bays can hold terminal devices simultaneously while only one
+        next device remains (e.g. devices 1 and 2 exit in the same closure
+        with batch=4). The engine must start only one of the two turnovers --
+        the extra bay stops (TERMINAL_OCCUPIED_UNTIL_STOP) instead of
+        performing an empty transport-in. seed 7, batch 4, K=9 previously
+        raised 'turnover_in without a next device' once the in-flight-
+        turnover termination fix let the run continue."""
+        for batch in (3, 4):
+            res = run(
+                make_config(
+                    batch_size=batch, master_seed=7,
+                    scenario="q3_two_shift",
+                    shift_length_h="9", shifts_per_day=2,
+                )
+            )
+            created = len(records(res.event_log, rd.EVENT_TRUE_STATE_GENERATED))
+            self.assertEqual(created, batch, "batch=%d must be created fully" % batch)
+            self.assertTrue(records(res.event_log, sm.EventType.SIMULATION_END.value))
+
     def test_q3_fresh_world_and_crn_across_k(self) -> None:
         # same seed, K=9 vs K=12: independent fresh worlds sharing the keyed U
         r9 = run(make_config(batch_size=3, scenario="q3_two_shift", shift_length_h="9", shifts_per_day=2))
