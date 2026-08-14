@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "g3_key_schema_v1.schema.json",
+  "title": "G3 key_schema_v1 - canonical keyed uniform random infrastructure",
+  "description": "Contract/documentation schema frozen by G3-SPEC-V1.0 section 3 (random_key_architecture) and V3.1 section 8. Describes the canonical key field order, the SHA256 uniform mapping, the five logical streams, the six disjoint experiment namespaces plus the H2 reserved placeholder, and the forbidden physical key fields. The executable reference is the Python module 04_代码/main_model/g3/key_schema_v1.py (standard library only); this schema is the frozen machine-readable description of that contract.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "key_schema_version",
+    "canonical_key_field_order",
+    "field_serialization",
+    "mapping",
+    "streams",
+    "namespaces",
+    "forbidden_physical_key_fields",
+    "consumption_semantics"
+  ],
+  "properties": {
+    "key_schema_version": {
+      "const": "key_schema_v1"
+    },
+    "canonical_key_field_order": {
+      "type": "array",
+      "description": "Frozen canonical field order; NOTE-3 freezes namespace BEFORE replicate_id.",
+      "minItems": 7,
+      "maxItems": 7,
+      "prefixItems": [
+        { "const": "key_schema_version" },
+        { "const": "master_seed" },
+        { "const": "namespace" },
+        { "const": "replicate_id" },
+        { "const": "entity_id" },
+        { "const": "process_or_subsystem" },
+        { "const": "attempt_or_generation" }
+      ]
+    },
+    "field_serialization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["encoding", "separator", "int_type_tag", "string_type_tag", "empty_slot"],
+      "properties": {
+        "encoding": { "const": "UTF-8" },
+        "separator": { "const": "|" },
+        "int_type_tag": { "const": "i:<non-negative decimal integer>" },
+        "string_type_tag": { "const": "s:<UTF-8 string without separator>" },
+        "empty_slot": { "const": "empty segment" }
+      }
+    },
+    "mapping": {
+      "const": "U = (uint64_be(SHA256(UTF8(canonical_key))[0:8]) + 1/2) / 2^64; exact Fraction with denominator 2^65; binary float forbidden"
+    },
+    "streams": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "U_X_device_true_state",
+        "U_D_d_materialization",
+        "U_Y_observation",
+        "U_L_equipment_lifetime",
+        "H2_future_stream"
+      ],
+      "properties": {
+        "U_X_device_true_state": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["key_fields", "consumption_rule"],
+          "properties": {
+            "key_fields": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "prefixItems": [
+                { "const": "namespace" },
+                { "const": "replicate_id" },
+                { "const": "device_id" },
+                { "const": "subsystem" }
+              ]
+            },
+            "consumption_rule": {
+              "const": "entity=device_id; subsystem explicitly A/B/C; true-state U_X drawn once per device entry"
+            }
+          }
+        },
+        "U_D_d_materialization": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["key_fields", "consumption_rule"],
+          "properties": {
+            "key_fields": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "prefixItems": [
+                { "const": "namespace" },
+                { "const": "replicate_id" },
+                { "const": "device_id" }
+              ]
+            },
+            "consumption_rule": {
+              "const": "dedicated stream; consumed only at a legal D materialization; never merged into the A/B/C slots"
+            }
+          }
+        },
+        "U_Y_observation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["key_fields", "consumption_rule"],
+          "properties": {
+            "key_fields": {
+              "type": "array",
+              "minItems": 5,
+              "maxItems": 5,
+              "prefixItems": [
+                { "const": "namespace" },
+                { "const": "replicate_id" },
+                { "const": "device_id" },
+                { "const": "process" },
+                { "const": "effective_attempt_no" }
+              ]
+            },
+            "consumption_rule": {
+              "const": "consumed only by a valid completion; no observation U is consumed by failure interruption, terminal cancellation, shift deferral or never-started tasks"
+            }
+          }
+        },
+        "U_L_equipment_lifetime": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["key_fields", "consumption_rule"],
+          "properties": {
+            "key_fields": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "prefixItems": [
+                { "const": "namespace" },
+                { "const": "replicate_id" },
+                { "const": "resource" },
+                { "const": "generation_no" }
+              ]
+            },
+            "consumption_rule": {
+              "const": "exactly one U_L per (resource, generation)"
+            }
+          }
+        },
+        "H2_future_stream": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "note"],
+          "properties": {
+            "status": { "const": "reserved_only" },
+            "note": {
+              "const": "namespace placeholder; G3 does not implement H2; stream helpers reject the h2_future namespace"
+            }
+          }
+        }
+      }
+    },
+    "namespaces": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["experiment_namespaces", "h2_reserved"],
+      "properties": {
+        "experiment_namespaces": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "development_unit",
+              "pilot",
+              "h1_tuning",
+              "g3_holdout",
+              "q2_formal",
+              "q3_formal"
+            ]
+          }
+        },
+        "h2_reserved": { "const": "h2_future" }
+      }
+    },
+    "forbidden_physical_key_fields": {
+      "type": "array",
+      "minItems": 11,
+      "maxItems": 11,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "run_id",
+          "execution_no",
+          "restart_no",
+          "wall-clock timestamp",
+          "container iteration order",
+          "event insertion order",
+          "strategy_id",
+          "policy_id",
+          "squad_id",
+          "worker_id",
+          "agent_id"
+        ]
+      }
+    },
+    "consumption_semantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["no_observation_u_consumed_by", "crn_rule"],
+      "properties": {
+        "no_observation_u_consumed_by": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "failure interruption",
+              "terminal cancellation",
+              "shift deferral",
+              "never-started task"
+            ]
+          }
+        },
+        "crn_rule": {
+          "const": "CRN-paired strategies/scenarios share the same underlying canonical U world; scenario/config identifiers never enter physical U keys; configs may transform the same U differently under frozen distribution parameters"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "canonicalKeyString": {
+      "type": "string",
+      "pattern": "^key_schema_v1\\|i:[0-9]+\\|s:(development_unit|pilot|h1_tuning|g3_holdout|q2_formal|q3_formal|h2_future)\\|i:[0-9]+\\|(i:[1-9][0-9]*|s:[^|]+)\\|(s:[^|]+)?\\|(i:[1-9][0-9]*)?$",
+      "description": "Serialized canonical key: key_schema_v1 | i:<master_seed> | s:<namespace> | i:<replicate_id> | <entity> | [s:<process_or_subsystem>] | [i:<attempt_or_generation>]; optional slots serialize as empty segments."
+    }
+  }
+}
