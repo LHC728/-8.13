@@ -2,6 +2,21 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-03 S3 THREE-WAY CROSSCHECK PASS`
+
+### 修改
+
+- **G2-03 S3 三方机械对拍 = PASS**（commit `add95095c31d7743d70554847b8288f59584c70f`）：accepted DES（`31b0bff`）vs independent CP-SAT（`689d0c2`）vs frozen hand 在 14 个 concrete fixture（F1-F12 + F4b + F9b）上全部一致，0 diffs。
+- 新增比较器 `04_代码/tests/three_way_crosscheck_v1.py` + `04_代码/tests/test_three_way_crosscheck_v1.py`（24 项；tick↔Fraction 精确换算、错误注入证明非恒 PASS、重复运行确定）。
+- F8 K9 三方对齐：T=84 ticks（14h）；d3 B1 finish=51 ABNORMAL；B2 release=51/start=54/finish=66/attempt=2；E 66..84；YXB 只读断言 5/12、4/9、5/12、1/2。
+- 全量回归 123/123（DES 27 + CP-SAT 72 + crosscheck 24）。
+- **CR-V3.1/C08 确定性小例对拍子项 = 闭合候选**；G2-03 收口完成（candidate），G2-04 进入 ACTIVE。
+- 无 spec/fixture/DES/CP-SAT 修改；比较器自身 2 处 bug 已修复（字段映射、行 key 笔误），未触碰被比较方。
+
+### 影响与边界
+
+- G2-03 overall 最终判定待 Whole G2 L3；G2-04 = ACTIVE；Whole G2 = NOT PASS；G3/H1/H2/100-device = NOT STARTED。
+
 ## 2026-08-14 / `STATE-2026-08-13-G2.4` / `AUTOPILOT PILOT #1 BOOTSTRAP`
 
 ### 修改

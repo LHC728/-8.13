@@ -2,7 +2,7 @@
 
 > 最后更新：2026-08-14
 > 状态版本：`STATE-2026-08-13-G2.4`
-> 当前 Gate：**AUTOPILOT PILOT #1 ACTIVE：S1 deterministic DES = ACCEPTED（`31b0bff`）；S2 CP-SAT oracle = COMPLETED（`689d0c2`），待 S3 三方对拍；G2-03 overall = NOT PASS；G2-04/Whole G2 = NOT STARTED；Pilot #1 Macro Stop = Whole G2（无条件停机）**
+> 当前 Gate：**AUTOPILOT PILOT #1 ACTIVE：S1 deterministic DES = ACCEPTED（`31b0bff`）；S2 CP-SAT oracle = COMPLETED（`689d0c2`）；S3 三方对拍 = PASS（`add9509`，14/14 一致）；G2-03 收口完成（C08 对拍子项闭合候选）；G2-04 = ACTIVE；Whole G2 = NOT PASS；Pilot #1 Macro Stop = Whole G2（无条件停机）**
 > 当前检查注册表：[`CR-V3.1`](01_审计/检查注册表_V3.1.md)
 
 ## 1. 新对话只需先读
@@ -71,7 +71,10 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
 - **`G2-03`（确定性最小并行 DES）= IMPLEMENTATION ACTIVE → AUTOPILOT PILOT #1**：
   - 任务包：`G2-03-SPEC-V1.0.2`（V1.0 freeze commit `cecaa97e21d1a7f70a61e96455deabc15aded783`；V1.0.1 governance commit `37150f2af0b047725b84ef6fa802638d329f1447`；V1.0.2 L3 fixture adjudication commit `e89a237aca095965863cf6248321d6a203730307`）。
   - **S1 deterministic DES baseline = ACCEPTED**：accepted commit `31b0bffb72d6b805ae313ddb9e5e0ae9a83c16ab`（V1.0.2 rebind）。验收记录：24 semantics implemented；F1-F12 family PASS；F4b PASS；F9b PASS（SEM-23 并发运输，T=15）；F8 K9 PASS（T=14）；py_compile PASS；unittest 27/27 PASS；main DES stdlib-only；D E2 timing PASS；SEM21 PASS；SEM23 PASS。
-  - **S2 independent CP-SAT oracle = COMPLETED**：commit `689d0c253be63a889c163b2e473f9226b0899c3e`（独立约束模型；OR-Tools 9.15.6755 版本守卫；14 concrete fixtures + K9 全 PASS；unittest 72/72；无 DES import/读取；num_search_workers=1、random_seed=0）。待 S3 三方对拍闭合 C08。
+  - **S2 independent CP-SAT oracle = COMPLETED**：commit `689d0c253be63a889c163b2e473f9226b0899c3e`（独立约束模型；OR-Tools 9.15.6755 版本守卫；14 concrete fixtures + K9 全 PASS；unittest 72/72；无 DES import/读取；num_search_workers=1、random_seed=0）。
+  - **S3 三方对拍 = PASS**：commit `add95095c31d7743d70554847b8288f59584c70f`（比较器 `04_代码/tests/three_way_crosscheck_v1.py`；DES/CP-SAT/hand 14/14 一致；F8 K9 T=84 ticks、B2 release=51/start=54/finish=66、E 66..84 三方对齐；unittest 24/24；全量回归 123/123）。**C08 确定性小例对拍子项 = 闭合候选**。
+  - **G2-03 收口完成（candidate）**：C08（手算 K9 + CP-SAT 对拍）/C09/C10/C11/C12/C18 引擎侧验收齐备；G2-03 overall 最终判定待 Whole G2 L3。
+  - **G2-04 = ACTIVE**（独立 event-log replay checker / accounting replay / keyed checks / checker isolation / fault injection / reproducibility / one-command verification）。
   - **`a515960cfd4f0c14e8c1952a558a56a59f87ef9f` = historical pre-V1.0.2 implementation candidate**（保留，不得 reset/revert/amend/force-push）。
   - **`AUTOPILOT-PLAN-V1.1-FINAL` = ACTIVE FOR PILOT #1**（Bootstrap 2026-08-14；治理文件见 `08_项目管理/全流程自动推进计划_AUTOPILOT-PLAN-V1.1.md`）。Pilot #1 start checkpoint = `689d0c2`；Pilot #1 Macro Stop = **Whole G2**（无条件停机，禁止自动进入 G3）。
   - **G2-03 overall = NOT PASS**（C08 三方对拍未闭合）。
