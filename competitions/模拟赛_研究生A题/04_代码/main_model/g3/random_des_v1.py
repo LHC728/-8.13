@@ -539,6 +539,24 @@ class RandomDesConfig:
                 raise RandomDesConfigError(f"config.durations missing process {proc}")
             durations[proc] = _parse_positive(durations_raw[proc], f"durations.{proc}")
 
+        # CR-V3.1/C18 liveness guard (AGENTS.md: 参数无效必须显式失败): in the
+        # calendar scenarios a task whose duration exceeds the shift length can
+        # never be started inside any shift (``_is_legal`` requires
+        # now + duration <= shift_end and a shift is exactly shift_length_h
+        # long), so such a batch would silently never terminate.  Reject it at
+        # parse time; isolated_small_case (one very long single shift) keeps
+        # its existing behavior (frozen CRN fixtures run 40 h durations).
+        if scenario in ("q2_single_shift", "q3_two_shift"):
+            max_duration = max(durations.values())
+            if max_duration > shift_length_h:
+                raise RandomDesConfigError(
+                    f"scenario {scenario!r}: task durations exceed the shift "
+                    f"length (max {sm.fraction_to_string(max_duration)} h > "
+                    f"shift {sm.fraction_to_string(shift_length_h)} h); no "
+                    f"task could ever fit in a shift, so the batch would "
+                    f"never terminate (CR-V3.1/C18)"
+                )
+
         transport_out = _parse_nonnegative(raw.get("transport_out_h"), "transport_out_h")
         transport_in = _parse_nonnegative(raw.get("transport_in_h"), "transport_in_h")
         turnover_profile = raw.get("turnover_profile")
