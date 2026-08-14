@@ -2,6 +2,20 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-02-SPEC-V1.0.3`
+
+### 修改
+
+- 任务包 `G2-02_Q1概率与质量解析链.yaml` 由 `G2-02-SPEC-V1.0.2` 升级至 `G2-02-SPEC-V1.0.3`，经人工 Gate（NA Schema L3 reviewer PASS）批准。
+- **NA/null interface contract correction**：`lambda.na=true` 时 `lambda.main` 四叶、`lambda.sum`、`lambda.max_abs_deviation` 必须全为 null（NA 不得伪装为数值 0；schema 新增 `nullableDecimalProbability`/`nullableDecimalSigned` 并以 if/then 严格强制 na 与 null 等价）；`route_agreement.lambda_A..D` 在 lambda=NA 时（谓词=na）为 null；`tilde` 四叶及 `route_agreement.tilde_*` 在 `q_E=0` 时为 null；不新增 `tilde_na` 布尔。
+- 澄清：chain 语义 `e_max_E` 为 NOT_APPLICABLE（E2 仅 single 语义断言数值，E2 代码更新待后续 rebind）；infeasible/indeterminate 下游保持"省略/absent（fixture null=absent by construction）"契约。
+- schema SHA：`94157e00…` → `acc9d641…` → `0bb93b12…`（q_E 零值词法在 schema 契约层归一化：零分支使用 `^0(?:\.0+)?$`，非零分支使用其真补集 pattern，覆盖 `"0"/"0.0"/"0.00"/"0.000000"` 等全部合法零字符串，不再依赖 `const "0"`；机械修正，不改变语义）；fixture SHA：`fadefced…` → `13efa773…`（O5 lambda 块补 `sum: null`、`max_abs_deviation: null`；O5 数学值不变）。
+
+### 影响与边界
+
+- 数学公式、q_E 定义、lambda 公式、`SD-G2-02-LAMBDA-ONCE`、tolerance 均未改变；canonical 非 NA 输出格式不变。
+- S1/S2 现有实现需按 V1.0.3 重新 rebind（后续执行）；G2-02 未通过；S4/S5/S6 未开始；未运行 canonical；未 commit/push。
+
 ## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G2-02-SPEC-V1.0.2`
 
 ### 修改

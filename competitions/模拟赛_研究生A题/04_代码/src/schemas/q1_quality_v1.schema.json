@@ -32,6 +32,14 @@
       "type": "string",
       "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$"
     },
+    "nullableDecimalProbability": {
+      "type": ["string", "null"],
+      "pattern": "^(0(?:\\.[0-9]+)?|1(?:\\.0+)?)$"
+    },
+    "nullableDecimalSigned": {
+      "type": ["string", "null"],
+      "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$"
+    },
     "semantics": {
       "enum": [
         "single_test_unconditional_v1",
@@ -222,10 +230,10 @@
       "additionalProperties": false,
       "required": ["A", "B", "C", "D"],
       "properties": {
-        "A": { "$ref": "#/$defs/decimalProbability" },
-        "B": { "$ref": "#/$defs/decimalProbability" },
-        "C": { "$ref": "#/$defs/decimalProbability" },
-        "D": { "$ref": "#/$defs/decimalProbability" }
+        "A": { "$ref": "#/$defs/nullableDecimalProbability" },
+        "B": { "$ref": "#/$defs/nullableDecimalProbability" },
+        "C": { "$ref": "#/$defs/nullableDecimalProbability" },
+        "D": { "$ref": "#/$defs/nullableDecimalProbability" }
       }
     },
     "lambdaBlock": {
@@ -234,7 +242,7 @@
       "required": ["main", "sum", "counts", "tilde", "na", "max_abs_deviation"],
       "properties": {
         "main": { "$ref": "#/$defs/lambdaMain" },
-        "sum": { "$ref": "#/$defs/decimalSigned" },
+        "sum": { "$ref": "#/$defs/nullableDecimalSigned" },
         "counts": {
           "type": "object",
           "additionalProperties": false,
@@ -247,8 +255,50 @@
         },
         "tilde": { "$ref": "#/$defs/lambdaMain" },
         "na": { "type": "boolean" },
-        "max_abs_deviation": { "$ref": "#/$defs/decimalSigned" }
-      }
+        "max_abs_deviation": { "$ref": "#/$defs/nullableDecimalSigned" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "na": { "const": true } },
+            "required": ["na"]
+          },
+          "then": {
+            "properties": {
+              "main": {
+                "properties": {
+                  "A": { "const": null },
+                  "B": { "const": null },
+                  "C": { "const": null },
+                  "D": { "const": null }
+                }
+              },
+              "sum": { "const": null },
+              "max_abs_deviation": { "const": null }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "na": { "const": false } },
+            "required": ["na"]
+          },
+          "then": {
+            "properties": {
+              "main": {
+                "properties": {
+                  "A": { "$ref": "#/$defs/decimalProbability" },
+                  "B": { "$ref": "#/$defs/decimalProbability" },
+                  "C": { "$ref": "#/$defs/decimalProbability" },
+                  "D": { "$ref": "#/$defs/decimalProbability" }
+                }
+              },
+              "sum": { "$ref": "#/$defs/decimalSigned" },
+              "max_abs_deviation": { "$ref": "#/$defs/decimalSigned" }
+            }
+          }
+        }
+      ]
     },
     "EKernelBlock": {
       "type": "object",
@@ -316,14 +366,14 @@
         "p_BP": { "$ref": "#/$defs/decimalSigned" },
         "p_GE": { "$ref": "#/$defs/decimalSigned" },
         "p_BE": { "$ref": "#/$defs/decimalSigned" },
-        "lambda_A": { "$ref": "#/$defs/decimalSigned" },
-        "lambda_B": { "$ref": "#/$defs/decimalSigned" },
-        "lambda_C": { "$ref": "#/$defs/decimalSigned" },
-        "lambda_D": { "$ref": "#/$defs/decimalSigned" },
-        "tilde_A": { "$ref": "#/$defs/decimalSigned" },
-        "tilde_B": { "$ref": "#/$defs/decimalSigned" },
-        "tilde_C": { "$ref": "#/$defs/decimalSigned" },
-        "tilde_D": { "$ref": "#/$defs/decimalSigned" }
+        "lambda_A": { "$ref": "#/$defs/nullableDecimalSigned" },
+        "lambda_B": { "$ref": "#/$defs/nullableDecimalSigned" },
+        "lambda_C": { "$ref": "#/$defs/nullableDecimalSigned" },
+        "lambda_D": { "$ref": "#/$defs/nullableDecimalSigned" },
+        "tilde_A": { "$ref": "#/$defs/nullableDecimalSigned" },
+        "tilde_B": { "$ref": "#/$defs/nullableDecimalSigned" },
+        "tilde_C": { "$ref": "#/$defs/nullableDecimalSigned" },
+        "tilde_D": { "$ref": "#/$defs/nullableDecimalSigned" }
       }
     },
     "responseEnvelope": {
@@ -401,6 +451,102 @@
               "lambda": { "type": "null" },
               "multinomial": { "type": "null" },
               "route_agreement": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "lambda": { "properties": { "na": { "const": true } }, "required": ["na"] } },
+            "required": ["lambda"]
+          },
+          "then": {
+            "properties": {
+              "route_agreement": {
+                "properties": {
+                  "lambda_A": { "const": null },
+                  "lambda_B": { "const": null },
+                  "lambda_C": { "const": null },
+                  "lambda_D": { "const": null }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "lambda": { "properties": { "na": { "const": false } }, "required": ["na"] } },
+            "required": ["lambda"]
+          },
+          "then": {
+            "properties": {
+              "route_agreement": {
+                "properties": {
+                  "lambda_A": { "$ref": "#/$defs/decimalSigned" },
+                  "lambda_B": { "$ref": "#/$defs/decimalSigned" },
+                  "lambda_C": { "$ref": "#/$defs/decimalSigned" },
+                  "lambda_D": { "$ref": "#/$defs/decimalSigned" }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "q_E": { "pattern": "^0(?:\\.0+)?$" } },
+            "required": ["q_E"]
+          },
+          "then": {
+            "properties": {
+              "lambda": {
+                "properties": {
+                  "tilde": {
+                    "properties": {
+                      "A": { "const": null },
+                      "B": { "const": null },
+                      "C": { "const": null },
+                      "D": { "const": null }
+                    }
+                  }
+                }
+              },
+              "route_agreement": {
+                "properties": {
+                  "tilde_A": { "const": null },
+                  "tilde_B": { "const": null },
+                  "tilde_C": { "const": null },
+                  "tilde_D": { "const": null }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "q_E": { "pattern": "^0\\.0*[1-9][0-9]*$|^1(?:\\.0+)?$" } },
+            "required": ["q_E"]
+          },
+          "then": {
+            "properties": {
+              "lambda": {
+                "properties": {
+                  "tilde": {
+                    "properties": {
+                      "A": { "$ref": "#/$defs/decimalProbability" },
+                      "B": { "$ref": "#/$defs/decimalProbability" },
+                      "C": { "$ref": "#/$defs/decimalProbability" },
+                      "D": { "$ref": "#/$defs/decimalProbability" }
+                    }
+                  }
+                }
+              },
+              "route_agreement": {
+                "properties": {
+                  "tilde_A": { "$ref": "#/$defs/decimalSigned" },
+                  "tilde_B": { "$ref": "#/$defs/decimalSigned" },
+                  "tilde_C": { "$ref": "#/$defs/decimalSigned" },
+                  "tilde_D": { "$ref": "#/$defs/decimalSigned" }
+                }
+              }
             }
           }
         }

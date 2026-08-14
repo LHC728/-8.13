@@ -108,6 +108,8 @@
         "anchors": { "E_S": "67375/1024", "E_PL": "343/4096", "E_PW": "49/4096" },
         "lambda": {
           "main": { "A": null, "B": null, "C": null, "D": null },
+          "sum": null,
+          "max_abs_deviation": null,
           "na": true,
           "counts": { "event_level": "0/1", "first_test_only": "0/1", "at_most_once_per_device": "0/1" },
           "tilde": { "A": "0/1", "B": "0/1", "C": "0/1", "D": "1/1" }

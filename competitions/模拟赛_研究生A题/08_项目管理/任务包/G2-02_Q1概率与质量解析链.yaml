@@ -1,4 +1,4 @@
-task_package_version: "G2-02-SPEC-V1.0.2"
+task_package_version: "G2-02-SPEC-V1.0.3"
 task_id: "G2-02"
 title: "Q1 概率与质量解析链闭合：q_E、E 核标定、终局四格、E[S]/E[PL]/E[PW] 与 lambda 两语义全链"
 status: "FROZEN_PENDING_HUMAN_APPROVAL"
@@ -8,6 +8,19 @@ frozen_date: "2026-08-13"
 approval_gate: "人工批准后才能派单 E1/E2/RUNNER；批准前不运行任何 G2-02 数值实现。"
 
 revision_history:
+  - version: "G2-02-SPEC-V1.0.3"
+    date: "2026-08-14"
+    change_type: "NA/null interface contract correction"
+    detail: >-
+      冻结 NA/null 序列化契约：lambda.na=true 时 lambda.main 四叶、lambda.sum、lambda.max_abs_deviation
+      均为 null（schema 以 if/then 严格强制 na 与 null 的等价）；route_agreement.lambda_A..D 在
+      lambda=NA 时（谓词=na）为 null；tilde 四叶在 q_E=0 时为 null 且 route_agreement.tilde_* 同步 null；
+      不新增 tilde_na 布尔；chain 语义 e_max_E 为 NOT_APPLICABLE（E2 仅 single 语义断言数值，本轮不改 E2 代码）；
+      infeasible/indeterminate 下游保持省略/null 现契约，仅澄清措辞。
+      数学公式、q_E 定义、lambda 公式、SD-G2-02-LAMBDA-ONCE、tolerance 均未改变；
+      canonical 非 NA 输出格式不变。schema/fixture SHA 已更新。
+      zero-valued q_E lexical forms normalized at schema-contract level
+    approved_by: "人工 Gate：NA Schema L3 reviewer PASS"
   - version: "G2-02-SPEC-V1.0.2"
     date: "2026-08-14"
     change_type: "frozen oracle correction only: O5 device_total_exit omitted p_GE"
@@ -129,8 +142,8 @@ shared_read_only_artifacts:
   ownership: "schema 与 fixture 由 D 冻结；E1 可读两者与 parameters；E2 只可读 task package、parameters、schema 与上游 response，禁止读外部 fixture。任何变更必须升级。"
   frozen_sha256:
     parameters_csv: "0461da2e0de09090673192d9eb0fde6fe5e70b1d22ef61fe13cdb878c449f07e"
-    schema: "94157e00e59a07100441084daa8bc31755c0aad54df3c824a705733aff7776e2"
-    oracle_fixture: "fadefcedddc1e1233d75f16fc9d596284d43681f4120721be2ff47d4aff2b4ad"
+    schema: "0bb93b122572b85833c539bc6f2bee273e04a6c0984933aafa5ed6d3e66dec4d"
+    oracle_fixture: "13efa773aaa2b057be33d2c511e4bc4be078a6817d47e2dc09aad9da2db5fb0f"
     upstream_single_response: "355af00ce77791208af17303912ed5972619ad89116f3d0d05f46494d534d0ea"
     upstream_chain_response: "e71473ce391da82d7711ceff872b031ec307aa6d8e524f3ff1cd5c5a440542fd"
     upstream_file_hashes: "d9f030a2e79935360ee10c4991f35a6890f53c4522cb1e0dd150c02b1586717e"
@@ -180,7 +193,7 @@ interface_contract:
       - "overall_status: ALL_ROUTES_AGREE | ROUTE_MISMATCH | HAS_INFEASIBLE | HAS_INDETERMINATE | FAILED_VALIDATION | NUMERICAL_FAILURE"
       - "abc_kernels: 严格 A,B,C 顺序；每项含 process_id、q、e、alpha、beta、status、free_parameters、source"
       - "ALL_ROUTES_AGREE/ROUTE_MISMATCH 时必填：q_E,G,Z_0,Z_1、reach_E_distribution(16)、E_kernel、E_rates、fourfold、anchors、lambda、multinomial、route_agreement、diagnostics"
-      - "HAS_INFEASIBLE 时必填 infeasible_stage；stage=ABC_KERNEL 时 q_E 及下游全为 null；stage=E_KERNEL 时 q_E,G,Z_0,Z_1,reach_E_distribution,E_kernel 保留，E_rates/fourfold/anchors/lambda/multinomial/route_agreement 为 null"
+      - "HAS_INFEASIBLE 时必填 infeasible_stage；stage=ABC_KERNEL 时 q_E 及下游省略（absent；fixture null = absent by construction）；stage=E_KERNEL 时 q_E,G,Z_0,Z_1,reach_E_distribution,E_kernel 保留，E_rates/fourfold/anchors/lambda/multinomial/route_agreement 省略（absent）"
     ordering: "abc_kernels 严格 A,B,C；reach_E_distribution 的索引 i=A+2B+4C+8D（A 为最低位），16 项按索引 0..15 升序；lambda.main 与 tilde 的键固定为 A,B,C,D。"
     serialization: "Python json.dump(..., ensure_ascii=False, sort_keys=True, separators=(',', ':'))；UTF-8；文件末尾一个 LF。"
   cli_contracts:
@@ -232,6 +245,7 @@ mathematical_specification:
     reuse_rule: "E1 对组 E 调用与 G2-01 相同的已验收求解器（single 闭式 / chain t-h 二分），输入 q=q_E、e=e_E；数值策略与证书沿用 G2-01 numeric_policy 全文。"
     feasibility_single: "0<q_E<1 时当且仅当 e_E<=2*min(q_E,1-q_E)；alpha_E=e_E/[2(1-q_E)]，beta_E=e_E/(2*q_E)。"
     feasibility_chain: "当且仅当 e_E<=e_max(q_E)，e_max 与解唯一性规则沿用 G2-01 standard_chain_v1 规格。"
+    e_max_verification_rule: "E2 仅在 single_test_unconditional_v1 语义对 e_max_E 做数值一致性断言；standard_chain_v1 语义下 e_max_E 为 NOT_APPLICABLE（E1 按冻结约定省略该键，fixture null = absent by construction），E2 不得对 chain 作 e_max_E 数值失败判定（V1.0.3 澄清；E2 代码更新在后续 rebind 执行）。"
     endpoint_rules: "q_E=0 或 q_E=1 的端点按 G2-01 common.endpoint_identifiability：e_E=0 时对应参数不可识别（NONIDENTIFIABLE_FAMILY），e_E>0 时 INFEASIBLE。"
     E_infeasible_behavior: "E 不可行 → overall_status=HAS_INFEASIBLE、infeasible_stage=E_KERNEL；保留 q_E 与上游结果；四格/lambda 等为 null；禁止投影 alpha_E/beta_E 到 [0,1] 造假解。"
     indeterminate_rule: >-
@@ -264,7 +278,14 @@ mathematical_specification:
       at_most_once_per_device: "按 SD-G2-02-LAMBDA-ONCE：以该装置首次 E 有效真阳性计，期望 = 1-beta_E，与 first_test_only 同值同尺度。"
       equivalence: "三种口径的归一来源比例总体相等（公共计数因子只依赖 H 是否为空，不依赖成员构成）；计数尺度只有事件级与装置级两种，检查器按此结构断言，禁止宣称三种计数两两不同或彼此相等。"
     tilde_lambda: "tilde_lambda_i=P(i∈H | E 真阳性)=[ Σ_{H∋i} P(H)*P(reach_E|H) ]/[q_E*G]；不归一，和可大于 1；单列，不替代主表。"
-    na_rule: "主表分母（E 真阳性事件总量）为 0（即 q_E=0 或 beta_E=1）时 lambda_i 全为 NA(null)；tilde 仅当 q_E=0 时为 NA。零分母必须输出 NA，禁止 0/0 填值或强制归一。"
+    na_rule: >-
+      主表分母（E 真阳性事件总量）为 0（即 q_E=0 或 beta_E=1）时 lambda_i 全为 NA(null)、lambda.na=true；
+      此时 lambda.main 四叶、lambda.sum、lambda.max_abs_deviation 必须全部为 null（NA 不得伪装为数值 0，
+      schema 以 if/then 严格强制 na 与 null 等价）；route_agreement.lambda_A..D 的 NA 判定谓词与 lambda.na 一致，
+      NA 时为 null、有定义时为数字字符串。
+      tilde 仅当 q_E=0 时为 NA：tilde 四叶 null，且 route_agreement.tilde_A..D 同步为 null；q_E>0 时 tilde 为数字。
+      不新增 tilde_na 布尔。零分母必须输出 NA，禁止 0/0 填值或强制归一。
+      counts 保持真实计数（NA 时为零事件计数 "0"）。
     reach_E_distribution: "P(H|reach E)=P(H)*P(reach_E|H)/G，16 项和为 1，索引 i=A+2B+4C+8D。"
   route_A_closed_form:
     scope: "直接按 stage_1 至 stage_5 公式以 Decimal>=120 计算；P(H) 用闭式乘积 helper 表示。"
@@ -283,7 +304,7 @@ mathematical_specification:
       禁止 import 或调用 route_A/route_B 任何函数；禁止迭代截断近似。
   route_independence_rules:
     - "三条路线分文件实现，互不 import；只允许共享：schema 校验、参数/上游读取解析、Decimal 工具与序列化基础设施（放 q1_quality_v1.py 或独立公共模块，不得含求根、转移、求和或指标核心）。"
-    - "route_agreement 由 q1_quality_v1.py 编排：逐量比较三条路线 public 值，最大绝对偏差写入 route_agreement；任一量超容差 → overall_status=ROUTE_MISMATCH 且 exit 3。"
+    - "route_agreement 由 q1_quality_v1.py 编排：逐量比较三条路线 public 值，最大绝对偏差写入 route_agreement；任一量超容差 → overall_status=ROUTE_MISMATCH 且 exit 3。NA 量（lambda=NA 的 lambda_*、q_E=0 的 tilde_*）在 route_agreement 中为 null，不得写数值或伪装 0。"
   checker_independence_spec:
     - "E2 独立 oracle 在 checker 文件内自含实现：q_E 与四格/lambda 用 E2 自己的 16 状态求和代码（Fraction/Decimal 自写）；E 核用冻结的独立二维回代（chain：外层 alpha 二分、内层 beta 回代；single：直接闭式回代），与 G2-01 E2 算法一致但重新自含实现。"
     - "E2 禁止 import main_model 任何模块与 G2-01 或本包任何其他 checker 模块；禁止读取外部 fixture；oracle 期望只取本包 E2_embedded_oracles。"
@@ -317,7 +338,7 @@ boundary_and_error_behavior:
   - "三路对拍超容差：overall_status=ROUTE_MISMATCH，写出完整 route 分表与 route_agreement 后 exit 3。"
   - "canonical 请求必须 bound_frozen 且 reference 与本包 frozen_sha256 一致；否则 FAILED_VALIDATION。"
   - "test_oracle/generic 请求必须 derive_from_values；禁止把其结果标为 canonical 或写入正式结果。"
-  - "q_E=0 或 beta_E=1 时 lambda 主表全 NA(null)、na=true；tilde 仅在 q_E=0 时为 NA。"
+  - "q_E=0 或 beta_E=1 时 lambda 主表全 NA(null)、na=true；此时 main 四叶/sum/max_abs_deviation 全为 null，route_agreement.lambda_* 为 null；tilde 仅在 q_E=0 时为 NA（四叶 null 且 route_agreement.tilde_* 同步 null）。"
 
 oracle_contract:
   fixture: "04_代码/tests/fixtures/q1_quality_oracles_v1.json"
@@ -642,7 +663,7 @@ integration_acceptance:
 post_run_state_governance:
   current_files_this_task: "CURRENT_STATE.md 与 CHANGELOG.md 在实现阶段只读/不修改；本规格冻结不代表 G2-02 已执行或通过。"
   update_preconditions:
-    - "必须产生 task_package_version 与本任务包顶层 task_package_version 字段精确相同（当前为 G2-02-SPEC-V1.0.2），并引用当前冻结 parameters/schema/fixture/上游 hash 的全新不可变 run；不得复用或修补旧 run。"
+    - "必须产生 task_package_version 与本任务包顶层 task_package_version 字段精确相同（当前为 G2-02-SPEC-V1.0.3），并引用当前冻结 parameters/schema/fixture/上游 hash 的全新不可变 run；不得复用或修补旧 run。"
     - "该 run 的两个语义 checker_status=PASS、runner manifest=PASS、证据包通过本任务全部 acceptance，且最终 L3 语义审计明确 PASS。"
     - "最终 L3 PASS 报告必须给出 run_id、manifest/check report/hash inventory 路径与 SHA-256，并确认未进入 DES/G3、未发布正式数字。"
   permitted_update_after_pass:
