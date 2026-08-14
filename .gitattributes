@@ -52,3 +52,10 @@
 *.npz    binary
 *.pkl    binary
 *.drawio binary
+
+# G2 formal run evidence — preserve original bytes (no EOL normalization)
+# Formal run evidence records runner-produced SHA-256 of the actual bytes;
+# CRLF/LF auto-normalization would break byte-addressed evidence integrity.
+# Both text and eol must be unset: the repo-wide "* eol=lf" rule would
+# otherwise still force conversion on add/checkout.
+competitions/模拟赛_研究生A题/05_结果/G2/run_*/** -text -eol
