@@ -1,4 +1,4 @@
-task_package_version: "G2-02-SPEC-V1.0.3"
+task_package_version: "G2-02-SPEC-V1.0.4"
 task_id: "G2-02"
 title: "Q1 概率与质量解析链闭合：q_E、E 核标定、终局四格、E[S]/E[PL]/E[PW] 与 lambda 两语义全链"
 status: "FROZEN_PENDING_HUMAN_APPROVAL"
@@ -8,6 +8,20 @@ frozen_date: "2026-08-13"
 approval_gate: "人工批准后才能派单 E1/E2/RUNNER；批准前不运行任何 G2-02 数值实现。"
 
 revision_history:
+  - version: "G2-02-SPEC-V1.0.4"
+    date: "2026-08-14"
+    change_type: "runtime dependency snapshot closure correction only"
+    detail: >-
+      首次 V1.0.3 formal canonical attempt run_20260814T043709752483Z_99f602bd 暴露 frozen/code 快照
+      缺少 04_代码/main_model/observation_calibration_v1.py（G2-01 已验收观测核求解器），导致正式 canonical
+      从 frozen/code 执行 E1 时 import 失败（E1 exit 4 "observation_calibration_v1 solver is unavailable"）。
+      E1 对该 solver 的依赖本身已由冻结 E1 规格允许（E1 allowed_read_paths 已含该文件）；
+      本修订仅闭合正式 evidence snapshot 的 runtime dependency：RUNNER allowed_read_paths 增加该文件、
+      evidence_package_contract.exact_layout 增加 frozen/code/04_代码/main_model/observation_calibration_v1.py、
+      正式 code/test 快照数量 9→10，solver 与其他冻结代码一样执行 source-before=snapshot=source-after 守卫。
+      数学公式、q_E、E kernel 语义、lambda、tilde、schema、fixture、tolerance、parameters、upstream 均不变。
+      失败 run 保留为不可变失败证据（git commit 472ed00a3d6a41f586ce2fe48ec72deb4f0d3eae）。
+    approved_by: "人工 Gate：FROZEN_RUNTIME_DEPENDENCY_SNAPSHOT_GAP 裁决，批准升级 V1.0.4"
   - version: "G2-02-SPEC-V1.0.3"
     date: "2026-08-14"
     change_type: "NA/null interface contract correction"
@@ -512,6 +526,7 @@ dispatches:
       - "04_代码/main_model/q1_routes/closed_form_v1.py"
       - "04_代码/main_model/q1_routes/enumeration_v1.py"
       - "04_代码/main_model/q1_routes/absorption_chain_v1.py"
+      - "04_代码/main_model/observation_calibration_v1.py"
       - "04_代码/checker/q1_quality_checker_v1.py"
       - "05_结果/G2/run_20260813T134251279572Z_f1290916/single_test_unconditional_v1/response.json"
       - "05_结果/G2/run_20260813T134251279572Z_f1290916/standard_chain_v1/response.json"
@@ -522,7 +537,7 @@ dispatches:
       - "05_结果/G2/run_<immutable_run_id>/**"
     exact_cli: "python 04_代码/scripts/run_g2_02_v1.py --parameters 02_数据/parameters.csv --task-package 08_项目管理/任务包/G2-02_Q1概率与质量解析链.yaml --schema 04_代码/src/schemas/q1_quality_v1.schema.json --fixture 04_代码/tests/fixtures/q1_quality_oracles_v1.json --upstream-run-root 05_结果/G2/run_20260813T134251279572Z_f1290916 --output-root 05_结果/G2"
     implementation_limits:
-      - "仅编排 subprocess、复制冻结输入与九份代码/测试快照与上游文件、生成两个 canonical request、记录 stdout/stderr/退出码、哈希与 manifest。"
+      - "仅编排 subprocess、复制冻结输入与十份代码/测试快照（9 份 G2-02 + G2-01 求解器 observation_calibration_v1.py）与上游文件、生成两个 canonical request、记录 stdout/stderr/退出码、哈希与 manifest。"
       - "不得导入 E1/E2 模块、实现公式、复算任何数值、改变子进程输出或根据数字决定 PASS。"
       - "run_id=UTC 的 YYYYMMDDTHHMMSSffffffZ_ 加 8 位 secrets.token_hex(4)；若目录已存在则失败，不覆盖、不重试改写同一目录。"
       - "任一子进程非预期退出、缺文件、hash 不符或 checker 非 PASS 时 manifest overall_status=FAIL/INCOMPLETE，runner 非零退出并保留证据。E2 preflight exit 2 且无 report 是合法失败形态：保留 E2 stderr/exit/command；不得伪造 report。"
@@ -530,7 +545,7 @@ dispatches:
       - "正式 exact CLI 只允许 exact_cli 列出的五个选项；禁止新增或接受 --run-id、--e1、--e2、可执行路径覆盖、算法覆盖或其他公共参数。run_id 只能由 runner 内部生成，E1/E2 路径是冻结常量。"
       - "runner 单元测试需要注入时，只能调用不暴露为 CLI 的内部纯函数，或在进程级测试环境中以受控 PATH/临时文件替身注入；不得借测试新增正式 CLI 选项。"
       - >-
-        在启动任何子进程前，按 exact_layout 将 E1 四份、E2 一份、runner 一份源文件与三份测试文件逐字节复制到 run/frozen/code/ 下保留项目相对路径；
+        在启动任何子进程前，按 exact_layout 将 E1 四份、E2 一份、runner 一份源文件、G2-01 求解器 observation_calibration_v1.py 与三份测试文件逐字节复制到 run/frozen/code/ 下保留项目相对路径；
         对每个源文件执行 hash-before、复制、snapshot-hash、hash-after，三者必须完全相同。任一源在复制窗口变化、文件缺失或哈希不等即 FAIL/INCOMPLETE，且不得启动 E1/E2。
       - "E1/E2 正式子进程 argv 必须执行本 run 内 frozen/code/ 下对应文件；禁止执行工作树源码。runner/test 快照只用于追溯，不在本 run 中重新执行。"
     acceptance_commands:
@@ -576,6 +591,7 @@ evidence_package_contract:
     - "frozen/code/04_代码/main_model/q1_routes/closed_form_v1.py"
     - "frozen/code/04_代码/main_model/q1_routes/enumeration_v1.py"
     - "frozen/code/04_代码/main_model/q1_routes/absorption_chain_v1.py"
+    - "frozen/code/04_代码/main_model/observation_calibration_v1.py"
     - "frozen/code/04_代码/checker/q1_quality_checker_v1.py"
     - "frozen/code/04_代码/scripts/run_g2_02_v1.py"
     - "frozen/code/04_代码/tests/test_q1_quality_main_v1.py"
@@ -609,7 +625,7 @@ evidence_package_contract:
     hash_inventory: "file_hashes.sha256 使用小写 SHA-256、两个空格、POSIX 相对路径、按路径 Unicode code-point 升序、LF；排除 file_hashes.sha256 自身且不得列目录。"
   run_manifest_required:
     - "schema envelope q1_run_manifest 的全部必填字段。"
-    - "PASS 时 artifacts 必须覆盖至少以下23项语义产物且每项路径/role唯一：task package、parameters、schema、fixture、2 个上游 response、upstream file_hashes、9 份 source/test code、2 request、2 response、2 check_report、commands.json；此外所有实际 stdout/stderr 均按 stdout_log/stderr_log role 枚举。九个 code artifact 必须各含 source_sha256_before、sha256(snapshot)、source_sha256_after 且三者相同。"
+    - "PASS 时 artifacts 必须覆盖至少以下24项语义产物且每项路径/role唯一：task package、parameters、schema、fixture、2 个上游 response、upstream file_hashes、10 份 source/test code（9 份 G2-02 + G2-01 求解器）、2 request、2 response、2 check_report、commands.json；此外所有实际 stdout/stderr 均按 stdout_log/stderr_log role 枚举。十个 code artifact 必须各含 source_sha256_before、sha256(snapshot)、source_sha256_after 且三者相同。"
     - "FAIL/INCOMPLETE 时 artifacts 只列实际存在文件，可为0项；不得为满足数量伪造占位。E2 preflight 失败允许缺对应 check_report，但实际存在的 commands.json、stdout/stderr 必须列入，并由 manifest notes 记录 REPORT_CONTEXT_PREFLIGHT_FAILED。"
     - "task package hash 只在 manifest/artifact inventory 记录；任务包内不得自引用自身 hash。"
     - "manifest 不记录自身 hash；其 hash 只在 file_hashes.sha256 中记录。"
@@ -623,7 +639,7 @@ evidence_package_contract:
     - "argv 使用 JSON 字符串数组而非 shell 拼接文本；runner 使用 subprocess.run(..., shell=False)。"
     - "四条命令中 E1/E2 的 argv[1] 必须是对应 run 内 frozen/code 项目相对路径；若指向工作树或其他副本，PASS 禁止。"
   completion_rule:
-    - "只有 artifacts 满足 PASS 的23项语义产物最低集合、九份代码/测试快照 hash-before=snapshot=hash-after 且唯一、commands 恰有4条并执行冻结E1/E2副本、两个 E1 exit=0、两个 E2 exit=0 且 checker_status=PASS、所有声明文件存在、全部实际日志已枚举、冻结输入 hash 匹配，manifest overall_status 才能为 PASS。结构 schema 的 minItems=0 不得用于降低该语义门。"
+    - "只有 artifacts 满足 PASS 的24项语义产物最低集合、十份代码/测试快照 hash-before=snapshot=hash-after 且唯一、commands 恰有4条并执行冻结E1/E2副本、两个 E1 exit=0、两个 E2 exit=0 且 checker_status=PASS、所有声明文件存在、全部实际日志已枚举、冻结输入 hash 匹配，manifest overall_status 才能为 PASS。结构 schema 的 minItems=0 不得用于降低该语义门。"
     - "所有数值仅从 E1 子进程实际 response 原样进入证据包；runner 不复制聊天、fixture 期望或手算数为运行结果。"
     - "证据包创建后不可覆盖；验证发现失败时保留目录并标 FAIL/INCOMPLETE。"
 
@@ -649,21 +665,21 @@ integration_acceptance:
     - "canonical E2 从 response.request_id 严格派生父 run_id；后缀/semantics 或前缀 regex 不符均 validation exit 2，且不得生成替代时间戳。"
     - "预置 --report 哨兵文件后触发 malformed request_id：exit 2、stderr 非空且哨兵 SHA-256/字节不变；目标原先不存在时运行后仍不存在。runner 必须以无 report 的 FAIL/INCOMPLETE manifest 留证。"
     - "runner 生成精确目录布局、两个 canonical request、四条命令记录、完整 manifest 与排除自哈希的 inventory；重复 run_id 必须失败且不覆盖。"
-    - "正式 runner 在任何子进程前生成九份稳定代码/测试快照；源文件复制窗口变化必须阻断，PASS commands 必须指向冻结 E1/E2 副本且 manifest 以 source_code/test_code 枚举九份。"
+    - "正式 runner 在任何子进程前生成十份稳定代码/测试快照；源文件复制窗口变化必须阻断，PASS commands 必须指向冻结 E1/E2 副本且 manifest 以 source_code/test_code 枚举十份。"
     - "E2 embedded oracle 独立覆盖本包 E2_embedded_oracles 全部案例；文件访问测试继续证明未读取外部 fixture。"
   hashes_required:
     - "schema SHA-256"
     - "parameters.csv SHA-256"
     - "fixture SHA-256"
     - "两个上游 response.json SHA-256 与 upstream file_hashes.sha256 的 SHA-256"
-    - "E1 四份、E2、runner 共六份 source_code 与 test_main、test_checker、test_runner 三份 test_code 的 source-before/snapshot/source-after SHA-256"
+    - "E1 四份、E2、runner 与 G2-01 求解器 observation_calibration_v1.py 共七份 source_code 与 test_main、test_checker、test_runner 三份 test_code 的 source-before/snapshot/source-after SHA-256"
     - "原始 request/response/check report SHA-256（若产生）"
   no_pass_claim_yet: "本规格任务完成只表示可派发；CR-V3.1/C01、C02、C03、C04、C05、C19、C21 尚需 E1/E2 实际运行与 D 语义验收。"
 
 post_run_state_governance:
   current_files_this_task: "CURRENT_STATE.md 与 CHANGELOG.md 在实现阶段只读/不修改；本规格冻结不代表 G2-02 已执行或通过。"
   update_preconditions:
-    - "必须产生 task_package_version 与本任务包顶层 task_package_version 字段精确相同（当前为 G2-02-SPEC-V1.0.3），并引用当前冻结 parameters/schema/fixture/上游 hash 的全新不可变 run；不得复用或修补旧 run。"
+    - "必须产生 task_package_version 与本任务包顶层 task_package_version 字段精确相同（当前为 G2-02-SPEC-V1.0.4），并引用当前冻结 parameters/schema/fixture/上游 hash 的全新不可变 run；不得复用或修补旧 run。"
     - "该 run 的两个语义 checker_status=PASS、runner manifest=PASS、证据包通过本任务全部 acceptance，且最终 L3 语义审计明确 PASS。"
     - "最终 L3 PASS 报告必须给出 run_id、manifest/check report/hash inventory 路径与 SHA-256，并确认未进入 DES/G3、未发布正式数字。"
   permitted_update_after_pass:
