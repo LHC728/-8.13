@@ -509,6 +509,59 @@ def _compare_downstream(down_results: dict[str, dict[str, Any]]) -> tuple[Decima
     return max_all, max_fourfold, max_lambda
 
 
+def _pairwise_max_abs_deviation(values: list[Decimal]) -> Decimal:
+    """Maximum absolute pairwise deviation over the given Decimal values.
+
+    Pure deviation arithmetic (absolute difference and max only; no model
+    formulas).  Returns zero for fewer than two values or when all values are
+    equal.
+    """
+    max_deviation = ZERO
+    for a in range(len(values)):
+        for b in range(a + 1, len(values)):
+            deviation = abs(values[a] - values[b])
+            if deviation > max_deviation:
+                max_deviation = deviation
+    return max_deviation
+
+
+def _route_agreement_deviations(pre_results: dict[str, dict[str, Any]],
+                                down_results: dict[str, dict[str, Any]],
+                                na: bool, q_e_zero: bool) -> dict[str, Decimal | None]:
+    """Per-quantity maximum absolute pairwise deviations for the 16
+    route_agreement fields (approved L3 semantic adjudication).
+
+    q_E/G/Z_0/Z_1 come from the three routes' pre-E results; p_GP/p_BP/p_GE/p_BE
+    come from each route's fourfold; lambda_* come from each route's lambda main
+    leaves (None iff lambda.na=true, mirroring lambda.main); tilde_* come from
+    each route's tilde leaves (None iff q_E is a mathematical zero, mirroring
+    lambda.tilde).  Never returns a quantity value, an average, or a
+    representative route value.
+    """
+    names = list(pre_results)
+    result: dict[str, Decimal | None] = {}
+    for key in ("q_E", "G", "Z_0", "Z_1"):
+        result[key] = _pairwise_max_abs_deviation([pre_results[name][key] for name in names])
+    for key in ("p_GP", "p_BP", "p_GE", "p_BE"):
+        result[key] = _pairwise_max_abs_deviation(
+            [down_results[name]["fourfold"][key] for name in names])
+    if na:
+        for key in ("lambda_A", "lambda_B", "lambda_C", "lambda_D"):
+            result[key] = None
+    else:
+        for index, key in enumerate(("lambda_A", "lambda_B", "lambda_C", "lambda_D")):
+            result[key] = _pairwise_max_abs_deviation(
+                [down_results[name]["lambda_main"][index] for name in names])
+    if q_e_zero:
+        for key in ("tilde_A", "tilde_B", "tilde_C", "tilde_D"):
+            result[key] = None
+    else:
+        for index, key in enumerate(("tilde_A", "tilde_B", "tilde_C", "tilde_D")):
+            result[key] = _pairwise_max_abs_deviation(
+                [down_results[name]["lambda_tilde"][index] for name in names])
+    return result
+
+
 # --------------------------------------------------------------------------- #
 # Response builders
 # --------------------------------------------------------------------------- #
@@ -703,35 +756,32 @@ def _build_full_response(request: dict[str, Any], kernels: dict[str, dict[str, A
         "N": 100,
         "p": [_plain(value, 17) for value in down["multinomial_p"]],
     }
-    # V1.0.3: route_agreement.lambda_* is null whenever lambda.na is true (the
-    # formal predicate is na = (q_E==0 OR beta_E==1), not q_E==0 alone); the old
-    # raw-route-value emission on NA is gone.  route_agreement.tilde_* is null
-    # when q_E is a mathematical zero, numeric otherwise.
-    if na:
-        lambda_agree: list[str | None] = [None, None, None, None]
-    else:
-        lambda_agree = [_plain(value, 17) for value in main_raw]
-    if q_e == ZERO:
-        tilde_agree: list[str | None] = [None, None, None, None]
-    else:
-        tilde_agree = [_plain(value, 17) for value in tilde_raw]
+    # Approved L3 semantic adjudication (route_agreement semantics correction):
+    # the 16 route_agreement fields are the PER-QUANTITY maximum absolute pairwise
+    # deviation across the three routes' public values -- never a closed_form /
+    # enumeration / absorption quantity value, an average, or a representative.
+    # NA rules unchanged: lambda.na=true => lambda_* null; q_E=0 => tilde_* null.
+    # Block aggregates (fourfold.max_abs_deviation, lambda.max_abs_deviation) are
+    # NOT backfilled here; each of the 16 fields is computed per-quantity
+    # independently from the three routes' values.
+    agreement = _route_agreement_deviations(pre_results, down_results, na, q_e == ZERO)
     response["route_agreement"] = {
-        "q_E": _plain(q_e, 17),
-        "G": _plain(pre["G"], 17),
-        "Z_0": _plain(pre["Z_0"], 17),
-        "Z_1": _plain(pre["Z_1"], 17),
-        "p_GP": _plain(fourfold["p_GP"], 17),
-        "p_BP": _plain(fourfold["p_BP"], 17),
-        "p_GE": _plain(fourfold["p_GE"], 17),
-        "p_BE": _plain(fourfold["p_BE"], 17),
-        "lambda_A": lambda_agree[0],
-        "lambda_B": lambda_agree[1],
-        "lambda_C": lambda_agree[2],
-        "lambda_D": lambda_agree[3],
-        "tilde_A": tilde_agree[0],
-        "tilde_B": tilde_agree[1],
-        "tilde_C": tilde_agree[2],
-        "tilde_D": tilde_agree[3],
+        "q_E": _plain(agreement["q_E"], 17),
+        "G": _plain(agreement["G"], 17),
+        "Z_0": _plain(agreement["Z_0"], 17),
+        "Z_1": _plain(agreement["Z_1"], 17),
+        "p_GP": _plain(agreement["p_GP"], 17),
+        "p_BP": _plain(agreement["p_BP"], 17),
+        "p_GE": _plain(agreement["p_GE"], 17),
+        "p_BE": _plain(agreement["p_BE"], 17),
+        "lambda_A": None if agreement["lambda_A"] is None else _plain(agreement["lambda_A"], 17),
+        "lambda_B": None if agreement["lambda_B"] is None else _plain(agreement["lambda_B"], 17),
+        "lambda_C": None if agreement["lambda_C"] is None else _plain(agreement["lambda_C"], 17),
+        "lambda_D": None if agreement["lambda_D"] is None else _plain(agreement["lambda_D"], 17),
+        "tilde_A": None if agreement["tilde_A"] is None else _plain(agreement["tilde_A"], 17),
+        "tilde_B": None if agreement["tilde_B"] is None else _plain(agreement["tilde_B"], 17),
+        "tilde_C": None if agreement["tilde_C"] is None else _plain(agreement["tilde_C"], 17),
+        "tilde_D": None if agreement["tilde_D"] is None else _plain(agreement["tilde_D"], 17),
     }
     response["diagnostics"] = {"notes": notes}
     return response

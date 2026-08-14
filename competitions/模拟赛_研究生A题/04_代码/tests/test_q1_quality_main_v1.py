@@ -136,11 +136,32 @@ class Q1ChainTestCase(unittest.TestCase):
                 route_value = Decimal(per_route[route][key])
                 self.assertLessEqual(abs(public - route_value), TOL,
                                      f"{route}.{key} deviates from public fourfold")
-        # route_agreement matches the public fourfold and q_E block
-        self.assertEqual(response["route_agreement"]["q_E"], response["q_E"])
+        # Approved L3 ruling: route_agreement's 16 fields are the PER-QUANTITY
+        # maximum absolute pairwise deviation across the three routes, never the
+        # quantity values.  q_E/G/Z_0/Z_1/p_* are deviations; lambda_* is the
+        # deviation of the lambda main leaves (null iff lambda.na); tilde_* is
+        # the deviation of the tilde leaves (null iff q_E is a mathematical zero).
+        for key in ("q_E", "G", "Z_0", "Z_1"):
+            deviation = Decimal(response["route_agreement"][key])
+            self.assertGreaterEqual(deviation, Decimal(0))
+            self.assertLessEqual(deviation, TOL, f"route_agreement.{key} exceeds tolerance")
+            if response[key] != "0":
+                self.assertNotEqual(response["route_agreement"][key], response[key],
+                                    f"route_agreement.{key} must be a deviation, not the quantity")
         for key in ("p_GP", "p_BP", "p_GE", "p_BE"):
-            self.assertEqual(response["route_agreement"][key], response["fourfold"][key])
-        # V1.0.3 NA/null contract on route_agreement:
+            deviation = Decimal(response["route_agreement"][key])
+            self.assertGreaterEqual(deviation, Decimal(0))
+            self.assertLessEqual(deviation, TOL, f"route_agreement.{key} exceeds tolerance")
+            if response["fourfold"][key] != "0":
+                self.assertNotEqual(response["route_agreement"][key], response["fourfold"][key],
+                                    f"route_agreement.{key} must be a deviation, not the quantity")
+            # Cross-check the per-quantity deviation against the per-route public
+            # fourfold table within tolerance.
+            route_values = [Decimal(per_route[route][key])
+                            for route in ("closed_form", "enumeration", "absorption_chain")]
+            self.assertLessEqual(abs(deviation - q1._pairwise_max_abs_deviation(route_values)),
+                                 TOL, f"route_agreement.{key} inconsistent with per_route fourfold")
+        # V1.0.3 NA/null contract on route_agreement (unchanged):
         # lambda_* null iff lambda.na; tilde_* null iff q_E is a mathematical zero.
         if response["lambda"]["na"]:
             for key in ("lambda_A", "lambda_B", "lambda_C", "lambda_D"):
@@ -149,8 +170,13 @@ class Q1ChainTestCase(unittest.TestCase):
         else:
             for key, leaf in (("lambda_A", "A"), ("lambda_B", "B"),
                               ("lambda_C", "C"), ("lambda_D", "D")):
-                self.assertEqual(response["route_agreement"][key],
-                                 response["lambda"]["main"][leaf])
+                deviation = Decimal(response["route_agreement"][key])
+                self.assertGreaterEqual(deviation, Decimal(0))
+                self.assertLessEqual(deviation, TOL, f"route_agreement.{key} exceeds tolerance")
+                if response["lambda"]["main"][leaf] != "0":
+                    self.assertNotEqual(response["route_agreement"][key],
+                                        response["lambda"]["main"][leaf],
+                                        f"route_agreement.{key} must be a deviation, not the quantity")
         q_e_zero = response["q_E"] == "0"
         for key, leaf in (("tilde_A", "A"), ("tilde_B", "B"),
                           ("tilde_C", "C"), ("tilde_D", "D")):
@@ -158,8 +184,13 @@ class Q1ChainTestCase(unittest.TestCase):
                 self.assertIsNone(response["route_agreement"][key],
                                   f"q_E=0 route_agreement.{key} must be null")
             else:
-                self.assertEqual(response["route_agreement"][key],
-                                 response["lambda"]["tilde"][leaf])
+                deviation = Decimal(response["route_agreement"][key])
+                self.assertGreaterEqual(deviation, Decimal(0))
+                self.assertLessEqual(deviation, TOL, f"route_agreement.{key} exceeds tolerance")
+                if response["lambda"]["tilde"][leaf] != "0":
+                    self.assertNotEqual(response["route_agreement"][key],
+                                        response["lambda"]["tilde"][leaf],
+                                        f"route_agreement.{key} must be a deviation, not the quantity")
         # reach_E_distribution sums to 1
         dist_sum = sum((Decimal(v) for v in response["reach_E_distribution"]), Decimal(0))
         self.assertLessEqual(abs(dist_sum - Decimal(1)), TOL, "reach_E_distribution does not sum to 1")
@@ -923,6 +954,214 @@ class TestQeZeroLexicalAndNaContract(Q1ChainTestCase):
         tampered["lambda"]["main"]["A"] = None
         with self.assertRaises(q1.ResponseValidationError):
             self.assert_response_valid(tampered)
+
+
+class TestRouteAgreementDeviationSemantics(Q1ChainTestCase):
+    """L3 approved ruling: route_agreement's 16 fields are PER-QUANTITY maximum
+    absolute pairwise deviations across the three E1 routes, never quantity
+    values; NA rules unchanged (lambda.na=true => lambda_* null; q_E=0 =>
+    tilde_* null)."""
+
+    def _o1_request(self) -> dict:
+        return make_derive_request(
+            {"q_a": "0.25", "q_b": "0.25", "q_c": "0.25", "q_d": "0.25",
+             "e_a": "0", "e_b": "0", "e_c": "0", "e_e": "0"}, q1.SINGLE)
+
+    # TEST 1 (semantic lock / regression): q_E != 0 with all three routes
+    # agreeing exactly on q_E => response.q_E is the non-"0" quantity while
+    # route_agreement.q_E is the deviation "0".  Proves deviation, not quantity.
+    def test_semantic_lock_deviation_not_quantity(self) -> None:
+        code, response = self._run("ra_semantic_lock", self._o1_request())
+        self.assertEqual(code, 0)
+        self.assertIsNotNone(response)
+        self.assertEqual(response["overall_status"], "ALL_ROUTES_AGREE")
+        self.assertNotEqual(response["q_E"], "0")
+        self.assertEqual(response["route_agreement"]["q_E"], "0")
+        self.assertNotEqual(response["route_agreement"]["q_E"], response["q_E"])
+
+    # TEST 2a: the pure helper computes the known max pairwise deviation.
+    def test_pairwise_max_abs_deviation_known_value(self) -> None:
+        self.assertEqual(
+            q1._pairwise_max_abs_deviation(
+                [Decimal("0.10"), Decimal("0.11"), Decimal("0.095")]),
+            Decimal("0.015"))
+        self.assertEqual(q1._pairwise_max_abs_deviation([Decimal("0.1")]), Decimal(0))
+        self.assertEqual(q1._pairwise_max_abs_deviation([Decimal("0.1"), Decimal("0.1")]), Decimal(0))
+        self.assertEqual(q1._pairwise_max_abs_deviation([]), Decimal(0))
+
+    # TEST 2b: per-quantity builder with seam inputs closed=0.10, enum=0.11,
+    # abs=0.095 for a pre-route quantity (q_E) and a downstream quantity
+    # (lambda_A/tilde_A); p_GP uses 0.20/0.21/0.205.
+    def test_route_agreement_deviations_known_seam(self) -> None:
+        pre_results = {
+            "closed_form": {"q_E": Decimal("0.10"), "G": Decimal("0.5"),
+                            "Z_0": Decimal("0.4"), "Z_1": Decimal("0.1")},
+            "enumeration": {"q_E": Decimal("0.11"), "G": Decimal("0.5"),
+                            "Z_0": Decimal("0.4"), "Z_1": Decimal("0.1")},
+            "absorption_chain": {"q_E": Decimal("0.095"), "G": Decimal("0.5"),
+                                 "Z_0": Decimal("0.4"), "Z_1": Decimal("0.1")},
+        }
+        down_results = {
+            "closed_form": {
+                "fourfold": {"p_GP": Decimal("0.20"), "p_BP": Decimal("0.1"),
+                             "p_GE": Decimal("0.1"), "p_BE": Decimal("0.6")},
+                "lambda_main": [Decimal("0.10"), Decimal("0.0"), Decimal("0.0"), Decimal("0.9")],
+                "lambda_tilde": [Decimal("0.10"), Decimal("0.0"), Decimal("0.0"), Decimal("0.9")],
+            },
+            "enumeration": {
+                "fourfold": {"p_GP": Decimal("0.21"), "p_BP": Decimal("0.1"),
+                             "p_GE": Decimal("0.1"), "p_BE": Decimal("0.6")},
+                "lambda_main": [Decimal("0.11"), Decimal("0.0"), Decimal("0.0"), Decimal("0.9")],
+                "lambda_tilde": [Decimal("0.11"), Decimal("0.0"), Decimal("0.0"), Decimal("0.9")],
+            },
+            "absorption_chain": {
+                "fourfold": {"p_GP": Decimal("0.205"), "p_BP": Decimal("0.1"),
+                             "p_GE": Decimal("0.1"), "p_BE": Decimal("0.6")},
+                "lambda_main": [Decimal("0.095"), Decimal("0.0"), Decimal("0.0"), Decimal("0.9")],
+                "lambda_tilde": [Decimal("0.095"), Decimal("0.0"), Decimal("0.0"), Decimal("0.9")],
+            },
+        }
+        dev = q1._route_agreement_deviations(pre_results, down_results, na=False, q_e_zero=False)
+        # pre-route quantity: max(|0.10-0.11|, |0.10-0.095|, |0.11-0.095|) = 0.015
+        self.assertEqual(dev["q_E"], Decimal("0.015"))
+        self.assertEqual(dev["G"], Decimal(0))
+        self.assertEqual(dev["Z_0"], Decimal(0))
+        self.assertEqual(dev["Z_1"], Decimal(0))
+        # downstream quantity: max(|0.20-0.21|, |0.20-0.205|, |0.21-0.205|) = 0.01
+        self.assertEqual(dev["p_GP"], Decimal("0.01"))
+        self.assertEqual(dev["p_BP"], Decimal(0))
+        # downstream quantity: lambda_A = 0.015 and tilde_A = 0.015
+        self.assertEqual(dev["lambda_A"], Decimal("0.015"))
+        self.assertEqual(dev["lambda_D"], Decimal(0))
+        self.assertEqual(dev["tilde_A"], Decimal("0.015"))
+        # never the quantity values themselves
+        self.assertNotEqual(dev["q_E"], Decimal("0.10"))
+        self.assertNotEqual(dev["p_GP"], Decimal("0.20"))
+        self.assertNotEqual(dev["lambda_A"], Decimal("0.10"))
+
+    # TEST 5: lambda NA.  lambda.na=true => route_agreement.lambda_* stay null
+    # (the helper must not turn them into "0").
+    def test_lambda_na_deviations_are_null(self) -> None:
+        down_results = {
+            "closed_form": {"lambda_main": [Decimal("0.10"), Decimal("0.0"), Decimal("0.0"), Decimal("0.9")]},
+            "enumeration": {"lambda_main": [Decimal("0.11"), Decimal("0.0"), Decimal("0.0"), Decimal("0.9")]},
+            "absorption_chain": {"lambda_main": [Decimal("0.095"), Decimal("0.0"), Decimal("0.0"), Decimal("0.9")]},
+        }
+        dev = q1._route_agreement_deviations({}, down_results, na=True, q_e_zero=False)
+        for key in ("lambda_A", "lambda_B", "lambda_C", "lambda_D"):
+            self.assertIsNone(dev[key], f"NA lambda deviation {key} must stay null, never '0'")
+        # End-to-end: O5 (beta_E=1 => lambda.na=true) keeps lambda_* null.
+        with open(FIXTURE, "r", encoding="utf-8") as handle:
+            fixture = json.load(handle)
+        case = next(c for c in fixture["cases"] if c["case_id"] == "O5_NA_lambda_beta1_single")
+        code, response = self._run("ra_lambda_na", make_derive_request(case["input"], case["semantics"]))
+        self.assertEqual(code, 0)
+        self.assertIsNotNone(response)
+        self.assertTrue(response["lambda"]["na"])
+        for key in ("lambda_A", "lambda_B", "lambda_C", "lambda_D"):
+            self.assertIsNone(response["route_agreement"][key])
+
+    # TEST 6: tilde NA.  q_E=0 => route_agreement.tilde_* stay null (the helper
+    # must not turn them into "0").
+    def test_tilde_na_deviations_are_null(self) -> None:
+        down_results = {
+            "closed_form": {"lambda_tilde": [Decimal("0.10"), Decimal("0.0"), Decimal("0.0"), Decimal("0.9")]},
+            "enumeration": {"lambda_tilde": [Decimal("0.11"), Decimal("0.0"), Decimal("0.0"), Decimal("0.9")]},
+            "absorption_chain": {"lambda_tilde": [Decimal("0.095"), Decimal("0.0"), Decimal("0.0"), Decimal("0.9")]},
+        }
+        dev = q1._route_agreement_deviations({}, down_results, na=True, q_e_zero=True)
+        for key in ("tilde_A", "tilde_B", "tilde_C", "tilde_D"):
+            self.assertIsNone(dev[key], f"q_E=0 tilde deviation {key} must stay null, never '0'")
+        # End-to-end: q_E=0 keeps route_agreement.tilde_* null.
+        code, response = self._run("ra_tilde_na", make_derive_request(
+            {"q_a": "0", "q_b": "0", "q_c": "0", "q_d": "0",
+             "e_a": "0", "e_b": "0", "e_c": "0", "e_e": "0"}, q1.SINGLE))
+        self.assertEqual(code, 0)
+        self.assertIsNotNone(response)
+        self.assertEqual(response["q_E"], "0")
+        for key in ("tilde_A", "tilde_B", "tilde_C", "tilde_D"):
+            self.assertIsNone(response["route_agreement"][key])
+
+    # TEST 4: over tolerance.  Three routes get distinct fourfold p_GP offsets
+    # (closed +0.10, enum +0.11, abs +0.095): max pairwise deviation = 0.015 >
+    # 1e-15 => the existing route-mismatch mechanism yields ROUTE_MISMATCH (exit
+    # 3) with the full response recording the ACTUAL deviation, not only status.
+    def test_over_tolerance_records_actual_deviation_and_mismatch(self) -> None:
+        originals = {name: q1.ROUTE_MODULES[name].compute_downstream for name in q1.ROUTE_NAMES}
+        offsets = {"closed_form": Decimal("0.10"), "enumeration": Decimal("0.11"),
+                   "absorption_chain": Decimal("0.095")}
+
+        def make_wrapper(base_fn, offset: Decimal):
+            def wrapped_fn(abc, q_d, pre, e_kernel, precision=200):
+                result = dict(base_fn(abc, q_d, pre, e_kernel, precision))
+                result["fourfold"] = dict(result["fourfold"])
+                result["fourfold"]["p_GP"] = result["fourfold"]["p_GP"] + offset
+                # Keep the per-route fourfold normalized (p_BE = residual) so the
+                # closed-form conservation invariant still holds.
+                result["fourfold"]["p_BE"] = (Decimal(1) - result["fourfold"]["p_GP"]
+                                              - result["fourfold"]["p_BP"]
+                                              - result["fourfold"]["p_GE"])
+                return result
+            return wrapped_fn
+
+        try:
+            for name in q1.ROUTE_NAMES:
+                q1.ROUTE_MODULES[name].compute_downstream = make_wrapper(originals[name], offsets[name])
+            code, response = self._run("ra_over_tolerance", self._o1_request())
+        finally:
+            for name in q1.ROUTE_NAMES:
+                q1.ROUTE_MODULES[name].compute_downstream = originals[name]
+        self.assertEqual(code, 3)
+        self.assertIsNotNone(response)
+        self.assertEqual(response["overall_status"], "ROUTE_MISMATCH")
+        self.assert_response_valid(response)
+        # actual deviation: |(0.31640625+0.10)-(0.31640625+0.11)| = 0.01,
+        # |(0.31640625+0.10)-(0.31640625+0.095)| = 0.005,
+        # |(0.31640625+0.11)-(0.31640625+0.095)| = 0.015 => max = 0.015.
+        self.assertEqual(response["route_agreement"]["p_GP"], "0.015")
+        self.assertNotEqual(response["route_agreement"]["p_GP"], response["fourfold"]["p_GP"])
+
+
+class TestRouteAgreementCanonicalDeviation(TestCanonicalRuns):
+    """L3-approved deviation semantics on the real canonical-like responses
+    (canonical single: q_E/G/Z_0/p_GP/lambda_A agree exactly across the three
+    routes -> deviations serialize to "0"; downstream p_BP micro-differs -> the
+    true nonzero deviation is carried, never force-zero)."""
+
+    # TEST 3: nonzero within tolerance.  The three routes micro-differ on
+    # downstream fourfold (p_BP max deviation > 0 but <= 1e-15); route_agreement
+    # carries the nonzero deviation (never force-zero) and overall_status stays
+    # ALL_ROUTES_AGREE.
+    def test_nonzero_deviation_within_tolerance_carried(self) -> None:
+        response = self.run_canonical(q1.SINGLE)
+        self.assertEqual(response["overall_status"], "ALL_ROUTES_AGREE")
+        deviation = Decimal(response["route_agreement"]["p_BP"])
+        self.assertGreater(deviation, Decimal(0))
+        self.assertLessEqual(deviation, TOL)
+        self.assertNotEqual(response["route_agreement"]["p_BP"], response["fourfold"]["p_BP"])
+
+    # TEST 7: canonical-like nonzero.  Clearly nonzero q_E/p_GP/lambda with
+    # route_agreement.* being deviations, never the quantity values: exact
+    # agreement -> "0"; micro-differences -> the true max deviation.
+    def test_canonical_nonzero_route_agreement_is_deviation(self) -> None:
+        response = self.run_canonical(q1.SINGLE)
+        self.assertNotEqual(response["q_E"], "0")
+        for key in ("q_E", "G", "Z_0"):
+            self.assertEqual(response["route_agreement"][key], "0")
+            self.assertNotEqual(response["route_agreement"][key], response[key])
+        self.assertEqual(response["route_agreement"]["p_GP"], "0")
+        self.assertNotEqual(response["route_agreement"]["p_GP"], response["fourfold"]["p_GP"])
+        self.assertEqual(response["route_agreement"]["lambda_A"], "0")
+        self.assertNotEqual(response["route_agreement"]["lambda_A"],
+                            response["lambda"]["main"]["A"])
+        # p_BP micro-difference: true nonzero deviation, not the quantity value.
+        self.assertGreater(Decimal(response["route_agreement"]["p_BP"]), Decimal(0))
+        self.assertNotEqual(response["route_agreement"]["p_BP"], response["fourfold"]["p_BP"])
+        # route_agreement never mirrors any single route's representative value.
+        for key in ("p_GP", "p_BP", "p_GE", "p_BE"):
+            for route in ("closed_form", "enumeration", "absorption_chain"):
+                self.assertNotEqual(response["route_agreement"][key],
+                                    response["fourfold"]["per_route"][route][key])
 
 
 if __name__ == "__main__":
