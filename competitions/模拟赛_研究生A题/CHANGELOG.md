@@ -2,6 +2,19 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q3 H2 DENSITY RECHECK = PASS（H2 = ELIGIBLE_FOR_P1_HUMAN_GATE_REVIEW）`
+
+### 修改
+
+- **Q3 七 K H2 opportunity-density recheck = PASS（Q3-H2-DENSITY 包；D-14 预注册下限全满足）**。数据源 = Q3 H1 **Tier 1 accepted** 日志（`single_test_unconditional_v1 × 1h_literal × NO_PM_BEFORE_MANDATORY × 7 K × 200 批 = 1400 worlds`，accepted physical run `run_20260815T133840057668Z_7ee48fc0`），**确定性只读重放**（namespace=`q3_formal`、master_seed=5、replicate_ids 0..199、逐 K 同配置）；**未消耗任何新随机世界、未修改 accepted 证据目录**。
+- **ACCEPTED_LOG_REPLAY_MATCH = 1400/1400**：逐批 `canonical_log_sha256` 与 accepted cell artifact 完全一致（不足 1400 → FAIL/STOP 不写证据）。
+- **独立 checker** `04_代码/checker/h2_q3_density_checker_v1.py`（不调用 analyzer 的 classify 作 oracle，独立复算）：8 个确定性边界小例（STRICT / BOUNDARY / NONSTRICT-not-legal / PM_WITH_HEAD / PM_IDLE queue-empty / PM_IDLE forced-wait / exact_240 / mandatory）+ K 特定班历边界 + `e==latest_start` + 队列非空无合法头 + `a+d==240` + `a+d>240` + 确定性 / 资源规范顺序 A/B/C/E = **全 PASS**；测试 `04_代码/tests/test_h2_q3_density_v1.py` **21/21 PASS**；Q3 H1 formal 回归测试仍 exit 0。
+- **D-14 门槛（逐 K 实测）**：meaningful_choice_fraction = K09 0.4380 / K09p5 0.4548 / K10 0.4331 / K10p5 0.4310 / K11 0.4329 / K11p5 0.4338 / K12 0.4372 → Condition A **7/7 K ≥ 0.20 = PASS**；strategic_wait_strict_per_batch = 12.45 / 26.16 / 9.76 / 7.20 / 9.05 / 7.79 / 11.27 → Condition B **7/7 K ≥ 2 = PASS**；**overall = PASS**。BOUNDARY 合法 WAIT 单列（407/16/18/146/40/417/274）不并入 STRICT；PM 密度不补偿 wait；不跨 K 平均；不降阈。零机会批次 = 0/1400；pm_idle = 0（维护点条件全满足的 PM-only 机会在本数据集中为 0，描述性计数，非门槛）。旧 admission 密度（413.1/11.4/168.8/0.429）仅作描述性对照，非门槛。
+- **证据根** `05_结果/H2/density_recheck/run_20260815T153339475783Z_4a867e83/`：ACYCLIC hash DAG（RULE A）+ manifest/inventory 一致性（复用 `verify_hash_dag` / `verify_manifest_inventory_consistency`，fail-closed）= **HASH_GRAPH_ACYCLIC = PASS、INVENTORY = 20/20、MANIFEST_OUTPUT_HASHES = 19/19、MANIFEST_INVENTORY_CROSSCHECK = 19/19、C21_REPORT_SHA_CONSISTENCY = PASS**；`C21_REQUALIFICATION_REPORT.json` verdict = PASS；家族墙钟 1687.2 s。
+- **状态**：**H2 = ELIGIBLE_FOR_P1_HUMAN_GATE_REVIEW（非授权）**；**P1 = NOT YET AUTHORIZED**（P1 / C23 / C25 / rollout / posterior 仍须 Human Gate 另发授权）；Q3 = ACTIVE（H1 accepted；K 推荐措辞不变：k\*=K12 strong、co-best=[]，限于七个 K + 冻结 H1 政策集）。
+- **范围审计**：Tier 2 / Tier 3 / P1 / C23 / C25 / h2_tuning / h2_holdout = 全部 **NOT RUN**；G3 core / `key_schema_v1`（accepted P0 扩展）/ tau_pm 未改动；无新随机世界。
+- 状态同步：`CURRENT_STATE.md`（Gate 行、§6 禁止、§7 下一出口）。
+
 ## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q3 H1 FORMAL FINAL PASS / ACCEPTED（Density Gate 激活）`
 
 ### 修改
