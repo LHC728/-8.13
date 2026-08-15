@@ -2,6 +2,18 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q3 H1 FORMAL EXECUTION COMPLETED / AWAITING HUMAN GATE REVIEW`
+
+### 修改
+
+- **Q3 H1 七 K 正式基线（Tier 1 + Tier 2）执行完成**（Q3-H1-FORMAL-SPEC-V1.0；绑定 code/config commit `a2a9690d70bf6514f1db7427d549be8e75b01145`；preflight PASS；正式运行 exit 0）。
+- **正式 run**：`05_结果/Q3/formal/run_20260815T133840057668Z_7ee48fc0/`；namespace=q3_formal、master_seed=5、replicate_ids 0..199；Tier 1（single_test_unconditional_v1 × 1h_literal × NO_PM_BEFORE_MANDATORY）7 K × 200 批 + Tier 2（standard_chain_v1 × 1h × NO_PM）7 K × 200 批 = **2800 批 / 280 000 台**；族墙钟 2923.6 s。
+- **检查**：CR-V3.1 C06 = **2800/2800 PASS**、C17 = **2800/2800 PASS**（逐批）；C13/C14/C15/C16/C18/C26/C21/C19/C20 = PASS；C07 = 族级诊断（GP/BP/GE/BE 烟测，非硬门）。checks.json overall = **PASS**。
+- **Tier 1 主结果（预注册统计报告；非 Human Gate ACCEPTED）**：每 K mean T 单调随 K 减小——K09 ≈ 601.3 h / 25.05 d → K12 ≈ 417.8 h / 17.41 d（SE 8.98–13.55 h）；21 个两两配对 CI 全部显著；**k\* = K12，strong_recommendation = TRUE（在七个 K + 冻结候选政策集内）**；co-best = ∅。质量跨 K 完全一致（S=94.47、PL=1.76%、PW=0.085%，C06 pathwise 分离验证）；PL 稀有事件池化 352/20000（CP95% [0.01582,0.01952]）、PW 17/20000（[0.000495,0.001361]）。
+- **Tier 2（chain 独立全链）**：同型——K09 ≈ 594.9 h → K12 ≈ 413.2 h；k\* = K12、strong；S=93.66、PL=0.965%、PW=0.10%。
+- **证据 finalization 说明**：evidence 的 `file_hashes.sha256` 于 runner 生成后做了机械补全（覆盖含 run_manifest.json 的全部 26 个文件；清单不含自身；已验证 26/26 一致）。runner 顺序沿用 accepted Q2 惯例（manifest 最后写入），未改动任何结果字节。
+- **状态**：Q3 H1 FORMAL = **EXECUTION COMPLETED / AWAITING HUMAN GATE REVIEW**（非 Human Gate ACCEPTED）；**最终 Q3 K 推荐待 Human Gate review**（k\* 为预注册统计报告，不视为已批准推荐）；不宣称 K=12 弱支配/全局最优；Density recheck / P1 / C23 / C25 未执行。
+
 ## 2026-08-15 / `STATE-2026-08-13-G2.4` / `ROADMAP SYNC: Q3 H1 FIRST（P0 关闭）`
 
 ### 修改
