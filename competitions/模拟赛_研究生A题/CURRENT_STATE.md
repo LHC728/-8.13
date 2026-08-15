@@ -2,7 +2,7 @@
 
 > 最后更新：2026-08-15
 > 状态版本：`STATE-2026-08-13-G2.4`
-> 当前 Gate：**Whole G2 = PASS；G3 = PASS / ACCEPTED（C17 REQUALIFIED_AFTER_C10_C12_CHECKER_FIXES）；Q2 H1 FORMAL = Macro L3 PASS / HIGH（AUTOPILOT PILOT #3 = COMPLETED AT MACRO STOP；Q2 formal candidate run `2d1466ba` 完整 8×200、C06/C17 1600/1600 PASS、非论文权威；tau_pm 候选 = 198 h 正式前冻结未重调）；H2 = NOT AUTHORIZED；Q3 = NOT STARTED；Q4 = NOT STARTED；论文正式 Q2 数字 = NOT AVAILABLE（Q2 Macro L3 + Human Gate 接受前非论文权威）；**Q2_FORMAL_MACRO_L3_PASS_WAITING_FOR_HUMAN_GATE——无条件停机**
+> 当前 Gate：**Whole G2 = PASS；G3 = PASS / ACCEPTED（C17 REQUALIFIED_AFTER_C10_C12_CHECKER_FIXES）；Q2 H1 FORMAL = PASS / ACCEPTED（Human Gate 2026-08-15 FINAL PASS；accepted formal run `2d1466ba`；Pilot #3 = COMPLETED AT MACRO STOP；**Q2 主情景选中 H1 政策 = NO_PM_BEFORE_MANDATORY**；tau_pm=198 = historical tuning-selected candidate / formally not selected for Q2 primary）；Q2 paper numbers = AVAILABLE / AUTHORITATIVE FROM ACCEPTED FORMAL RUN；H2 = NOT AUTHORIZED / ADMISSION DECISION PENDING；Q3 = NOT STARTED；Q4 = NOT STARTED；下一 Human Gate：评估 C24 实际 H1 决策机会证据，裁决 H2 admission vs deletion/skip → Q3**
 > 当前检查注册表：[`CR-V3.1`](01_审计/检查注册表_V3.1.md)
 
 ## 1. 新对话只需先读
@@ -103,15 +103,19 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
   - 任务包：`Q2-FORMAL-SPEC-V1.0`（status **FROZEN_FOR_FORMAL_RUN**；`08_项目管理/任务包/Q2_单班制H1正式评估.yaml`）。评审记录：`08_项目管理/任务包/Q2_FORMAL_SPEC_DRAFT_REVIEW_RECORD.md`。
   - **冻结决策（Q2-FORMAL-DEC-01..06 + bootstrap 分析流）**：200 批/单元 × 8 单元 = 1600 批 / 160 000 台；namespace=q2_formal、master_seed=3、replicate_id=0..199；恰 4 个配对 Delta_T 对比（C1 PRIMARY single+1h；C2-C4 稳健），Bonferroni m=4、alpha_each=0.0125、边缘 CI coverage 0.9875（percentile 0.00625/0.99375）；PL/PW 池化 20000 台精确 CP 区间（x=0 → 单侧上界 `1-0.05^(1/20000)`）；族级证据根 `05_结果/Q2/formal/run_<UTC>_<8hex>/`；soft 4h / hard 8h；bootstrap 分析流 namespace=q2_formal_analysis_bootstrap_v1、seed=30003、B=10000。`decision_required: []`。
   - **tau_pm 候选 = 198 h**（正式前冻结；主单元 = single_test_unconditional_v1 + 1h_literal + tau_pm_198；政策参考 = 同观测/周转 + NO_PM_BEFORE_MANDATORY）；正式运行不重选 tau_pm。
-  - **AUTOPILOT PILOT #3 = COMPLETED AT MACRO STOP**：
-    - **Q2 formal candidate run `run_20260815T061803446274Z_2d1466ba`**（05_结果/Q2/formal/）：完整 8×200（1600 批/160 000 台），**C06=1600/1600、C17=1600/1600 PASS**，C13/C14/C16/C18/C26 PASS；`paper_authoritative=false`（Q2 Macro L3 + Human Gate 接受前非论文权威）。
-    - **首跑 `run_..._daead4cf` 暴露 C17 checker 两处独立缺陷**（C10 cancelled-attempt / C12 terminal-horizon），经 Human Gate OPTION A + A2 两次 bounded checker 修复（INVALIDATION_REPORT ×2，changed_semantics=NO）+ combined G3 C17 requalification（`G3_C17_REQUALIFICATION_L3_REVIEWER` PASS/HIGH）→ **CR-V3.1/C17 G3 full layer = PASS / REQUALIFIED_AFTER_C10_C12_CHECKER_FIXES**；首跑保留 HISTORICAL_FAILED_FORMAL_ATTEMPT。
-    - **新旧确定性等价**：clean reissue 与首跑 1600 批 DES 数学字段逐项相等（T/S/PL/PW/YXB/四格/替换/故障/片段/日志 hash 0 差异），唯一差异为 checker 判定翻转（21 条 FAIL→PASS）+ 墙钟/hash。
-    - **Q2 Macro L3 = PASS / HIGH / formal_result_integrity=HIGH**（reviewer `Q2_FORMAL_MACRO_L3_REVIEWER`，session `137d4fc1-d2de-4f49-a250-f1418703604f`，runtime 机械验证 deepseek-official/deepseek-v4-pro/high）。报告见 `01_审计/MACRO_REPORT_Q2_L3.md`。
-    - **正式结果方向（4 预声明对比，ΔT=T(tau198)−T(NO_PM)，98.75% CI）**：C1 PRIMARY single+1h **+1.29h [0.46,2.19]**（完全>0 → 支持 NO_PM 更短）；C2 single+0.5h +4.23h [3.20,5.30]；C3 chain+1h −0.13h [−1.11,0.80]（含 0 → 不可区分）；C4 chain+0.5h +5.32h [4.13,6.62]。**tau_pm=198 候选在主单元未改善完成时间**；不隐藏、不重调。
-    - **Pilot #3 无条件停机**：不自动 land Q2 FINAL PASS、不写论文数字、不实现 H2、不启动 Q3/Q4；Q2 Macro Gate = PASSED（等待 Human Gate 接受）。
-  - 正式证据在 Q2 Macro L3 + Human Gate 前 **非论文权威**（NOT PAPER-AUTHORITATIVE）；论文 Q2 数字 = NOT AVAILABLE。
-  - 禁止：改 G3 accepted 核心（需改 → STOP Q2_FORMAL_REQUIRES_G3_CORE_CHANGE）、实现 H2、枚举 K、推荐 K、启动 Q3/Q4、写论文。
+  - **AUTOPILOT PILOT #3 = COMPLETED AT MACRO STOP → Q2 H1 FORMAL = PASS / ACCEPTED**（Human Gate 2026-08-15 FINAL PASS）：
+    - **accepted Q2 formal run `run_20260815T061803446274Z_2d1466ba`**（05_结果/Q2/formal/）：8 cells × 200 批 × 100 台；namespace=q2_formal、master_seed=3、replicate_ids=0..199；**C06=1600/1600、C17=1600/1600 PASS**；C13/C14/C16/C18/C26 PASS（applicable formal scope）；无正式重调。
+    - **Q2 主情景（single_test_unconditional_v1 × 1h_literal）正式 H1 政策选择 = NO_PM_BEFORE_MANDATORY**：ΔT = T(tau_pm_198) − T(NO_PM) = **+1.2892 h**，98.75% Bonferroni CI **[0.4625, 2.1942]** 完全>0 → 按冻结预注册解释规则：**NO_PM 完成时间更短**（不主动预防更换；保留全部冻结强制更换规则）。
+    - **tau_pm=198 = HISTORICAL_TUNING_SELECTED_CANDIDATE / FORMALLY_NOT_SELECTED_FOR_Q2_PRIMARY**：正式前选出、从未用 q2_formal 重调；不宣称其最优、不删除/改写其调优历史。
+    - **4 预声明对比（98.75% CI）**：C1 PRIMARY single+1h +1.2892 [0.4625,2.1942] → NO_PM 更短；C2 single+0.5h +4.2292 [3.1983,5.2963] → NO_PM 更短；C3 chain+1h −0.1281 [−1.1146,0.8000] → 不可稳定区分（不转为 tau198 优越证据）；C4 chain+0.5h +5.3211 [4.1314,6.6234] → NO_PM 更短。**整体措辞**：4 对比中 3 个偏好 NO_PM 且区间完全>0，1 个（chain+1h）不可区分，无一正式支持 tau198 更短。
+    - **主单元正式聚合（accepted）**：mean T=332831/400 h（=832.0775h=34.6699d）、mean S=18851/200（94.255/100 台）、PL pooled=383/20000（0.01915）、PW pooled=17/20000（0.00085）；稀有事件精确 CP 95%：PL [0.017296,0.021146]、PW [0.000495,0.001361]（rare_event_report.json）。tau198 与 NO_PM 单元质量输出相同（C06 分离命题一致）。
+    - **Q2 论文数字权威 = run `2d1466ba`**（formal_comparison_table.json + rare_event_report.json + family_aggregates.json + per-batch raw + checker/evidence reports）；禁手录数字、禁用失败 run `daead4cf`、禁用调优/holdout 值替代；手稿数值必须机械可追溯至 accepted formal 证据。
+    - **首跑 `daead4cf` 保持永久 HISTORICAL_FAILED_FORMAL_ATTEMPT / VALIDATION_FAILED / paper_authoritative=false**（旧 C17 checker 的 C10/C12 缺陷；RED 证据 + INVALIDATION_REPORT ×2 + REQUALIFICATION_RECORD 保留）。
+    - **CR-V3.1/C17 G3 full layer = PASS / REQUALIFIED_AFTER_C10_C12_CHECKER_FIXES**（reviewer `G3_C17_REQUALIFICATION_L3_REVIEWER`，session `ab890743`，verified Pro/high，PASS/HIGH/NO/YES/YES）；G3 = PASS/ACCEPTED；不重开无关 G3 阶段。
+    - **KNOWN_NONBLOCKING_FOLLOWUPS**（不重开 Q2）：A) checks.json 中 C13/C14/C18 为 runner 断言（engine hash 不变 + C17 全量重放覆盖 + requalified G3 回归）；B) REQUALIFICATION_RECORD 有重复历史段（provenance 保留）；C) x=0 单侧 CP 分支本轮未触发（已实现，DEC-04）。
+    - **Pilot #3 无条件停机**；下一 Human Gate：评估 C24 实际 H1 决策机会证据 → 裁决 H2 admission vs deletion/skip → Q3。
+  - **Q2 论文数字 = AVAILABLE / AUTHORITATIVE FROM ACCEPTED FORMAL RUN `2d1466ba`**（formal_comparison_table.json + rare_event_report.json 等；禁手录、禁失败 run、禁调优/holdout 值替代）。
+  - 禁止：改 G3/Q2 accepted 核心（需改 → STOP 回 Human Gate）、实现 H2、枚举 K、推荐 K、启动 Q3/Q4、写论文。
 
 （历史记录：G2 完成前的 7 项实施目标——单次无条件/标准链观测核、Q1 闭式与吸收链、最小并行 DES、1—4 台对拍与 K=9 跨班、最小 checker 与故障注入、G2 适用检查——均已随 G2/G3 PASS 完成并验收，不再作为当前出口条件。）
 
@@ -119,15 +123,16 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
 
 - 不实现 H2；不选 rollout M；不后验 rollout；不比 H1 vs H2；
 - 不枚举 K、不推荐 K；不启动 Q3/Q4；
-- 不把 Q2 formal 证据当作论文权威数字（Q2 Macro L3 + Human Gate 前 = NOT PAPER-AUTHORITATIVE）；
-- 不向论文填入结果数字；
-- 不把 G3 调优/holdout 数据（含 tau_pm=198 候选的调优 mean T）当作 Q2 正式结果；
-- 不改 G3 accepted 核心（random_des_v1 核心转移/key_schema_v1/寿命再生/C06 核心/C17 核心/冻结观测语义）；若 Q2 需改 → STOP 回 Human Gate；
+- 不把失败 run `daead4cf` 或 G3 调优/holdout 数据（含 tau_pm=198 候选的调优 mean T）当作 Q2 论文数字来源；论文数字只来自 accepted run `2d1466ba`；
+- 不手录数字为权威；手稿数值必须机械可追溯至 accepted formal 证据；
+- 不宣称 tau_pm=198 最优（= FORMALLY_NOT_SELECTED_FOR_Q2_PRIMARY）；不把 C3（不可区分）转为 tau198 优越证据；
+- 不宣称 NO_PM 超越冻结模型/候选集范围的普适最优或一般工业管理定理；
+- 不改 G3/Q2 accepted 核心（random_des_v1/key_schema_v1/寿命再生/C06/C17/冻结观测语义/Q2-FORMAL-SPEC）；若需改 → STOP 回 Human Gate；
 - 不修改已签字口径与 accepted 证据；若实现暴露新歧义，回到变更控制而不是自行决定。
 
 ## 7. 下一出口
 
-G2/G3 均已 PASS/ACCEPTED；Q2 H1 FORMAL = ACTIVE（Pilot #3 至 Q2 Macro Gate 无条件停机）。**Q2 Macro L3（fresh verified Pro/high）+ Human Gate 后：正式证据成为 Q2 论文数字唯一来源；H2/Q3/Q4 仍需各自新 Human Gate 授权。**
+G2/G3/Q2 H1 FORMAL 均已 PASS/ACCEPTED。**Q2 论文数字 = AVAILABLE / AUTHORITATIVE（accepted run `2d1466ba`）**。下一 Human Gate：**评估 C24 实际 H1 决策机会证据 → 裁决 H2 admission vs H2 deletion/skip → 进入 Q3**。不暗示 H2 自动继续；H2/Q3/Q4 均需各自新 Human Gate 授权。
 
 ## 8. 当前目录映射
 

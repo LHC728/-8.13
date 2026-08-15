@@ -2,6 +2,28 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q2 H1 FORMAL FINAL PASS`
+
+### 修改
+
+- **Human Gate 2026-08-15 FINAL PASS：Q2 H1 FORMAL = PASSED / ACCEPTED；AUTOPILOT PILOT #3 = COMPLETED AT MACRO STOP**。
+- **Accepted qualifying reviewer**：`Q2_FORMAL_MACRO_L3_REVIEWER`；session `137d4fc1-d2de-4f49-a250-f1418703604f`；runtime 机械验证 = deepseek-official / deepseek-v4-pro / high；overall_decision = **PASS** / confidence = **HIGH** / formal_result_integrity = **HIGH**。
+- **Accepted formal run = `run_20260815T061803446274Z_2d1466ba`**（05_结果/Q2/formal/）：8 cells × 200 批 × 100 台；namespace=q2_formal、master_seed=3、replicate_ids=0..199；**C06=1600/1600、C17=1600/1600 PASS**；C13/C14/C16/C18/C26 PASS（applicable formal scope）；无正式重调。
+- **Q2 主情景正式 H1 政策选择 = NO_PM_BEFORE_MANDATORY**：主单元（single_test_unconditional_v1 × 1h_literal）ΔT = T(tau198)−T(NO_PM) = **+1.2892 h**，98.75% Bonferroni CI **[0.4625, 2.1942]** 完全>0 → **NO_PM 完成时间更短**（不主动预防更换，保留全部冻结强制更换规则）。
+- **tau_pm=198 = HISTORICAL_TUNING_SELECTED_CANDIDATE / FORMALLY_NOT_SELECTED_FOR_Q2_PRIMARY**：正式前选出、从未用 q2_formal 重调；不宣称最优；不删除/改写调优历史。
+- **4 预声明对比（98.75% CI）**：C1 PRIMARY single+1h +1.2892 [0.4625,2.1942] → NO_PM 更短；C2 single+0.5h +4.2292 [3.1983,5.2963] → NO_PM 更短；C3 chain+1h −0.1281 [−1.1146,0.8000] → 不可稳定区分（不转为 tau198 优越证据）；C4 chain+0.5h +5.3211 [4.1314,6.6234] → NO_PM 更短。整体：3/4 对比偏好 NO_PM 且区间完全>0，1 个不可区分，无一正式支持 tau198 更短。
+- **主单元正式聚合**（accepted）：mean T=332831/400 h、mean S=18851/200、PL pooled=383/20000、PW pooled=17/20000；稀有事件精确 CP 95%：PL [0.017296,0.021146]、PW [0.000495,0.001361]。tau198 与 NO_PM 单元质量输出相同（C06 分离命题一致）。
+- **Q2 论文数字权威现已可用** = run `2d1466ba`（formal_comparison_table.json + rare_event_report.json + family_aggregates.json + per-batch raw + checker/evidence reports）；禁手录、禁用失败 run `daead4cf`、禁用调优/holdout 值替代。
+- **旧 run `daead4cf` 保持永久 HISTORICAL_FAILED_FORMAL_ATTEMPT / VALIDATION_FAILED / paper_authoritative=false**（旧 C17 checker C10/C12 缺陷；RED + INVALIDATION_REPORT ×2 + REQUALIFICATION_RECORD 保留，不追溯升级）。
+- **G3 C17 supplemental requalification 链**：CR-V3.1/C17 = PASS / REQUALIFIED_AFTER_C10_C12_CHECKER_FIXES（reviewer `G3_C17_REQUALIFICATION_L3_REVIEWER` session `ab890743` verified Pro/high）；G3 = PASS/ACCEPTED；新旧 DES 数学在相同世界下精确相等（唯一差异 = 21 条 checker 判定翻转 + 墙钟/hash）。
+- **H2/Q3/Q4 保持未启动/未授权（适用处）**；无重调、无新实验、无代码/spec/证据修改（state landing only）。
+
+### 影响与边界
+
+- Whole G2 = PASS；G3 = PASS/ACCEPTED；Q2 H1 FORMAL = PASS/ACCEPTED；Pilot #3 = COMPLETED AT MACRO STOP。
+- Q2 paper numbers = AVAILABLE / AUTHORITATIVE FROM ACCEPTED FORMAL RUN；H2 = NOT AUTHORIZED / ADMISSION DECISION PENDING；Q3/Q4 = NOT STARTED。
+- 下一 Human Gate：评估 C24 实际 H1 决策机会证据 → 裁决 H2 admission vs deletion/skip → Q3。不暗示 H2 自动继续。
+
 ## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q2 H1 FORMAL Macro L3 PASS — PILOT #3 COMPLETED AT MACRO STOP`
 
 ### 修改
