@@ -1,8 +1,8 @@
 # CURRENT_STATE
 
-> 最后更新：2026-08-14
+> 最后更新：2026-08-15
 > 状态版本：`STATE-2026-08-13-G2.4`
-> 当前 Gate：**Whole G2 = FINAL PASS；G3 = PILOT #2 COMPLETED AT MACRO STOP（G3 Macro L3 = PASS/HIGH，等待 Human Gate 接受；无条件停机）；H1 formal = NOT STARTED；H2 = NOT STARTED；100-device formal Q2 = NOT STARTED；Q3 formal = NOT STARTED；Q4 = NOT STARTED**
+> 当前 Gate：**Whole G2 = PASS；G3 = PASS / ACCEPTED（Human Gate 2026-08-15 FINAL PASS；G3-SPEC-V1.0 accepted frozen implementation specification；AUTOPILOT PILOT #2 = COMPLETED AT MACRO STOP）；H1/Q2 formal evaluation = NOT STARTED；H2 = NOT STARTED / NOT AUTHORIZED；Q2 FORMAL = NOT STARTED；Q3 FORMAL = NOT STARTED；Q4 = NOT STARTED；论文正式 Q2 数字 = NOT AVAILABLE；下一阶段需新 Human Gate**
 > 当前检查注册表：[`CR-V3.1`](01_审计/检查注册表_V3.1.md)
 
 ## 1. 新对话只需先读
@@ -54,11 +54,9 @@ G1 已完成并通过签字冻结。已完成：
 
 完整定义以问题契约为准，本节只作导航摘要。
 
-## 5. 当前正在做：G2
+## 5. 已接受阶段状态（G2 = PASS；G3 = PASS / ACCEPTED）
 
-G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不是获得正式竞赛答案。
-
-已完成子任务：
+G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不是获得正式竞赛答案。**G2 = PASS / ACCEPTED（Human Gate 2026-08-14）**。已完成子任务（历史记录）：
 
 - `G2-01-SPEC-V1.1.11` 观测核标定最小基线已通过最终 L3 验收；历史不可变证据目录 `05_结果/G2/run_20260813T134251279572Z_f1290916/`（**HISTORICAL_INVALIDATED_EVIDENCE**，hash inventory mismatch；当前 accepted = clean reissue `run_20260814T130221390333Z_8babb503`，见下节）。
 - **`G2-02`（Q1 概率与质量解析链）= PASSED**：Q1 闭式解析链、16 状态枚举、吸收链、E2 独立 checker 均完成；两种观测语义（`single_test_unconditional_v1` / `standard_chain_v1`）均完成正式 canonical 并通过 D/L3 Semantic Acceptance（PASS / HIGH）。**G2-02 / Q1 正式运行结果已验收**（当前 accepted = provenance-clean reissue `run_20260814T130947069958Z_4bb92eda`，spec V1.0.5，见下节）。
@@ -88,41 +86,33 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
   - 旧 formal runs（`...032dfffc`、`...81563471`）= **PRE_G2_04_SPEC_HISTORICAL_CANDIDATE**，保留不可覆盖，不冒充 governed evidence。
   - 状态：G2-04 完成（PASSED/ACCEPTED）。
 
-- **`G3`（公共随机 DES 与 H1 基线）= IMPLEMENTATION ACTIVE → PILOT #2 COMPLETED AT MACRO STOP**（AUTOPILOT PILOT #2 完成，**无条件停机**，等待 Human Gate 接受 G3 Macro L3）：
+- **`G3`（公共随机 DES 与 H1 基线）= PASS / ACCEPTED**（Human Gate 2026-08-15 FINAL PASS；G3-SPEC-V1.0 = accepted frozen implementation specification；AUTOPILOT PILOT #2 = COMPLETED AT MACRO STOP）：
   - 任务包：`G3-SPEC-V1.0`（status FROZEN_FOR_IMPLEMENTATION；`08_项目管理/任务包/G3_公共随机DES与H1基线.yaml`）。Human Gate G3_SPEC_DRAFT CONDITIONAL PASS → 全部决策（G3-DEC-01..07）落文 → fresh verified Pro/high 终审（session `f5550518-edfa-48cc-9213-da37ffd789bd`，deepseek-v4-pro/high）PASS/HIGH/implementation_ready=YES → 冻结。
   - Pilot #2 范围：G3-SPEC-V1.0 实现 S1→S9（key_schema → 寿命/再生 → 随机 DES+H1 → C06 oracle → C17 replay → C16 实验分离 → H1 tuning（C26）→ holdout → evidence）至 G3 Macro Gate；**无条件停机，不跨入 Q2 formal**。
   - **G3 tuning/holdout 100-device 批次（授权验证/调优）与 Q2 FORMAL 100-device 评估（未授权）明确区分**。
-  - **Pilot #2 进度：S1-S9 全部完成**（S1 key_schema commit `5a437dc`；S2 寿命/再生 `7ccb550`；S3 随机 DES `6418818`+`d88c7a3`+YELLOW `617722e`；S4 C06 oracle `d88c7a3`；S5 C17 replay `9a2b192`+YELLOW `617722e`；S6 C16 分离 `2fdd332`；S7 H1 tuning `5b70446`；S8 holdout `fad658f`；S9 evidence `f279ae6`）。YELLOW 修复（发现 A FCFS 派序 / 发现 B checker 配对）证据见 `01_审计/RED_EVIDENCE_G3_S7.md`；S8 C07 统计方法两处缺陷（GREEN）见 `01_审计/RED_EVIDENCE_G3_S8.md`。
-  - **FINAL H1 CANDIDATE（冻结，调优数据非 Q2 正式）**：tau_pm=198h（S7 run `01b7c7e7`；mean T=830.75h、mean PM=15/4）；S8 holdout run `020bc637`（C06/C17 100/100 PASS、C07 flagged=7/100 正常）未重调。
+  - **Pilot #2 进度：S1-S9 全部完成并 accepted**（S1 key_schema commit `5a437dc`；S2 寿命/再生 `7ccb550`；S3 随机 DES `6418818`+`d88c7a3`+YELLOW `617722e`；S4 C06 oracle `d88c7a3`；S5 C17 replay `9a2b192`+YELLOW `617722e`；S6 C16 分离 `2fdd332`；S7 H1 tuning `5b70446`；S8 holdout `fad658f`；S9 evidence `f279ae6`）。YELLOW 修复（发现 A FCFS 派序 / 发现 B checker 配对）证据见 `01_审计/RED_EVIDENCE_G3_S7.md`；S8 C07 统计方法两处缺陷（GREEN）见 `01_审计/RED_EVIDENCE_G3_S8.md`。
+  - **FINAL H1 CANDIDATE（冻结候选，非 Q2 最终推荐）**：tau_pm=198h（S7 accepted tuning run `01b7c7e7`；mean T=830.75h、mean PM=15/4；调优数据非 Q2 正式），在授权 h1_tuning worlds 上选出、并在 g3_holdout 上未重调验证（S8 accepted holdout run `020bc637`：C06/C17 100/100 PASS、C07 flagged=7/100 诊断正常、holdout_retune=FALSE）。**授权作为进入未来 Q2 正式评估的候选政策**；不是 Q2 最终推荐、不是论文结果、不证明 198h 全局最优、不是管理结论；不把其调优 mean T 作为 Q2 结果发布。
   - **S9 evidence package = run `fc3fe3e6`**（INDEX_OK；accepted = tuning `01b7c7e7` + holdout `020bc637`；7 个失败/被替代 run 保留不可变并标注 superseded）。
-  - **G3 Macro L3 = PASS / HIGH**（reviewer `G3_MACRO_L3_REVIEWER`，session `b0f56d04-90aa-4ed8-a4bd-b5b7847f9a8c`，runtime 机械验证 deepseek-official/deepseek-v4-pro/high；freshness/read_only VERIFIED；302 G3 tests OK）。报告见 `01_审计/MACRO_REPORT_G3_L3.md`。**PILOT #2 COMPLETED AT MACRO STOP；G3 Macro Gate = PASSED（等待 Human Gate 接受）；无条件停机**。
-  - 状态：H1 formal = NOT STARTED；H2 = NOT STARTED；100-device formal Q2 = NOT STARTED；Q3 formal = NOT STARTED；Q4 = NOT STARTED。
-  - Pilot #2 预算：软墙钟 4h / 硬墙钟 8h；hard cap 无条件停止回 Human Gate（已到 Macro Stop）。
-  - 禁止：发布/冻结 Q2 正式数字（T/S/PL/PW/YXB/管理建议）、写论文、实现 H2、枚举 K、推荐 K。
-  - 状态：H1 formal = NOT STARTED；H2 = NOT STARTED；100-device formal Q2 = NOT STARTED；Q3 formal = NOT STARTED；Q4 = NOT STARTED。
-  - Pilot #2 预算：软墙钟 4h / 硬墙钟 8h；hard cap 无条件停止回 Human Gate。
+  - **G3 Macro L3 = PASS / HIGH**（qualifying reviewer `G3_MACRO_L3_REVIEWER`，session `b0f56d04-90aa-4ed8-a4bd-b5b7847f9a8c`，runtime 机械验证 deepseek-official/deepseek-v4-pro/high；freshness/read_only VERIFIED；302 G3 tests OK）。报告见 `01_审计/MACRO_REPORT_G3_L3.md`。**G3 Macro Gate = PASSED（Human Gate 2026-08-15 接受）；PILOT #2 COMPLETED AT MACRO STOP；无条件停机**。
+  - **G3 accepted 范围（CR-V3.1）**：C06（G3 full layer）= PASS；C07（统计烟测/诊断层）= PASS（保留诊断解释）；C13/C14 = PASS；C15（G3 接口/重置层）= PASS（Q3 七 K 正式实验 = NOT STARTED）；C16（G3 实验分离层）= PASS；C17（G3 full replay 层）= PASS；C18 = PASS；C26（H1 政策/调优设计与冻结候选）= PASS；C24（仪表/数据收集能力）= PASS。**不声明 C23 PASS、C25 PASS、H2 准入 PASS；H2 仍未实现且未授权**。
+  - 状态：H1/Q2 formal evaluation = NOT STARTED；H2 = NOT STARTED / NOT AUTHORIZED；Q2 FORMAL = NOT STARTED；Q3 FORMAL = NOT STARTED；Q4 = NOT STARTED；论文正式 Q2 数字 = NOT AVAILABLE。
+  - 预算：软墙钟 4h / 硬墙钟 8h（Pilot #2 已到达 Macro Stop，不再消耗）。
   - 禁止：发布/冻结 Q2 正式数字（T/S/PL/PW/YXB/管理建议）、写论文、实现 H2、枚举 K、推荐 K。
 
-1. 实现并诊断单次无条件主观测核（G2-01 已完成）；
-2. 实现标准链关键替代观测核（G2-01 已完成）；
-3. 完成 Q1 闭式、16 状态枚举、吸收链与独立回代（G2-02 已完成并验收）；
-4. 完成无随机的最小并行 DES；
-5. 对拍 1—4 台手算小例，包括 K=9 三台跨班重测；
-6. 建立最小独立 checker 和故障注入；
-7. 通过 `CR-V3.1` 的 G2 适用项：`C01–C06,C08–C12,C16–C21,C27` 文档部分。
+（历史记录：G2 完成前的 7 项实施目标——单次无条件/标准链观测核、Q1 闭式与吸收链、最小并行 DES、1—4 台对拍与 K=9 跨班、最小 checker 与故障注入、G2 适用检查——均已随 G2/G3 PASS 完成并验收，不再作为当前出口条件。）
 
 ## 6. 当前禁止
 
-- 不运行 100 台正式主实验；
-- 不编码或调参 H2；
-- 不冻结最优 K、预防更换阈值或管理建议；
-- 不做正式敏感性和正式图表；
+- 不运行 Q2 正式主实验（100-device formal）；
+- 不编码或调参 H2；不选 rollout M；
+- 不发布 Q2/Q3 正式数字或正式敏感性/正式图表；
 - 不向论文填入结果数字；
-- 不修改已签字口径；若实现暴露新歧义，回到变更控制而不是自行决定。
+- 不把 G3 调优/holdout 数据（含 tau_pm=198 候选的调优 mean T）当作 Q2 正式结果；
+- 不修改已签字口径与 accepted 证据；若实现暴露新歧义，回到变更控制而不是自行决定。
 
 ## 7. 下一出口
 
-只有 G2 适用硬门全部通过并形成可重放证据包，项目才进入 G3。G3 才加入键控随机状态/观测、设备寿命与再生、完整班历、周转和 H1 决策机会日志；H2 是否值得实现到 G3 出口再决定。
+G2 与 G3 均已 PASS/ACCEPTED；tau_pm=198h 已作为 H1 候选冻结（进入未来 Q2 正式评估的候选政策，非最终推荐）。**H1/Q2 formal evaluation、H2、Q3 formal、Q4 均为 NOT STARTED；下一阶段（Q2 正式评估等）需要新 Human Gate 授权。**
 
 ## 8. 当前目录映射
 

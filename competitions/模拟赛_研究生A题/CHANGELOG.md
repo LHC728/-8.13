@@ -2,6 +2,26 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-15 / `STATE-2026-08-13-G2.4` / `G3 FINAL PASS`
+
+### 修改
+
+- **Human Gate 2026-08-15 FINAL PASS：G3 = PASSED / ACCEPTED；AUTOPILOT PILOT #2 = COMPLETED AT MACRO STOP**。
+- **Qualifying G3 Macro L3 reviewer accepted**：`G3_MACRO_L3_REVIEWER`；session `b0f56d04-90aa-4ed8-a4bd-b5b7847f9a8c`；runtime 机械验证 = deepseek-official / deepseek-v4-pro / high；overall_decision = **PASS** / confidence = **HIGH**。
+- **S1-S9 accepted**：S1 key_schema / S2 寿命再生 / S3 随机 DES+H1 / S4 C06 oracle / S5 C17 replay / S6 C16 分离 / S7 H1 C26 tuning（accepted run `01b7c7e7`）/ S8 holdout（accepted run `020bc637`，C06/C17 100/100 PASS、C07 诊断 flagged 7/100、holdout_retune=FALSE）/ S9 evidence package（run `fc3fe3e6`，INDEX_OK）。
+- **tau_pm = 198 h 为冻结 H1 候选（仅候选政策）**：在授权 h1_tuning worlds 上选出并在 g3_holdout 上未重调验证；授权作为进入未来 Q2 正式评估的候选政策。**不是 Q2 最终推荐、不是论文结果、不证明全局最优、不是管理结论**；不发布其调优 mean T 作为 Q2 结果。
+- **G3 accepted 范围（CR-V3.1）**：C06（full）/C07（诊断层）/C13/C14/C15（G3 接口/重置层，Q3 七 K 未开始）/C16（分离层）/C17（full replay 层）/C18/C26 = PASS；C24（仪表/数据收集能力）= PASS；**C23/C25/H2 准入不声明 PASS；H2 仍未实现且未授权**。
+- **Q2 formal / H2 / Q3 / Q4 保持 NOT STARTED**；论文正式 Q2 数字 = NOT AVAILABLE；下一阶段需新 Human Gate。
+- **CURRENT_STATE 清理**：移除 stale active 措辞（"当前正在做：G2"、"不冻结预防更换阈值"、"只有 G2 … 才进入 G3"、"等待 Human Gate"、G3 Macro Gate PASSED 等待字眼）与重复 G3 bullet（状态/预算/禁止行）；更新当前边界（G3 = PASS/ACCEPTED、tau_pm 候选、Q2 formal/H2/Q3/Q4 NOT STARTED、next phase 需新 Human Gate）。
+- **KNOWN_NONBLOCKING_DOCUMENTATION_FOLLOWUP**：G3-SPEC-V1.0 `approval_gate` 保留历史冻结阶段措辞"本阶段仍不实现 random DES"，而同一冻结治理随后授权了 Pilot #2 实现。分类 **STALE_FREEZE_STAGE_WORDING_ONLY**；不影响数学语义/实现行为/hash/tests/accepted 结果/G3 PASS；**不修改 G3-SPEC-V1.0**（避免 accepted 证据链 spec-hash/provenance 失效），保持 spec byte 不变。
+- **无数学/代码/spec/证据变更**：本轮仅 3 个治理文件（CURRENT_STATE.md、CHANGELOG.md、07_AI使用记录/AI使用日志.md）；无结果再生成。
+
+### 影响与边界
+
+- Whole G2 = PASS；G3 = PASS / ACCEPTED；G3-SPEC-V1.0 = ACCEPTED；Pilot #2 = COMPLETED AT MACRO STOP。
+- H1/Q2 formal evaluation = NOT STARTED；H2 = NOT STARTED / NOT AUTHORIZED；Q2 FORMAL = NOT STARTED；Q3 FORMAL = NOT STARTED；Q4 = NOT STARTED。
+- **Pilot #2 绝对停机**：不启动 Q2 formal、不运行 q2_formal 命名空间、不生成正式 T/S/PL/PW/YXB、不实现 H2、不选 rollout M、不启动 Q3、不枚举 K、不启动 Q4、不写论文正式数字。
+
 ## 2026-08-14 / `STATE-2026-08-13-G2.4` / `G3 MACRO L3 PASS — PILOT #2 COMPLETED AT MACRO STOP`
 
 ### 修改
