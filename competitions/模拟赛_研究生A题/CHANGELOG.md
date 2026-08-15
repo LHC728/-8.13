@@ -2,6 +2,19 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q3-H1-E1 PROVENANCE CLEAN REISSUE COMPLETED`
+
+### 修改
+
+- **Q3-H1-E1（Formal Provenance Clean Reissue）完成**（Human Gate 审计发现两项正式证据问题已修复；未重跑任何 Q3 DES batch、未消费新 q3_formal 随机世界、未改变任何 T/S/PL/PW/YXB）。
+- **F1 — C21 hash cycle 修复**：源 run `run_20260815T133840057668Z_7ee48fc0` 存在 `run_manifest.json ↔ file_hashes.sha256` 互相记录对方 SHA 的循环。新证据采用 **ACYCLIC HASH INVENTORY（RULE A）**：run_manifest 只以 `hash_inventory_path` 指向 `file_hashes.sha256`、**不记录其自身哈希**；`file_hashes.sha256` 哈希全部 artifact（含 run_manifest.json 与 task_package_snapshot.yaml）、**永不哈希自身**；无 mutual edge、无 self hash。runner 新增 `verify_hash_dag()`（fail-closed 自检）+ DAG 回归测试。
+- **F2 — recommendation 措辞修正**：strong 措辞由固定「CI 完全 <0」改为 **orientation-neutral**（「k* 相对其余全部 K 的配对 CI 均位于支持 k* 完成时间更短的一侧并排除 0（左端更快=CI<0；右端更快=CI>0）」）；a2a9690 的 strong/co-best 计算逻辑未推翻，仅文字修正。
+- **Task package snapshot 补齐**：clean reissue 新增 `task_package_snapshot.yaml`（byte-exact 拷贝，SHA256 `a0864c8728603ef85c12eff91500c78909f70d74738cb42765212d0c035b4472` 已验证）。
+- **Clean reissue**：`05_结果/Q3/formal/reissue_20260815T145531744357Z_ee6c5ab7/`（type = Q3_H1_FORMAL_PROVENANCE_CLEAN_REISSUE；physical_source_run / physical_source_commit = `a2a9690…`；new_physical_simulation = NO；new_q3_formal_random_world_consumption = NO）。**14/14 cell 与源 run 字节一致**；衍生分析（family_aggregates、tier1/2 pairwise、recommendation、quality、rare-event）由源 cell artifacts 重新生成——**除 recommendation 文字/provenance 字段外数值全等（0 差异）**；k\* = K12、strong = TRUE（两 tier）；Tier 1/Tier 2 各 21/21 pair CI 排除 0（按文件排序 pair 定义全部 CI>0）；HASH_GRAPH_ACYCLIC = PASS、HASH_INVENTORY = 28/28 PASS；`C21_REQUALIFICATION_REPORT.json` = **PASS**。
+- **源 run 标记**：`run_20260815T133840057668Z_7ee48fc0` = **HISTORICAL_Q3_H1_FORMAL_EXECUTION_WITH_SUPERSEDED_PROVENANCE_PACKAGING**（保留不可改；其物理模拟结果不声明为错误；superseded 的仅为 provenance packaging 与 recommendation wording artifact）。
+- **YXB 披露纠正（§13）**：此前 Harness summary 误写「S/PL/PW/YXB 跨 K 完全一致」——**正确表述**：S/PL/PW 与 four-cell 质量计数跨 K 保持一致（C06 pathwise 分离验证）；**YXB 是设备利用率指标，随 K 改变，不要求跨 K 相等**（物理 YXB 数值未改）。
+- **状态**：Q3 H1 FORMAL = **EXECUTION COMPLETED / PROVENANCE REQUALIFICATION COMPLETED / AWAITING HUMAN GATE FINAL REVIEW**（非 ACCEPTED）；clean reissue 为提交 Human Gate 最终验收的证据；Density recheck / P1 / C23 / C25 未执行。
+
 ## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q3 H1 FORMAL EXECUTION COMPLETED / AWAITING HUMAN GATE REVIEW`
 
 ### 修改

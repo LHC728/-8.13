@@ -98,6 +98,11 @@ from checker import g3_replay_checker_v1 as rc  # noqa: E402
 
 TASK_PACKAGE_REF = "Q3-H1-FORMAL-SPEC-V1.0"
 TASK_PACKAGE_FILE = BASE_DIR / "08_项目管理" / "任务包" / "Q3_七K_H1正式基线.yaml"
+# Byte-exact SHA-256 of the frozen task package at the formal physical-run
+# authority commit a2a9690d70bf6514f1db7427d549be8e75b01145 (verified).
+TASK_PACKAGE_SNAPSHOT_SHA = (
+    "a0864c8728603ef85c12eff91500c78909f70d74738cb42765212d0c035b4472"
+)
 G3_TASK_PACKAGE_FILE = BASE_DIR / "08_项目管理" / "任务包" / "G3_公共随机DES与H1基线.yaml"
 BOOTSTRAP_SPEC_FILE = (
     BASE_DIR / "08_项目管理" / "任务包" / "Q3_H2_BOOTSTRAP_SPEC_DRAFT.md"
@@ -592,6 +597,50 @@ def paired_bootstrap_ci(t_a: list[float], t_b: list[float],
 # ---------------------------------------------------------------------------
 
 
+def verify_hash_dag(out_dir: Path) -> dict[str, Any]:
+    """Verify the acyclic hash-inventory invariant (C21 / Q3-H1-E1 RULE A).
+
+    Checks:
+      - run_manifest.json records hash_inventory_path == file_hashes.sha256
+        and its outputs list does NOT contain file_hashes.sha256 (no edge
+        manifest -> inventory-self);
+      - file_hashes.sha256 does NOT list itself (no self hash);
+      - run_manifest.json and task_package_snapshot.yaml are covered by the
+        inventory (file_hashes -> hash(run_manifest), the single DAG edge);
+      - every listed artifact SHA matches its actual bytes.
+    Returns PASS/FAIL report; raises on FAIL (fail-closed).
+    """
+    manifest = json.loads((out_dir / "run_manifest.json").read_text(encoding="utf-8"))
+    if manifest.get("hash_inventory_path") != "file_hashes.sha256":
+        raise AssertionError("manifest must point hash_inventory_path to file_hashes.sha256")
+    outputs = {a["path"] for a in manifest.get("outputs", [])}
+    if "file_hashes.sha256" in outputs:
+        raise AssertionError("manifest must not hash file_hashes.sha256 (cycle)")
+    inventory: dict[str, str] = {}
+    for line in (out_dir / "file_hashes.sha256").read_text(encoding="utf-8").splitlines():
+        h, rel = line.split("  ", 1)
+        inventory[rel] = h
+    if "file_hashes.sha256" in inventory:
+        raise AssertionError("file_hashes.sha256 must not list itself")
+    for required in ("run_manifest.json", "task_package_snapshot.yaml"):
+        if required not in inventory:
+            raise AssertionError(f"inventory must cover {required}")
+    mismatches = 0
+    for rel, expected in inventory.items():
+        actual = _sha256_file(out_dir / rel)
+        if actual != expected:
+            mismatches += 1
+    if mismatches:
+        raise AssertionError(f"inventory mismatches: {mismatches}")
+    return {
+        "hash_graph_acyclic": True,
+        "inventory_n": len(inventory),
+        "mismatches": 0,
+        "rule": "ACYCLIC DAG (RULE A): manifest ->(path only) file_hashes; "
+                "file_hashes -> hash(run_manifest); no mutual edge; no self hash",
+    }
+
+
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
@@ -734,7 +783,8 @@ def recommendation(tier: str, aggregates: dict[str, CellAggregate],
         "co_best": sorted(co_best),
         "strong_recommendation": strong,
         "wording": (
-            "k* 相对其余全部 K 的配对 CI 完全 <0 → strong recommendation"
+            "k* 相对其余全部 K 的配对 CI 均位于支持 k* 完成时间更短的一侧并排除 0"
+            "（orientation-neutral：k* 在 pair 左端时更快对应 CI<0，在右端时对应 CI>0）"
             if strong else
             "k* + co-best（至少一个 K 的配对 CI 含 0 或出现 CI 矛盾）"
         ),
@@ -875,9 +925,30 @@ def _write_evidence(run_id: str, out_dir: Path, all_records: dict[str, list[Batc
     })
     _dump_json(out_dir / "quality_table.json", {"tier1": quality_t1, "tier2": quality_t2})
 
+    # --- ACYCLIC HASH INVENTORY (C21; Q3-H1-E1) ---
+    # DAG rule (RULE A): run_manifest.json must NOT record the SHA of
+    # file_hashes.sha256 (it only points to it via hash_inventory_path);
+    # file_hashes.sha256 hashes every artifact INCLUDING run_manifest.json
+    # and task_package_snapshot.yaml but NEVER itself.  Edge:
+    #   file_hashes.sha256 -> hash(run_manifest.json)
+    #   run_manifest.json  -/-> hash(file_hashes.sha256)
+    # No mutual edge, no self hash; unidirectional deterministic re-verify.
+
+    # 1) task package snapshot (byte-exact copy of the frozen task package)
+    snapshot_bytes = Path(TASK_PACKAGE_FILE).read_bytes()
+    snapshot_sha = hashlib.sha256(snapshot_bytes).hexdigest()
+    if snapshot_sha != TASK_PACKAGE_SNAPSHOT_SHA:
+        raise RuntimeError(
+            f"task package snapshot SHA mismatch: got {snapshot_sha}, "
+            f"expected {TASK_PACKAGE_SNAPSHOT_SHA}"
+        )
+    (out_dir / "task_package_snapshot.yaml").write_bytes(snapshot_bytes)
+
     hashes = {
         "task_package": {"ref": TASK_PACKAGE_REF,
                          "sha256": _sha256_file(TASK_PACKAGE_FILE)},
+        "task_package_snapshot": {"path": "task_package_snapshot.yaml",
+                                  "sha256": snapshot_sha},
         "bootstrap_spec": {"ref": "Q3_H2_BOOTSTRAP_SPEC_DRAFT.md (FINAL_FREEZE_ACCEPTED)",
                            "sha256": _sha256_file(BOOTSTRAP_SPEC_FILE)},
         "g3_spec_upstream": {"ref": "G3-SPEC-V1.0",
@@ -908,6 +979,11 @@ def _write_evidence(run_id: str, out_dir: Path, all_records: dict[str, list[Batc
                       "bonferroni_m": M_FAMILY, "alpha_each": ALPHA_EACH,
                       "percentile_bounds": [P_LO, P_HI]},
         "tier3": "NOT RUN",
+        "hash_inventory_rule": (
+            "ACYCLIC DAG (RULE A): run_manifest does not hash file_hashes.sha256; "
+            "file_hashes.sha256 hashes all artifacts incl. run_manifest and "
+            "task_package_snapshot but never itself; no mutual edge; no self hash."
+        ),
     }
     _dump_json(out_dir / "family_config_snapshot.json", config_snapshot)
     _dump_json(out_dir / "environment.json", _env_summary())
@@ -947,7 +1023,7 @@ def _write_evidence(run_id: str, out_dir: Path, all_records: dict[str, list[Batc
             {"check_id": "CR-V3.1/C26", "status": "PASS",
              "note": "H1 policy frozen NO_PM_BEFORE_MANDATORY; no tau_pm retuning"},
             {"check_id": "CR-V3.1/C21", "status": "PASS",
-             "note": "immutable evidence + file_hashes.sha256"},
+             "note": "acyclic hash inventory (DAG): run_manifest not hashing file_hashes; file_hashes covers all artifacts incl. manifest + task_package_snapshot, never itself"},
             {"check_id": "CR-V3.1/C07", "status": "DIAGNOSTIC",
              "note": "family-level four-cell smoke (diagnostic; not a hard gate)"},
             {"check_id": "CR-V3.1/C19", "status": "PASS", "note": "checker isolation (governance)"},
@@ -955,18 +1031,12 @@ def _write_evidence(run_id: str, out_dir: Path, all_records: dict[str, list[Batc
         ],
     })
 
-    lines = []
-    for path in sorted(out_dir.rglob("*")):
-        if path.is_file():
-            rel = path.relative_to(out_dir).as_posix()
-            lines.append(f"{_sha256_file(path)}  {rel}")
-    (out_dir / "file_hashes.sha256").write_text(
-        "\n".join(lines) + "\n", encoding="utf-8", newline="\n"
-    )
+    # 2) artifacts listing: EXCLUDE file_hashes.sha256 (no self-recording).
     artifacts = [
         {"path": p.relative_to(out_dir).as_posix(),
          "bytes": p.stat().st_size, "sha256": _sha256_file(p)}
-        for p in sorted(out_dir.rglob("*")) if p.is_file()
+        for p in sorted(out_dir.rglob("*"))
+        if p.is_file() and p.name != "file_hashes.sha256"
     ]
     manifest = {
         "run_id": run_id,
@@ -978,9 +1048,17 @@ def _write_evidence(run_id: str, out_dir: Path, all_records: dict[str, list[Batc
         "paper_authoritative": False,
         "task_package_ref": TASK_PACKAGE_REF,
         "task_package_hash": hashes["task_package"]["sha256"],
+        "task_package_snapshot_path": "task_package_snapshot.yaml",
+        "task_package_snapshot_sha256": snapshot_sha,
         "bootstrap_spec_hash": hashes["bootstrap_spec"]["sha256"],
         "g3_spec_upstream_hash": hashes["g3_spec_upstream"]["sha256"],
         "registry_version": REGISTRY_VERSION,
+        "hash_inventory_path": "file_hashes.sha256",
+        "hash_inventory_rule": (
+            "ACYCLIC DAG (RULE A): run_manifest does not hash file_hashes.sha256 "
+            "(only points to it); file_hashes.sha256 hashes all artifacts including "
+            "run_manifest.json and task_package_snapshot.yaml, never itself."
+        ),
         "random_world": {
             "namespace": NAMESPACE, "master_seed": MASTER_SEED,
             "replicate_ids": [FIRST_REPLICATE, FIRST_REPLICATE + REPLICATE_COUNT - 1],
@@ -1002,11 +1080,26 @@ def _write_evidence(run_id: str, out_dir: Path, all_records: dict[str, list[Batc
             "k* / co-best 仅限七个 K 与冻结候选政策集（NO_PM_BEFORE_MANDATORY）；不宣称 K=12 弱支配。",
             "Tier 1 = Q3 主 K 推荐证据；Tier 2 = A03 替代观测语义独立全链；不混池。",
             "Density recheck / P1 / C23 / C25 不在本包。",
+            "C21：acyclic hash inventory（DAG）；run_manifest 不记录 file_hashes.sha256 自身哈希。",
         ],
     }
     _dump_json(out_dir / "run_manifest.json", manifest)
+
+    # 3) file_hashes.sha256 written LAST: hashes every artifact (including
+    # run_manifest.json and task_package_snapshot.yaml), never itself.
+    lines = []
+    for path in sorted(out_dir.rglob("*")):
+        if path.is_file() and path.name != "file_hashes.sha256":
+            rel = path.relative_to(out_dir).as_posix()
+            lines.append(f"{_sha256_file(path)}  {rel}")
+    (out_dir / "file_hashes.sha256").write_text(
+        "\n".join(lines) + "\n", encoding="utf-8", newline="\n"
+    )
+    dag_report = verify_hash_dag(out_dir)  # fail-closed self check
     print(f"[formal] evidence written: {out_dir}")
     print(f"[formal] family wall clock: {family_wall:.1f} s")
+    print(f"[formal] hash DAG: acyclic={dag_report['hash_graph_acyclic']} "
+          f"inventory={dag_report['inventory_n']} mismatches={dag_report['mismatches']}")
 
 
 def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:

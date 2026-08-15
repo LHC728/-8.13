@@ -3,6 +3,7 @@ consumed; no engine runs except tiny development-unit smokes)."""
 
 from __future__ import annotations
 
+import hashlib
 import sys
 import unittest
 from dataclasses import replace
@@ -207,6 +208,157 @@ class TestPreflightShape(unittest.TestCase):
         sha, metrics = run_sha(cfg)
         self.assertEqual(len(sha), 64)
         self.assertGreater(float(Fraction(metrics["T"])), 0)
+
+
+class TestRecommendationWording(unittest.TestCase):
+    """Q3-H1-E1: strong-recommendation wording must be orientation-neutral."""
+
+    def _make_aggs_and_pairs(self, t_h: dict[str, float]) -> tuple:
+        from scripts.run_q3_h1_formal_v1 import CellAggregate
+
+        def agg(k_label: str, t: float) -> CellAggregate:
+            cid = r.cell_id("tier1", k_label)
+            return CellAggregate(
+                cell=cid, tier="tier1", k_label=k_label, n=200,
+                mean_T=Fraction(int(t * 100), 100),
+                mean_T_days=Fraction(int(t * 100), 2400),
+                mean_S=Fraction(94, 1), mean_PL=Fraction(1, 100),
+                mean_PW=Fraction(1, 100),
+                mean_YXB={"A": Fraction(1, 2), "B": Fraction(1, 2),
+                          "C": Fraction(1, 2), "E": Fraction(1, 2)},
+                mean_preventive=Fraction(0), mean_mandatory=Fraction(2, 1),
+                mean_random_failures=Fraction(1, 1),
+                mean_wasted_fragments=Fraction(0),
+                four_cell_totals={"GP": 1, "BP": 1, "GE": 1, "BE": 1},
+                pl_pooled_x=2, pw_pooled_x=2, pl_batch_se=0.1, pw_batch_se=0.1,
+                t_batch_se=1.0, t_p50=t, t_p90=t,
+                quality_pass_count=200, replay_pass_count=200,
+            )
+
+        aggs = {r.cell_id("tier1", k): agg(k, v) for k, v in t_h.items()}
+        labels = [k for k, _ in r.K_VALUES]
+        pairs = []
+        idx = 0
+        for i in range(len(labels)):
+            for j in range(i + 1, len(labels)):
+                idx += 1
+                k1, k2 = labels[i], labels[j]
+                d = t_h[k1] - t_h[k2]
+                pairs.append({
+                    "pair_id": f"P{idx:02d}", "k1": k1, "k2": k2,
+                    "delta_T_h": d, "ci_lo_h": d - 2, "ci_hi_h": d + 2,
+                    "interpretation": "x",
+                })
+        return aggs, pairs
+
+    def test_wording_is_orientation_neutral(self) -> None:
+        # k* = K12 is the RIGHT end of every pair; faster means CI > 0.
+        t_h = {"K09": 900, "K09p5": 890, "K10": 880, "K10p5": 870,
+               "K11": 860, "K11p5": 850, "K12": 800}
+        aggs, pairs = self._make_aggs_and_pairs(t_h)
+        rec = r.recommendation("tier1", aggs, pairs)
+        self.assertEqual(rec["k_star"], "K12")
+        self.assertTrue(rec["strong_recommendation"])
+        self.assertNotIn("完全 <0", rec["wording"])       # not hard-coded left-side
+        self.assertIn("orientation-neutral", rec["wording"])  # explicit neutrality
+        self.assertIn("CI<0", rec["wording"])  # documents both directions
+
+    def test_case_a_left_end_kstar(self) -> None:
+        # k* = K09 at the LEFT end of every pair; faster means CI < 0.
+        t_h = {"K09": 800, "K09p5": 850, "K10": 860, "K10p5": 870,
+               "K11": 880, "K11p5": 890, "K12": 900}
+        aggs, pairs = self._make_aggs_and_pairs(t_h)
+        rec = r.recommendation("tier1", aggs, pairs)
+        self.assertEqual(rec["k_star"], "K09")
+        self.assertTrue(rec["strong_recommendation"])
+        self.assertEqual(rec["co_best"], [])
+
+    def test_case_b_right_end_kstar(self) -> None:
+        # k* = K12 at the RIGHT end; faster means CI > 0 (the actual formal case).
+        t_h = {"K09": 900, "K09p5": 890, "K10": 880, "K10p5": 870,
+               "K11": 860, "K11p5": 850, "K12": 800}
+        aggs, pairs = self._make_aggs_and_pairs(t_h)
+        rec = r.recommendation("tier1", aggs, pairs)
+        self.assertEqual(rec["k_star"], "K12")
+        self.assertTrue(rec["strong_recommendation"])
+        self.assertEqual(rec["co_best"], [])
+
+    def test_case_c_ci_contains_zero_goes_to_co_best(self) -> None:
+        # K12 (argmin) and K11.5 indistinguishable -> K11.5 co-best, no strong.
+        t_h = {"K09": 900, "K09p5": 890, "K10": 880, "K10p5": 870,
+               "K11": 860, "K11p5": 801, "K12": 800}
+        aggs, pairs = self._make_aggs_and_pairs(t_h)
+        rec = r.recommendation("tier1", aggs, pairs)
+        self.assertEqual(rec["k_star"], "K12")
+        self.assertFalse(rec["strong_recommendation"])
+        self.assertIn("K11p5", rec["co_best"])
+
+
+class TestHashDag(unittest.TestCase):
+    """Q3-H1-E1: acyclic hash inventory regression (RULE A)."""
+
+    def _build_synthetic_evidence(self, tmp: Path,
+                                  bad_manifest_hashes_inventory: bool = False,
+                                  bad_inventory_self: bool = False) -> Path:
+        import json as _json
+        root = tmp / "ev"
+        (root / "cells").mkdir(parents=True)
+        (root / "cells" / "a.json").write_text('{"x":1}\n', encoding="utf-8")
+        (root / "task_package_snapshot.yaml").write_text("k: v\n", encoding="utf-8")
+        (root / "family_aggregates.json").write_text('{"m":1}\n', encoding="utf-8")
+        outputs = [
+            {"path": "cells/a.json", "bytes": 8, "sha256": "x"},
+            {"path": "family_aggregates.json", "bytes": 8, "sha256": "x"},
+            {"path": "task_package_snapshot.yaml", "bytes": 5, "sha256": "x"},
+        ]
+        if bad_manifest_hashes_inventory:
+            outputs.append({"path": "file_hashes.sha256", "bytes": 1, "sha256": "x"})
+        manifest = {
+            "hash_inventory_path": "file_hashes.sha256",
+            "outputs": outputs,
+        }
+        (root / "run_manifest.json").write_text(
+            _json.dumps(manifest, sort_keys=True), encoding="utf-8"
+        )
+        # inventory: all files except itself
+        lines = []
+        for p in sorted(root.rglob("*")):
+            if p.is_file() and p.name != "file_hashes.sha256":
+                rel = p.relative_to(root).as_posix()
+                h = hashlib.sha256(p.read_bytes()).hexdigest()
+                lines.append(f"{h}  {rel}")
+        if bad_inventory_self:
+            lines.append(f"{'0' * 64}  file_hashes.sha256")
+        (root / "file_hashes.sha256").write_text(
+            "\n".join(lines) + "\n", encoding="utf-8", newline="\n"
+        )
+        return root
+
+    def test_acyclic_inventory_passes(self) -> None:
+        import tempfile
+        from scripts.run_q3_h1_formal_v1 import verify_hash_dag
+        with tempfile.TemporaryDirectory() as td:
+            root = self._build_synthetic_evidence(Path(td))
+            report = verify_hash_dag(root)
+            self.assertTrue(report["hash_graph_acyclic"])
+            self.assertEqual(report["mismatches"], 0)
+            self.assertEqual(report["inventory_n"], 4)  # 3 artifacts + manifest
+
+    def test_manifest_must_not_hash_inventory(self) -> None:
+        import tempfile
+        from scripts.run_q3_h1_formal_v1 import verify_hash_dag
+        with tempfile.TemporaryDirectory() as td:
+            root = self._build_synthetic_evidence(Path(td), bad_manifest_hashes_inventory=True)
+            with self.assertRaises(AssertionError):
+                verify_hash_dag(root)
+
+    def test_inventory_must_not_self_hash(self) -> None:
+        import tempfile
+        from scripts.run_q3_h1_formal_v1 import verify_hash_dag
+        with tempfile.TemporaryDirectory() as td:
+            root = self._build_synthetic_evidence(Path(td), bad_inventory_self=True)
+            with self.assertRaises(AssertionError):
+                verify_hash_dag(root)
 
 
 if __name__ == "__main__":

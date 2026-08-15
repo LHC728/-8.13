@@ -1,0 +1,194 @@
+# Q3 任务包：七 K H1 正式基线（SPEC V1.0）
+
+task_package_version: "Q3-H1-FORMAL-SPEC-V1.0"
+task_id: "Q3_H1_FORMAL"
+title: "Q3 七 K H1 正式基线：Tier 1（主 K 推荐证据）+ Tier 2（A03 替代语义独立全链）"
+status: "FROZEN_FOR_FORMAL_RUN"
+drafted_date: "2026-08-15"
+drafted_by_role: "D / Q3 H1 FORMAL 规格起草（基于 Q3_H2_BOOTSTRAP_SPEC_DRAFT.md FINAL_FREEZE_ACCEPTED §14/§19/§20 + Human Gate Q3-H1-FORMAL Authorization Package）"
+approval_gate: >-
+  Human Gate（2026-08-15）：P0（H2 key schema bootstrap）= VERIFIED FINAL PASS / ACCEPTED（P0 关闭）；
+  下一大阶段正式切换为 Q3 H1 FIRST。本包 = Q3 七 K H1 正式基线执行授权（Tier 1 + Tier 2）。
+  禁止自动进入 P1 / posterior / C23 / rollout；Density recheck 不包含在本包中。
+  本包完成后必须 STOP 回 Human Gate。
+
+# ============================================================================
+# 0. 权威来源（本包唯一语义来源；不得使用 99_归档/旧评审/聊天摘要）
+# ============================================================================
+authority:
+  - "AGENTS.md"
+  - "CURRENT_STATE.md（仅阶段事实；Q3 = ACTIVE、无 K 推荐）"
+  - "01_审计/问题契约.md（§3/§4 Q3、§7 冻结输入；A03/A08/A09、B10/B17/B19）"
+  - "01_审计/检查注册表_V3.1.md（C06/C13-C18/C19/C20/C21/C26/C07）"
+  - "01_审计/关键歧义与候选约定.md"
+  - "02_数据/parameters.csv（P040-N3=100、P041-K 七值、P042=2 班/日、P044/P048）"
+  - "02_数据/configs/README.md"
+  - "03_模型/00_模型总览.md、02_H1基线与离散事件模型.md、高级模型技术补充_V3.1.md"
+  - "08_项目管理/任务包/Q3_H2_BOOTSTRAP_SPEC_DRAFT.md（FINAL_FREEZE_ACCEPTED；§14 七 K 基线、§19 D-01..D-04 统计、§22.3/§5）"
+  - "08_项目管理/任务包/G3_公共随机DES与H1基线.yaml（key_schema_v1、C26、数据分离）"
+  - "08_项目管理/任务包/Q2_单班制H1正式评估.yaml（正式运行/统计/证据契约样板）"
+  - "accepted 引擎/checker：random_des_v1.py、key_schema_v1.py（含 P0 H2 扩展）、lifetime_regeneration_v1.py、g3_quality_oracle_v1.py、g3_replay_checker_v1.py"
+
+# ============================================================================
+# 1. 冻结上游（本包不重定义，只绑定）
+# ============================================================================
+frozen_upstream:
+  engine: "04_代码/main_model/g3/random_des_v1.py（accepted G3 引擎；本包不改其数学/状态语义）"
+  key_schema: "key_schema_v1（含 P0 扩展；P0 = VERIFIED FINAL PASS；本包不改）"
+  quality_oracle: "04_代码/checker/g3_quality_oracle_v1.py（C06）"
+  replay_checker: "04_代码/checker/g3_replay_checker_v1.py（C17）"
+  h1_policy: "NO_PM_BEFORE_MANDATORY（accepted 哨兵；Bootstrap 中 'NO_PM' 为语义简称，二者同一 canonical runtime identifier，不新增第二套 policy）"
+  tau_pm_198: "HISTORICAL_TUNING_SELECTED_CANDIDATE / FORMALLY_NOT_SELECTED_FOR_Q2_PRIMARY；Q3 不重调、不作为主策略"
+
+# ============================================================================
+# 2. 正式家族（Human Gate 冻结：Tier 1 + Tier 2；Tier 3 本包不运行）
+# ============================================================================
+formal_family:
+  k_grid:
+    - {label: "K09",  hours: "9"}
+    - {label: "K09p5", hours: "19/2"}   # 9.5
+    - {label: "K10",  hours: "10"}
+    - {label: "K10p5", hours: "21/2"}   # 10.5
+    - {label: "K11",  hours: "11"}
+    - {label: "K11p5", hours: "23/2"}   # 11.5
+    - {label: "K12",  hours: "12"}
+  seven_k_enumeration: "TRUE（恰 7 点全枚举；禁止部分 K / 中途跳过 / 事后扩展 / 预设 K=12 最优）"
+  k12_weak_domination: "NOT CLAIMED（主配置；C15/R29；不同 K 班界不嵌套）"
+  tier_1:
+    role: "PRIMARY / REQUIRED（Q3 主 K 推荐证据）"
+    observation_semantics: "single_test_unconditional_v1（P060）"
+    turnover: "1h_literal（P059）"
+    policy: "NO_PM_BEFORE_MANDATORY"
+    cells: "7 K × 200 批 × 100 台 = 1400 formal batches"
+  tier_2:
+    role: "CONTRACT REQUIRED（A03 替代观测语义独立全链；非主推荐身份）"
+    observation_semantics: "standard_chain_v1（P058；accepted G2-02 4bb92eda standard_chain 核）"
+    turnover: "1h_literal"
+    policy: "NO_PM_BEFORE_MANDATORY"
+    cells: "7 K × 200 批 × 100 台 = 1400 formal batches"
+    no_pooling_with_tier1: "TRUE（Tier 1/Tier 2 不得混池成新主估计量）"
+  tier_3: "NOT RUN（本包不运行 Tier 3 optional robustness）"
+  forbidden: "H2 density recheck / P1 / posterior / rollout / C23 / C25 / h2_tuning / h2_holdout / Q4 / tau_pm 重调 / 修改 D-01..D-25 / 修改 P0 key_schema"
+
+# ============================================================================
+# 3. 随机世界与 CRN（D-03 冻结）
+# ============================================================================
+random_world:
+  namespace: "q3_formal"
+  master_seed: 5
+  replicate_ids: "0..199（恰 200；禁止增减）"
+  batch_size: 100
+  crn: "七个 K 复用同一 replicate_ids（跨 K CRN 配对）；Tier 1/Tier 2 同一 id 语义相同"
+  forbidden_in_physical_keys:
+    - "K / shift_length"
+    - "policy"
+    - "squad_id"
+    - "run_id"
+    - "tier / observation semantics / turnover"
+  analysis_stream:
+    namespace: "q3_formal_analysis_bootstrap_v1"
+    seed: 40003
+    B: 10000
+    note: "仅重采样 200 个完整配对批次索引；不影响 DES 物理流"
+
+# ============================================================================
+# 4. Q3 日历 / 初态 / 重置（A08/A09/B19 冻结）
+# ============================================================================
+q3_calendar:
+  two_shifts_per_day: "TRUE（P042）"
+  day_d: "班 1=[24d, 24d+K)、班 2=[24d+K, 24d+2K)、停工 [24d+2K, 24(d+1))"
+  daily_work_hours: "2K"
+  daily_off_hours: "24-2K"
+  shift_boundary: "测试/换新-校准/完整周转不可跨班；now+duration<=shift_end 才可启动；finish==shift_end 合法（B18）"
+  squad_semantics: "换班只改 on_duty_squad；不清空/重建全局队列；不重排 FCFS；不重置首败记录（B19）"
+  pending_retest: "保留首败、原 release_time、effective_attempt_no=2；下一班另一分队从头完整执行；不插队；持续占台"
+  squad_id_excluded: "squad_id 不进入任务身份 / FCFS 键 / U_Y 物理键"
+  full_reset: "TRUE（A09）：每 K/replicate 独立从 Q3 冻结初态开始；clock=0、设备 age=0、代次重置、独立新寿命（同 q3_formal world）；首两台在位、设备已校准；禁止读取 Q2 终态（C15 断言）"
+
+# ============================================================================
+# 5. 统计程序（Bootstrap §14.3/D-04 冻结）
+# ============================================================================
+statistics:
+  tier1_primary_estimand: "每 K 的 E[T]（日历小时→/24 天；P044）"
+  comparison_family_tier1: "全部 21 个两两 K 配对对比（CRN 配对差 DeltaT=T(k1)-T(k2)）"
+  method: "paired batch-level bootstrap；B=10000；族水平 95%"
+  bonferroni_tier1: "m=21；alpha_each=0.05/21；双侧；边缘 percentile 界 0.05/42 与 1-0.05/42"
+  tier2_analysis: "同 21 对配对比较（独立运行；无主推荐身份；不与 Tier 1 混池）"
+  recommendation_rule:
+    k_star: "argmin_k mean(T_K)"
+    co_best: "与 k* 配对 CI 含 0 的全部 K"
+    strong_recommendation: "仅当 k* 相对其余全部 K 的 CI 完全 <0；否则报告 k* + co-best"
+    wording_limit: "最优声明限于七个 K 与冻结候选政策集内；禁止全局最优；禁止预设 K=12 最优"
+  quality: "S/PL/PW 独立报告；跨 K 按 accepted 质量分离以 C06 验证；PL/PW 稀有事件池化 20000 台/单元，x=0 → 单侧 exact CP 95% 上界 1-0.05^(1/20000)；禁写 true probability=0"
+  yxb: "分母 = K（B10/P048；引擎 shift_count×shift_length_h 口径）；分子为两队合并的实际运行片段"
+
+# ============================================================================
+# 6. 检查范围（CR-V3.1 + Bootstrap §14.4）
+# ============================================================================
+checks:
+  per_batch_or_cell:
+    - id: "CR-V3.1/C06"
+      note: "逐批 pathwise 质量 oracle"
+    - id: "CR-V3.1/C13"
+      note: "寿命（engine）"
+    - id: "CR-V3.1/C14"
+      note: "再生（engine）"
+    - id: "CR-V3.1/C16"
+      note: "namespace=q3_formal、seed=5、ids 0..199、跨 K CRN"
+    - id: "CR-V3.1/C17"
+      note: "逐批完整重放"
+    - id: "CR-V3.1/C18"
+      note: "活性（engine）"
+    - id: "CR-V3.1/C26"
+      note: "H1 政策冻结 NO_PM_BEFORE_MANDATORY；无重调"
+    - id: "CR-V3.1/C15"
+      note: "Q3 重置断言（不读 Q2 终态）、七 K 全枚举、跨 K CRN、无 K=12 捷径"
+  family_level:
+    - id: "CR-V3.1/C21"
+      note: "不可变证据 + file_hashes"
+    - id: "CR-V3.1/C07"
+      note: "族级统计烟测（诊断，非硬门）"
+    - id: "CR-V3.1/C19"
+      note: "checker 隔离（治理）"
+    - id: "CR-V3.1/C20"
+      note: "适用故障注入资格（继承）"
+  no_semantic_change_for_checks: "TRUE"
+
+# ============================================================================
+# 7. 证据 / 输出根 / 失败处理（Bootstrap §17 冻结）
+# ============================================================================
+evidence:
+  family_root: "05_结果/Q3/formal/run_<UTC>_<8hex>/（每次完整正式尝试恰一个不可变根；失败尝试保留不可覆盖）"
+  minimum_contents:
+    - run_manifest
+    - commands
+    - environment/runtime
+    - family config snapshot
+    - task-package snapshot/hash
+    - code hashes
+    - schema hashes
+    - key_schema hash
+    - config hashes
+    - tier1 outputs（逐 K cell + 逐 replicate raw）
+    - tier2 outputs
+    - checker reports（checks.json）
+    - statistical-analysis outputs（21 对表 + k*/co-best + per-K summary + quality table + rare-event report）
+    - bootstrap metadata
+    - failure samples
+    - file_hashes.sha256
+    - 逐批/逐单元/族总墙钟账本
+  paper_authority: "Q3 数字仅来自 accepted q3_formal 运行；本包完成后记录 Q3 H1 FORMAL EXECUTION COMPLETED / AWAITING HUMAN GATE REVIEW（非 ACCEPTED）"
+  failure_rules: "runtime crash / checker hard fail / hash mismatch / provenance gap / semantic conflict / random-key contamination / Q3 reset violation / cross-K CRN violation / seven-K incomplete / artifact corruption → formal attempt = FAILED，保留 run root，STOP 回 Human Gate；禁止静默修复覆盖或自动重跑"
+
+# ============================================================================
+# 8. 预算 / 停止边界
+# ============================================================================
+runtime_budget:
+  soft_wall_clock_checkpoint: "4 h（停止非必要探索/额外 reviewer/可选敏感性；只继续必需验收）"
+  hard_wall_clock_cap: "8 h（无条件停止：Q3_H1_FORMAL_HARD_BUDGET_STOP_WAITING_FOR_HUMAN_GATE；不自动提高）"
+  no_repetition_reduction: "TRUE"
+  stop_boundary: >-
+    本包完成（Tier 1 + Tier 2 全检查 PASS）后 STOP 回 Human Gate；不运行 density recheck；
+    不开始 P1；不推荐 K；Q3 H1 FORMAL = EXECUTION COMPLETED / AWAITING HUMAN GATE REVIEW。
+
+decision_required: []
