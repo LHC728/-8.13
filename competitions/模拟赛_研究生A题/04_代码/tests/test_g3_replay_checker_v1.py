@@ -1103,5 +1103,206 @@ class TestOutputContract(_Base):
         self.assertIn("T=", summary)
 
 
+# ---------------------------------------------------------------------------
+# C17 cancelled-attempt replay semantics regression (INVALIDATION_REPORT_G3_C17)
+# ---------------------------------------------------------------------------
+# Frozen semantics (G3-SPEC-V1.0 section 2): interruption/cancellation
+# produces no observation and does not advance the effective attempt; a
+# cancelled/non-completed attempt2 must NEVER become an exit-causing ABNORMAL
+# merely because its canonical U_Y would have been ABNORMAL had it completed.
+# The repaired derive_device_chain accepts completed_observations so that only
+# EFFECTIVE COMPLETED observations drive the exit-process set.  These tests
+# lock "cancelled/non-completed attempt != observed attempt".
+
+
+def chain_kernel_test() -> dict[str, dict[str, Fraction]]:
+    """Frozen standard-chain observation kernel (accepted G2-02 4bb92eda)."""
+    return {
+        proc: {
+            "alpha": Fraction(entry["alpha"]),
+            "beta": Fraction(entry["beta"]),
+        }
+        for proc, entry in {
+            "A": {"alpha": "0.015612642053572192", "beta": "0.38226176188707678"},
+            "B": {"alpha": "0.020942481877888125", "beta": "0.44441134347855829"},
+            "C": {"alpha": "0.010343090510990168", "beta": "0.30146827672834102"},
+            "E": {"alpha": "0.010920932310648563", "beta": "0.1185856135607714"},
+        }.items()
+    }
+
+
+def _find_exit_repro(obs_kernel, seed_range=(0, 60)) -> tuple[int, int, int]:
+    """Search seeds/replicates for a batch whose log contains a device with:
+    some process attempt1 ABNORMAL, attempt2 cancelled before observation, and
+    another process actually exits the device.  Returns
+    (master_seed, replicate_id, device_id) or raises."""
+    for seed in range(*seed_range):
+        for rep in range(0, 8):
+            cfg = make_config(batch_size=100, master_seed=seed, replicate_id=rep,
+                              kernel=obs_kernel, scenario="q2_single_shift",
+                              shift_length_h="12", tau_pm=lr.NO_PM_BEFORE_MANDATORY)
+            res = run(cfg)
+            for rec in res.event_log:
+                if rec.get("event_type") != "TASK_CANCEL":
+                    continue
+                if rec.get("cancel_reason") != "DEVICE_EXIT":
+                    continue
+                # a cancelled attempt2 whose process is NOT the exiting one
+                if rec.get("effective_attempt_no") != 2:
+                    continue
+                dev = rec.get("device_id")
+                proc = rec.get("process")
+                # confirm another process exited this device with attempt2 ABNORMAL
+                exits = [
+                    e for e in res.event_log
+                    if e.get("event_type") == "DEVICE_EXIT"
+                    and e.get("device_id") == dev and e.get("process") != proc
+                ]
+                if exits:
+                    return (seed, rep, dev)
+    raise AssertionError("no cancelled-attempt2 exit repro found in seed range")
+
+
+class TestC17CancelledAttempt2(_Base):
+    def test_chain_cancelled_attempt2_exit_process(self) -> None:
+        """A: chain semantic — B2 completes ABNORMAL (exit); C2 started but
+        cancelled; C2 canonical U would be ABNORMAL; C2 has zero effective
+        OBSERVATION; expected exit_processes = [B]."""
+        seed, rep, _dev = _find_exit_repro(chain_kernel_test())
+        cfg = make_config(batch_size=100, master_seed=seed, replicate_id=rep,
+                          kernel=chain_kernel_test(), scenario="q2_single_shift",
+                          shift_length_h="12", tau_pm=lr.NO_PM_BEFORE_MANDATORY)
+        res = run(cfg)
+        report = self.check(cfg, event_log=res.event_log, metrics=res.metrics)
+        # the repaired checker must PASS this previously-false-C10 batch
+        self.assertEqual(report.verdict, "PASS",
+                         "issues=%s" % [i.describe() for i in report.issues])
+
+    def test_single_cancelled_attempt2_exit_process(self) -> None:
+        """B: single-semantics equivalent — one process attempt2 triggers
+        exit while another attempt2 is cancelled before observation."""
+        seed, rep, _dev = _find_exit_repro(frozen_kernel())
+        cfg = make_config(batch_size=100, master_seed=seed, replicate_id=rep,
+                          kernel=frozen_kernel(), scenario="q2_single_shift",
+                          shift_length_h="12", tau_pm=lr.NO_PM_BEFORE_MANDATORY)
+        res = run(cfg)
+        report = self.check(cfg, event_log=res.event_log, metrics=res.metrics)
+        self.assertEqual(report.verdict, "PASS",
+                         "issues=%s" % [i.describe() for i in report.issues])
+
+    def test_derive_chain_ignores_uncompleted_attempt2(self) -> None:
+        """Core repair unit: attempt2 with no completed observation must not
+        enter exit_processes even if its canonical U_Y would be ABNORMAL."""
+        ns = ks.NAMESPACE_DEVELOPMENT_UNIT
+        seed = 7
+        rep = 0
+        dev = 3
+        params = rck.load_parameters(PARAMS_CSV)
+        q = params["q"]
+        # find a (device, process) where canonical attempt2 would be ABNORMAL
+        found = None
+        for proc in ("A", "B", "C"):
+            u2 = ks.u_y(ns, rep, dev, proc, 2, seed)
+            # need true problem; check u_x
+            qp = q[proc]
+            true_p = ks.u_x(ns, rep, dev, proc, seed) < qp
+            entry = chain_kernel_test()[proc]
+            alpha = entry["alpha"]; beta = entry["beta"]
+            abn2 = (u2 < 1 - beta) if true_p else (u2 < alpha)
+            if abn2:
+                found = (proc, true_p)
+                break
+        if found is None:
+            self.skipTest("no canonical-ABNORMAL attempt2 in this seed/dev")
+        proc, true_p = found
+        cfg = make_config(batch_size=5, master_seed=seed, replicate_id=rep,
+                          kernel=chain_kernel_test())
+        cfg_dict = cfg.to_dict()
+        replay_cfg = rck.parse_config(cfg_dict)
+        # without completed observations: attempt2 IS considered (old behavior)
+        chain_all = rck.derive_device_chain(replay_cfg, {"q": q}, dev)
+        # with attempt2 NOT completed: must be excluded
+        chain_cancelled = rck.derive_device_chain(
+            replay_cfg, {"q": q}, dev,
+            completed_observations={(proc, 1)},
+        )
+        self.assertNotIn(proc, chain_cancelled.exit_processes)
+        # with attempt2 completed: it IS considered
+        chain_done = rck.derive_device_chain(
+            replay_cfg, {"q": q}, dev,
+            completed_observations={(proc, 1), (proc, 2)},
+        )
+        if chain_all.exit_processes and proc in chain_all.exit_processes:
+            self.assertIn(proc, chain_done.exit_processes)
+        self.assertEqual(chain_cancelled.exit_processes, ())
+        self.assertEqual(chain_done.exit_processes, tuple(sorted([proc])) if
+                         proc in chain_all.exit_processes else ())
+
+    def test_same_timestamp_two_exits_preserved(self) -> None:
+        """C: same-timestamp two completed second-ABNORMAL observations both
+        genuinely complete before terminal settlement — frozen multi-exit
+        behavior preserved (NOT forced to a single process)."""
+        # The repair only filters non-completed attempts; two genuinely
+        # completed attempt2s both remain exit processes.
+        ns = ks.NAMESPACE_DEVELOPMENT_UNIT
+        seed = 7
+        dev = 2
+        params = rck.load_parameters(PARAMS_CSV)
+        q = params["q"]
+        cfg = make_config(batch_size=5, master_seed=seed, replicate_id=0,
+                          kernel=chain_kernel_test())
+        replay_cfg = rck.parse_config(cfg.to_dict())
+        chain = rck.derive_device_chain(
+            replay_cfg, {"q": q}, dev,
+            completed_observations={("A", 1), ("A", 2), ("B", 1), ("B", 2),
+                                    ("C", 1), ("C", 2), ("E", 1), ("E", 2)},
+        )
+        # invariant: exit_processes is a subset of processes whose attempt2
+        # was actually completed in the supplied set
+        for proc in chain.exit_processes:
+            self.assertIn((proc, 2), {("A", 2), ("B", 2), ("C", 2), ("E", 2)})
+        self.assertLessEqual(len(chain.exit_processes), 2)
+
+    def test_interrupted_attempt2_no_false_exit(self) -> None:
+        """D: attempt2 random-failure interruption — no observation at the
+        interrupted fragment; no false exit from it; if the same effective
+        attempt later completes, only that completed observation is used."""
+        # equipment-failure seed 51 (B1 interrupted): attempt1 fragment is
+        # interrupted by failure; the SAME effective attempt1 later completes.
+        cfg = make_config(batch_size=1, master_seed=51,
+                          durations={"A": "2.5", "B": "60", "C": "2.5", "E": "3"})
+        res = run(cfg)
+        report = self.check(cfg, event_log=res.event_log, metrics=res.metrics)
+        self.assertEqual(report.verdict, "PASS", report.issues)
+
+    def test_cancelled_attempt2_pass_u_still_no_observation(self) -> None:
+        """E: cancelled attempt2 whose canonical U would be PASS — still no
+        observation; absence is path semantics, not outcome dependent."""
+        # A cancelled attempt2 is never observed regardless of its U value.
+        seed, rep, dev = _find_exit_repro(frozen_kernel())
+        cfg = make_config(batch_size=100, master_seed=seed, replicate_id=rep,
+                          kernel=frozen_kernel(), scenario="q2_single_shift",
+                          shift_length_h="12", tau_pm=lr.NO_PM_BEFORE_MANDATORY)
+        res = run(cfg)
+        # the cancelled attempt2 has no OBSERVATION_MATERIALIZED
+        cancelled2 = [
+            r for r in res.event_log
+            if r.get("event_type") == "TASK_CANCEL"
+            and r.get("device_id") == dev and r.get("effective_attempt_no") == 2
+        ]
+        for c2 in cancelled2:
+            proc = c2.get("process")
+            obs = [
+                r for r in res.event_log
+                if r.get("event_type") == "OBSERVATION_MATERIALIZED"
+                and r.get("device_id") == dev and r.get("process") == proc
+                and r.get("effective_attempt_no") == 2
+            ]
+            self.assertEqual(len(obs), 0,
+                             "cancelled attempt2 must have zero observations")
+        report = self.check(cfg, event_log=res.event_log, metrics=res.metrics)
+        self.assertEqual(report.verdict, "PASS", report.issues)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

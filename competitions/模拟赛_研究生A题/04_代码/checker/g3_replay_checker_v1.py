@@ -699,7 +699,9 @@ def _kernel_outcome(cfg: ReplayConfig, true_problem: bool, u: Fraction,
 
 
 def derive_device_chain(cfg: ReplayConfig, params: dict[str, Any],
-                        device_id: int) -> DeviceChain:
+                        device_id: int,
+                        completed_observations: Optional[set[tuple[str, int]]] = None
+                        ) -> DeviceChain:
     """Forward-chain one device's absorption in the canonical world.
 
     Frozen semantics (V3.1 section 9; problem contract 1.1/1.2): A/B/C each
@@ -708,6 +710,24 @@ def derive_device_chain(cfg: ReplayConfig, params: dict[str, Any],
     are all PASS; E runs with true problem = any(A/B/C) or D, retesting once
     on ABNORMAL; the device passes iff E's final observation is PASS, exits
     iff any chain reaches two ABNORMALs.
+
+    Cancellation / non-observation semantics (G3-SPEC-V1.0 section 2; frozen):
+    an interrupted/cancelled/non-completed attempt produces NO observation and
+    does NOT advance the effective attempt.  A process may therefore be
+    classified as an actual exit-causing process ONLY from an EFFECTIVE
+    COMPLETED observation path: attempt1 completed with OBSERVATION=ABNORMAL
+    AND attempt2 completed with OBSERVATION=ABNORMAL, both valid under the
+    frozen same-timestamp / cancellation semantics.
+
+    ``completed_observations`` (optional): the set of (process, attempt_no)
+    pairs that ACTUALLY completed an observation in the event log (derived
+    from OBSERVATION_MATERIALIZED records).  When supplied, an attempt2 that
+    was never started / shifted / interrupted / terminal-cancelled / otherwise
+    has no effective completed observation is NEVER treated as an exit-causing
+    ABNORMAL merely because its canonical U_Y would map to ABNORMAL had it
+    completed.  The canonical U/outcome is still recomputed to VERIFY an
+    actually completed observation (independent replay); a non-observed
+    counterfactual U is never turned into a real observation.
     """
     ns = cfg.namespace
     rep = cfg.replicate_id
@@ -731,7 +751,12 @@ def derive_device_chain(cfg: ReplayConfig, params: dict[str, Any],
                 cfg, true_abc[proc], ks.u_y(ns, rep, device_id, proc, 2, seed), proc
             )
             expected[(proc, 2)] = out2
-            if out2 == OUTCOME_ABNORMAL:
+            # cancelled/non-completed attempt2 must not become an exit process
+            attempt2_completed = (
+                completed_observations is None
+                or (proc, 2) in completed_observations
+            )
+            if out2 == OUTCOME_ABNORMAL and attempt2_completed:
                 abc_all_pass = False
                 exit_processes.append(proc)
 
@@ -753,7 +778,11 @@ def derive_device_chain(cfg: ReplayConfig, params: dict[str, Any],
                 cfg, true_e, ks.u_y(ns, rep, device_id, "E", 2, seed), "E"
             )
             expected[("E", 2)] = e2
-            if e2 == OUTCOME_ABNORMAL:
+            e2_completed = (
+                completed_observations is None
+                or ("E", 2) in completed_observations
+            )
+            if e2 == OUTCOME_ABNORMAL and e2_completed:
                 terminal = TERMINAL_EXITED
                 exit_processes.append("E")
             else:
@@ -1618,7 +1647,19 @@ class G3ReplayChecker:
             dev = self._devices.get(device_id)
             chain = self._chains.get(device_id)
             if chain is None:
-                chain = derive_device_chain(self._cfg, self._params, device_id)
+                # actual completed observations for this device (frozen
+                # cancellation semantics: only EFFECTIVE completed attempts
+                # consume an observation U and may drive the exit chain)
+                completed: set[tuple[str, int]] = set()
+                for rec in self._records_by_type.get("OBSERVATION_MATERIALIZED", []):
+                    if rec.get("device_id") == device_id:
+                        proc = rec.get("process")
+                        att = rec.get("effective_attempt_no")
+                        if proc is not None and att is not None:
+                            completed.add((proc, int(att)))
+                chain = derive_device_chain(
+                    self._cfg, self._params, device_id, completed
+                )
                 self._chains[device_id] = chain
             if dev is None or dev["terminal_state"] is None:
                 self._issue("C10", loc, "DEVICE_TERMINAL present", "missing",
