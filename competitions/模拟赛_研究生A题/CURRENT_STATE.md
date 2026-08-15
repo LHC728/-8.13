@@ -2,7 +2,7 @@
 
 > 最后更新：2026-08-15
 > 状态版本：`STATE-2026-08-13-G2.4`
-> 当前 Gate：**Whole G2 = PASS；G3 = PASS / ACCEPTED（C17 REQUALIFIED_AFTER_C10_C12_CHECKER_FIXES）；Q2 H1 FORMAL = PASS / ACCEPTED（Human Gate 2026-08-15 FINAL PASS；accepted formal run `2d1466ba`；Pilot #3 = COMPLETED AT MACRO STOP；**Q2 主情景选中 H1 政策 = NO_PM_BEFORE_MANDATORY**；tau_pm=198 = historical tuning-selected candidate / formally not selected for Q2 primary）；Q2 paper numbers = AVAILABLE / AUTHORITATIVE FROM ACCEPTED FORMAL RUN；H2 = NOT AUTHORIZED / ADMISSION DECISION PENDING；Q3 = NOT STARTED；Q4 = NOT STARTED；下一 Human Gate：评估 C24 实际 H1 决策机会证据，裁决 H2 admission vs deletion/skip → Q3**
+> 当前 Gate：**Whole G2 = PASS；G3 = PASS / ACCEPTED（C17 REQUALIFIED_AFTER_C10_C12_CHECKER_FIXES）；Q2 H1 FORMAL = PASS / ACCEPTED（accepted run `2d1466ba`；Q2 主情景选中 H1 政策 = NO_PM_BEFORE_MANDATORY）；H2 = ADMITTED_FOR_DESIGN_ONLY（Human Gate 2026-08-15；H2 admission opportunity evidence = PASS；非 H2 FINAL ACCEPTANCE；H2 实现 NOT YET AUTHORIZED）；CR-V3.1/C24：opportunity-density evidence = PASS、budget/spec freeze = PENDING；C23 = PENDING / NOT YET EXECUTED；C25 = PENDING / NOT YET EXECUTED；Q3 = NOT STARTED；Q4 = NOT STARTED；Q2 paper numbers = AVAILABLE / AUTHORITATIVE FROM ACCEPTED FORMAL RUN；下一阶段：Q3 + H2 ADVANCED SCHEDULING BOOTSTRAP（需先冻结 rollout M / 每批 H2 评估上限 / 墙钟软硬预算 / 动作稳定性 / 样本划分 / C23 / Q3 七 K 基线 / Q3 H2 密度复核）**
 > 当前检查注册表：[`CR-V3.1`](01_审计/检查注册表_V3.1.md)
 
 ## 1. 新对话只需先读
@@ -117,22 +117,33 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
   - **Q2 论文数字 = AVAILABLE / AUTHORITATIVE FROM ACCEPTED FORMAL RUN `2d1466ba`**（formal_comparison_table.json + rare_event_report.json 等；禁手录、禁失败 run、禁调优/holdout 值替代）。
   - 禁止：改 G3/Q2 accepted 核心（需改 → STOP 回 Human Gate）、实现 H2、枚举 K、推荐 K、启动 Q3/Q4、写论文。
 
+- **`H2 ADMISSION`（opportunity evidence audit）= ADMITTED_FOR_DESIGN_ONLY**（Human Gate 2026-08-15；非 H2 FINAL ACCEPTANCE；H2 实现 NOT YET AUTHORIZED）：
+  - **H2 admission opportunity evidence = PASS**（reviewer `H2_ADMISSION_EVIDENCE_L3_REVIEWER` v2，session `2cea14f5-4d6b-491d-b845-795b47cfccc2`，runtime 机械验证 deepseek-official/deepseek-v4-pro/high，PASS/HIGH/evidence_integrity=HIGH；advisory：density=MODERATE、recommendation=ADMIT_FOR_DESIGN；v1 FAIL 历史保留）。
+  - **机会密度统计（仅 density，非性能声明）**：NO_PM（G3 tuning 20 批）legal dispatch ≈413.1/批、**strategic wait strict ≈11.4/批（~2.8%）**、**optional PM feasible ≈168.8/批（~41%）**、both ≈4.5/批、**meaningful H2 choice fraction ≈0.429**、零机会批次比例 0%（strategic/PM/meaningful 均 0%）。holdout 全 100 批上下文一致。
+  - **旧 C24 `waiting_opportunity_count` 审计结论**：其测量的是 **forced wait / 当前非法性**（head 不能合法启动），**不是 H2 战略等待密度**；与离线 strategic wait 相比约**高一个数量级**（150/批 vs 11.4/批），**不得复用为 H2 strategic-wait 计数**。未来 H2 admission/validation 必须使用修正定义（strategic wait 分 STRICT/BOUNDARY/NONSTRICT；optional PM 与 mandatory 分离）。
+  - **C24 状态拆分**：opportunity-density evidence = **PASS**；budget/spec freeze = **PENDING**（不标记 full C24 PASS）。
+  - **C23 = PENDING / NOT YET EXECUTED**；**C25 = PENDING / NOT YET EXECUTED**。
+  - 证据来源分离：仅 G3 tuning `01b7c7e7` + holdout `020bc637`（确定性重放重建 accepted 日志、hash 逐批匹配）；**q2_formal design leakage = NONE**；无新随机模拟。
+  - 证据文件：`01_审计/H2_ADMISSION_C24_EVIDENCE_DRAFT.md`、`01_审计/H2_ADMISSION_EVIDENCE_L3_REVIEW_RECORD.md`；工具：`04_代码/checker/h2_admission_opportunity_analyzer_v1.py`（独立、stdlib-only、无 main DES import）、`04_代码/scripts/run_h2_admission_evidence_v1.py`（纯 orchestration/reporting wrapper，RUNNER_GOVERNANCE_DEVIATION=CLOSED_BY_HUMAN_GATE_CONDITIONAL_AUTHORIZATION）、`04_代码/tests/test_h2_admission_opportunity_analyzer_v1.py`。
+  - **证据支持 ADMIT_FOR_DESIGN，不证明**：H2 改善 T、H2 最优、H2 应进最终论文、任何 rollout M、任何 Q3 K。
+
 （历史记录：G2 完成前的 7 项实施目标——单次无条件/标准链观测核、Q1 闭式与吸收链、最小并行 DES、1—4 台对拍与 K=9 跨班、最小 checker 与故障注入、G2 适用检查——均已随 G2/G3 PASS 完成并验收，不再作为当前出口条件。）
 
 ## 6. 当前禁止
 
-- 不实现 H2；不选 rollout M；不后验 rollout；不比 H1 vs H2；
-- 不枚举 K、不推荐 K；不启动 Q3/Q4；
+- **不实现 H2 rollout**；不选 rollout M；不运行 H2 政策实验；不消耗新随机世界；不比 H1 vs H2；
+- 不枚举 K、不推荐 K；不启动 Q3 七 K 模拟；不启动 Q4；
 - 不把失败 run `daead4cf` 或 G3 调优/holdout 数据（含 tau_pm=198 候选的调优 mean T）当作 Q2 论文数字来源；论文数字只来自 accepted run `2d1466ba`；
 - 不手录数字为权威；手稿数值必须机械可追溯至 accepted formal 证据；
-- 不宣称 tau_pm=198 最优（= FORMALLY_NOT_SELECTED_FOR_Q2_PRIMARY）；不把 C3（不可区分）转为 tau198 优越证据；
+- 不宣称 tau_pm=198 最优（= FORMALLY_NOT_SELECTED_FOR_Q2_PRIMARY）；不把 C3（不可区分）转为 tau198 优越证据；不因 H2 admission 重开 Q2 或宣称 Q2 H1 次优；
 - 不宣称 NO_PM 超越冻结模型/候选集范围的普适最优或一般工业管理定理；
+- **不把旧 C24 `waiting_opportunity_count` 当作 H2 战略等待密度**（= forced-wait 仪表）；未来 H2 使用修正定义（strategic STRICT/BOUNDARY/NONSTRICT + optional PM 与 mandatory 分离）；
 - 不改 G3/Q2 accepted 核心（random_des_v1/key_schema_v1/寿命再生/C06/C17/冻结观测语义/Q2-FORMAL-SPEC）；若需改 → STOP 回 Human Gate；
 - 不修改已签字口径与 accepted 证据；若实现暴露新歧义，回到变更控制而不是自行决定。
 
 ## 7. 下一出口
 
-G2/G3/Q2 H1 FORMAL 均已 PASS/ACCEPTED。**Q2 论文数字 = AVAILABLE / AUTHORITATIVE（accepted run `2d1466ba`）**。下一 Human Gate：**评估 C24 实际 H1 决策机会证据 → 裁决 H2 admission vs H2 deletion/skip → 进入 Q3**。不暗示 H2 自动继续；H2/Q3/Q4 均需各自新 Human Gate 授权。
+G2/G3/Q2 H1 FORMAL 均已 PASS/ACCEPTED；H2 = ADMITTED_FOR_DESIGN_ONLY。**下一阶段：Q3 + H2 ADVANCED SCHEDULING BOOTSTRAP**——新 Human Gate / 新会话必须先冻结：rollout M、每批 H2 评估上限、墙钟软/硬预算、动作稳定性准则、tuning/holdout/formal 样本划分、C23 信息/动作契约、Q3 H1 七 K 基线协议、Q3 特定 H2 机会密度复核方式；**本 landing 不选这些值**。Q2 论文数字 = AVAILABLE / AUTHORITATIVE（accepted run `2d1466ba`）。
 
 ## 8. 当前目录映射
 
