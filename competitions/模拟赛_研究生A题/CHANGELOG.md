@@ -2,6 +2,15 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q3 H1 FORMAL FINAL PASS / ACCEPTED（Density Gate 激活）`
+
+### 修改
+
+- **Q3 H1 FORMAL = FINAL PASS / ACCEPTED（Human Gate 2026-08-15）**。accepted physical run = `run_20260815T133840057668Z_7ee48fc0`；accepted final provenance reissue = `05_结果/Q3/formal/reissue_20260815T150613626910Z_f4da8f9d`；**C21 = PASS / REQUALIFIED**（hash DAG 无环 + manifest/inventory 三向一致 + recommendation 措辞 orientation-neutral）。
+- **Tier 1 H1 基线预注册报告**：k\* = **K12**（strong、co-best=[]）——**措辞限定**「七个 K + 冻结 H1 政策集（NO_PM_BEFORE_MANDATORY）内」；**非全局最优、非 K12 弱支配、非 final Q3 overall recommendation**（H2 challenger 尚未完成 Density/C25）。
+- **Roadmap 更新（Human Gate 裁决）**：Q3 H1 accepted → **Q3 七 K H2 opportunity-density recheck（Density Gate，本执行包）** → Density FAIL → DELETE H2、Q3 H1-only、不实现 P1；Density PASS → STOP 回 Human Gate → Human Gate 再决定是否授权 P1。**P1 / C23 仍 NOT AUTHORIZED**。
+- 状态同步：`CURRENT_STATE.md`（Gate 行更新：Q3 H1 FORMAL = FINAL PASS / ACCEPTED；Q3 H2 opportunity-density recheck = ACTIVE）。
+
 ## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q3-H1-E2 FINAL PROVENANCE CONSISTENCY CLOSURE`
 
 ### 修改
