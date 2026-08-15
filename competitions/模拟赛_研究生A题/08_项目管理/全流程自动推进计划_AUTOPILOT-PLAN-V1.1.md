@@ -105,6 +105,16 @@ Bootstrap 必须同步修改：
 * `D = Decision / Reviewer`：处理语义、设计、接口高风险与 Macro 审阅；
 * `D-red = independent D reviewer`：L4 / 关键 Macro 的反方审阅。
 
+D / D-red 被调用时，仍执行原有完整 Decision / Semantic Review；在正常 Review 完成后、形成最终裁决前，启用：
+
+`GPT_Reviewer_主动取证与按需验证扩展模块_V1.1.md`
+
+其顺序固定为：
+
+`Normal Review → Verification Decision → optional Active Verification → Reviewer Verdict → Gate Recommendation`
+
+V1.1 只增强 Reviewer 的主动取证和按需验证能力，不扩大 D 的强制调用范围，不替代 E2 checker，不改变 Macro Stop / Human Gate。
+
 当前 DeepSeek Harness 的 Pilot #1 runtime mapping 冻结为：
 
 | 角色                    | 当前映射                      | 默认 reasoning |
@@ -141,6 +151,19 @@ Bootstrap 必须同步修改：
 #### L2-YELLOW
 
 出现新接口接缝、首次复杂集成、可定位但非纯机械差异、实现可能静默偏离冻结语义时，必须 fresh D 审阅；最多允许一次受限 patch/rebind。
+
+YELLOW 的 D 审阅按 Reviewer 内部流程执行（调用范围不变）：
+
+```text
+YELLOW
+→ fresh D
+→ Normal Review
+→ Verification Decision
+→ optional Active Verification
+→ Reviewer Verdict
+→ 按现有规则最多一次受限 patch/rebind
+→ 重新验收
+```
 
 #### L2-RED
 
@@ -414,6 +437,22 @@ Pilot #1 允许自动完成：
 6. reproducibility / one-command verification skeleton；
 7. Whole G2 formal candidate run + immutable evidence package；
 8. fresh D / Pro-high Whole G2 只读 L3；
+
+   Macro L3 Reviewer 按以下内部流程执行（调用时机不变）：
+
+   ```text
+   fresh D / Pro-high Whole G2 只读 L3
+
+   → 按现有 D / §8.3 完整语义验收
+   → Normal Review
+   → Verification Decision
+   → optional Active Verification
+   → Reviewer Verdict
+   → Macro Gate Report
+   → Macro Stop
+   ```
+
+   不得取消 `Macro Stop`；不得因为 Reviewer PASS 自动进入后续阶段。
 9. 形成 Whole G2 Macro Gate 报告；
 10. **无条件停机**。
 
@@ -456,6 +495,37 @@ Macro Gate 的 final L3 只要给出：
 **不允许**在 Macro Gate 结论出来以后自动再修一轮、自动重跑一轮然后自己翻成 PASS。
 
 Macro Gate 后任何 patch 都必须由 Human Gate 重新授权一个明确修复阶段。
+
+#### Reviewer V1.1 Verdict 与 operational Gate 的默认映射
+
+Reviewer V1.1 的 `PASS / PASS WITH CAVEAT / NEEDS EVIDENCE / FAIL`
+属于 review semantics，不替代现有 operational Gate。
+
+默认映射：
+
+- `PASS`
+  → Gate recommendation 可为 `PASS`
+  → 但仍受 Macro Stop。
+
+- `PASS WITH CAVEAT`
+  → `PASS` 或 `CONDITIONAL PASS`
+  → 取决于 caveat 是否阻塞。
+
+- `NEEDS EVIDENCE`
+  → `BLOCKED`
+  → 不得依赖该 Claim 继续推进。
+
+- `FAIL`
+  → `BLOCKED`
+  → 若影响语义、formal、主要数字或主要结论，则升级 RED / Human Gate。
+
+必须明确：
+
+`Reviewer Verdict != Gate`
+
+以及：
+
+`Reviewer PASS != permission to cross Macro Stop`
 
 ### 11.3 后续 Macro Gate（本 FINAL 只定义，不提前授权）
 
