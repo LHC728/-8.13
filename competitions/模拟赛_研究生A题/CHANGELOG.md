@@ -2,6 +2,24 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q2-FORMAL-SPEC-V1.0 FROZEN / PILOT #3 ACTIVE`
+
+### 修改
+
+- **Q2-FORMAL-SPEC-V1.0 冻结**（FROZEN_FOR_FORMAL_RUN）：Human Gate 2026-08-15 对 Q2-FORMAL-SPEC-V1.0-DRAFT = CONDITIONAL PASS（初评 `Q2_FORMAL_SPEC_L3_REVIEWER` = FAIL/HIGH，两项实质问题修复后保持历史证据，不升级）→ Phase B fresh FINAL reviewer `Q2_FORMAL_SPEC_FINAL_L3_REVIEWER`（session `698f74c3-d26b-4742-9270-e079b65b82a6`，runtime 机械验证 deepseek-official/deepseek-v4-pro/high）= **PASS / HIGH / implementation_ready=YES**，初评发现 A/B/C 全部闭合 → 冻结。
+- **Human Gate 决策全部落文（Q2-FORMAL-DEC-01..06 + bootstrap 分析流）**：200 批/单元 × 8 单元 = 1600 批/160 000 台；namespace=q2_formal、master_seed=3、replicate_id=0..199（恰 200）；恰 4 个配对 Delta_T 对比（C1 PRIMARY single+1h；C2-C4 稳健），Bonferroni m=4、alpha_each=0.0125、双侧、边缘 CI coverage 0.9875（percentile 0.00625/0.99375）；PL/PW 池化 20000 台精确 CP 区间（x=0 → 单侧上界 `1-0.05^(1/20000)`）；族级证据根 `05_结果/Q2/formal/run_<UTC>_<8hex>/` + 冻结 8 cell tokens；soft 4h / hard 8h；bootstrap 分析流 namespace=q2_formal_analysis_bootstrap_v1、seed=30003、B=10000；`decision_required: []`。
+- **tau_pm = 198 h 正式前冻结**（主单元 = single_test_unconditional_v1 + 1h_literal + tau_pm_198；政策参考 = 同观测/周转 + NO_PM_BEFORE_MANDATORY）；正式运行不重选 tau_pm。
+- **AUTOPILOT PILOT #3 = ACTIVE**：Q2 H1 FORMAL 执行（thin formal runner over accepted G3 engine，不改 G3 core 语义）→ 完整 8×200 族运行 → 配对推断 → Q2 Macro L3（fresh verified Pro/high）→ Q2 Macro Gate 无条件停机。
+- **正式证据在 Q2 Macro L3 + Human Gate 前非论文权威**（NOT PAPER-AUTHORITATIVE）；论文 Q2 数字 = NOT AVAILABLE。
+- CURRENT_STATE 更新：Q2 H1 FORMAL = ACTIVE、Q2-FORMAL-SPEC-V1.0 = FROZEN、Pilot #3 ACTIVE、tau_pm 候选 198h、H2/Q3/Q4 未授权。
+
+### 影响与边界
+
+- G2 = PASS；G3 = PASS / ACCEPTED；Q2 H1 FORMAL = ACTIVE（Pilot #3 至 Q2 Macro Gate 无条件停机）。
+- H2 = NOT AUTHORIZED；Q3 = NOT STARTED；Q4 = NOT STARTED；论文 Q2 数字 = NOT AVAILABLE。
+- 禁止：改 G3 accepted 核心（需改 → STOP Q2_FORMAL_REQUIRES_G3_CORE_CHANGE）、实现 H2、枚举 K、启动 Q3/Q4、写论文。
+- 软墙钟 4h / 硬墙钟 8h（Q2 正式运行预算）；hard cap 无条件停止。
+
 ## 2026-08-15 / `STATE-2026-08-13-G2.4` / `G3 FINAL PASS`
 
 ### 修改

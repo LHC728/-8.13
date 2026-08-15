@@ -1,0 +1,419 @@
+# Q2 任务包：单班制 H1 正式评估（SPEC V1.0）
+
+task_package_version: "Q2-FORMAL-SPEC-V1.0"
+task_id: "Q2_H1_FORMAL"
+title: "单班制 H1 正式评估：8 单元（观测语义 × 周转 × H1 政策）配对批次正式运行与统计推断"
+status: "FROZEN_FOR_FORMAL_RUN"
+drafted_date: "2026-08-15"
+drafted_by_role: "D / Q2 FORMAL SPEC 起草（基于已签字权威文档 + Human Gate Q2_H1_FORMAL_SPEC_DESIGN CONDITIONAL PASS 全部决策）"
+approval_gate: >-
+  本包为 Q2 正式评估任务包。Human Gate 2026-08-15：
+  Q2-FORMAL-SPEC-V1.0-DRAFT = CONDITIONAL PASS（初评 Q2_FORMAL_SPEC_L3_REVIEWER = FAIL/HIGH，
+  两项实质问题已由 Coordinator 修复并记入 Q2_FORMAL_SPEC_DRAFT_REVIEW_RECORD.md；FAIL 评审保持历史证据，
+  不得升级为 PASS）。
+  Human Gate 全部决策（Q2-FORMAL-DEC-01..06 + bootstrap 分析随机性）已精确落文本包（见 §2-§15）。
+  Phase B：恰一个 fresh verified Pro/high FINAL spec reviewer（Q2_FORMAL_SPEC_FINAL_L3_REVIEWER）
+  审阅当前修复后草案 = PASS / HIGH / implementation_ready=YES（session 698f74c3-d26b-4742-9270-e079b65b82a6，
+  runtime 机械验证 deepseek-official/deepseek-v4-pro/high）。
+  冻结与运行前提已由同一 Human Gate 条件授权（"freeze Q2-FORMAL-SPEC-V1.0 only if that reviewer
+  returns PASS/HIGH；activate AUTOPILOT PILOT #3；implement/run Q2 H1 FORMAL through Q2 Macro L3"）：
+  FINAL reviewer PASS/HIGH 满足后，本包由 DRAFT_WAITING_FOR_HUMAN_GATE 改为 FROZEN_FOR_FORMAL_RUN，
+  激活 Pilot #3 并执行正式运行至 Q2 Macro Gate 无条件停机（非本 reviewer 自动授权，而是 Human Gate
+  预授权条件满足）。H2/Q3/Q4/论文写作未授权。
+  冻结后由独立 runner 执行正式实验，经 Macro L3 + Human Gate 后其证据才成为 Q2 论文数字唯一来源。
+
+# ============================================================================
+# 0. 权威来源（本草案唯一语义来源；不得使用 99_归档/旧评审/聊天摘要）
+# ============================================================================
+authority:
+  - "AGENTS.md"
+  - "CURRENT_STATE.md（仅阶段事实）"
+  - "01_审计/问题契约.md"
+  - "01_审计/检查注册表_V3.1.md"
+  - "01_审计/小问依赖与检查器接口.md"
+  - "02_数据/parameters.csv"
+  - "03_模型/00_模型总览.md"
+  - "03_模型/01_Q1概率与质量模型.md"
+  - "03_模型/02_H1基线与离散事件模型.md"
+  - "G2 accepted task packages/evidence（upstream 接口）：G2-01-SPEC-V1.1.11 / G2-02-SPEC-V1.0.5 / G2-03-SPEC-V1.0.2 / G2-04-SPEC-V1.0；accepted runs 8babb503 / 4bb92eda / 32913efa"
+  - "G3-SPEC-V1.0（FROZEN_FOR_IMPLEMENTATION，accepted）"
+  - "G3 accepted tuning/holdout/evidence：run_..._01b7c7e7 / run_..._020bc637 / run_..._fc3fe3e6"
+  - "G3 Macro L3 report：01_审计/MACRO_REPORT_G3_L3.md"
+  - "Human Gate Q2_H1_FORMAL_SPEC_DESIGN 授权书（本任务输入）"
+
+# ============================================================================
+# 1. 冻结上游（本包不重定义，只绑定）
+# ============================================================================
+frozen_upstream:
+  g3_spec_ref: "G3-SPEC-V1.0"
+  g3_spec_hash: "b818f92a5fb90acd9bda6052e8e16d425452a73b9e6951b1eb3279fb4912e796"
+  engine: "04_代码/main_model/g3/random_des_v1.py（accepted G3 引擎；本包不改其数学/状态语义）"
+  key_schema: "key_schema_v1（G3 accepted；本包不修改，物理键不变）"
+  quality_oracle: "04_代码/checker/g3_quality_oracle_v1.py（C06）"
+  replay_checker: "04_代码/checker/g3_replay_checker_v1.py（C17）"
+  accepted_h1_candidate:
+    tau_pm: "198"
+    unit: "h"
+    note: >-
+      198 h 在 q2_formal 之前冻结（S7 tuning accepted run 01b7c7e7 在 h1_tuning worlds 上选出，
+      S8 holdout run 020bc637 在 g3_holdout 上未重调验证）。正式集合不得重调 tau_pm、不得重开粗网格、
+      不得重开局部细化、不得在看到正式数据后选择 192/204 等其它阈值。
+  no_pm_reference: "NO_PM_BEFORE_MANDATORY（不预防更换，但全部 240h 强制更换规则保持激活；独立政策参考，非 tau_pm=240）"
+
+# ============================================================================
+# 2. 正式情景族（Human Gate 冻结：2×2×2=8 单元）
+# ============================================================================
+formal_family:
+  cartesian:
+    A_observation_semantics:
+      - id: "single_test_unconditional_v1"
+        role: "字面/主观测语义（P060）"
+      - id: "standard_chain_v1"
+        role: "关键替代观测语义（P058；标准初测—触发重测链）"
+    B_turnover:
+      - id: "literal_1h"
+        role: "主周转（P059；P014+P015 顺序共 1h）"
+      - id: "full_overlap_0_5h"
+        role: "敏感性周转（P049；同台位完全重叠 0.5h）"
+    C_h1_policy:
+      - id: "tau_pm_198"
+        role: "冻结 H1 候选（tau_pm=198h）"
+      - id: "NO_PM_BEFORE_MANDATORY"
+        role: "独立政策参考"
+  cells: "8 formal cells（2×2×2）；无其它 tau_pm 候选进入 q2_formal；不加入 H2"
+  no_other_candidate: "TRUE"
+  h2_excluded: "TRUE"
+  label_to_token_mapping:
+    single_test_unconditional_v1: "观测核 = P060 冻结闭式 (1-q)alpha=q beta=e/2：A/B/C 用 engine frozen_single_test_alpha_beta(q=P026-P028, e=P030-P032)；E 用 Q1 冻结 q_E=0.062593912407392898（accepted G2-02 4bb92eda single_test response）+ e_E=P033 经同一冻结闭式（与 G3 tuning/holdout runner 完全一致）"
+    standard_chain_v1: "观测核 = P058 标准初测—触发重测链（accepted G2-02 run 4bb92eda standard_chain_v1 response：A/B/C alpha/beta + q_E=0.047150339332016366 + E alpha_E=0.010920932310648563 / beta_E=0.1185856135607714；engine observation_kernel 通用 alpha/beta 接口）"
+    literal_1h: "engine turnover_profile = 1h_literal（P059；P014+P015 顺序 0.5h+0.5h=1h）"
+    full_overlap_0_5h: "engine turnover_profile = 0.5h_overlap（P049；同台位完全重叠 0.5h；engine 已支持）"
+    tau_pm_198: "tau_pm = Fraction(198)；engine 参数 tau_pm=198"
+    NO_PM_BEFORE_MANDATORY: "engine 哨兵 NO_PM_BEFORE_MANDATORY（lifetime_regeneration_v1；永不预防，强制 240h 规则激活）"
+
+# ============================================================================
+# 3. 主/敏感性声明（正式数据前冻结）
+# ============================================================================
+primary_declaration:
+  primary_q2_cell:
+    observation: "single_test_unconditional_v1"
+    turnover: "literal_1h"
+    policy: "tau_pm_198"
+  primary_policy_reference_cell:
+    observation: "single_test_unconditional_v1"
+    turnover: "literal_1h"
+    policy: "NO_PM_BEFORE_MANDATORY"
+  other_six_cells: "预声明稳健性/敏感性单元；必须完整运行并保留，但不得因其结果更有利而取代主单元"
+
+# ============================================================================
+# 4. 正式样本量与物理随机世界（Q2-FORMAL-DEC-01 / DEC-02 冻结）
+# ============================================================================
+formal_sample_size:
+  batches_per_world_set: 200
+  devices_per_batch: 100
+  total_batches: "8 cells × 200 = 1600 complete batch simulations；每批 100 台 → 160 000 device-simulations"
+  namespace: "q2_formal"
+  master_seed: 3
+  replicate_ids: "0..199 inclusive（恰 200 个 id；确定性冻结，不得事后增/减）"
+  crn_pooling: "全部 8 单元在 CRN 配对有效处复用同一 200 个底层 replicate ids"
+  forbidden_namespaces: ["development_unit", "pilot", "h1_tuning", "g3_holdout", "q3_formal"]
+  no_post_hoc_repetition_change: "TRUE"
+  resource_limit_conflict: >-
+    若硬资源失败使 200 批不可能：STOP 并返回 Human Gate（Q2_FORMAL_NEW_DECISION_REQUIRES_HUMAN_GATE 或
+    Q2_FORMAL_HARD_BUDGET_STOP_WAITING_FOR_HUMAN_GATE），绝不静默削减重复数。
+
+# ============================================================================
+# 5. CRN 规则（沿用 G3 key_schema_v1）
+# ============================================================================
+crn_rule:
+  paired_worlds: >-
+    固定 replicate_id 下，同一底层 canonical U world 在下列维度间复用：
+    tau_pm_198 vs NO_PM；1h vs 0.5h 周转；single-test vs standard-chain 观测语义
+    （在 accepted key_schema_v1 语义允许复用处）。不同配置按各自冻结概率参数对同一 U 做不同变换。
+  forbidden_in_physical_keys: >-
+    不得把 policy / strategy / turnover scenario / observation scenario / run_id /
+    execution metadata 注入物理随机键，若会破坏意图 CRN 配对；G3 key_schema_v1 原样保留。
+
+# ============================================================================
+# 6. Q2 班历 / 初态
+# ============================================================================
+q2_calendar:
+  N: 100
+  shifts_per_day: 1
+  shift_length_h: 12
+  outside_shift: "全部测试、运输、换新与校准停止"
+  initial_state:
+    first_two_devices_in_bays: "TRUE"
+    equipment_calibrated: "A/B/C/E 初态均已校准"
+    age: 0
+    generation: "按 accepted G3 语义初始化"
+  terminal: "末台终端判定停止 T；不计最后运出"
+
+# ============================================================================
+# 7. 正式输出契约
+# ============================================================================
+formal_output_contract:
+  per_batch_minimum:
+    - "T_hours（精确有理数）"
+    - "T_days = T_hours / 24"
+    - "S（通过台数）"
+    - "PL（带问题通过数/100）"
+    - "PW（正常退出数/100）"
+    - "YXB_A / YXB_B / YXB_C / YXB_E"
+    - "preventive replacement counts（预防更换次数）"
+    - "mandatory replacement counts（强制更换次数）"
+    - "random failure counts（随机故障次数）"
+    - "wasted/cancelled test fragments（作废/取消测试片段）"
+    - "terminal GP/BP/GE/BE table（终局四格表）"
+    - "empirical observation-error diagnostics（经验观测误差诊断）"
+    - "lambda diagnostic where applicable（适用处 lambda 诊断）"
+  per_batch_raw_metrics_preserved: "TRUE"
+  across_200_batches_report:
+    - "mean"
+    - "standard error"
+    - "median / P50"
+    - "P90"
+    - "predeclared confidence intervals where applicable"
+  no_rounding_before_aggregation: "TRUE（聚合前不舍入源数据）"
+
+# ============================================================================
+# 8. 主估计量
+# ============================================================================
+primary_estimands:
+  primary_optimization_estimand: "E[T]（字面观测 + 1h 周转主情景下）"
+  primary_paired_policy_contrast: "Delta_T = T(tau_pm_198) - T(NO_PM_BEFORE_MANDATORY)；负值偏好 tau_pm_198"
+  no_reselection: "正式运行不重选 tau_pm"
+  interpretation_rule: >-
+    若同时区间明确支持 Delta_T < 0，论文可表述：冻结 198h 候选在主情景下较无预防参考改善完成时间。
+    若区间包含 0：报告两政策在预声明族水平下不可稳定区分。不重调、不发明其它阈值、不隐藏结果。
+  quality_metrics: >-
+    S / PL / PW 独立报告并按 accepted 质量分离/解析锚检查；不与 T 合成加权得分。
+
+# ============================================================================
+# 9. 正式统计程序（Q2-FORMAL-DEC-03 冻结；bootstrap 分析随机性冻结）
+# ============================================================================
+formal_statistical_procedure:
+  method: "paired batch-level bootstrap + Bonferroni family-wise correction"
+  bootstrap_B: 10000
+  family_wise_confidence: "95%"
+  resampling_unit: "一个完整 100-device 批次"
+  analysis_stream:
+    namespace: "q2_formal_analysis_bootstrap_v1"
+    analysis_seed: 30003
+    purpose: >-
+      仅用于重采样 200 个完整配对批次索引；不影响 DES 物理 U、设备状态、观测、
+      设备寿命、正式 replicate worlds；确定性可复现索引重采样实现。
+  t_comparison_family（Q2-FORMAL-DEC-03 冻结，恰 4 个配对对比）:
+    - id: "C1"
+      role: "PRIMARY"
+      observation: "single_test_unconditional_v1"
+      turnover: "1h_literal"
+      contrast: "Delta_T = T(tau_pm_198) - T(NO_PM_BEFORE_MANDATORY)"
+    - id: "C2"
+      role: "ROBUSTNESS"
+      observation: "single_test_unconditional_v1"
+      turnover: "0.5h_overlap"
+      contrast: "Delta_T = T(tau_pm_198) - T(NO_PM_BEFORE_MANDATORY)"
+    - id: "C3"
+      role: "ROBUSTNESS"
+      observation: "standard_chain_v1"
+      turnover: "1h_literal"
+      contrast: "Delta_T = T(tau_pm_198) - T(NO_PM_BEFORE_MANDATORY)"
+    - id: "C4"
+      role: "ROBUSTNESS"
+      observation: "standard_chain_v1"
+      turnover: "0.5h_overlap"
+      contrast: "Delta_T = T(tau_pm_198) - T(NO_PM_BEFORE_MANDATORY)"
+  bonferroni:
+    alpha_family: 0.05
+    m: 4
+    alpha_each: 0.0125
+    two_sided: "TRUE"
+    marginal_bootstrap_coverage: "0.9875（每边缘 bootstrap CI 用 percentile 界 0.00625 / 0.99375）"
+  t_interpretation:
+    - "CI 完全 < 0：支持 tau_pm_198 更短 T"
+    - "CI 包含 0：不可稳定区分"
+    - "CI 完全 > 0：支持 NO_PM 更短 T"
+    - "正式数据后绝不重调 tau_pm"
+  no_opportunistic_all_pairs: "TRUE（不得扩展为全两两单元对比）"
+  s_pl_pw_procedure（Q2-FORMAL-DEC-04 冻结）: >-
+    S 及非稀有聚合量可用冻结批级重采样/报告程序；PL/PW 按稀有事件处理：
+    每单元 N_total_devices = 200×100 = 20000。
+    若 0 < x < 20000：报告精确 Clopper-Pearson 双侧 95% 区间；
+    若 x = 0：报告单侧精确 CP 95% 上界（= 1 - 0.05^(1/20000)，机械计算，不手输舍入值），下界 0；
+    同时报告批级均值与批级标准误；零稀有事件禁用普通正态区间。
+    质量结论必须从属于 accepted C06 pathwise 相等 / 解析锚。
+
+# ============================================================================
+# 10. 正式 checker 要求
+# ============================================================================
+formal_checker_requirements:
+  per_batch_eligible:
+    - "CR-V3.1/C06（pathwise 质量 oracle）"
+    - "CR-V3.1/C13（寿命）"
+    - "CR-V3.1/C14（再生）"
+    - "CR-V3.1/C16（formal namespace / CRN / sample 分离）"
+    - "CR-V3.1/C17（full 独立重放）"
+    - "CR-V3.1/C18（活性）"
+    - "CR-V3.1/C19（checker 隔离）"
+    - "CR-V3.1/C20（适用故障注入资格，继承/当前）"
+    - "CR-V3.1/C21（不可变正式证据）"
+    - "CR-V3.1/C26（冻结 H1 候选）"
+    - "上游已接受 C01-C05 / C08-C12（适用处）"
+  status_per_check:
+    reused_accepted_upstream: "C01-C05、C08-C12、C19（G2 已验收，作为继承引用）"
+    reexecuted_per_formal_run: "C06、C13、C14、C16、C17、C18、C26（每正式批）"
+    aggregated_at_formal_family_level: "C20（适用故障注入资格）、C21（不可变证据）、C07（族级烟测诊断）"
+
+# ============================================================================
+# 11. C07 边界
+# ============================================================================
+c07_boundary: >-
+  C07 保持诊断/统计烟测：普通随机失配计数不得在无注册表定义的调查前转为硬失败。
+  正式质量结论必须区分：确定性 pathwise C06 证据 vs 统计 C07 诊断。
+
+# ============================================================================
+# 12. 证据 / 论文数字权威（Q2-FORMAL-DEC-05 冻结）
+# ============================================================================
+evidence_authority:
+  family_root: "05_结果/Q2/formal/run_<UTCtimestamp>_<8hex>/（每次完整正式尝试恰一个不可变 run；代表完整 8 单元族，不建八个独立 canonical 根）"
+  cell_id_syntax（冻结 token）:
+    - "obs_single__turn_1h__policy_tau198"
+    - "obs_single__turn_1h__policy_nopm"
+    - "obs_single__turn_0p5h__policy_tau198"
+    - "obs_single__turn_0p5h__policy_nopm"
+    - "obs_chain__turn_1h__policy_tau198"
+    - "obs_chain__turn_1h__policy_nopm"
+    - "obs_chain__turn_0p5h__policy_tau198"
+    - "obs_chain__turn_0p5h__policy_nopm"
+  token_to_config_mapping（机械映射，单元标签不得静默选择其它配置）:
+    - "single → single_test_unconditional_v1"
+    - "chain → standard_chain_v1"
+    - "1h → 1h_literal"
+    - "0p5h → 0.5h_overlap"
+    - "tau198 → tau_pm=198"
+    - "nopm → NO_PM_BEFORE_MANDATORY"
+  family_root_minimum:
+    - "run_manifest"
+    - "commands"
+    - "environment/runtime metadata"
+    - "family config snapshot"
+    - "task package snapshot/hash"
+    - "G3-SPEC upstream reference/hash"
+    - "key schema hash"
+    - "code/schema/config hashes"
+    - "per-cell outputs"
+    - "per-replicate raw metrics"
+    - "checker reports"
+    - "C06 summaries"
+    - "C17 summaries"
+    - "statistical analysis"
+    - "bootstrap metadata"
+    - "failure samples"
+    - "formal comparison table"
+    - "file_hashes.sha256"
+  traceability_required:
+    - "run_id"
+    - "task_package_ref"
+    - "config hash"
+    - "code hash"
+    - "schema hash"
+    - "key schema hash"
+    - "event/log hash"
+    - "checker report"
+    - "commands"
+    - "environment"
+    - "file_hashes.sha256"
+  failed_or_superseded_preserved: "TRUE（失败正式尝试保持不可变）"
+  no_manual_number_authoritative: "TRUE"
+  wall_clock_recording: "正式 runner 记录逐批/逐单元/族总 wall-clock 于证据"
+  paper_number_rule: >-
+    正式候选数字可报告给 Human Gate，但在 Q2 Macro L3 + Human Gate 接受前保持
+    NOT PAPER-AUTHORITATIVE；最终 accepted Q2 formal 证据成为 Q2 论文数字唯一允许来源。
+    此前论文 Q2 数字保持 NOT AVAILABLE。
+
+# ============================================================================
+# 13. 无 H2 / Q3 / Q4 泄漏
+# ============================================================================
+no_h2_leakage:
+  - "不实现 H2"
+  - "不选 rollout M"
+  - "不使用后验 rollout"
+  - "不比 H1 vs H2"
+  - "C24/H2 准入是独立后续 Human Gate"
+no_q3_q4_leakage:
+  - "不运行 q3_formal"
+  - "不枚举七个 K"
+  - "不推荐 K"
+  - "不把 Q2 终态设备状态带入 Q3"
+  - "不运行 Q4 因素实验"
+
+# ============================================================================
+# 14. 运行时预算（Q2-FORMAL-DEC-06 冻结）
+# ============================================================================
+runtime_budget:
+  soft_wall_clock_checkpoint: "4 h（停止可选探索/额外评审/非必要重跑/非必需敏感性；只继续必需正式验收工作）"
+  hard_wall_clock_cap: "8 h（无条件停止：Q2_FORMAL_HARD_BUDGET_STOP_WAITING_FOR_HUMAN_GATE；不自动提高预算）"
+  no_repetition_reduction: "TRUE（不得为赶在预算前完成而削减 200 重复数）"
+  planning_estimate: >-
+    本地运行观察（非权威规划估计，非 manifest 证据）：G3 S8 holdout stdout 逐批约 0.5-1.2 s（含 C06+C17）。
+    1600 批预估本地 1-2 h；正式 runner 记录真实逐批/逐单元/族总 wall-clock 于证据。
+
+# ============================================================================
+# 15. decision_required（Human Gate 2026-08-15 已全部裁决 → 空）
+# ============================================================================
+decision_required: []
+# Human Gate 2026-08-15 CONDITIONAL PASS 已裁决：
+# Q2-FORMAL-DEC-01（200 批 × 8 单元 = 1600 批；每批 100 台）、
+# Q2-FORMAL-DEC-02（namespace=q2_formal、master_seed=3、replicate_id=0..199 恰 200 个；
+#   8 单元 CRN 复用同一 200 ids；禁注入 policy/turnover/observation/run_id/execution_no/restart_no 于物理键；
+#   key_schema_v1 byte/semantic 保留）、
+# Q2-FORMAL-DEC-03（恰 4 个配对 Delta_T 对比 C1-C4；Bonferroni m=4、alpha_each=0.0125、
+#   双侧同时推断、边缘 bootstrap CI coverage=0.9875、percentile 界 0.00625/0.99375；
+#   解释规则；不事后重调）、
+# Q2-FORMAL-DEC-04（PL/PW 池化 20000 台：0<x<20000 → 精确 CP 双侧 95% 区间；
+#   x=0 → 单侧精确 CP 95% 上界 1-0.05^(1/20000) 机械计算；批级均值/SE；零事件禁正态 CI；
+#   质量结论从属 C06 pathwise / 解析锚）、
+# Q2-FORMAL-DEC-05（族级根 05_结果/Q2/formal/run_<UTC>_<8hex>/；冻结 8 cell tokens；
+#   token→config 机械映射；族根最小内容清单；失败尝试不可变）、
+# Q2-FORMAL-DEC-06（soft 4h / hard 8h；hard cap 无条件停止；不削减重复数）。
+# bootstrap 分析随机性：namespace=q2_formal_analysis_bootstrap_v1、analysis seed=30003、B=10000，
+#   仅重采样 200 个完整配对批次索引，不影响 DES 物理流。
+# 无任何样本量/种子/replicate/比较族/CI 方法/稀有事件区间/证据路径/预算/单元命名/主单元/政策选择/观测绑定
+# 决策留给实现者。若出现新的真实未决语义/统计决策 → STOP: Q2_FORMAL_NEW_DECISION_REQUIRES_HUMAN_GATE。
+# ---------------------------------------------------------------------------
+# 冻结记录（2026-08-15）：FINAL reviewer Q2_FORMAL_SPEC_FINAL_L3_REVIEWER（session
+# 698f74c3-d26b-4742-9270-e079b65b82a6，runtime 机械验证 deepseek-official/deepseek-v4-pro/high）
+# = PASS / HIGH / implementation_ready=YES / unresolved_concerns 无阻塞；
+# 初评 FAIL 保持历史证据（Q2_FORMAL_SPEC_DRAFT_REVIEW_RECORD.md）；Human Gate 预授权条件满足
+# → status = FROZEN_FOR_FORMAL_RUN；AUTOPILOT PILOT #3 = ACTIVE（Q2 H1 FORMAL → Q2 Macro Gate 无条件停机）。
+
+# ============================================================================
+# 16. 实现所有权映射
+# ============================================================================
+ownership_map:
+  main_random_des: "04_代码/main_model/**（复用 G3 accepted，不改语义）"
+  independent_checkers: "04_代码/checker/**（复用 G3 accepted）"
+  tests: "04_代码/tests/**"
+  runners: "04_代码/scripts/**（新增 run_q2_formal_v1.py 等）"
+  schemas: "04_代码/src/schemas/**"
+  configs: "02_数据/configs/**"
+  rule: "主/checker 不共享 transition 逻辑；Q2 不改 G3 accepted 引擎语义"
+  observation_binding（冻结，禁止再标定）:
+    - "single_test_unconditional_v1：消费冻结 Q1/G2 accepted 观测核，包括其 accepted 诱导 q_E / E 核（Q1 冻结 q_E=0.062593912407392898；A/B/C 用 P060 闭式）"
+    - "standard_chain_v1：消费其自身 accepted 全链替代核（accepted G2-02 4bb92eda standard_chain response：A/B/C alpha/beta + q_E=0.047150339332016366 + E alpha_E/beta_E）"
+    - "禁止：从正式数据再标定 alpha/beta；重算新语义 q_E；混用主/替代 E 核；发明回退观测参数"
+  g3_core_protection: >-
+    完成 Q2 formal 若需改变 random_des_v1 核心转移 / key_schema_v1 / 寿命再生语义 /
+    C06 oracle 核心 / C17 replay 核心 / 冻结观测语义 → STOP: Q2_FORMAL_REQUIRES_G3_CORE_CHANGE 并返回 Human Gate；
+    不得在正式评估中静默 patch accepted G3 引擎。runner-only / 聚合 / 证据 bug 按 GREEN/YELLOW 治理处理。
+
+# ============================================================================
+# 17. 停止边界
+# ============================================================================
+stop_boundary: >-
+  Q2 formal 执行至 Q2 Macro Gate 无条件停机。Q2 Macro L3（fresh verified Pro/high）后
+  STOP UNCONDITIONALLY；不自动 land Q2 FINAL PASS、不写论文数字、不实现 H2、不启动 Q3/Q4。
+  若 verified Pro/high reviewer 返回 PASS/HIGH → 报告 Q2_FORMAL_MACRO_L3_PASS_WAITING_FOR_HUMAN_GATE
+  并附完整正式结果表；若 FAIL/BLOCKED → 报告确切阻塞点并停止。
+  H2/Q3/Q4/论文写作未授权。

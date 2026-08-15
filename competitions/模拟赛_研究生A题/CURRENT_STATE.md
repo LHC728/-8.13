@@ -2,7 +2,7 @@
 
 > 最后更新：2026-08-15
 > 状态版本：`STATE-2026-08-13-G2.4`
-> 当前 Gate：**Whole G2 = PASS；G3 = PASS / ACCEPTED（Human Gate 2026-08-15 FINAL PASS；G3-SPEC-V1.0 accepted frozen implementation specification；AUTOPILOT PILOT #2 = COMPLETED AT MACRO STOP）；H1/Q2 formal evaluation = NOT STARTED；H2 = NOT STARTED / NOT AUTHORIZED；Q2 FORMAL = NOT STARTED；Q3 FORMAL = NOT STARTED；Q4 = NOT STARTED；论文正式 Q2 数字 = NOT AVAILABLE；下一阶段需新 Human Gate**
+> 当前 Gate：**Whole G2 = PASS；G3 = PASS / ACCEPTED；Q2 H1 FORMAL = ACTIVE（Q2-FORMAL-SPEC-V1.0 = FROZEN_FOR_FORMAL_RUN；AUTOPILOT PILOT #3 ACTIVE，至 Q2 Macro Gate 无条件停机；tau_pm 候选 = 198 h 正式前冻结）；H2 = NOT AUTHORIZED；Q3 = NOT STARTED；Q4 = NOT STARTED；论文正式 Q2 数字 = NOT AVAILABLE（正式证据在 Q2 Macro L3 + Human Gate 前非论文权威）**
 > 当前检查注册表：[`CR-V3.1`](01_审计/检查注册表_V3.1.md)
 
 ## 1. 新对话只需先读
@@ -95,24 +95,33 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
   - **S9 evidence package = run `fc3fe3e6`**（INDEX_OK；accepted = tuning `01b7c7e7` + holdout `020bc637`；7 个失败/被替代 run 保留不可变并标注 superseded）。
   - **G3 Macro L3 = PASS / HIGH**（qualifying reviewer `G3_MACRO_L3_REVIEWER`，session `b0f56d04-90aa-4ed8-a4bd-b5b7847f9a8c`，runtime 机械验证 deepseek-official/deepseek-v4-pro/high；freshness/read_only VERIFIED；302 G3 tests OK）。报告见 `01_审计/MACRO_REPORT_G3_L3.md`。**G3 Macro Gate = PASSED（Human Gate 2026-08-15 接受）；PILOT #2 COMPLETED AT MACRO STOP；无条件停机**。
   - **G3 accepted 范围（CR-V3.1）**：C06（G3 full layer）= PASS；C07（统计烟测/诊断层）= PASS（保留诊断解释）；C13/C14 = PASS；C15（G3 接口/重置层）= PASS（Q3 七 K 正式实验 = NOT STARTED）；C16（G3 实验分离层）= PASS；C17（G3 full replay 层）= PASS；C18 = PASS；C26（H1 政策/调优设计与冻结候选）= PASS；C24（仪表/数据收集能力）= PASS。**不声明 C23 PASS、C25 PASS、H2 准入 PASS；H2 仍未实现且未授权**。
-  - 状态：H1/Q2 formal evaluation = NOT STARTED；H2 = NOT STARTED / NOT AUTHORIZED；Q2 FORMAL = NOT STARTED；Q3 FORMAL = NOT STARTED；Q4 = NOT STARTED；论文正式 Q2 数字 = NOT AVAILABLE。
+  - 状态（Q2 激活前）：H1/Q2 formal evaluation = NOT STARTED；H2 = NOT STARTED / NOT AUTHORIZED；Q3 FORMAL = NOT STARTED；Q4 = NOT STARTED。→ **Q2 H1 FORMAL 已由 Human Gate 2026-08-15 授权激活（见下 Q2 段）**。
   - 预算：软墙钟 4h / 硬墙钟 8h（Pilot #2 已到达 Macro Stop，不再消耗）。
   - 禁止：发布/冻结 Q2 正式数字（T/S/PL/PW/YXB/管理建议）、写论文、实现 H2、枚举 K、推荐 K。
+
+- **`Q2_H1_FORMAL`（单班制 H1 正式评估）= ACTIVE**（Human Gate 2026-08-15：Q2-FORMAL-SPEC-V1.0-DRAFT = CONDITIONAL PASS → Phase B fresh FINAL reviewer `Q2_FORMAL_SPEC_FINAL_L3_REVIEWER`（session `698f74c3-d26b-4742-9270-e079b65b82a6`，runtime 机械验证 deepseek-official/deepseek-v4-pro/high）= **PASS / HIGH / implementation_ready=YES** → 冻结；初评 FAIL 保持历史证据）：
+  - 任务包：`Q2-FORMAL-SPEC-V1.0`（status **FROZEN_FOR_FORMAL_RUN**；`08_项目管理/任务包/Q2_单班制H1正式评估.yaml`）。评审记录：`08_项目管理/任务包/Q2_FORMAL_SPEC_DRAFT_REVIEW_RECORD.md`。
+  - **冻结决策（Q2-FORMAL-DEC-01..06 + bootstrap 分析流）**：200 批/单元 × 8 单元 = 1600 批 / 160 000 台；namespace=q2_formal、master_seed=3、replicate_id=0..199；恰 4 个配对 Delta_T 对比（C1 PRIMARY single+1h；C2-C4 稳健），Bonferroni m=4、alpha_each=0.0125、边缘 CI coverage 0.9875（percentile 0.00625/0.99375）；PL/PW 池化 20000 台精确 CP 区间（x=0 → 单侧上界 `1-0.05^(1/20000)`）；族级证据根 `05_结果/Q2/formal/run_<UTC>_<8hex>/`；soft 4h / hard 8h；bootstrap 分析流 namespace=q2_formal_analysis_bootstrap_v1、seed=30003、B=10000。`decision_required: []`。
+  - **tau_pm 候选 = 198 h**（正式前冻结；主单元 = single_test_unconditional_v1 + 1h_literal + tau_pm_198；政策参考 = 同观测/周转 + NO_PM_BEFORE_MANDATORY）；正式运行不重选 tau_pm。
+  - **AUTOPILOT PILOT #3 = ACTIVE**：Q2 H1 FORMAL 执行（thin formal runner over accepted G3 engine，不改 G3 core 语义）→ 完整 8×200 族运行 → 配对推断 → Q2 Macro L3（fresh verified Pro/high）→ **Q2 Macro Gate 无条件停机**。
+  - 正式证据在 Q2 Macro L3 + Human Gate 前 **非论文权威**（NOT PAPER-AUTHORITATIVE）；论文 Q2 数字 = NOT AVAILABLE。
+  - 禁止：改 G3 accepted 核心（需改 → STOP Q2_FORMAL_REQUIRES_G3_CORE_CHANGE）、实现 H2、枚举 K、推荐 K、启动 Q3/Q4、写论文。
 
 （历史记录：G2 完成前的 7 项实施目标——单次无条件/标准链观测核、Q1 闭式与吸收链、最小并行 DES、1—4 台对拍与 K=9 跨班、最小 checker 与故障注入、G2 适用检查——均已随 G2/G3 PASS 完成并验收，不再作为当前出口条件。）
 
 ## 6. 当前禁止
 
-- 不运行 Q2 正式主实验（100-device formal）；
-- 不编码或调参 H2；不选 rollout M；
-- 不发布 Q2/Q3 正式数字或正式敏感性/正式图表；
+- 不实现 H2；不选 rollout M；不后验 rollout；不比 H1 vs H2；
+- 不枚举 K、不推荐 K；不启动 Q3/Q4；
+- 不把 Q2 formal 证据当作论文权威数字（Q2 Macro L3 + Human Gate 前 = NOT PAPER-AUTHORITATIVE）；
 - 不向论文填入结果数字；
 - 不把 G3 调优/holdout 数据（含 tau_pm=198 候选的调优 mean T）当作 Q2 正式结果；
+- 不改 G3 accepted 核心（random_des_v1 核心转移/key_schema_v1/寿命再生/C06 核心/C17 核心/冻结观测语义）；若 Q2 需改 → STOP 回 Human Gate；
 - 不修改已签字口径与 accepted 证据；若实现暴露新歧义，回到变更控制而不是自行决定。
 
 ## 7. 下一出口
 
-G2 与 G3 均已 PASS/ACCEPTED；tau_pm=198h 已作为 H1 候选冻结（进入未来 Q2 正式评估的候选政策，非最终推荐）。**H1/Q2 formal evaluation、H2、Q3 formal、Q4 均为 NOT STARTED；下一阶段（Q2 正式评估等）需要新 Human Gate 授权。**
+G2/G3 均已 PASS/ACCEPTED；Q2 H1 FORMAL = ACTIVE（Pilot #3 至 Q2 Macro Gate 无条件停机）。**Q2 Macro L3（fresh verified Pro/high）+ Human Gate 后：正式证据成为 Q2 论文数字唯一来源；H2/Q3/Q4 仍需各自新 Human Gate 授权。**
 
 ## 8. 当前目录映射
 
