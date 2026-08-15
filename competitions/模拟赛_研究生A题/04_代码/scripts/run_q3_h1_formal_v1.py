@@ -710,21 +710,23 @@ def recommendation(tier: str, aggregates: dict[str, CellAggregate],
         (p["k1"], p["k2"]): p for p in pairs
     }
     co_best: list[str] = []
-    for k in K_VALUES:
-        kk = k[0]
+    strong = True
+    for kk, _ in K_VALUES:
         if kk == k_star:
             continue
         a, b = (k_star, kk) if k_star < kk else (kk, k_star)
-        pair = ci_by_pair[(a, b)]
-        lo = pair["ci_lo_h"]
-        hi = pair["ci_hi_h"]
-        # Delta_T = T(k_star) - T(other); CI entirely < 0 => k_star faster.
-        if not (hi < 0):
+        p = ci_by_pair[(a, b)]
+        lo, hi = p["ci_lo_h"], p["ci_hi_h"]
+        # delta = T(a) - T(b). k_star is faster than kk iff
+        #   k_star == a: CI entirely < 0 (hi < 0);
+        #   k_star == b: CI entirely > 0 (lo > 0)  [delta = T(kk) - T(k_star)].
+        k_star_faster = (hi < 0) if k_star == a else (lo > 0)
+        indistinguishable = lo <= 0 <= hi
+        if k_star_faster:
+            continue  # kk is significantly slower; confirms k_star
+        strong = False
+        if indistinguishable:
             co_best.append(kk)
-    strong = all(
-        ci_by_pair[(min(k_star, kk), max(k_star, kk))]["ci_hi_h"] < 0
-        for kk, _ in K_VALUES if kk != k_star
-    )
     return {
         "tier": tier,
         "k_star": k_star,
@@ -734,7 +736,7 @@ def recommendation(tier: str, aggregates: dict[str, CellAggregate],
         "wording": (
             "k* 相对其余全部 K 的配对 CI 完全 <0 → strong recommendation"
             if strong else
-            "k* + co-best（部分/全部配对 CI 含 0）"
+            "k* + co-best（至少一个 K 的配对 CI 含 0 或出现 CI 矛盾）"
         ),
         "scope": "限于七个 K 与冻结候选政策集（NO_PM_BEFORE_MANDATORY）；非全局最优；不宣称 K=12 弱支配",
     }
