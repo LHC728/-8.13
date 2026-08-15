@@ -2,6 +2,15 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-15 / `STATE-2026-08-13-G2.4` / `ROADMAP SYNC: Q3 H1 FIRST（P0 关闭）`
+
+### 修改
+
+- **Roadmap governance sync（仅阶段事实，无数学语义变更）**：最新 Human Gate 决策——P0 = **VERIFIED FINAL PASS / ACCEPTED（P0 关闭）**；下一大阶段正式切换为 **Q3 H1 FIRST**。
+- 路线（Human Gate 决策）：**① Q3 H1 七 K 正式基线（Tier 1 + Tier 2）→ ② Human Gate H1 formal review → ③ 基于 accepted Tier 1 日志的确定性只读 Q3 七 K H2 opportunity-density recheck（Density FAIL → DELETE H2、Q3 H1-only；Density PASS → 才允许 Human Gate 授权 P1）**。
+- **P1 / C23 / posterior / rollout 当前仍 NOT AUTHORIZED**；Density recheck 不包含在当前 Q3 H1 formal 执行包中；Q3 K 推荐须等 Human Gate H1 formal review。
+- 状态同步：`CURRENT_STATE.md`（Gate 行、§6 禁止、§7 路线）更新为「Q3 = ACTIVE（Q3 H1 七 K 正式基线执行中/待审；无 K 推荐）」。
+
 ## 2026-08-15 / `STATE-2026-08-13-G2.4` / `P0-E1 TEST EVIDENCE CLOSURE`
 
 ### 修改

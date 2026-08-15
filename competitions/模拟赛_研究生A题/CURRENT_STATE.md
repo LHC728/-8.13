@@ -2,7 +2,7 @@
 
 > 最后更新：2026-08-15
 > 状态版本：`STATE-2026-08-13-G2.4`
-> 当前 Gate：**Whole G2 = PASS；G3 = PASS / ACCEPTED（C17 REQUALIFIED_AFTER_C10_C12_CHECKER_FIXES）；Q2 H1 FORMAL = PASS / ACCEPTED（accepted run `2d1466ba`；Q2 主情景选中 H1 政策 = NO_PM_BEFORE_MANDATORY）；Q3/H2 BOOTSTRAP = FINAL PASS / ACCEPTED（Human Gate 2026-08-15 VERIFIED FINAL PASS / DESIGN FREEZE APPROVED；D-01..D-25 冻结；冻结权威规格 = `08_项目管理/任务包/Q3_H2_BOOTSTRAP_SPEC_DRAFT.md` = FINAL_FREEZE_ACCEPTED；BOUNDARY 契约同步完成）；H2 = ADMITTED_FOR_DESIGN_ONLY / DESIGN FREEZE APPROVED（非 H2 FINAL ACCEPTANCE；**H2 实现仍 NOT YET AUTHORIZED / NOT IMPLEMENTED**）；CR-V3.1/C24 = PASS（opportunity-density evidence = PASS、budget/spec freeze = PASS）；C23 = PENDING / NOT YET EXECUTED；C25 = PENDING / NOT YET EXECUTED；Q3 = NOT STARTED（**无 Q3 K 推荐**）；Q4 = NOT STARTED；Q2 paper numbers = AVAILABLE / AUTHORITATIVE FROM ACCEPTED FORMAL RUN；下一阶段：Q3/H2 IMPLEMENTATION BOOTSTRAP + C23（需 Human Gate 另发执行授权）**
+> 当前 Gate：**Whole G2 = PASS；G3 = PASS / ACCEPTED（C17 REQUALIFIED_AFTER_C10_C12_CHECKER_FIXES）；Q2 H1 FORMAL = PASS / ACCEPTED（accepted run `2d1466ba`；Q2 主情景选中 H1 政策 = NO_PM_BEFORE_MANDATORY）；Q3/H2 BOOTSTRAP = FINAL PASS / ACCEPTED（Human Gate 2026-08-15 VERIFIED FINAL PASS / DESIGN FREEZE APPROVED；D-01..D-25 冻结；冻结权威规格 = `08_项目管理/任务包/Q3_H2_BOOTSTRAP_SPEC_DRAFT.md` = FINAL_FREEZE_ACCEPTED；BOUNDARY 契约同步完成）；P0（H2 key schema bootstrap）= VERIFIED FINAL PASS / ACCEPTED（Human Gate；P0 关闭）；H2 = ADMITTED_FOR_DESIGN_ONLY / DESIGN FREEZE APPROVED（非 H2 FINAL ACCEPTANCE；**H2 实现仍 NOT YET AUTHORIZED / NOT IMPLEMENTED**）；CR-V3.1/C24 = PASS（opportunity-density evidence = PASS、budget/spec freeze = PASS）；C23 = PENDING / NOT YET EXECUTED；C25 = PENDING / NOT YET EXECUTED；Q3 = ACTIVE（Q3 H1 七 K 正式基线执行中/待审；**无 Q3 K 推荐**）；Q4 = NOT STARTED；Q2 paper numbers = AVAILABLE / AUTHORITATIVE FROM ACCEPTED FORMAL RUN；**下一阶段：Q3 H1 七 K 正式基线（当前执行包）→ Human Gate H1 formal review → 基于 accepted Tier 1 日志的确定性只读 Q3 七 K H2 opportunity-density recheck（Density FAIL → DELETE H2、Q3 H1-only；Density PASS → 才允许 Human Gate 授权 P1）**；**P1 / C23 当前仍 NOT AUTHORIZED**；Q3/H2 IMPLEMENTATION BOOTSTRAP（P1 及之后子包）未授权**
 > 当前检查注册表：[`CR-V3.1`](01_审计/检查注册表_V3.1.md)
 
 ## 1. 新对话只需先读
@@ -149,14 +149,14 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
 - **不把旧 C24 `waiting_opportunity_count` 当作 H2 战略等待密度**（= forced-wait 仪表）；未来 H2 使用修正定义（strategic STRICT/BOUNDARY/NONSTRICT + optional PM 与 mandatory 分离）；
 - 不改 G3/Q2 accepted 核心（random_des_v1/key_schema_v1/寿命再生/C06/C17/冻结观测语义/Q2-FORMAL-SPEC）；若需改 → STOP 回 Human Gate；
 - 不修改已签字口径与 accepted 证据；若实现暴露新歧义，回到变更控制而不是自行决定；
-- **不实现 H2**（Q3/H2 BOOTSTRAP 设计已冻结但实现未授权）；**不运行 Q3 七 K 模拟 / H2 tuning / holdout / formal 实验**；**不推荐 Q3 K**；
+- **不实现 H2**（Q3/H2 BOOTSTRAP 设计已冻结但实现未授权；P0 key schema 已 accepted 且 P0 已关闭）；**Q3 H1 七 K 正式基线（Tier 1 + Tier 2）为当前授权执行包**；**不运行 H2 tuning / holdout / formal 实验、不运行 density recheck、不运行 Tier 3**；**不推荐 Q3 K**（K 推荐须等 Human Gate H1 formal review）；
 - **不重开 D-01..D-25**、不修改冻结的 `Q3_H2_BOOTSTRAP_SPEC_DRAFT.md` 规范条款（如需 → STOP 回 Human Gate）；
 - **不把 tuning/诊断值**（机会密度、M 校准、稳定性样本、跨 K transfer 诊断）**当论文正式数字**；
 - **不宣称 H2 已实现 / C23 PASS / C25 PASS / Q3 已启动**（均未发生）；Q3/H2 实施阶段须 Human Gate 另发执行授权。
 
 ## 7. 下一出口
 
-G2/G3/Q2 H1 FORMAL 均已 PASS/ACCEPTED；**Q3/H2 BOOTSTRAP = FINAL PASS / ACCEPTED（DESIGN FREEZE APPROVED；D-01..D-25 冻结；冻结权威规格 = `08_项目管理/任务包/Q3_H2_BOOTSTRAP_SPEC_DRAFT.md`）**；C24 = PASS；H2 = NOT IMPLEMENTED；C23 / C25 = PENDING；Q3 = NOT STARTED（无 K 推荐）。**下一出口：Q3/H2 IMPLEMENTATION BOOTSTRAP + C23 实现与检查**——须由 Human Gate **另发执行授权**后方可：① key_schema 扩展与回归（L2）；② H2 后验/续演/政策模块 + 独立 C23 checker（L2）；③ Q3 H1 七 K 正式运行（Pilot）；④ H2 管线（density recheck → tuning → holdout → C25）。在此之前 H2 不实现、Q3 七 K 不运行、无 K 推荐。Q2 论文数字 = AVAILABLE / AUTHORITATIVE（accepted run `2d1466ba`）。
+G2/G3/Q2 H1 FORMAL 均已 PASS/ACCEPTED；**Q3/H2 BOOTSTRAP = FINAL PASS / ACCEPTED（D-01..D-25 冻结；冻结权威规格 = `08_项目管理/任务包/Q3_H2_BOOTSTRAP_SPEC_DRAFT.md`）**；**P0（H2 key schema bootstrap）= VERIFIED FINAL PASS / ACCEPTED（已关闭）**；C24 = PASS；H2 = NOT IMPLEMENTED；C23 / C25 = PENDING；**Q3 = ACTIVE（Q3 H1 七 K 正式基线执行中/待 Human Gate review；无 K 推荐）**。**下一阶段路线（Human Gate 最新决策）**：**① Q3 H1 七 K 正式基线（Tier 1 + Tier 2）→ ② Human Gate H1 formal review → ③ 基于 accepted Tier 1 日志的确定性只读 Q3 七 K H2 opportunity-density recheck（Density FAIL → DELETE H2、Q3 H1-only；Density PASS → 才允许 Human Gate 授权 P1）**。**P1 / C23 / rollout / posterior 当前仍 NOT AUTHORIZED**；Density recheck 不包含在当前 Q3 H1 formal 执行包中。Q2 论文数字 = AVAILABLE / AUTHORITATIVE（accepted run `2d1466ba`）。
 
 ## 8. 当前目录映射
 
