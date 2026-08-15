@@ -2,6 +2,22 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q2 H1 FORMAL Macro L3 PASS — PILOT #3 COMPLETED AT MACRO STOP`
+
+### 修改
+
+- **Q2 H1 FORMAL clean reissue 完成**（commit `aa8657c`）：run `run_20260815T061803446274Z_2d1466ba`（05_结果/Q2/formal/）完整 8×200 = 1600 批/160 000 台；**C06=1600/1600、C17=1600/1600 PASS**（每单元 200/200）；C13/C14/C16/C18/C26 PASS；`paper_authoritative=false`（非论文权威，待 Human Gate）。
+- **C17 checker 两处独立缺陷修复（Human Gate OPTION A + A2）**：C10 cancelled-attempt（`023020e`）+ C12 terminal-horizon calibration（`b300473`）；INVALIDATION_REPORT ×2（均 changed_semantics=NO / main_engine=NO / checker_core=YES）；**CR-V3.1/C17 G3 full layer = PASS / REQUALIFIED_AFTER_C10_C12_CHECKER_FIXES**（`G3_C17_REQUALIFICATION_L3_REVIEWER` PASS/HIGH，session `ab890743`）；G3 = PASS/ACCEPTED（supplemental provenance）。首跑 `daead4cf` 保持 HISTORICAL_FAILED_FORMAL_ATTEMPT。
+- **新旧确定性等价**：clean reissue vs 首跑 1600 批 DES 数学字段逐项相等（T/S/PL/PW/YXB/四格/替换/故障/片段/日志 hash 0 差异）；唯一差异 = 21 条 checker FAIL→PASS 翻转 + 墙钟/hash（允许）。
+- **Q2 Macro L3 = PASS / HIGH / formal_result_integrity=HIGH**（`Q2_FORMAL_MACRO_L3_REVIEWER`，session `137d4fc1-d2de-4f49-a250-f1418703604f`，runtime 机械验证 deepseek-official/deepseek-v4-pro/high）。报告：`01_审计/MACRO_REPORT_Q2_L3.md`。
+- **Q2 正式结果方向（4 预声明对比，ΔT=T(tau198)−T(NO_PM)，98.75% CI）**：C1 PRIMARY single+1h **+1.29h [0.46,2.19]**（完全>0 → 支持 NO_PM 更短）；C2 single+0.5h +4.23h [3.20,5.30]；C3 chain+1h −0.13h [−1.11,0.80]（含 0 → 不可稳定区分）；C4 chain+0.5h +5.32h [4.13,6.62]。**tau_pm=198 候选在主单元未改善完成时间**；不隐藏、不重调。
+- **PILOT #3 = COMPLETED AT MACRO STOP；Q2_FORMAL_MACRO_L3_PASS_WAITING_FOR_HUMAN_GATE——无条件停机**。
+
+### 影响与边界
+
+- G2 = PASS；G3 = PASS/ACCEPTED（C17 REQUALIFIED）；Q2 H1 FORMAL candidate = 完整且非论文权威；H2 = NOT AUTHORIZED；Q3/Q4 = NOT STARTED；论文 Q2 数字 = NOT AVAILABLE。
+- 停机后不自动 land Q2 FINAL PASS、不写论文数字、不实现 H2、不启动 Q3/Q4、不重调 tau_pm；下一阶段需新 Human Gate。
+
 ## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q2-FORMAL-SPEC-V1.0 FROZEN / PILOT #3 ACTIVE`
 
 ### 修改
