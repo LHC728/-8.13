@@ -10,13 +10,15 @@
 > final-freeze review（Human Gate，2026-08-15）：距 FINAL FREEZE 仅剩 3 项（PM_IDLE 决策点语义与 H1 baseline 动作 / Pro-high 身份证据去过度声明 / §22 标记 superseded）——处置见 §21.6；本轮仅最小文档修订 + 机械复核
 > final-freeze VERIFIED review（Human Gate，2026-08-15）：**已直接审阅 587 行原文件**；FINAL FREEZE 仅剩 1 个 blocker（§2 quota selection 在线因果闭合 + D-08 一般化）——处置见 §21.7；本轮仅最小规格修订 + 机械复核
 > **FINAL FREEZE LANDING（2026-08-15，Human Gate FINAL DECISION）**：Q3/H2 BOOTSTRAP = **VERIFIED FINAL PASS / DESIGN FREEZE APPROVED**；本文件 = 冻结权威规格（Human Gate 已直接审阅 623 行版本）；BOUNDARY 契约同步、H2 权威规格同步、CURRENT_STATE/CHANGELOG 落库见 §21.8
-> 本文件所有「冻结」字样均指**本草案提议冻结、待 Human Gate 最终裁决**，未裁决前一律视为未冻结；已签字权威口径（G2/G3/Q2 accepted）不得因本草案改变。
+> **当前状态（landing 后）**：本文 D-01..D-25 及标注为冻结的规范条款现已由 2026-08-15 Human Gate **VERIFIED FINAL PASS** 正式冻结（FINAL_FREEZE_ACCEPTED）；**§21.1–§21.7 中的 CONDITIONAL/PENDING 表述均为历史审计轨迹，不得覆盖当前 FINAL_FREEZE_ACCEPTED 状态**；已签字权威口径（G2/G3/Q2 accepted）不受本文影响。
 
 ---
 
 ## 0. 范围、状态基线与权威来源
 
 ### 0.1 本草案做什么 / 不做什么
+
+> **标注：PRE-FREEZE DESIGN-STAGE SCOPE / HISTORICAL INPUT BOUNDARY**——本节「不做什么」描述的是 **final freeze landing 之前**的设计阶段边界（起草期约束），**不再表示当前 repository state**；当前状态以 `CURRENT_STATE.md` 与 §21.8 FINAL FREEZE LANDING 记录为准。以下条目保留为历史输入边界（不修改、不删除）。
 
 **做什么**：形成 Q3 + H2 ADVANCED SCHEDULING BOOTSTRAP 的完整设计规格草案，覆盖 17 个必达项（rollout M、每批 H2 评估上限、墙钟软硬预算、动作稳定性、样本划分、随机命名空间/CRN、C23 信息边界、后验缺陷重采样、条件剩余寿命重采样、H2 动作集、strategic-wait 定义、optional PM / mandatory 区别、H1 fallback、Q3 七 K H1 基线实验、Q3 H2 密度复核、C25 保留/删除规则、正式输出/provenance），以及风险点与 Human Gate 决策清单。
 
@@ -42,7 +44,9 @@
 10. `08_项目管理/模型分级与任务路由规则.md`、`全流程自动推进计划_AUTOPILOT-PLAN-V1.1.md`
 11. 已 accepted 上游接口：`random_des_v1.py`（决策点结构 `_equipment_and_dispatch`）、`key_schema_v1.py`（canonical 键、六命名空间 + `h2_future` reserved）、`h2_admission_opportunity_analyzer_v1.py`（STRICT/BOUNDARY/NONSTRICT 定义）
 
-### 0.3 冻结状态基线（本草案引用的不可变事实）
+### 0.3 冻结状态基线（本草案引用的不可变事实）— PRE-FREEZE INPUT STATE SNAPSHOT / HISTORICAL BASELINE
+
+> **标注：PRE-FREEZE INPUT STATE SNAPSHOT / HISTORICAL BASELINE**——本节保存设计冻结**之前**的输入状态快照（含「C24 budget/spec freeze = PENDING」「新增 H2 命名空间需 Human Gate 批准（D-05）」等 freeze 前状态）；**当前状态必须以 `CURRENT_STATE.md` + §21.8 FINAL FREEZE LANDING 记录为准**；不得把本节历史 PENDING 当作当前状态，也不得把已批准（D-05）但未实现的项改为「已实现」。本节条目保持 freeze 前原文（历史输入，不可变）。
 
 - Whole G2 = PASS / ACCEPTED；G3 = PASS / ACCEPTED；Q2 H1 FORMAL = PASS / ACCEPTED（accepted run `run_20260815T061803446274Z_2d1466ba`）。
 - **Q2 主情景 H1 政策 = `NO_PM_BEFORE_MANDATORY`**（正式选择；tau_pm=198 = HISTORICAL_TUNING_SELECTED_CANDIDATE / FORMALLY_NOT_SELECTED_FOR_Q2_PRIMARY，不宣称最优）。
@@ -471,6 +475,7 @@ run_manifest、commands、environment/runtime、family config snapshot、task pa
 ## 21. 独立审阅追加区（草稿审计已回填）
 
 > 审计方式：workflow `q3h2-bootstrap-audit`，两个并行 fresh 只读审计者，`may_spawn_children=false`，写路径 NONE。（模型请求见文档头：`deepseek-v4-pro` / `deepseek-v4-flash`；**reasoningEffort 未取得机械证据 = UNVERIFIED**。）
+> **历史审计/裁决记录区**：本节 §21.1–§21.7 均为 **landing 前审计轨迹**（含 CONDITIONAL/PENDING/「待 Human Gate 最终裁决」等历史表述）；**当前状态以文档头（FINAL_FREEZE_ACCEPTED）与 §21.8 FINAL FREEZE LANDING 记录为准**。
 
 ### 21.1 Q3H2_SEMANTIC_REVIEWER（D / L3–L4 / fresh semantic reviewer；requested model = `deepseek-v4-pro`；reasoningEffort = **UNVERIFIED**（adapter default，未机械证明）；只读）
 

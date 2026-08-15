@@ -1,6 +1,7 @@
 # H2：后验 Rollout 条件候选
 
-> 当前状态：**设计已冻结（2026-08-15 Human Gate VERIFIED FINAL PASS / DESIGN FREEZE APPROVED；冻结权威规格 = `08_项目管理/任务包/Q3_H2_BOOTSTRAP_SPEC_DRAFT.md`，状态 FINAL_FREEZE_ACCEPTED）；实现/调参仍 NOT AUTHORIZED。** H2 只有在 G3 出口通过 `CR-V3.1/C23–C25` 才能进入实验。
+> 当前状态：**设计已冻结（2026-08-15 Human Gate VERIFIED FINAL PASS / DESIGN FREEZE APPROVED；冻结权威规格 = `08_项目管理/任务包/Q3_H2_BOOTSTRAP_SPEC_DRAFT.md`，状态 FINAL_FREEZE_ACCEPTED）；实现/调参仍 NOT AUTHORIZED（须 Human Gate 另发授权）。**
+> **当前执行流程（冻结路线，取代旧「先 C23–C25 后实验」表述）**：`C24`（opportunity-density + budget/spec freeze = **PASS**）→ **H2 implementation → 先完成并通过 `C23` 信息/动作边界** → 按冻结 Bootstrap 路线执行必要的 generator validation / tuning / stability / holdout → **`C25` 为 holdout 后的最终 RETAIN / DELETE gate** → C25 失败则删除 H2，保留 H1/R1。**C25 本身需 h2_holdout 实验后方可判定，不要求先通过 C25 才允许实验**。
 
 ## 1. 为什么不是当前主模型
 
@@ -36,6 +37,8 @@ rollout 只读可观察历史。每个续演世界必须：
 1. `CR-V3.1/C24`：H1 日志给出真实机会密度和墙钟预算，冻结 `M`、评估上限、稳定性与样本划分；
 2. `CR-V3.1/C23`：后验、信息、动作和 FCFS 边界全部通过；
 3. `CR-V3.1/C25`：留出批次的配对收益在预注册同时置信下排除 0，动作稳定且实测不超预算。
+
+**阶段顺序澄清（不改变各门数学门槛）**：`C24` → implementation/C23 → generator validation / tuning / stability / holdout → `C25`（holdout 后判定）。三项准入门**不是「在任何 H2 实验前同时 PASS」的并列前置**：C23 在 implementation 阶段通过；C25 在 holdout 之后判定（其本身依赖 h2_holdout 实验，不能要求先通过 C25 才允许实验）。
 
 任一失败即删除 H2，正式路线保留 H1/R1。H2 删除后不以验证工程补位成第三项创新。
 
