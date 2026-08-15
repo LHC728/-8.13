@@ -2,6 +2,24 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q3 H2 DENSITY TEMPORAL REQUALIFICATION COMPLETED / AWAITING HUMAN GATE FINAL REVIEW`
+
+### 修改
+
+- **Q3-H2-DENSITY-E1（Temporal Reconstruction Requalification；Human Gate repair package）完成**：修复 density analyzer 的 maintenance / forced-wait / mandatory 时间因果缺陷，accepted Tier 1 日志 1400 worlds 确定性重放 **ACCEPTED_LOG_REPLAY_MATCH = 1400/1400**（无新随机世界、未修改 accepted 证据目录）。
+- **时间因果重建（F1-F4）**：`state_at(t)`（仅 event_time<=t）：`entered/terminal/process_passed_at_or_before`、`waiting_tasks_at`、`fcfs_head_at`（frozen FCFS：release_time/device/process_order/attempt，仅 waiting 任务）、`future_potential_demand_at`（A：entered-at-t 非 terminal 未通过；B：batch 未满）、`equipment_age_at`、`equipment_available_at`（replacement/deferral 窗口）、`resource_idle_at`；closure set = 全部 distinct canonical event_time + Q3 shift starts；每 (resource, closure) 至多一个 decision point；**mandatory 从 `EQUIPMENT_REPLACEMENT_START` kind=mandatory_240（trigger a_plus_d_gt_240 / post_completion_240 / illegal_crossing_backstop 分列）恢复**（pre-start a+d>240 在 ACTIVITY_START 上不可观测——引擎先换后启）。
+- **E1 复跑两处修复（引擎交叉校验发现并闭合）**：① dispatch-closure skip——已 dispatch 的 closure 是 DISPATCH 点，不再同时计 maintenance/forced-wait；② per-fragment settle——重排队任务（equipment-failure / illegal-240 requeue）同任务身份多片段，in-flight 片段只由相同 attempt_start_time 的 COMPLETE/CANCEL 结算。修复后 **forced_wait 与引擎 c24.waiting_opportunity_count 逐批 1:1 一致**；首个 E1 run `run_20260815T163348765115Z_268e1443` = INTERMEDIATE_ATTEMPT_WITH_ENGINE_CROSSCHECK_INVESTIGATE（保留不可变，被修复 run supersede，不作 accepted 证据）。
+- **旧 bug 复现（全部 REPRODUCED，输出与旧 analyzer blob `f6428090…` 入证据）**：R1 future-terminal contamination（final terminals 抑制 demand/head）；R2 future-release contamination（t=5 看到 t=10 的 release）；R3 delayed-start stale waiting（release=0 start=5 在 t=6 仍 waiting）；R4 future-PASS contamination（E prereq 读到未来 PASS）；R5 PM_IDLE suppression（final DEVICE_TERMINAL -> old pm_idle=0，new=1）；R6 mandatory undercount（old anchor 计数=0，new=1）。
+- **独立 checker 升级**：`h2_q3_density_checker_v1.py` 8 边界例 + **T1-T10 时间回归** + checker 自己的 log-prefix 独立复算（不调用 analyzer 作 oracle）= **全 PASS**；`test_h2_q3_density_v1.py` **31/31 PASS**；Q3-H1 formal / admission / G3 回归全部 exit 0。
+- **引擎交叉校验（逐批 1400/1400）**：`legal_dispatch + mandatory_a_plus_d_gt_240 == c24.legal_action_count`；`+ forced_wait == c24.decision_point_count`；`forced_wait == c24.waiting_opportunity_count`（forced-wait 仪表；仅诊断 crosscheck，不作 STRICT/BOUNDARY/meaningful）。
+- **D-14（冻结口径，PM_IDLE 不进分母）**：Condition A meaningful>=0.20 于 **7/7 K** = PASS（0.4310–0.4548）；Condition B strict>=2/批 于 **7/7 K** = PASS（7.20–26.16）；**DENSITY REQUALIFICATION EXECUTION = PASS / AWAITING HUMAN GATE FINAL REVIEW**（不写 HUMAN GATE ACCEPTED；P1 未开始）。
+- **OLD vs NEW 逐 K**：UNCHANGED_EXPECTED（legal_dispatch / strict / boundary / nonstrict / pm_with_head / both / exact_240 / meaningful fraction）= **逐 K 完全一致**；EXPECTED_TO_BE_REQUALIFIED（forced_wait：old 0 -> new ≈引擎 waiting（9.7k–36.2k/K）；pm_idle：old 0 -> new 时间因果 maintenance 计数（66.4k–83.1k/K）；mandatory：old ~0 -> new mandatory_240 替换事件 579/K；maintenance points；zero-action diagnostics）如实报告。
+- **旧 Density run `run_20260815T153339475783Z_4a867e83` = HISTORICAL_DENSITY_EXECUTION_WITH_TEMPORAL_RECONSTRUCTION_DEFECT**（immutable；未修改、未覆盖、未删除）；1400/1400 physical replay match 本身不声明错误。
+- **新证据根** `05_结果/H2/density_recheck/run_20260815T173625059534Z_a2669aa9/`：ACYCLIC hash DAG（RULE A）+ manifest/inventory/actual 一致性 + C21 report = **PASS**；checks.json overall = PASS（D-14 / TEMPORAL / UNCHANGED_EXPECTED / ENGINE_CROSSCHECK / C21 / C15 / REPLAY）。
+- **状态**：Q3 H1 FORMAL = **FINAL PASS / ACCEPTED**（不变）；Q3 H2 DENSITY = **TEMPORAL REQUALIFICATION COMPLETED / AWAITING HUMAN GATE FINAL REVIEW**；H2 = **NOT YET AUTHORIZED FOR P1**；**P1 = NOT AUTHORIZED**（P1/C23/C25 仍须 Human Gate 另发授权）。
+- 范围审计：Tier 2/3、P1、C23、C25、h2_tuning/holdout、rollout、posterior、tau 重调、key_schema、D-01..D-25 重设计、Q4 = 全部 **NO**；admission analyzer（`h2_admission_opportunity_analyzer_v1.py`）未修改；G3 core 未修改。
+- 状态同步：`CURRENT_STATE.md`（Gate 行、§6 禁止、§7 下一出口）。
+
 ## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q3 H2 DENSITY RECHECK = PASS（H2 = ELIGIBLE_FOR_P1_HUMAN_GATE_REVIEW）`
 
 ### 修改

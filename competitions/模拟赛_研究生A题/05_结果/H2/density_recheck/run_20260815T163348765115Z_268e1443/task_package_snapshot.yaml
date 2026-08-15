@@ -1,0 +1,15 @@
+# Q3-H2-DENSITY-E1 task-package snapshot (Human Gate repair package)
+package_ref: Q3-H2-DENSITY-E1
+authority: 08_项目管理/任务包/Q3_H2_BOOTSTRAP_SPEC_DRAFT.md (FINAL_FREEZE_ACCEPTED; sections 10/11/12/15, D-14) + Q3-H2-DENSITY-E1 Human Gate package (sections 0-23)
+bootstrap_spec_snapshot: bootstrap_spec_snapshot.md
+bootstrap_spec_sha256: c370aa38cc58c83462b4f280f10628d08ca9cef9d5c04297a2db2ffebbf6eb62
+formal_task_package_ref: Q3-H1-FORMAL-SPEC-V1.0
+formal_task_package_sha256: a0864c8728603ef85c12eff91500c78909f70d74738cb42765212d0c035b4472
+accepted_formal_run: run_20260815T133840057668Z_7ee48fc0
+accepted_reissue: reissue_20260815T150613626910Z_f4da8f9d
+old_density_run: run_20260815T153339475783Z_4a867e83 (HISTORICAL_DENSITY_EXECUTION_WITH_TEMPORAL_RECONSTRUCTION_DEFECT; immutable; not modified)
+data_source: Q3 H1 Tier 1 accepted cells only (1400 worlds)
+replay_method: deterministic engine rerun, exact accepted config; canonical_log_sha256 must match 1400/1400
+fix: time-indexed reconstruction (state_at(t)); time-causal FCFS head / E prereq / future demand; closure-set enumeration; mandatory from EQUIPMENT_REPLACEMENT_START kind=mandatory_240
+gate: D-14 (A meaningful >= 0.20 in 7/7 K; B strict >= 2/batch in >=6/7 K); PM_IDLE never in the denominator
+scope_prohibitions: no P1 / C23 / C25 / Tier 2/3 / tuning / holdout / rollout / posterior / tau retuning / key_schema / D-01..D-25 redesign / Q4; admission analyzer never modified; accepted evidence never modified

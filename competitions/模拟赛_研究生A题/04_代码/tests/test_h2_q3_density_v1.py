@@ -143,6 +143,94 @@ class TestIndependentChecker(unittest.TestCase):
         self.assertEqual(a, b)
 
 
+class TestTemporalReconstruction(unittest.TestCase):
+    """Q3-H2-DENSITY-E1: time-causal reconstruction regression (T1-T10)."""
+
+    def test_t1_future_terminal_contamination(self):
+        log, K = dchk.case_t1_future_terminal()
+        view = dan.build_time_index(log)
+        self.assertFalse(dan.terminal_at_or_before(view, 1, Fraction(10)))
+        self.assertTrue(dan.terminal_at_or_before(view, 1, Fraction(20)))
+        self.assertTrue(dan.future_potential_demand_at(
+            view, "A", Fraction(10), batch_size=2))
+        self.assertTrue(dchk.prefix_demand(log, "A", Fraction(10), 2))
+
+    def test_t2_future_pass_contamination(self):
+        log, K = dchk.case_t2_future_pass()
+        view = dan.build_time_index(log)
+        for p in ("A", "B", "C"):
+            self.assertFalse(dan.process_passed_at_or_before(
+                view, 1, p, Fraction(10)))
+            self.assertTrue(dan.process_passed_at_or_before(
+                view, 1, p, Fraction(25)))
+        self.assertFalse(dan.head_is_legal_at(
+            view, (1, "E", 1), Fraction(10), Fraction(3), Fraction(300)))
+        self.assertTrue(dan.head_is_legal_at(
+            view, (1, "E", 1), Fraction(25), Fraction(3), Fraction(300)))
+
+    def test_t3_future_release_contamination(self):
+        log, K = dchk.case_t3_future_release()
+        view = dan.build_time_index(log)
+        self.assertIsNone(dan.fcfs_head_at(view, "A", Fraction(5)))
+        self.assertEqual(dan.waiting_tasks_at(view, "A", Fraction(5)), [])
+        self.assertEqual(dan.fcfs_head_at(view, "A", Fraction(10)), (1, "A", 1))
+
+    def test_t4_delayed_start_stale_waiting(self):
+        log, K = dchk.case_t4_delayed_start()
+        view = dan.build_time_index(log)
+        self.assertEqual(dan.fcfs_head_at(view, "A", Fraction(1)), (1, "A", 1))
+        self.assertIsNone(dan.fcfs_head_at(view, "A", Fraction(6)))
+        self.assertTrue(dchk.prefix_head_waiting(log, "A", Fraction(1)))
+        self.assertFalse(dchk.prefix_head_waiting(log, "A", Fraction(6)))
+
+    def test_t5_completed_full_log_pm_idle(self):
+        # OLD bug: final DEVICE_TERMINAL records suppressed pm_idle to 0;
+        # time-causal: at t=120 future demand TRUE -> pm_idle = 1.
+        log, K = dchk.case_t5_completed_full_log_pm_idle()
+        s = dan.classify_batch_q3(log, K, "KXX", "x", 0, batch_size=2)
+        self.assertEqual(s.pm_idle, 1)
+        self.assertEqual(s.queue_empty_pm_idle, 1)
+        self.assertEqual(s.meaningful_h2_choice, 0)
+        self.assertTrue(s.zero_dispatch_opportunity)
+        self.assertFalse(s.zero_full_action_space_opportunity)
+        self.assertEqual(dchk.prefix_maintenance_count(log, K, 2), 1)
+
+    def test_t6_forced_wait_eventual_terminal(self):
+        log, K = dchk.case_t6_forced_wait_eventual_terminal()
+        s = dan.classify_batch_q3(log, K, "KXX", "x", 0, batch_size=2)
+        self.assertEqual(s.forced_wait, 1)
+        self.assertEqual(s.pm_idle, 0)
+        self.assertTrue(dchk.prefix_head_waiting(log, "B", Fraction(17, 2)))
+
+    def test_t7_release_closure_on_idle_resource(self):
+        log, K = dchk.case_t7_release_closure()
+        view = dan.build_time_index(log)
+        self.assertIn(Fraction(17, 2),
+                      dan.closure_times(view, dan.q3_shift_grid(K)))
+        s = dan.classify_batch_q3(log, K, "KXX", "x", 0, batch_size=2)
+        self.assertEqual(s.forced_wait, 1)
+
+    def test_t8_mandatory_pre_start_replacement(self):
+        log, K = dchk.case_t8_mandatory_pre_start()
+        s = dan.classify_batch_q3(log, K, "KXX", "x", 0, batch_size=2)
+        self.assertEqual(s.mandatory_replacement, 1)
+        self.assertEqual(s.mandatory_a_plus_d_gt_240, 1)
+        self.assertEqual(s.pm_idle, 0)
+
+    def test_t9_exact_240(self):
+        log, K = dchk.case_t9_exact_240()
+        s = dan.classify_batch_q3(log, K, "KXX", "x", 0, batch_size=2)
+        self.assertEqual(s.exact_240, 1)
+        self.assertEqual(s.mandatory_replacement, 0)
+
+    def test_t10_same_closure_single_point(self):
+        log, K = dchk.case_t10_same_closure_single_point()
+        s = dan.classify_batch_q3(log, K, "KXX", "x", 0, batch_size=2)
+        self.assertEqual(s.pm_idle, 1)
+        self.assertEqual(s.queue_empty_pm_idle, 1)
+        self.assertEqual(dchk.prefix_maintenance_count(log, K, 2), 1)
+
+
 class TestAggregate(unittest.TestCase):
     def _mk(self, legal, meaningful, strict, zero=False):
         return dan.DensityBatchStats(
@@ -225,12 +313,13 @@ class TestGateEvaluation(unittest.TestCase):
 
 class TestAcceptedBinding(unittest.TestCase):
     def test_accepted_cells_200_per_k(self):
-        accepted = run.load_accepted_hashes()
+        accepted = run.load_accepted_cells()
         self.assertEqual(len(accepted), 7)
         for k, by_rep in accepted.items():
             self.assertEqual(len(by_rep), 200)
             self.assertEqual(set(by_rep), set(range(200)))
-            for sha in by_rep.values():
+            for info in by_rep.values():
+                sha = info["canonical_log_sha256"]
                 self.assertEqual(len(sha), 64)
                 int(sha, 16)  # hex
 
