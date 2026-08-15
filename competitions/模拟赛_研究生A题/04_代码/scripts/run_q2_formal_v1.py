@@ -891,23 +891,29 @@ def _write_evidence(run_id: str, out_dir: Path, family: dict[str, Any],
         "command": "python 04_代码/scripts/run_q2_formal_v1.py",
         "wall_clock_family_s": family["family_wall_clock_s"],
     })
-    # checks
-    all_ok = all(
-        agg.quality_pass_count == agg.n and agg.replay_pass_count == agg.n
-        for agg in aggregates.values()
-    )
+    # checks: C06 and C17 reported independently (runner-only reporting
+    # precision; Human Gate OPTION A2 §7; changed_semantics=NO)
+    c06_ok = all(agg.quality_pass_count == agg.n for agg in aggregates.values())
+    c17_ok = all(agg.replay_pass_count == agg.n for agg in aggregates.values())
+    c06_total = sum(agg.quality_pass_count for agg in aggregates.values())
+    c06_denom = sum(agg.n for agg in aggregates.values())
+    c17_total = sum(agg.replay_pass_count for agg in aggregates.values())
+    c17_denom = sum(agg.n for agg in aggregates.values())
+    overall_ok = c06_ok and c17_ok
     _dump_json(out_dir / "checks.json", {
         "run_id": run_id,
         "registry_version": REGISTRY_VERSION,
-        "overall_status": "PASS" if all_ok else "VALIDATION_FAILED",
+        "overall_status": "PASS" if overall_ok else "VALIDATION_FAILED",
         "items": [
-            {"check_id": "CR-V3.1/C06", "status": "PASS" if all_ok else "FAIL",
+            {"check_id": "CR-V3.1/C06", "status": "PASS" if c06_ok else "FAIL",
+             "count": "%d/%d" % (c06_total, c06_denom),
              "note": "pathwise quality oracle per batch; counts in family_aggregates.json"},
             {"check_id": "CR-V3.1/C13", "status": "PASS", "note": "lifetime (engine)"},
             {"check_id": "CR-V3.1/C14", "status": "PASS", "note": "regeneration (engine)"},
             {"check_id": "CR-V3.1/C16", "status": "PASS",
              "note": "namespace=q2_formal, seed=3, ids 0..199, CRN across 8 cells"},
-            {"check_id": "CR-V3.1/C17", "status": "PASS" if all_ok else "FAIL",
+            {"check_id": "CR-V3.1/C17", "status": "PASS" if c17_ok else "FAIL",
+             "count": "%d/%d" % (c17_total, c17_denom),
              "note": "full replay per batch"},
             {"check_id": "CR-V3.1/C18", "status": "PASS", "note": "liveness (engine)"},
             {"check_id": "CR-V3.1/C26", "status": "PASS",
@@ -946,7 +952,7 @@ def _write_evidence(run_id: str, out_dir: Path, family: dict[str, Any],
             "batch_size": BATCH_SIZE,
         },
         "comparison_family": [c["id"] for c in COMPARISONS],
-        "overall_status": "PASS" if all_ok else "VALIDATION_FAILED",
+        "overall_status": "PASS" if overall_ok else "VALIDATION_FAILED",
         "environment": _env_summary(),
         "outputs": artifacts,
         "check_report_paths": ["checks.json", "formal_comparison_table.json",
