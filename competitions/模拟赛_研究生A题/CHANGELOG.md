@@ -2,6 +2,14 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-15 / `STATE-2026-08-13-G2.4` / `P0-E1 TEST EVIDENCE CLOSURE`
+
+### 修改
+
+- **P0-E1（Human Gate Test Evidence Closure）**：在 exact commit `9f6099c71e09844079801222b7dc2fa1db6cee45` 重跑 P0 声明的全部测试，并落库执行证据 `01_审计/P0_H2_KEY_SCHEMA_TEST_EVIDENCE.md`。
+- 结果：A `test_p0_h2_key_schema_bootstrap_v1` 18 / B `test_g3_key_schema_v1` 38 / C `test_g3_c16_experiment_separation_v1` 36 / D random_des 4 类子集 16 / E `test_g3_lifetime_regeneration_v1` 42 —— 全部 exit 0 / PASS；golden **620 vectors** canonical UTF-8 + Fraction mismatch = **0**（LEGACY KEY BYTE COMPATIBILITY = PASS）；tiny 确定性引擎批 pre/post canonical SHA 精确一致（log `d202fb91…`、summary `dc8715a6…`）。
+- **无生产代码修改**；未进入 P1；未运行 Q3 formal / holdout / C25；expected fixture 未重新生成；Gate 状态不变（H2 NOT IMPLEMENTED、C23/C25 PENDING、Q3 NOT STARTED）。
+
 ## 2026-08-15 / `STATE-2026-08-13-G2.4` / `P0 H2 KEY SCHEMA BOOTSTRAP IMPLEMENTATION COMPLETED`
 
 ### 修改
