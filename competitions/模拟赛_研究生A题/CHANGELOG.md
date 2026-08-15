@@ -2,6 +2,23 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-15 / `STATE-2026-08-13-G2.4` / `P0 H2 KEY SCHEMA BOOTSTRAP IMPLEMENTATION COMPLETED`
+
+### 修改
+
+- **P0（Q3/H2 IMPLEMENTATION BOOTSTRAP 子包 1）实现完成**（Human Gate P0 SPEC = PASS / READY TO EXECUTE；authority anchor `1de71824e668f3815f58112cb3c42c9633b2da16` 已核验；pre-change key_schema blob SHA `8a8f1089…`）。
+- `04_代码/main_model/g3/key_schema_v1.py`：新增 3 个正式 H2 namespace（`h2_tuning` / `h2_holdout` / `h2_rollout`）与 4 个 H2 post stream helper（`u_x_post` / `u_d_post` / `u_y_post` / `u_l_post`）；`h2_future` 保留为历史占位（未被升级）；**legacy 常量与序列化/哈希/Fraction 映射逐字节不变**（`NAMESPACES` / `ALL_NAMESPACES` 未动，既有 38+36 个冻结断言保持通过）；**namespace consumption firewall 显式实现**（legacy physical helper 拒绝全部 H2 namespace 与 h2_future；H2 post helper 拒绝 legacy namespace 与 h2_future）。
+- 新增 legacy golden fixture `04_代码/tests/fixtures/g3_key_schema_legacy_golden_v1.json`（**620 vectors**；expected 仅来自 exact pre-change oracle——commit `1de71824` blob `8a8f10895ee9751fb7c3c93093c3cdac25b4b632`；修改后未重新生成 expected）+ 生成脚本 `run_p0_legacy_oracle_golden_v1.py` + P0 测试 `test_p0_h2_key_schema_bootstrap_v1.py`（18 tests：A 单元 / B golden 回归 / C firewall / D 隔离）。
+- **Legacy 兼容验证**：golden regression 620/620 **canonical UTF-8 bytes + Fraction numerator/denominator 100% identical**（LEGACY KEY BYTE COMPATIBILITY = PASS）；既有回归 `test_g3_key_schema_v1`（38）/ `test_g3_c16_experiment_separation_v1`（36）/ `test_g3_random_des_v1` 子集（16）/ `test_g3_lifetime_regeneration_v1`（42）全 PASS；tiny 确定性引擎批 pre/post canonical SHA 一致（log `d202fb91…`、summary `dc8715a6…`）。
+- **未实现**：posterior、rollout_seed(dp,m)、rollout、H2 policy、C23 判定、C25、Q3 formal；未修改 DES/H1/Q2 语义；未运行任何正式实验。
+- **Gate 状态不变**：H2 仍 **NOT IMPLEMENTED**；C23/C25 = PENDING；Q3 = NOT STARTED（无 K 推荐）；**P0 完成不升级任何正式 Gate**（CURRENT_STATE 未改动）。
+
+### 影响与边界
+
+- P0 只铺设 H2 随机键基础设施；后续（须 Human Gate 另发执行授权）：H2 posterior/rollout 层、C23 实现与检查、Q3 七 K 运行、H2 管线（density recheck → tuning → holdout → C25）。
+- 引擎 `RandomDesConfig` 仍只接受 6 个 legacy namespace（`ks.NAMESPACES` 未动；`h2_*` 配置仍 fail closed）；未来 H2 批在 `h2_tuning` / `h2_holdout` 上运行需在 H2 runner 包中做显式、受审计的引擎 namespace 扩展（P0 不做，本包范围外）。
+- `rollout_seed(dp,m)` 与续演子流派生属于后续 rollout 层（冻结 Bootstrap §6.2），P0 未实现（模块内 TODO 记录）。
+
 ## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q3/H2 BOOTSTRAP DESIGN FREEZE APPROVED`
 
 ### 修改

@@ -48,6 +48,17 @@ never-started tasks (see NO_OBSERVATION_CONSUMED_BY); U_D is consumed only at
 a legal D materialization; U_L is consumed exactly once per (resource,
 generation).
 
+P0 extension (Q3/H2 BOOTSTRAP SPEC section 6.1 / D-05, 2026-08-15): three
+formal H2 namespaces (h2_tuning / h2_holdout / h2_rollout) and four H2 post
+streams (U_X_post / U_D_post / U_Y_post / U_L_post) are added additively.
+The frozen legacy constants, serializer field order, hashing and Fraction
+mapping are untouched. Namespace consumption is gated by an explicit
+firewall: legacy physical helpers consume only the six experiment
+namespaces; H2 post helpers consume only the three H2 namespaces;
+h2_future stays a reserved-only historical placeholder. rollout_seed(dp,m)
+and rollout substream derivation are NOT implemented here (later rollout
+layer; P0 lays namespace + post-stream infrastructure only).
+
 Main-model dependency limit: Python standard library only (no third-party
 imports), per G3-SPEC-V1.0.
 """
@@ -104,6 +115,33 @@ NAMESPACES: tuple[str, ...] = (
 H2_RESERVED_NAMESPACE: str = "h2_future"
 ALL_NAMESPACES: tuple[str, ...] = NAMESPACES + (H2_RESERVED_NAMESPACE,)
 
+# ---------------------------------------------------------------------------
+# P0: H2 key domain extension (Q3/H2 BOOTSTRAP SPEC section 6.1 / D-05,
+# 2026-08-15 Human Gate DESIGN FREEZE APPROVED). Purely additive: the frozen
+# legacy constants above (NAMESPACES / ALL_NAMESPACES / H2_RESERVED_NAMESPACE)
+# are left byte-identical so every legacy canonical key is unchanged.
+# ---------------------------------------------------------------------------
+
+# Three formal H2 experiment namespaces (frozen literals).
+NAMESPACE_H2_TUNING: str = "h2_tuning"
+NAMESPACE_H2_HOLDOUT: str = "h2_holdout"
+NAMESPACE_H2_ROLLOUT: str = "h2_rollout"
+H2_NAMESPACES: tuple[str, ...] = (
+    NAMESPACE_H2_TUNING,
+    NAMESPACE_H2_HOLDOUT,
+    NAMESPACE_H2_ROLLOUT,
+)
+
+# H2 posterior / random-resampling streams (frozen names; exactly four, no
+# renaming, no fifth stream, no merging).
+H2_POST_STREAMS: tuple[str, ...] = ("U_X_post", "U_D_post", "U_Y_post", "U_L_post")
+
+# Serializer-visible universe = frozen public constants + formal H2
+# namespaces. canonical_key serializes any registered namespace; consumption
+# is gated per family by the stream helpers (namespace firewall). Private:
+# not exported, public legacy constants stay untouched.
+_SERIALIZABLE_NAMESPACES: tuple[str, ...] = ALL_NAMESPACES + H2_NAMESPACES
+
 # U_X true-state subsystems (frozen: subsystem explicitly A/B/C). E has no
 # independent true-state draw; its distribution is derived from A/B/C/D.
 SUBSYSTEMS: tuple[str, ...] = ("A", "B", "C")
@@ -149,6 +187,11 @@ __all__ = [
     "NAMESPACES",
     "H2_RESERVED_NAMESPACE",
     "ALL_NAMESPACES",
+    "NAMESPACE_H2_TUNING",
+    "NAMESPACE_H2_HOLDOUT",
+    "NAMESPACE_H2_ROLLOUT",
+    "H2_NAMESPACES",
+    "H2_POST_STREAMS",
     "SUBSYSTEMS",
     "PROCESSES",
     "FORBIDDEN_PHYSICAL_KEY_FIELDS",
@@ -159,6 +202,10 @@ __all__ = [
     "u_d",
     "u_y",
     "u_l",
+    "u_x_post",
+    "u_d_post",
+    "u_y_post",
+    "u_l_post",
 ]
 
 
@@ -253,9 +300,14 @@ def canonical_key(
         key_schema_v1 | master_seed | namespace | replicate_id | entity_id
                       | process_or_subsystem | attempt_or_generation
 
-    ``namespace`` must be one of the seven frozen namespaces (six experiment
-    namespaces plus the H2 reserved placeholder; stream helpers reject the
-    H2 namespace). ``master_seed``/``replicate_id`` are non-negative ints;
+    ``namespace`` must be one of the registered namespaces: the six frozen
+    experiment namespaces, the H2 reserved placeholder ``h2_future``, or the
+    three formal H2 namespaces (``h2_tuning``/``h2_holdout``/``h2_rollout``).
+    Serialization accepts any registered namespace (pure serializer);
+    consumption is gated per family by the stream helpers (namespace
+    firewall: legacy physical helpers only consume the six experiment
+    namespaces; H2 post helpers only consume the three H2 namespaces).
+    ``master_seed``/``replicate_id`` are non-negative ints;
     ``entity_id`` is a str or a positive int; ``process_or_subsystem`` is a
     non-empty str or None (empty slot); ``attempt_or_generation`` is a
     positive int or None (empty slot). Fields are normalized to UTF-8 with
@@ -267,9 +319,10 @@ def canonical_key(
     strategy_id, policy_id, squad_id, worker_id, agent_id) are not accepted
     by this API and are rejected if injected through a string slot.
     """
-    if namespace not in ALL_NAMESPACES:
+    if namespace not in _SERIALIZABLE_NAMESPACES:
         raise ValueError(
-            f"unknown namespace {namespace!r}; allowed: {', '.join(ALL_NAMESPACES)}"
+            f"unknown namespace {namespace!r}; allowed: "
+            f"{', '.join(_SERIALIZABLE_NAMESPACES)}"
         )
     seed = _require_non_negative_int(master_seed, "master_seed")
     rep = _require_non_negative_int(replicate_id, "replicate_id")
@@ -307,11 +360,40 @@ def uniform_from_key(canonical_key: str) -> Fraction:
     return Fraction(2 * head + 1, 1 << 65)
 
 
-def _require_consumable_namespace(namespace) -> None:
-    if namespace == H2_RESERVED_NAMESPACE:
+def _require_legacy_namespace(namespace) -> None:
+    """Namespace firewall (P0): legacy physical stream helpers (``u_x`` /
+    ``u_d`` / ``u_y`` / ``u_l``) may only consume the six frozen experiment
+    namespaces.
+
+    The formal H2 namespaces (``h2_tuning``/``h2_holdout``/``h2_rollout``)
+    are reserved for the H2 post streams, and ``h2_future`` remains a
+    reserved-only placeholder; legacy physical helpers must never consume
+    them (in particular legacy helper + ``h2_rollout`` is always rejected).
+    """
+    if namespace not in NAMESPACES:
         raise ValueError(
-            "H2_future_stream namespace is reserved only; G3-SPEC-V1.0 does "
-            "not implement H2, so no stream U may be consumed under it"
+            "legacy physical stream may only be consumed under the six frozen "
+            f"experiment namespaces {', '.join(NAMESPACES)}; H2 namespaces "
+            f"{', '.join(H2_NAMESPACES)} are reserved for H2 post streams, and "
+            f"the placeholder {H2_RESERVED_NAMESPACE!r} is reserved only"
+        )
+
+
+def _require_h2_namespace(namespace) -> None:
+    """Namespace firewall (P0): H2 post stream helpers (``u_x_post`` /
+    ``u_d_post`` / ``u_y_post`` / ``u_l_post``) may only consume the three
+    formal H2 namespaces.
+
+    Legacy experiment namespaces are physical domains and ``h2_future`` is
+    reserved only; H2 post streams must never consume them, so H2 helpers
+    cannot pollute the legacy random worlds.
+    """
+    if namespace not in H2_NAMESPACES:
+        raise ValueError(
+            "H2 post stream may only be consumed under the H2 namespaces "
+            f"{', '.join(H2_NAMESPACES)}; legacy experiment namespaces "
+            f"{', '.join(NAMESPACES)} are legacy physical domains, and the "
+            f"placeholder {H2_RESERVED_NAMESPACE!r} is reserved only"
         )
 
 
@@ -321,9 +403,10 @@ def u_x(namespace, rep, device, subsystem, seed) -> Fraction:
 
     Consumed once per device entry for each true-state subsystem; the
     subsystem is explicit so A/B/C slots are distinct. Never merged with the
-    U_D slot (U_D is a dedicated stream).
+    U_D slot (U_D is a dedicated stream). Legacy physical stream: only the
+    six frozen experiment namespaces are consumable (firewall).
     """
-    _require_consumable_namespace(namespace)
+    _require_legacy_namespace(namespace)
     if subsystem not in SUBSYSTEMS:
         raise ValueError(
             f"U_X subsystem must be one of {SUBSYSTEMS}, got {subsystem!r}"
@@ -337,9 +420,10 @@ def u_d(namespace, rep, device, seed) -> Fraction:
 
     Dedicated stream; consume only at a legal D materialization (A/B/C all
     PASS while the device is still pending). Never merged into the A/B/C
-    slots of U_X.
+    slots of U_X. Legacy physical stream: only the six frozen experiment
+    namespaces are consumable (firewall).
     """
-    _require_consumable_namespace(namespace)
+    _require_legacy_namespace(namespace)
     key = canonical_key(namespace, rep, device, None, None, seed)
     return uniform_from_key(key)
 
@@ -351,9 +435,10 @@ def u_y(namespace, rep, device, process, attempt, seed) -> Fraction:
     Consume only on a valid completion; failure interruption, terminal
     cancellation, shift deferral and never-started tasks consume no U (the
     caller enforces this). ``process`` must be one of {A, B, C, E} and
-    ``attempt`` a positive effective attempt number.
+    ``attempt`` a positive effective attempt number. Legacy physical stream:
+    only the six frozen experiment namespaces are consumable (firewall).
     """
-    _require_consumable_namespace(namespace)
+    _require_legacy_namespace(namespace)
     if process not in PROCESSES:
         raise ValueError(
             f"U_Y process must be one of {PROCESSES}, got {process!r}"
@@ -369,11 +454,83 @@ def u_l(namespace, rep, resource, generation, seed) -> Fraction:
     Exactly one U_L per (resource, generation): the pair fully determines the
     key, so repeated draws with the same pair reuse the same U. ``resource``
     must be one of {A, B, C, E}; ``generation`` a positive generation number.
+    Legacy physical stream: only the six frozen experiment namespaces are
+    consumable (firewall).
     """
-    _require_consumable_namespace(namespace)
+    _require_legacy_namespace(namespace)
     if resource not in PROCESSES:
         raise ValueError(
             f"U_L resource must be one of {PROCESSES}, got {resource!r}"
+        )
+    key = canonical_key(namespace, rep, resource, None, generation, seed)
+    return uniform_from_key(key)
+
+
+# ---------------------------------------------------------------------------
+# P0: H2 posterior / random-resampling streams (Q3/H2 BOOTSTRAP SPEC section
+# 6.1 / D-05). Four post streams, same canonical slot patterns as their
+# legacy counterparts, but only consumable under the three formal H2
+# namespaces (namespace firewall). No rollout_seed(dp,m) / rollout substream
+# derivation here: that belongs to a later rollout layer (P0 scope note).
+# ---------------------------------------------------------------------------
+
+
+def u_x_post(namespace, rep, device, subsystem, seed) -> Fraction:
+    """U_X_post: H2 posterior defect-state resampling stream (SPEC 6.1).
+
+    Same canonical slot pattern as U_X (namespace, replicate_id, device_id,
+    subsystem); consumed only under h2_tuning / h2_holdout / h2_rollout.
+    The legacy ``u_x`` never consumes H2 namespaces (firewall), so post and
+    physical identities cannot collide.
+    """
+    _require_h2_namespace(namespace)
+    if subsystem not in SUBSYSTEMS:
+        raise ValueError(
+            f"U_X_post subsystem must be one of {SUBSYSTEMS}, got {subsystem!r}"
+        )
+    key = canonical_key(namespace, rep, device, subsystem, None, seed)
+    return uniform_from_key(key)
+
+
+def u_d_post(namespace, rep, device, seed) -> Fraction:
+    """U_D_post: H2 D posterior / prior resampling stream (SPEC 6.1).
+
+    Same canonical slot pattern as U_D (namespace, replicate_id, device_id);
+    consumed only under the formal H2 namespaces.
+    """
+    _require_h2_namespace(namespace)
+    key = canonical_key(namespace, rep, device, None, None, seed)
+    return uniform_from_key(key)
+
+
+def u_y_post(namespace, rep, device, process, attempt, seed) -> Fraction:
+    """U_Y_post: H2 rollout observation stream (SPEC 6.1).
+
+    Same canonical slot pattern as U_Y (namespace, replicate_id, device_id,
+    process, effective_attempt_no); consumed only under the formal H2
+    namespaces; a rollout attempt consumes U_Y_post only on a valid
+    completion (caller-enforced, mirroring NO_OBSERVATION_CONSUMED_BY).
+    """
+    _require_h2_namespace(namespace)
+    if process not in PROCESSES:
+        raise ValueError(
+            f"U_Y_post process must be one of {PROCESSES}, got {process!r}"
+        )
+    key = canonical_key(namespace, rep, device, process, attempt, seed)
+    return uniform_from_key(key)
+
+
+def u_l_post(namespace, rep, resource, generation, seed) -> Fraction:
+    """U_L_post: H2 conditional residual-lifetime resampling stream (SPEC
+    6.1).
+
+    Same canonical slot pattern as U_L (namespace, replicate_id, resource,
+    generation_no); consumed only under the formal H2 namespaces.
+    """
+    _require_h2_namespace(namespace)
+    if resource not in PROCESSES:
+        raise ValueError(
+            f"U_L_post resource must be one of {PROCESSES}, got {resource!r}"
         )
     key = canonical_key(namespace, rep, resource, None, generation, seed)
     return uniform_from_key(key)
