@@ -230,6 +230,51 @@ class TestTemporalReconstruction(unittest.TestCase):
         self.assertEqual(s.queue_empty_pm_idle, 1)
         self.assertEqual(dchk.prefix_maintenance_count(log, K, 2), 1)
 
+    # ---- Q3-H2-DENSITY-E2: fragment-aware requeue regressions (T11-T15) ----
+
+    def test_t11_requeue_between_fragments(self):
+        log, K = dchk.case_t11_requeue_between_fragments()
+        self.assertTrue(dchk.prefix_head_waiting(log, "A", Fraction(3, 2)))
+        self.assertTrue(dchk.prefix_idle(log, "A", Fraction(3, 2)))
+        self.assertTrue(dchk.prefix_fragment_settled(
+            log, 1, "A", 1, Fraction(0), Fraction(3, 2)))
+
+    def test_t12_restarted_fragment_running(self):
+        log, K = dchk.case_t12_restarted_fragment_running()
+        self.assertFalse(dchk.prefix_head_waiting(log, "A", Fraction(3)))
+        self.assertFalse(dchk.prefix_idle(log, "A", Fraction(3)))
+        self.assertFalse(dchk.prefix_fragment_settled(
+            log, 1, "A", 1, Fraction(2), Fraction(3)))
+        self.assertTrue(dchk.prefix_running(log, 1, "A", 1, Fraction(3)))
+        s = dan.classify_batch_q3(log, K, "KXX", "x", 0, batch_size=2)
+        self.assertEqual(s.pm_idle, 0)
+
+    def test_t13_second_fragment_complete(self):
+        log, K = dchk.case_t13_second_fragment_complete()
+        self.assertTrue(dchk.prefix_fragment_settled(
+            log, 1, "A", 1, Fraction(2), Fraction(4)))
+        self.assertFalse(dchk.prefix_head_waiting(log, "A", Fraction(4)))
+        self.assertTrue(dchk.prefix_idle(log, "A", Fraction(4)))
+
+    def test_t14_pm_idle_false_during_restart(self):
+        log, K = dchk.case_t14_pm_idle_false_during_restart()
+        self.assertFalse(dchk.prefix_idle(log, "A", Fraction(123)))
+        self.assertFalse(dchk.prefix_head_waiting(log, "A", Fraction(123)))
+        self.assertTrue(dchk.prefix_demand(log, "A", Fraction(123), 2))
+        self.assertEqual(dchk.prefix_maintenance_counts(log, K, 2), (0, 0, 0))
+        s = dan.classify_batch_q3(log, K, "KXX", "x", 0, batch_size=2)
+        self.assertEqual(s.pm_idle, 0)
+
+    def test_t15_post_cancel_legal_illegal_head(self):
+        log, K = dchk.case_t15_post_cancel_head()
+        self.assertTrue(dchk.prefix_head_waiting(log, "A", Fraction(1)))
+        self.assertTrue(dchk.prefix_legal_head(
+            log, "A", Fraction(1), Fraction(300)))
+        self.assertFalse(dchk.prefix_legal_head(
+            log, "A", Fraction(1), Fraction(3)))
+        s = dan.classify_batch_q3(log, Fraction(3), "KXX", "x", 0, batch_size=2)
+        self.assertEqual(s.forced_wait, 1)
+
 
 class TestAggregate(unittest.TestCase):
     def _mk(self, legal, meaningful, strict, zero=False):

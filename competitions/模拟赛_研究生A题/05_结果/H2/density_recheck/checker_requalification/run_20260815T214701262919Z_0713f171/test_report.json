@@ -1,0 +1,1 @@
+{"checker":"h2_q3_density_checker_v1 run_checks() = PASS (8 boundary + 15 temporal cases)","run_id":"20260815T214701262919Z_0713f171","temporal_cases":{"T11":"PASS","T12":"PASS","T13":"PASS","T14":"PASS","T15":"PASS"},"test_suite":"test_h2_q3_density_v1.py = PASS (36 tests)"}

@@ -1,0 +1,12 @@
+# Q3-H2-DENSITY-E2 task-package snapshot (Human Gate E2 package)
+package_ref: Q3-H2-DENSITY-E2
+authority: Q3_H2_BOOTSTRAP_SPEC_DRAFT.md (FINAL_FREEZE_ACCEPTED; D-14) + Q3-H2-DENSITY-E2 Human Gate package (sections 0-22)
+bootstrap_spec_snapshot: bootstrap_spec_snapshot.md
+bootstrap_spec_sha256: c370aa38cc58c83462b4f280f10628d08ca9cef9d5c04297a2db2ffebbf6eb62
+formal_task_package_sha256: a0864c8728603ef85c12eff91500c78909f70d74738cb42765212d0c035b4472
+accepted_formal_run: run_20260815T133840057668Z_7ee48fc0
+e1_evidence: run_20260815T173625059534Z_a2669aa9 (immutable, not modified)
+fix: fragment-aware checker prefix reconstruction (prefix_fragment_settled by attempt_start_time)
+checker_scope: checker-only requalification; analyzer used only as system under test; checker OWN prefix logic produces expected truth
+replay: deterministic; canonical_log_sha256 1400/1400
+scope_prohibitions: no P1/C23/C25/tuning/holdout/rollout/Q4; analyzer, E1 runner, key_schema, D-01..D-25, accepted evidence unchanged

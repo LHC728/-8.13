@@ -2,6 +2,22 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q3 H2 DENSITY E2 CHECKER REQUALIFICATION COMPLETED / AWAITING HUMAN GATE FINAL REVIEW`
+
+### 修改
+
+- **Q3-H2-DENSITY-E2（Fragment-aware independent PM_IDLE checker requalification；Human Gate E2 包）完成**：关闭 E1 Human Gate 审计发现的最后一个独立 checker 缺口——checker 的 prefix state reconstruction 未按 `attempt_start_time` 区分同一 effective attempt 的不同 execution fragments（equipment-failure / illegal-240 interruption → TASK_CANCEL → requeue → 重新 ACTIVITY_START）。
+- **checker 修复（仅 `h2_q3_density_checker_v1.py`；analyzer / E1 runner 未修改）**：新增独立 `prefix_fragment_settled` / `prefix_running`（fragment identity = (device, process, effective_attempt_no, attempt_start_time)；fragment 只被相同 attempt_start_time 的 COMPLETE/CANCEL 结算）；`prefix_idle` / `prefix_head_waiting` / `prefix_legal_head` 全部 fragment-aware；新增 `prefix_available`（replacement/deferral 窗口）与 `prefix_maintenance_counts`（pm_idle + queue-empty + queue-nonempty split，含 dispatch-closure skip）；`build_prefix_index` 只记录带 attempt_start_time 的 fragment cancel（READY-task cancel 无 runtime fragment、elapsed 0，不得污染 age——首轮 E2 run 1400/1400 中 1 批（K11 rep86）因此发现并修复：checker age 误含 READY cancel → 86 个 maintenance 点漏计）；**不调用 analyzer 维护 helper 作 oracle（analyzer_functions_used_as_oracle: NONE）**。
+- **T11-T15 fragment/requeue 回归**（checker run_checks + `test_h2_q3_density_v1.py`）：T11 cancel→requeue between fragments；T12 restarted fragment running（旧 fragment CANCEL 不得 settle 新 fragment——Human Gate defect 核心回归）；T13 second fragment complete；T14 PM_IDLE false during restarted fragment（age>=120、demand TRUE 下仍 MUST=0，因 resource BUSY）；T15 post-cancel legal/illegal FCFS head——**全 PASS**；测试 **36/36 PASS**。
+- **accepted Tier 1 1400 worlds 确定性只读重放**：ACCEPTED_LOG_REPLAY_MATCH = **1400/1400**（q3_formal、seed 5、ids 0..199；无新随机世界、不消费 h2_tuning/h2_holdout/h2_rollout）。
+- **独立 PM_IDLE 交叉校验（逐批 exact）**：checker OWN prefix pm_idle == analyzer pm_idle **1400/1400**；queue-empty split **1400/1400**；queue-nonempty-no-legal-head split **1400/1400**。
+- **requeue coverage（1400 accepted logs，按 K 见 requeue_coverage.json）**：batches_with_cancelled_fragment = 311；batches_with_requeued_same_effective_attempt = 266；total_cancelled_fragments = 385；total_restarted_fragments = 287——T11-T15 非仅 synthetic，正式日志 requeue 机制已被 E2 checker 覆盖（未删除/筛选任何 batch）。
+- **既有结果不变**：D-14 dispatch-side（legal_dispatch/strict/boundary/nonstrict/pm_with_head/both/meaningful/exact_240）与 E1 证据 `run_20260815T173625059534Z_a2669aa9` **逐 K 完全一致**（unchanged_dispatch_crosscheck all_equal）；D-14 阈值不变（A meaningful>=0.20 于 7/7 K；B strict>=2/批 于 >=6/7 K）= **PASS**；引擎交叉校验 forced_wait max_abs_diff=0、legal/decision points 1400/1400；mandatory/exact_240 未重设计。
+- **新证据根** `05_结果/H2/density_recheck/checker_requalification/run_20260815T214701262919Z_0713f171/`：ACYCLIC hash DAG（RULE A）+ manifest/inventory/actual 一致性 + C21 report = **PASS**；checks.json overall = PASS（TEMPORAL_FRAGMENT_IDENTITY / T11_T15 / ACCEPTED_LOG_REPLAY_MATCH / PM_IDLE_INDEPENDENT_CROSSCHECK / PM_IDLE_QUEUE_SPLIT_CROSSCHECK / ENGINE_FORCED_WAIT_CROSSCHECK / UNCHANGED_DISPATCH / D14 / C21）。首轮 E2 run `run_20260815T204440346754Z_78078568`（PM_IDLE 1399/1400，checker READY-cancel age 缺陷）= INTERMEDIATE_ATTEMPT（保留不可变，被修复 run supersede）。
+- **状态**：**Q3-H2-DENSITY-E2 = COMPLETED / AWAITING HUMAN GATE FINAL REVIEW**；**Q3-H2 Density Human Gate final acceptance = NOT YET**；**P1 = NOT AUTHORIZED**；**C23 = NOT AUTHORIZED**；不写 Density FINAL ACCEPTED / P1 READY TO AUTO START。
+- 范围审计：P1/C23/Posterior/ObservableState/lifetime/rollout/tuning/holdout/C25/Q4 = 全部 **NO**；D-01..D-25 / key_schema / accepted H1 evidence / 旧 Density evidence / E1 final evidence / analyzer / formal seeds 未修改；`run_q3_h2_density_v1.py`（E1 runner）未修改（E2 新增 checker-only runner `run_q3_h2_density_checker_requal_v1.py`）。
+- 状态同步：`CURRENT_STATE.md`（Gate 行、§6 禁止、§7 下一出口）。
+
 ## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q3 H2 DENSITY TEMPORAL REQUALIFICATION COMPLETED / AWAITING HUMAN GATE FINAL REVIEW`
 
 ### 修改

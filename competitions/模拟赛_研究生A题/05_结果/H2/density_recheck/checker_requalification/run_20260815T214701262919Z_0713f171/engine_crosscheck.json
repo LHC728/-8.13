@@ -1,0 +1,1 @@
+{"engine_decision_points_match":"1400/1400","engine_legal_actions_match":"1400/1400","forced_wait_vs_engine":{"max_abs_diff":0,"n_zero_diff":1400,"p99_abs_diff":0},"note":"forced_wait vs engine c24.waiting_opportunity_count (diagnostic; not a PM_IDLE oracle)","run_id":"20260815T214701262919Z_0713f171"}

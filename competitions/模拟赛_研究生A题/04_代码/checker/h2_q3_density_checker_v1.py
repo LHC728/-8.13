@@ -1,13 +1,22 @@
 #!/usr/bin/env python3
-"""Q3-H2-DENSITY-E1 independent checker (temporal reconstruction).
+"""Q3-H2-DENSITY-E1/E2 independent checker (temporal reconstruction).
 
 The density analyzer must not self-certify.  This checker independently
 recomputes the frozen classifications for hand-built deterministic small
 cases and cross-checks the analyzer on those same logs.  It does NOT call
 the analyzer's classification functions (fcfs_head_at /
-future_potential_demand_at / process_passed_at_or_before / classify) as an
-oracle: expected values are derived by the checker's OWN log-prefix logic
-and hand derivation.  The analyzer is used only as the system under test.
+future_potential_demand_at / process_passed_at_or_before / classify /
+resource_idle_at / build_time_index) as an oracle: expected values are
+derived by the checker's OWN log-prefix logic and hand derivation.  The
+analyzer is used only as the system under test.
+
+Q3-H2-DENSITY-E2 (fragment-aware requalification): the checker's prefix
+state reconstruction is FRAGMENT-AWARE -- the same (device, process,
+effective_attempt_no) may own several physical fragments (equipment
+failure / illegal-240 interruption -> TASK_CANCEL -> requeue with the
+frozen FCFS key -> later ACTIVITY_START).  Fragment identity includes
+attempt_start_time; a fragment is settled ONLY by a COMPLETE/CANCEL with
+the SAME attempt_start_time (prefix_fragment_settled / prefix_running).
 
 Boundary cases (frozen definitions, Bootstrap FINAL_FREEZE_ACCEPTED
 sections 10/11/12/15 + D-14; Q3-H2-DENSITY-E1 sections 5/6/14):
@@ -21,13 +30,17 @@ sections 10/11/12/15 + D-14; Q3-H2-DENSITY-E1 sections 5/6/14):
   T5 completed-full-log PM_IDLE (old bug: pm_idle=0 -> new: 1),
   T6 forced wait with eventual terminal records, T7 TASK_RELEASE closure
   on idle resource, T8 mandatory pre-start replacement, T9 exact_240,
-  T10 same-timestamp single decision point per resource.
+  T10 same-timestamp single decision point per resource;
+  T11 cancel->requeue between fragments, T12 restarted fragment running,
+  T13 second fragment complete, T14 PM_IDLE false during restarted
+  fragment, T15 post-cancel legal/illegal FCFS head.
 
 Python 3.12, standard library only.
 """
 from __future__ import annotations
 
 import sys
+from dataclasses import dataclass, field
 from fractions import Fraction
 from pathlib import Path
 from typing import Any, Optional
@@ -76,6 +89,15 @@ def complete(device: int, process: str, t: str, s: str,
     return ev("ACTIVITY_COMPLETE", event_time=t, device_id=device, process=process,
               effective_attempt_no=attempt, resource_id=process,
               attempt_start_time=s, outcome="PASS", result_squad_id=0)
+
+
+def cancel(device: int, process: str, t: str, s: str,
+           reason: str = "EQUIPMENT_FAILURE", attempt: int = 1) -> dict[str, Any]:
+    return ev("TASK_CANCEL", event_time=t, device_id=device, process=process,
+              resource_id=process, effective_attempt_no=attempt,
+              attempt_start_time=s, attempt_end_time=t, outcome="NONE",
+              cancel_reason=reason,
+              elapsed_hours=str(Fraction(t) - Fraction(s)))
 
 
 def obs(device: int, process: str, t: str, attempt: int = 1) -> dict[str, Any]:
@@ -128,6 +150,14 @@ def age_chain(rsrc: str, end_target: Fraction, start_dev: int = 1
 
 # ---------------------------------------------------------------------------
 # Checker's OWN log-prefix state logic (independent of the analyzer)
+#
+# Q3-H2-DENSITY-E2 (fragment-aware requalification): the same
+# (device, process, effective_attempt_no) may own SEVERAL physical
+# fragments (equipment-failure / illegal-240 interruption -> TASK_CANCEL ->
+# task requeue with the frozen FCFS key -> later ACTIVITY_START).
+# Fragment identity MUST include attempt_start_time; a fragment is settled
+# only by a COMPLETE/CANCEL with the SAME attempt_start_time.  The analyzer
+# helpers are NEVER used as oracle.
 # ---------------------------------------------------------------------------
 
 DUR = {"A": Fraction(5, 2), "B": Fraction(2), "C": Fraction(5, 2),
@@ -136,6 +166,314 @@ DUR = {"A": Fraction(5, 2), "B": Fraction(2), "C": Fraction(5, 2),
 
 def prefix(log: list[dict[str, Any]], t: Fraction) -> list[dict[str, Any]]:
     return [r for r in log if Fraction(r.get("event_time", 0)) <= t]
+
+
+def prefix_fragment_settled(log: list[dict[str, Any]], device: int,
+                            process: str, attempt: int,
+                            fragment_start_time: Fraction, t: Fraction) -> bool:
+    """Checker's own fragment-specific settle test: only a COMPLETE/CANCEL
+    with the SAME (device, process, attempt, attempt_start_time) and
+    event_time <= t settles this exact fragment."""
+    pre = prefix(log, t)
+    for r in pre:
+        if r.get("event_type") not in ("ACTIVITY_COMPLETE", "TASK_CANCEL"):
+            continue
+        if r.get("attempt_start_time") is None:
+            continue
+        if (r.get("device_id") == device and r.get("process") == process
+                and r.get("effective_attempt_no") == attempt
+                and Fraction(r["attempt_start_time"]) == fragment_start_time):
+            return True
+    return False
+
+
+def prefix_running(log: list[dict[str, Any]], device: int, process: str,
+                   attempt: int, t: Fraction) -> bool:
+    """Checker's own fragment-aware running test: exists a FRAGMENT of the
+    exact task with start s <= t < scheduled end and NO fragment-specific
+    settle <= t (a settle of an OLD fragment never settles a NEW one)."""
+    pre = prefix(log, t)
+    for r in pre:
+        if r.get("event_type") != "ACTIVITY_START":
+            continue
+        if (r.get("device_id") != device or r.get("process") != process
+                or r.get("effective_attempt_no") != attempt):
+            continue
+        s = Fraction(r.get("attempt_start_time", r["event_time"]))
+        end = Fraction(r["attempt_end_time"])
+        if s <= t < end and not prefix_fragment_settled(
+                log, device, process, attempt, s, t):
+            return True
+    return False
+
+
+# -- index core (built once per log; fragment-aware; own implementation) ---
+
+
+@dataclass
+class _TaskRec:
+    dev: int
+    proc: str
+    att: int
+    rel: Fraction
+    terminal_t: Optional[Fraction] = None
+    starts: list[tuple[Fraction, Fraction]] = None  # (start, end) sorted
+    completes: list[tuple[Fraction, Fraction]] = None  # (t, start) sorted
+    cancels: list[tuple[Fraction, Fraction]] = None  # (t, start) sorted
+
+    def __post_init__(self) -> None:
+        if self.starts is None:
+            self.starts = []
+        if self.completes is None:
+            self.completes = []
+        if self.cancels is None:
+            self.cancels = []
+
+
+@dataclass
+class PrefixIndex:
+    log: list[dict[str, Any]]
+    entry_dev: dict[int, Fraction] = field(default_factory=dict)  # dev -> entry t
+    terminal_t: dict[int, Fraction] = field(default_factory=dict)
+    obs_passed: list[tuple[Fraction, int, str]] = field(default_factory=list)
+    obs_passed_times: list[Fraction] = field(default_factory=list)
+    tasks: dict[str, dict[tuple[int, str, int], _TaskRec]] = field(
+        default_factory=dict)
+    cal_windows: dict[str, list[tuple[Fraction, Fraction]]] = field(
+        default_factory=dict)  # calibration busy [cs, ce)
+    unavail_windows: dict[str, list[tuple[Fraction, Fraction]]] = field(
+        default_factory=dict)  # replacement/deferral pending [w0, w1)
+    replacements: dict[str, list[Fraction]] = field(default_factory=dict)
+    dispatch_at: dict[Fraction, set[str]] = field(default_factory=dict)
+    event_times: list[Fraction] = field(default_factory=list)
+    batch_end: Fraction = Fraction(0)
+
+
+def build_prefix_index(log: list[dict[str, Any]]) -> PrefixIndex:
+    idx = PrefixIndex(log=log)
+    terminal_candidates: dict[int, Fraction] = {}
+    times: set[Fraction] = set()
+    for r in log:
+        et = r.get("event_type")
+        t = Fraction(r.get("event_time", 0))
+        times.add(t)
+        if et == "TRUE_STATE_GENERATED":
+            d = r["device_id"]
+            if d not in idx.entry_dev or t < idx.entry_dev[d]:
+                idx.entry_dev[d] = t
+        elif et == "DEVICE_TERMINAL":
+            d = r["device_id"]
+            if d not in terminal_candidates or t < terminal_candidates[d]:
+                terminal_candidates[d] = t
+        elif et == "OBSERVATION_MATERIALIZED" and r.get("outcome") == "PASS":
+            idx.obs_passed.append((t, r["device_id"], r["process"]))
+        elif et == "TASK_RELEASE":
+            rsrc = r["resource_id"]
+            key = (r["device_id"], r["process"], r["effective_attempt_no"])
+            rec = idx.tasks.setdefault(rsrc, {}).get(key)
+            if rec is None:
+                rec = _TaskRec(dev=r["device_id"], proc=r["process"],
+                               att=r["effective_attempt_no"], rel=t)
+                idx.tasks.setdefault(rsrc, {})[key] = rec
+            else:
+                rec.rel = min(rec.rel, t)
+        elif et == "ACTIVITY_START":
+            rsrc = r["resource_id"]
+            s = Fraction(r.get("attempt_start_time", r["event_time"]))
+            end = Fraction(r["attempt_end_time"])
+            key = (r["device_id"], r["process"], r["effective_attempt_no"])
+            rec = idx.tasks.setdefault(rsrc, {}).get(key)
+            if rec is None:
+                rec = _TaskRec(dev=r["device_id"], proc=r["process"],
+                               att=r["effective_attempt_no"], rel=s)
+                idx.tasks.setdefault(rsrc, {})[key] = rec
+            rec.starts.append((s, end))
+            idx.dispatch_at.setdefault(t, set()).add(rsrc)
+        elif et == "ACTIVITY_COMPLETE":
+            rsrc = r["resource_id"]
+            if r.get("attempt_start_time") is None:
+                continue
+            s = Fraction(r["attempt_start_time"])
+            key = (r["device_id"], r["process"], r["effective_attempt_no"])
+            rec = idx.tasks.setdefault(rsrc, {}).get(key)
+            if rec is None:
+                rec = _TaskRec(dev=r["device_id"], proc=r["process"],
+                               att=r["effective_attempt_no"], rel=s)
+                idx.tasks.setdefault(rsrc, {})[key] = rec
+            rec.completes.append((t, s))
+        elif et == "TASK_CANCEL":
+            rsrc = r["resource_id"]
+            # A READY-task cancel (device exit, no runtime fragment) carries
+            # NO attempt_start_time and contributes ZERO equipment elapsed;
+            # only fragment cancels (attempt_start_time present) are stored
+            # (E2 fragment identity; the analyzer skips start-less records).
+            if r.get("attempt_start_time") is None:
+                continue
+            s = Fraction(r["attempt_start_time"])
+            key = (r["device_id"], r["process"], r["effective_attempt_no"])
+            rec = idx.tasks.setdefault(rsrc, {}).get(key)
+            if rec is None:
+                rec = _TaskRec(dev=r["device_id"], proc=r["process"],
+                               att=r["effective_attempt_no"], rel=s)
+                idx.tasks.setdefault(rsrc, {})[key] = rec
+            rec.cancels.append((t, s))
+        elif et == "EQUIPMENT_REPLACEMENT_START":
+            rsrc = r["resource_id"]
+            cs = Fraction(r["calibration_start"])
+            ce = Fraction(r["calibration_end"])
+            idx.cal_windows.setdefault(rsrc, []).append((cs, ce))
+            idx.unavail_windows.setdefault(rsrc, []).append((t, ce))
+            idx.replacements.setdefault(rsrc, []).append(t)
+        elif et == "EQUIPMENT_REPLACEMENT_DEFERRED":
+            rsrc = r["resource_id"]
+            idx.unavail_windows.setdefault(rsrc, []).append(
+                (t, t))  # merged with the next replacement's ce below
+    # terminal times (earliest)
+    idx.terminal_t = terminal_candidates
+    # merge unavailability windows per resource (deferral -> next ce)
+    for rsrc in list(idx.unavail_windows):
+        wins = sorted(idx.unavail_windows[rsrc])
+        merged: list[tuple[Fraction, Fraction]] = []
+        for w0, w1 in wins:
+            if w1 <= w0:
+                # deferral-only marker; find next replacement's ce
+                nxt = None
+                for q0, q1 in wins:
+                    if q0 >= w0 and q1 > q0:
+                        if nxt is None or q1 < nxt:
+                            nxt = q1
+                if nxt is not None:
+                    w1 = nxt
+                else:
+                    continue
+            if merged and w0 < merged[-1][1]:
+                merged[-1] = (merged[-1][0], max(merged[-1][1], w1))
+            else:
+                merged.append((w0, w1))
+        idx.unavail_windows[rsrc] = merged
+    for rsrc in list(idx.tasks):
+        for key in idx.tasks[rsrc]:
+            rec = idx.tasks[rsrc][key]
+            rec.starts.sort()
+            rec.completes.sort()
+            rec.cancels.sort()
+    idx.obs_passed.sort()
+    idx.obs_passed_times = [t for t, _d, _p in idx.obs_passed]
+    idx.event_times = sorted(times)
+    idx.batch_end = (
+        max(idx.terminal_t.values()) if idx.terminal_t
+        else (max(idx.event_times) if idx.event_times else Fraction(0)))
+    return idx
+
+
+def _idx_fragment_settled(idx: PrefixIndex, dev: int, proc: str, att: int,
+                          fstart: Fraction, t: Fraction) -> bool:
+    rsrc = proc
+    rec = idx.tasks.get(rsrc, {}).get((dev, proc, att))
+    if rec is None:
+        return False
+    for ct, s in rec.completes:
+        if s == fstart and ct <= t:
+            return True
+    for ct, s in rec.cancels:
+        if s == fstart and ct <= t:
+            return True
+    return False
+
+
+def _idx_task_running(idx: PrefixIndex, dev: int, proc: str, att: int,
+                      t: Fraction) -> bool:
+    rec = idx.tasks.get(proc, {}).get((dev, proc, att))
+    if rec is None:
+        return False
+    for s, end in rec.starts:
+        if s <= t < end and not _idx_fragment_settled(idx, dev, proc, att, s, t):
+            return True
+    return False
+
+
+def _idx_task_completed(idx: PrefixIndex, dev: int, proc: str, att: int,
+                        t: Fraction) -> bool:
+    rec = idx.tasks.get(proc, {}).get((dev, proc, att))
+    if rec is None:
+        return False
+    return any(ct <= t for ct, _s in rec.completes)
+
+
+def _idx_task_waiting(idx: PrefixIndex, dev: int, proc: str, att: int,
+                      t: Fraction) -> bool:
+    rec = idx.tasks.get(proc, {}).get((dev, proc, att))
+    if rec is None:
+        return False
+    if rec.rel > t:
+        return False
+    tt = idx.terminal_t.get(dev)
+    if tt is not None and tt <= t:
+        return False
+    if _idx_task_completed(idx, dev, proc, att, t):
+        return False
+    if _idx_task_running(idx, dev, proc, att, t):
+        return False
+    return True
+
+
+def _idx_head(idx: PrefixIndex, resource: str, t: Fraction
+              ) -> Optional[tuple[int, str, int]]:
+    best = None
+    for (dev, proc, att), rec in idx.tasks.get(resource, {}).items():
+        if not _idx_task_waiting(idx, dev, proc, att, t):
+            continue
+        key = (rec.rel, dev, an.PROCESS_ORDER.get(proc, 9), att)
+        if best is None or key < best[0]:
+            best = (key, dev, proc, att)
+    if best is None:
+        return None
+    return (best[1], best[2], best[3])
+
+
+def _idx_legal(idx: PrefixIndex, head: tuple[int, str, int], t: Fraction,
+               d: Fraction, shift_end: Fraction) -> bool:
+    dev, proc, att = head
+    tt = idx.terminal_t.get(dev)
+    if tt is not None and tt <= t:
+        return False
+    if proc == "E" and not all(_idx_passed(idx, dev, p, t)
+                               for p in ("A", "B", "C")):
+        return False
+    return t + d <= shift_end
+
+
+def _idx_idle(idx: PrefixIndex, resource: str, t: Fraction) -> bool:
+    for (dev, proc, att), rec in idx.tasks.get(resource, {}).items():
+        if _idx_task_running(idx, dev, proc, att, t):
+            return False
+    for cs, ce in idx.cal_windows.get(resource, []):
+        if cs <= t < ce:
+            return False
+    return True
+
+
+def _idx_available(idx: PrefixIndex, resource: str, t: Fraction) -> bool:
+    for w0, w1 in idx.unavail_windows.get(resource, []):
+        if w0 <= t < w1:
+            return False
+    return True
+
+
+def _idx_age(idx: PrefixIndex, resource: str, t: Fraction) -> Fraction:
+    gen_start = Fraction(0)
+    for t0 in idx.replacements.get(resource, []):
+        if t0 <= t:
+            gen_start = max(gen_start, t0)
+    age = Fraction(0)
+    for (dev, proc, att), rec in idx.tasks.get(resource, {}).items():
+        for ct, s in rec.completes:
+            if s >= gen_start and ct <= t:
+                age += ct - s
+        for ct, s in rec.cancels:
+            if s >= gen_start and ct <= t:
+                age += ct - s
+    return age
 
 
 def prefix_demand(log: list[dict[str, Any]], resource: str, t: Fraction,
@@ -157,153 +495,94 @@ def prefix_demand(log: list[dict[str, Any]], resource: str, t: Fraction,
     return len(entered) < batch_size
 
 
+def _idx_passed(idx: PrefixIndex, dev: int, proc: str, t: Fraction) -> bool:
+    import bisect
+    lo = bisect.bisect_right(idx.obs_passed_times, t)
+    for i in range(lo - 1, -1, -1):
+        ot, d, p = idx.obs_passed[i]
+        if d == dev and p == proc:
+            return True
+        if i == 0:
+            break
+    return False
+
+
+def _idx_demand_idx(idx: PrefixIndex, resource: str, t: Fraction,
+                    batch_size: int) -> bool:
+    """Index-based demand (identical semantics to prefix_demand): entered
+    at t, non-terminal at t, not passed at t, or batch not fully entered."""
+    entered = {d for d, et in idx.entry_dev.items() if et <= t}
+    for dev in entered:
+        tt = idx.terminal_t.get(dev)
+        if tt is not None and tt <= t:
+            continue
+        if not _idx_passed(idx, dev, resource, t):
+            return True
+    return len(entered) < batch_size
+
+
 def prefix_head_waiting(log: list[dict[str, Any]], resource: str, t: Fraction
                         ) -> bool:
-    """Checker's own waiting-head test at t from the log PREFIX: some
-    released task of `resource` with release_time <= t that is not
-    terminal, not completed, and not running at t."""
-    pre = prefix(log, t)
-    terminal_devs = {r["device_id"] for r in pre
-                     if r.get("event_type") == "DEVICE_TERMINAL"}
-    released = [(Fraction(r["event_time"]), r["resource_id"], r["device_id"],
-                 r["process"], r["effective_attempt_no"])
-                for r in pre if r.get("event_type") == "TASK_RELEASE"]
-    for rel, rsrc, dev, proc, att in released:
-        if rsrc != resource:
-            continue
-        if dev in terminal_devs:
-            continue
-        completed = any(r.get("event_type") == "ACTIVITY_COMPLETE"
-                        and r["device_id"] == dev and r["process"] == proc
-                        and r["effective_attempt_no"] == att
-                        for r in pre)
-        if completed:
-            continue
-        running = any(r.get("event_type") == "ACTIVITY_START"
-                      and r["device_id"] == dev and r["process"] == proc
-                      and r["effective_attempt_no"] == att
-                      and Fraction(r["event_time"]) <= t
-                      and t < Fraction(r["attempt_end_time"])
-                      for r in pre)
-        if running:
-            continue
-        return True
-    return False
+    """Checker's own waiting-head test at t from the log PREFIX:
+    fragment-aware (a requeued task between cancel and restart is waiting;
+    a running fragment is never waiting)."""
+    idx = build_prefix_index(log)
+    return _idx_head(idx, resource, t) is not None
 
 
 def prefix_legal_head(log: list[dict[str, Any]], resource: str, t: Fraction,
                       shift_end: Fraction) -> bool:
-    """Checker's own time-causal legality of the FCFS head at t: device
-    non-terminal, E prereq passed by observations <= t, duration fits."""
-    pre = prefix(log, t)
-    terminal_devs = {r["device_id"] for r in pre
-                     if r.get("event_type") == "DEVICE_TERMINAL"}
-    passed = {(r["device_id"], r["process"]) for r in pre
-              if r.get("event_type") == "OBSERVATION_MATERIALIZED"
-              and r.get("outcome") == "PASS"}
-    released = [(Fraction(r["event_time"]), r["resource_id"], r["device_id"],
-                 r["process"], r["effective_attempt_no"])
-                for r in pre if r.get("event_type") == "TASK_RELEASE"]
-    cand = None
-    for rel, rsrc, dev, proc, att in released:
-        if rsrc != resource:
-            continue
-        if dev in terminal_devs:
-            continue
-        completed = any(r.get("event_type") == "ACTIVITY_COMPLETE"
-                        and r["device_id"] == dev and r["process"] == proc
-                        and r["effective_attempt_no"] == att for r in pre)
-        running = any(r.get("event_type") == "ACTIVITY_START"
-                      and r["device_id"] == dev and r["process"] == proc
-                      and r["effective_attempt_no"] == att
-                      and Fraction(r["event_time"]) <= t
-                      and t < Fraction(r["attempt_end_time"]) for r in pre)
-        if completed or running:
-            continue
-        key = (rel, dev, an.PROCESS_ORDER.get(proc, 9), att)
-        if cand is None or key < cand[0]:
-            cand = (key, dev, proc, att)
-    if cand is None:
+    """Checker's own time-causal legality of the FCFS head at t (device
+    non-terminal, E prereq by PASS observation <= t, duration fits;
+    fragment-aware waiting)."""
+    idx = build_prefix_index(log)
+    head = _idx_head(idx, resource, t)
+    if head is None:
         return False
-    _key, dev, proc, att = cand
-    if proc == "E" and not all((dev, p) in passed for p in ("A", "B", "C")):
-        return False
-    return t + DUR[proc] <= shift_end
+    return _idx_legal(idx, head, t, DUR[head[1]], shift_end)
 
 
 def prefix_idle(log: list[dict[str, Any]], resource: str, t: Fraction) -> bool:
-    """Checker's own idle test at t from the log PREFIX: no in-flight
-    fragment (start s <= t < scheduled end without a settle <= t) and no
-    calibration interval covering t."""
-    pre = prefix(log, t)
-    for r in pre:
-        if r.get("event_type") == "ACTIVITY_START" and r.get("resource_id") == resource:
-            s = Fraction(r["event_time"])
-            end = Fraction(r["attempt_end_time"])
-            if s <= t < end:
-                dev, proc, att = r["device_id"], r["process"], r["effective_attempt_no"]
-                settled = any(
-                    (q.get("event_type") in ("ACTIVITY_COMPLETE", "TASK_CANCEL"))
-                    and q["device_id"] == dev and q["process"] == proc
-                    and q["effective_attempt_no"] == att
-                    for q in pre)
-                if not settled:
-                    return False
-        if r.get("event_type") == "EQUIPMENT_REPLACEMENT_START" \
-                and r.get("resource_id") == resource:
-            cs = Fraction(r["calibration_start"])
-            ce = Fraction(r["calibration_end"])
-            if cs <= t < ce:
-                return False
-    return True
+    """Checker's own idle test at t (fragment-aware: only the exact
+    in-flight fragment with no fragment-specific settle makes it busy)."""
+    idx = build_prefix_index(log)
+    return _idx_idle(idx, resource, t)
+
+
+def prefix_available(log: list[dict[str, Any]], resource: str, t: Fraction
+                     ) -> bool:
+    """Checker's own equipment-availability test at t (replacement /
+    deferral pending windows)."""
+    idx = build_prefix_index(log)
+    return _idx_available(idx, resource, t)
 
 
 def prefix_age(log: list[dict[str, Any]], resource: str, t: Fraction) -> Fraction:
     """Checker's own equipment age at t from the log PREFIX (fragments
     ending <= t since the latest replacement start <= t)."""
-    pre = prefix(log, t)
-    gen_start = Fraction(0)
-    for r in pre:
-        if r.get("event_type") == "EQUIPMENT_REPLACEMENT_START" \
-                and r.get("resource_id") == resource:
-            t0 = Fraction(r["event_time"])
-            if t0 <= t:
-                gen_start = max(gen_start, t0)
-    age = Fraction(0)
-    for r in pre:
-        if r.get("event_type") not in ("ACTIVITY_COMPLETE", "TASK_CANCEL"):
-            continue
-        if r.get("resource_id") != resource:
-            continue
-        if r.get("attempt_start_time") is None:
-            continue
-        s = Fraction(r["attempt_start_time"])
-        e = Fraction(r["event_time"])
-        if s < gen_start:
-            continue
-        if e <= t:
-            age += e - s
-    return age
+    idx = build_prefix_index(log)
+    return _idx_age(idx, resource, t)
 
 
-def prefix_maintenance_count(log: list[dict[str, Any]], K: Fraction,
-                             batch_size: int) -> int:
-    """Checker's OWN independent PM_IDLE (maintenance point) count over the
-    reconstructed closure set (distinct event times + Q3 shift starts),
-    using only the prefix state helpers above.  Never calls the analyzer."""
-    event_times = sorted({Fraction(r["event_time"]) for r in log})
-    terminals = [Fraction(r["event_time"]) for r in log
-                 if r.get("event_type") == "DEVICE_TERMINAL"]
-    batch_end = max(terminals) if terminals else (
-        max(event_times) if event_times else Fraction(0))
+def prefix_maintenance_counts(log: list[dict[str, Any]], K: Fraction,
+                              batch_size: int) -> tuple[int, int, int]:
+    """Checker's OWN independent PM_IDLE (maintenance point) enumeration
+    over the reconstructed closure set (distinct canonical event times +
+    Q3 shift starts), fragment-aware, with dispatch-closure skip and
+    equipment availability.  Returns (pm_idle, queue_empty_pm_idle,
+    queue_nonempty_no_legal_head_pm_idle).  Never calls the analyzer's
+    maintenance helpers."""
+    idx = build_prefix_index(log)
     shifts: list[tuple[Fraction, Fraction]] = []
     for d in range(400):
         s1 = Fraction(24) * d
         shifts.append((s1, s1 + K))
         shifts.append((s1 + K, s1 + 2 * K))
-    count = 0
-    for t in sorted(set(event_times) | {s for s, _e in shifts}):
-        if t >= batch_end:
+    pm_idle = 0
+    q_empty = 0
+    q_nonempty = 0
+    for t in sorted(set(idx.event_times) | {s for s, _e in shifts}):
+        if t >= idx.batch_end:
             continue
         sh = None
         for s, e in shifts:
@@ -313,20 +592,36 @@ def prefix_maintenance_count(log: list[dict[str, Any]], K: Fraction,
         if sh is None:
             continue
         for rsrc in ("A", "B", "C", "E"):
-            if not prefix_idle(log, rsrc, t):
+            if rsrc in idx.dispatch_at.get(t, ()):
                 continue
-            if prefix_legal_head(log, rsrc, t, sh[1]):
+            if not _idx_idle(idx, rsrc, t):
                 continue
-            age = prefix_age(log, rsrc, t)
+            if not _idx_available(idx, rsrc, t):
+                continue
+            head = _idx_head(idx, rsrc, t)
+            if head is not None and _idx_legal(idx, head, t,
+                                               DUR[head[1]], sh[1]):
+                continue
+            age = _idx_age(idx, rsrc, t)
             if not (an.MIN_PREVENTIVE_AGE_H <= age < an.MANDATORY_AGE_H):
                 continue
             cal = an.CALIBRATION_MINUTES[rsrc] / Fraction(60)
             if t + cal > sh[1]:
                 continue
-            if not prefix_demand(log, rsrc, t, batch_size):
+            if not _idx_demand_idx(idx, rsrc, t, batch_size):
                 continue
-            count += 1
-    return count
+            pm_idle += 1
+            if head is None:
+                q_empty += 1
+            else:
+                q_nonempty += 1
+    return pm_idle, q_empty, q_nonempty
+
+
+def prefix_maintenance_count(log: list[dict[str, Any]], K: Fraction,
+                             batch_size: int) -> int:
+    """Total PM_IDLE count (back-compat wrapper)."""
+    return prefix_maintenance_counts(log, K, batch_size)[0]
 
 
 # ---------------------------------------------------------------------------
@@ -568,6 +863,63 @@ def case_t10_same_closure_single_point() -> tuple[list[dict[str, Any]], Fraction
     ]), Fraction(240)
 
 
+def case_t11_requeue_between_fragments() -> tuple[list[dict[str, Any]], Fraction]:
+    """T11 CANCEL -> REQUEUE BETWEEN FRAGMENTS: same task/attempt,
+    release=0, fragment1 start=0 end=1, cancel=1 (equipment failure),
+    fragment2 start=2 end=4.  At t=1.5 the task is WAITING and the
+    resource is IDLE (fragment1 settled, fragment2 not started)."""
+    return synthetic_log([
+        true_state([1]),
+        release(1, "A", "0"),
+        start(1, "A", "0", "1"),
+        cancel(1, "A", "1", "0"),
+        start(1, "A", "2", "4"),
+        complete(1, "A", "4", "2"),
+    ]), Fraction(240)
+
+
+def case_t12_restarted_fragment_running() -> tuple[list[dict[str, Any]], Fraction]:
+    """T12 RESTARTED FRAGMENT RUNNING: same log; at t=3 fragment2
+    (start=2, end=4) is RUNNING -> task NOT waiting, resource BUSY.  The
+    OLD fragment1 CANCEL (attempt_start_time=0) must NOT settle fragment2
+    (attempt_start_time=2).  This is the Human Gate defect core regression."""
+    return case_t11_requeue_between_fragments()
+
+
+def case_t13_second_fragment_complete() -> tuple[list[dict[str, Any]], Fraction]:
+    """T13 SECOND FRAGMENT COMPLETE: fragment2 completes at t=4
+    (attempt_start_time=2) -> task completed, NOT waiting, resource IDLE."""
+    return case_t11_requeue_between_fragments()
+
+
+def case_t14_pm_idle_false_during_restart() -> tuple[list[dict[str, Any]], Fraction]:
+    """T14 PM_IDLE FALSE DURING RESTARTED FRAGMENT: equipment age >= 120
+    (age chain), future demand TRUE (device 60 entered, non-terminal, not
+    passed); same effective attempt has fragment1 cancelled and fragment2
+    currently running.  During fragment2 the resource is BUSY -> PM_IDLE
+    MUST be 0 (checker computes this from its own prefix idle logic)."""
+    records, next_dev = age_chain("A", Fraction(120), start_dev=1)
+    d60 = 60
+    return synthetic_log([
+        true_state([d60]),
+        records,
+        release(d60, "A", "120"),
+        start(d60, "A", "120", "121"),
+        cancel(d60, "A", "121", "120"),
+        start(d60, "A", "122", "124"),
+        complete(d60, "A", "124", "122"),
+    ]), Fraction(240)
+
+
+def case_t15_post_cancel_head() -> tuple[list[dict[str, Any]], Fraction]:
+    """T15 POST-CANCEL LEGAL/ILLEGAL HEAD: after fragment1 cancel (t=1)
+    and before fragment2 restart (t=2), the task must re-enter the FCFS
+    waiting set.  (a) shift remaining enough -> legal head TRUE;
+    (b) shift remaining insufficient -> legal head FALSE (forced-wait
+    state)."""
+    return case_t11_requeue_between_fragments()
+
+
 # ---------------------------------------------------------------------------
 # Checker harness
 # ---------------------------------------------------------------------------
@@ -759,6 +1111,83 @@ def run_checks() -> list[str]:
     if prefix_maintenance_count(logt10, Kt10, 2) != 1:
         failures.append("T10: checker independent maintenance count must be 1")
 
+    # --- Q3-H2-DENSITY-E2 fragment/requeue regressions (T11-T15) ---
+    logt11, Kt11 = case_t11_requeue_between_fragments()
+    # T11: between cancel and restart -> WAITING, resource IDLE
+    if not prefix_head_waiting(logt11, "A", Fraction(3, 2)):
+        failures.append("T11: task must be WAITING at t=1.5 (between cancel "
+                        "and restart)")
+    if not prefix_idle(logt11, "A", Fraction(3, 2)):
+        failures.append("T11: resource must be IDLE at t=1.5")
+    if not prefix_fragment_settled(logt11, 1, "A", 1, Fraction(0), Fraction(3, 2)):
+        failures.append("T11: fragment1 (start 0) must be settled at t=1.5")
+
+    # T12: restarted fragment RUNNING (old fragment's CANCEL must not
+    # settle the new fragment) -> NOT waiting, resource BUSY
+    if prefix_head_waiting(logt11, "A", Fraction(3)):
+        failures.append("T12: task must NOT be waiting at t=3 (fragment2 "
+                        "running)")
+    if prefix_idle(logt11, "A", Fraction(3)):
+        failures.append("T12: resource must be BUSY at t=3 (fragment2 "
+                        "running); old fragment1 CANCEL must not settle "
+                        "fragment2")
+    if prefix_fragment_settled(logt11, 1, "A", 1, Fraction(2), Fraction(3)):
+        failures.append("T12: fragment2 (start 2) must NOT be settled at "
+                        "t=3 by fragment1's CANCEL")
+    if not prefix_running(logt11, 1, "A", 1, Fraction(3)):
+        failures.append("T12: fragment2 must be RUNNING at t=3")
+    # analyzer side (system under test): fragment-aware idle at t=3
+    s12 = an.classify_batch_q3(logt11, Kt11, "KCK", "9", 0, batch_size=2)
+    if s12.pm_idle != 0:
+        failures.append("T12: analyzer pm_idle must be 0 (resource busy at "
+                        "t=3)")
+
+    # T13: second fragment COMPLETE -> completed, NOT waiting, IDLE
+    if not prefix_fragment_settled(logt11, 1, "A", 1, Fraction(2), Fraction(4)):
+        failures.append("T13: fragment2 (start 2) must be settled at t=4 by "
+                        "its own COMPLETE")
+    if prefix_head_waiting(logt11, "A", Fraction(4)):
+        failures.append("T13: task must NOT be waiting at t=4 (completed)")
+    if not prefix_idle(logt11, "A", Fraction(4)):
+        failures.append("T13: resource must be IDLE at t=4")
+
+    # T14: PM_IDLE MUST be 0 while the restarted fragment runs (resource
+    # BUSY despite age >= 120 and demand TRUE); expected truth computed by
+    # the checker's own prefix idle logic.
+    logt14, Kt14 = case_t14_pm_idle_false_during_restart()
+    if prefix_idle(logt14, "A", Fraction(123)):
+        failures.append("T14: resource must be BUSY at t=123 (fragment2 "
+                        "running) -> PM_IDLE impossible")
+    if prefix_head_waiting(logt14, "A", Fraction(123)):
+        failures.append("T14: task must NOT be waiting at t=123 (fragment2 "
+                        "running)")
+    if not prefix_demand(logt14, "A", Fraction(123), 2):
+        failures.append("T14: checker prefix demand must be TRUE at t=123")
+    m14 = prefix_maintenance_counts(logt14, Kt14, 2)
+    if m14[0] != 0:
+        failures.append(f"T14: checker PM_IDLE must be 0 during restarted "
+                        f"fragment, got {m14}")
+    s14 = an.classify_batch_q3(logt14, Kt14, "KCK", "9", 0, batch_size=2)
+    if s14.pm_idle != 0:
+        failures.append("T14: analyzer pm_idle must be 0 during restarted "
+                        "fragment")
+
+    # T15: post-cancel legal/illegal FCFS head
+    logt15, Kt15 = case_t15_post_cancel_head()
+    if not prefix_head_waiting(logt15, "A", Fraction(1)):
+        failures.append("T15: task must be the waiting head at t=1 (after "
+                        "cancel, before restart)")
+    if not prefix_legal_head(logt15, "A", Fraction(1), Fraction(300)):
+        failures.append("T15a: head must be LEGAL at t=1 when the shift has "
+                        "enough room (1+2.5 <= 300)")
+    if prefix_legal_head(logt15, "A", Fraction(1), Fraction(3)):
+        failures.append("T15b: head must be ILLEGAL at t=1 when 1+2.5 > 3 "
+                        "(forced-wait state)")
+    s15 = an.classify_batch_q3(logt15, Fraction(3), "KCK", "9", 0, batch_size=2)
+    if s15.forced_wait != 1:
+        failures.append(f"T15b: analyzer forced_wait must be 1 at K=3 "
+                        f"(head illegal), got {s15.forced_wait}")
+
     # C9 determinism + frozen canonical resource order A/B/C/E
     s_a = an.classify_batch_q3(log1, K1, "KCK", "9", 0, batch_size=2)
     s_b = an.classify_batch_q3(log1, K1, "KCK", "9", 0, batch_size=2)
@@ -777,8 +1206,8 @@ def main() -> int:
         for f in failures:
             print("  -", f)
         return 1
-    print("CHECKER: PASS (8 boundary cases + 10 temporal cases + "
-          "determinism/order)")
+    print("CHECKER: PASS (8 boundary cases + 15 temporal cases "
+          "(T1-T10 + T11-T15 fragment/requeue) + determinism/order)")
     return 0
 
 
