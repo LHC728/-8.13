@@ -2,6 +2,26 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q3/H2 BOOTSTRAP DESIGN FREEZE APPROVED`
+
+### 修改
+
+- **Q3/H2 BOOTSTRAP = FINAL PASS / ACCEPTED（Human Gate 2026-08-15 VERIFIED FINAL PASS / DESIGN FREEZE APPROVED；已直接审阅 623 行版本）**。冻结权威规格 = `08_项目管理/任务包/Q3_H2_BOOTSTRAP_SPEC_DRAFT.md`（状态 **FINAL_FREEZE_ACCEPTED / HUMAN_GATE_PASS**）；§19 **D-01..D-25 全部冻结，不得重开**。
+- **BOUNDARY 契约同步（D-11/D-25 批准）**：`e == latest_start` 为合法 WAIT——`01_审计/问题契约.md`（§1.3.2、§7.5）与 `03_模型/高级模型技术补充_V3.1.md`（§5.3）中 H2 strategic-wait 语义由「早于最迟启动时刻」同步为「**早于或等于最迟启动时刻**」；`now + duration ≤ shift_end`（恰班末完成合法）保持；未扩大到其他班界/启动规则。
+- **H2 权威规格同步**：`03_模型/03_H2后验Rollout候选.md` 更新为冻结设计——动作集 `A0=START_HEAD / A0b=H1_NOOP·ADVANCE_EVENT / A1=WAIT_EVENT / A2a=PM_WITH_HEAD / A2b=PM_IDLE`；两类决策点 `DISPATCH_DECISION_POINT / MAINTENANCE_DECISION_POINT`（queue empty 与 queue-nonempty-but-no-legal-head 均可产生 maintenance 点；每资源每闭包至多一个；canonical 序 A/B/C/E）；PM_IDLE vs A0b；quota class ≠ action availability；**ONLINE quota**：`W_cap=⌈C_eval*/2⌉ / P_cap=⌊C_eval*/2⌋`（C_eval*=6→3+3、8→4+4）、independent caps、no cross-side borrowing、unused expires、no future candidate count、no retroactive selection、wait 前 W_cap 个、PM B1/B2/B3 bucket-first + P_cap=4 恰 1 个 extra slot（P_cap=3 无）。
+- **PM_IDLE action-space 闭合**：核心边界 = equipment idle + PM physical/calendar legality，不以队列是否为空为边界；forced-wait 队列非空情形纳入 maintenance 机会。
+- **在线因果 quota 闭合**：删除跨侧事后 borrowing；`selected_for_rollout(t)=f(history ≤ t, quota_state(t))`；checker 断言 `wait_selected ≤ W_cap`、`PM_selected ≤ P_cap`、`selected_total ≤ C_eval*`。
+- **C24 = PASS**（opportunity-density evidence = PASS；budget/spec freeze = PASS——两子项闭合）。**H2 = NOT IMPLEMENTED**；**C23 = PENDING**；**C25 = PENDING**；**Q3 formal = NOT STARTED（无 Q3 K 推荐）**。
+- **Provenance**：Bootstrap 审计链（`Q3H2_SEMANTIC_REVIEWER` / `Q3H2_MECHANICAL_CHECKER`）及外部 L4 裁决凡无 session request/header 机械证据处，reasoningEffort 一律记为 **UNVERIFIED**（不伪写 mechanically verified；不据提示词/平台默认推定 high）。
+- **下一阶段（未授权）**：Q3/H2 IMPLEMENTATION BOOTSTRAP + C23 实现与检查，须 Human Gate **另发执行授权**。
+
+### 影响与边界
+
+- 设计冻结 ≠ 实现授权：H2 不实现、Q3 七 K 不运行、无 K 推荐、无 tuning/holdout/formal 新实验。
+- tuning/诊断值（机会密度、M 校准、稳定性样本、跨 K transfer 诊断）**非论文正式数字**。
+- 不重开 D-01..D-25；不改已冻结 Q2/G3 accepted 结论（run `2d1466ba` 数字、NO_PM 主政策、tau_pm=198 FORMALLY_NOT_SELECTED）。
+- 后续实现/运行须按 CR-V3.1 / AUTOPILOT 治理另发授权；Macro 停点回 Human Gate。
+
 ## 2026-08-15 / `STATE-2026-08-13-G2.4` / `H2 ADMITTED FOR DESIGN ONLY`
 
 ### 修改

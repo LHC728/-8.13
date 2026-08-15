@@ -2,7 +2,7 @@
 
 > 最后更新：2026-08-15
 > 状态版本：`STATE-2026-08-13-G2.4`
-> 当前 Gate：**Whole G2 = PASS；G3 = PASS / ACCEPTED（C17 REQUALIFIED_AFTER_C10_C12_CHECKER_FIXES）；Q2 H1 FORMAL = PASS / ACCEPTED（accepted run `2d1466ba`；Q2 主情景选中 H1 政策 = NO_PM_BEFORE_MANDATORY）；H2 = ADMITTED_FOR_DESIGN_ONLY（Human Gate 2026-08-15；H2 admission opportunity evidence = PASS；非 H2 FINAL ACCEPTANCE；H2 实现 NOT YET AUTHORIZED）；CR-V3.1/C24：opportunity-density evidence = PASS、budget/spec freeze = PENDING；C23 = PENDING / NOT YET EXECUTED；C25 = PENDING / NOT YET EXECUTED；Q3 = NOT STARTED；Q4 = NOT STARTED；Q2 paper numbers = AVAILABLE / AUTHORITATIVE FROM ACCEPTED FORMAL RUN；下一阶段：Q3 + H2 ADVANCED SCHEDULING BOOTSTRAP（需先冻结 rollout M / 每批 H2 评估上限 / 墙钟软硬预算 / 动作稳定性 / 样本划分 / C23 / Q3 七 K 基线 / Q3 H2 密度复核）**
+> 当前 Gate：**Whole G2 = PASS；G3 = PASS / ACCEPTED（C17 REQUALIFIED_AFTER_C10_C12_CHECKER_FIXES）；Q2 H1 FORMAL = PASS / ACCEPTED（accepted run `2d1466ba`；Q2 主情景选中 H1 政策 = NO_PM_BEFORE_MANDATORY）；Q3/H2 BOOTSTRAP = FINAL PASS / ACCEPTED（Human Gate 2026-08-15 VERIFIED FINAL PASS / DESIGN FREEZE APPROVED；D-01..D-25 冻结；冻结权威规格 = `08_项目管理/任务包/Q3_H2_BOOTSTRAP_SPEC_DRAFT.md` = FINAL_FREEZE_ACCEPTED；BOUNDARY 契约同步完成）；H2 = ADMITTED_FOR_DESIGN_ONLY / DESIGN FREEZE APPROVED（非 H2 FINAL ACCEPTANCE；**H2 实现仍 NOT YET AUTHORIZED / NOT IMPLEMENTED**）；CR-V3.1/C24 = PASS（opportunity-density evidence = PASS、budget/spec freeze = PASS）；C23 = PENDING / NOT YET EXECUTED；C25 = PENDING / NOT YET EXECUTED；Q3 = NOT STARTED（**无 Q3 K 推荐**）；Q4 = NOT STARTED；Q2 paper numbers = AVAILABLE / AUTHORITATIVE FROM ACCEPTED FORMAL RUN；下一阶段：Q3/H2 IMPLEMENTATION BOOTSTRAP + C23（需 Human Gate 另发执行授权）**
 > 当前检查注册表：[`CR-V3.1`](01_审计/检查注册表_V3.1.md)
 
 ## 1. 新对话只需先读
@@ -127,6 +127,15 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
   - 证据文件：`01_审计/H2_ADMISSION_C24_EVIDENCE_DRAFT.md`、`01_审计/H2_ADMISSION_EVIDENCE_L3_REVIEW_RECORD.md`；工具：`04_代码/checker/h2_admission_opportunity_analyzer_v1.py`（独立、stdlib-only、无 main DES import）、`04_代码/scripts/run_h2_admission_evidence_v1.py`（纯 orchestration/reporting wrapper，RUNNER_GOVERNANCE_DEVIATION=CLOSED_BY_HUMAN_GATE_CONDITIONAL_AUTHORIZATION）、`04_代码/tests/test_h2_admission_opportunity_analyzer_v1.py`。
   - **证据支持 ADMIT_FOR_DESIGN，不证明**：H2 改善 T、H2 最优、H2 应进最终论文、任何 rollout M、任何 Q3 K。
 
+- **`Q3/H2 BOOTSTRAP`（advanced scheduling design freeze）= FINAL PASS / ACCEPTED**（Human Gate 2026-08-15 VERIFIED FINAL PASS / DESIGN FREEZE APPROVED；已直接审阅最终 623 行版本）：
+  - **冻结权威规格**：`08_项目管理/任务包/Q3_H2_BOOTSTRAP_SPEC_DRAFT.md`（状态 **FINAL_FREEZE_ACCEPTED / HUMAN_GATE_PASS**）；§19 **D-01..D-25 全部冻结，不得重开**。
+  - 冻结内容（摘要）：rollout M 网格 `{(4,8),(8,6),(8,8)}` + 成本导向选择（`w_p≤90 s`）；`C_rollout=200`；`C_eval*∈{6,8}` 的**在线因果配额**（`W_cap=⌈C_eval*/2⌉`、`P_cap=⌊C_eval*/2⌋`；6→3+3、8→4+4；no cross-side borrowing / no backfill / no future candidate count / no retroactive selection）；soft 4h / hard 8h + H2 开发预算账本；动作集 `A0/A0b/A1/A2a/A2b` + DISPATCH/MAINTENANCE 两类决策点 + dp ordering（A/B/C/E）；后验/寿命两层验证（deterministic primary + stochastic smoke）；跨 K transfer = 预注册诊断/早期预警（正式收益门 = C25）；C25 保留规则（≥5/7 K 族调整 CI<0、0 显著恶化、稳定、预算、无 C23 违例——Human Gate 预注册政策阈值）。
+  - **BOUNDARY 契约同步（D-11/D-25 批准）**：`e == latest_start` 为合法 WAIT；`01_审计/问题契约.md` §1.3.2/§7.5、`03_模型/高级模型技术补充_V3.1.md` §5.3、`03_模型/03_H2后验Rollout候选.md` §5 已同步为「**早于或等于最迟启动时刻**」；`now + duration ≤ shift_end`（恰班末完成合法）保持。
+  - **CR-V3.1/C24 = PASS**（opportunity-density evidence = PASS；budget/spec freeze = PASS——两子项均闭合）。
+  - **H2 = NOT IMPLEMENTED**（设计冻结 ≠ 实现授权）；**C23 = PENDING / NOT YET EXECUTED**；**C25 = PENDING / NOT YET EXECUTED**；**Q3 formal = NOT STARTED；不存在任何 Q3 K 推荐**。
+  - **下一阶段**：**Q3/H2 IMPLEMENTATION BOOTSTRAP + C23 实现与检查**——须由 Human Gate **另发执行授权**方可开始；未授权前不实现 H2、不运行 Q3 七 K / H2 管线实验。
+  - Provenance：审计链中无 session request/header 机械证据处 reasoningEffort = **UNVERIFIED**（如实记录）；tuning/诊断值（机会密度、M 校准、稳定性样本、跨 K transfer 诊断）**非论文正式数字**。
+
 （历史记录：G2 完成前的 7 项实施目标——单次无条件/标准链观测核、Q1 闭式与吸收链、最小并行 DES、1—4 台对拍与 K=9 跨班、最小 checker 与故障注入、G2 适用检查——均已随 G2/G3 PASS 完成并验收，不再作为当前出口条件。）
 
 ## 6. 当前禁止
@@ -139,11 +148,15 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
 - 不宣称 NO_PM 超越冻结模型/候选集范围的普适最优或一般工业管理定理；
 - **不把旧 C24 `waiting_opportunity_count` 当作 H2 战略等待密度**（= forced-wait 仪表）；未来 H2 使用修正定义（strategic STRICT/BOUNDARY/NONSTRICT + optional PM 与 mandatory 分离）；
 - 不改 G3/Q2 accepted 核心（random_des_v1/key_schema_v1/寿命再生/C06/C17/冻结观测语义/Q2-FORMAL-SPEC）；若需改 → STOP 回 Human Gate；
-- 不修改已签字口径与 accepted 证据；若实现暴露新歧义，回到变更控制而不是自行决定。
+- 不修改已签字口径与 accepted 证据；若实现暴露新歧义，回到变更控制而不是自行决定；
+- **不实现 H2**（Q3/H2 BOOTSTRAP 设计已冻结但实现未授权）；**不运行 Q3 七 K 模拟 / H2 tuning / holdout / formal 实验**；**不推荐 Q3 K**；
+- **不重开 D-01..D-25**、不修改冻结的 `Q3_H2_BOOTSTRAP_SPEC_DRAFT.md` 规范条款（如需 → STOP 回 Human Gate）；
+- **不把 tuning/诊断值**（机会密度、M 校准、稳定性样本、跨 K transfer 诊断）**当论文正式数字**；
+- **不宣称 H2 已实现 / C23 PASS / C25 PASS / Q3 已启动**（均未发生）；Q3/H2 实施阶段须 Human Gate 另发执行授权。
 
 ## 7. 下一出口
 
-G2/G3/Q2 H1 FORMAL 均已 PASS/ACCEPTED；H2 = ADMITTED_FOR_DESIGN_ONLY。**下一阶段：Q3 + H2 ADVANCED SCHEDULING BOOTSTRAP**——新 Human Gate / 新会话必须先冻结：rollout M、每批 H2 评估上限、墙钟软/硬预算、动作稳定性准则、tuning/holdout/formal 样本划分、C23 信息/动作契约、Q3 H1 七 K 基线协议、Q3 特定 H2 机会密度复核方式；**本 landing 不选这些值**。Q2 论文数字 = AVAILABLE / AUTHORITATIVE（accepted run `2d1466ba`）。
+G2/G3/Q2 H1 FORMAL 均已 PASS/ACCEPTED；**Q3/H2 BOOTSTRAP = FINAL PASS / ACCEPTED（DESIGN FREEZE APPROVED；D-01..D-25 冻结；冻结权威规格 = `08_项目管理/任务包/Q3_H2_BOOTSTRAP_SPEC_DRAFT.md`）**；C24 = PASS；H2 = NOT IMPLEMENTED；C23 / C25 = PENDING；Q3 = NOT STARTED（无 K 推荐）。**下一出口：Q3/H2 IMPLEMENTATION BOOTSTRAP + C23 实现与检查**——须由 Human Gate **另发执行授权**后方可：① key_schema 扩展与回归（L2）；② H2 后验/续演/政策模块 + 独立 C23 checker（L2）；③ Q3 H1 七 K 正式运行（Pilot）；④ H2 管线（density recheck → tuning → holdout → C25）。在此之前 H2 不实现、Q3 七 K 不运行、无 K 推荐。Q2 论文数字 = AVAILABLE / AUTHORITATIVE（accepted run `2d1466ba`）。
 
 ## 8. 当前目录映射
 
