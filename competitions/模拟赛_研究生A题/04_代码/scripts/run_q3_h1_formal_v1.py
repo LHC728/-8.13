@@ -641,6 +641,49 @@ def verify_hash_dag(out_dir: Path) -> dict[str, Any]:
     }
 
 
+def verify_manifest_inventory_consistency(out_dir: Path) -> dict[str, Any]:
+    """Q3-H1-E2: fail-closed check that run_manifest.outputs[].sha256 equals
+    the actual artifact bytes AND equals the file_hashes.sha256 entry for
+    every path covered by both.
+
+    Catches stale manifest artifact hashes (e.g. an artifact that was hashed
+    into the manifest and then modified without regenerating the manifest).
+    """
+    manifest = json.loads((out_dir / "run_manifest.json").read_text(encoding="utf-8"))
+    outputs = {a["path"]: a["sha256"] for a in manifest.get("outputs", [])}
+    inventory: dict[str, str] = {}
+    for line in (out_dir / "file_hashes.sha256").read_text(encoding="utf-8").splitlines():
+        h, rel = line.split("  ", 1)
+        inventory[rel] = h
+    manifest_mismatch = 0
+    crosscheck_mismatch = 0
+    for path, m_sha in outputs.items():
+        actual = _sha256_file(out_dir / path)
+        if m_sha != actual:
+            manifest_mismatch += 1
+        if path in inventory and m_sha != inventory[path]:
+            crosscheck_mismatch += 1
+    if manifest_mismatch or crosscheck_mismatch:
+        raise AssertionError(
+            f"manifest/inventory hash inconsistency: manifest_mismatch="
+            f"{manifest_mismatch}, crosscheck_mismatch={crosscheck_mismatch}"
+        )
+    c21 = "C21_REQUALIFICATION_REPORT.json"
+    c21_consistent = (
+        c21 in outputs and c21 in inventory
+        and outputs[c21] == inventory[c21]
+        and outputs[c21] == _sha256_file(out_dir / c21)
+    )
+    if not c21_consistent:
+        raise AssertionError("C21_REQUALIFICATION_REPORT.json SHA inconsistent "
+                             "across manifest/inventory/actual")
+    return {
+        "manifest_output_hashes": f"{len(outputs)}/{len(outputs)} PASS",
+        "manifest_inventory_crosscheck": f"{len(outputs)}/{len(outputs)} PASS",
+        "c21_report_sha_consistency": "PASS",
+    }
+
+
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 

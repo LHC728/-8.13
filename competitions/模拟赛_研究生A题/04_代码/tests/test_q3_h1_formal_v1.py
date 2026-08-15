@@ -295,9 +295,9 @@ class TestRecommendationWording(unittest.TestCase):
 
 
 class TestHashDag(unittest.TestCase):
-    """Q3-H1-E1: acyclic hash inventory regression (RULE A)."""
+    """Q3-H1-E1/E2: acyclic hash inventory + manifest/inventory crosscheck."""
 
-    def _build_synthetic_evidence(self, tmp: Path,
+    def _build_synthetic_evidence(self, tmp: Path, manifest_sha_override: str | None = None,
                                   bad_manifest_hashes_inventory: bool = False,
                                   bad_inventory_self: bool = False) -> Path:
         import json as _json
@@ -306,21 +306,27 @@ class TestHashDag(unittest.TestCase):
         (root / "cells" / "a.json").write_text('{"x":1}\n', encoding="utf-8")
         (root / "task_package_snapshot.yaml").write_text("k: v\n", encoding="utf-8")
         (root / "family_aggregates.json").write_text('{"m":1}\n', encoding="utf-8")
+        (root / "C21_REQUALIFICATION_REPORT.json").write_text(
+            '{"verdict":"PASS"}\n', encoding="utf-8"
+        )
+        # manifest outputs carry REAL hashes of the finalized artifacts
+        def _h(rel: str) -> str:
+            return hashlib.sha256((root / rel).read_bytes()).hexdigest()
+
         outputs = [
-            {"path": "cells/a.json", "bytes": 8, "sha256": "x"},
-            {"path": "family_aggregates.json", "bytes": 8, "sha256": "x"},
-            {"path": "task_package_snapshot.yaml", "bytes": 5, "sha256": "x"},
+            {"path": "cells/a.json", "bytes": 8, "sha256": _h("cells/a.json")},
+            {"path": "family_aggregates.json", "bytes": 8, "sha256": _h("family_aggregates.json")},
+            {"path": "task_package_snapshot.yaml", "bytes": 5, "sha256": _h("task_package_snapshot.yaml")},
+            {"path": "C21_REQUALIFICATION_REPORT.json", "bytes": 19, "sha256": _h("C21_REQUALIFICATION_REPORT.json")},
         ]
         if bad_manifest_hashes_inventory:
             outputs.append({"path": "file_hashes.sha256", "bytes": 1, "sha256": "x"})
-        manifest = {
-            "hash_inventory_path": "file_hashes.sha256",
-            "outputs": outputs,
-        }
+        manifest = {"hash_inventory_path": "file_hashes.sha256", "outputs": outputs}
+        if manifest_sha_override is not None:
+            manifest["outputs"][3]["sha256"] = manifest_sha_override
         (root / "run_manifest.json").write_text(
             _json.dumps(manifest, sort_keys=True), encoding="utf-8"
         )
-        # inventory: all files except itself
         lines = []
         for p in sorted(root.rglob("*")):
             if p.is_file() and p.name != "file_hashes.sha256":
@@ -334,17 +340,55 @@ class TestHashDag(unittest.TestCase):
         )
         return root
 
-    def test_acyclic_inventory_passes(self) -> None:
+    def test_normal_finalized_dag_passes(self) -> None:
+        import tempfile
+        from scripts.run_q3_h1_formal_v1 import (
+            verify_hash_dag, verify_manifest_inventory_consistency,
+        )
+        with tempfile.TemporaryDirectory() as td:
+            root = self._build_synthetic_evidence(Path(td))
+            dag = verify_hash_dag(root)          # acyclic + inventory actual match
+            cross = verify_manifest_inventory_consistency(root)  # manifest==actual==inventory
+            self.assertTrue(dag["hash_graph_acyclic"])
+            self.assertEqual(dag["mismatches"], 0)
+            self.assertIn("PASS", cross["manifest_output_hashes"])
+            self.assertIn("PASS", cross["manifest_inventory_crosscheck"])
+            self.assertEqual(cross["c21_report_sha_consistency"], "PASS")
+
+    def test_artifact_modified_after_inventory_fails(self) -> None:
+        # A: modify an artifact after the inventory was built -> FAIL.
         import tempfile
         from scripts.run_q3_h1_formal_v1 import verify_hash_dag
         with tempfile.TemporaryDirectory() as td:
             root = self._build_synthetic_evidence(Path(td))
-            report = verify_hash_dag(root)
-            self.assertTrue(report["hash_graph_acyclic"])
-            self.assertEqual(report["mismatches"], 0)
-            self.assertEqual(report["inventory_n"], 4)  # 3 artifacts + manifest
+            (root / "family_aggregates.json").write_text('{"m":2}\n', encoding="utf-8")
+            with self.assertRaises(AssertionError):
+                verify_hash_dag(root)
 
-    def test_manifest_must_not_hash_inventory(self) -> None:
+    def test_stale_manifest_sha_crosscheck_fails(self) -> None:
+        # B: manifest records a stale SHA for an artifact -> crosscheck FAIL.
+        import tempfile
+        from scripts.run_q3_h1_formal_v1 import verify_manifest_inventory_consistency
+        with tempfile.TemporaryDirectory() as td:
+            root = self._build_synthetic_evidence(
+                Path(td), manifest_sha_override="0" * 64
+            )
+            with self.assertRaises(AssertionError):
+                verify_manifest_inventory_consistency(root)
+
+    def test_c21_hashed_then_modified_fails(self) -> None:
+        # C: C21 report hashed into manifest then modified -> crosscheck FAIL.
+        import tempfile
+        from scripts.run_q3_h1_formal_v1 import verify_manifest_inventory_consistency
+        with tempfile.TemporaryDirectory() as td:
+            root = self._build_synthetic_evidence(Path(td))
+            (root / "C21_REQUALIFICATION_REPORT.json").write_text(
+                '{"verdict":"PASS","extra":1}\n', encoding="utf-8"
+            )
+            with self.assertRaises(AssertionError):
+                verify_manifest_inventory_consistency(root)
+
+    def test_manifest_does_not_hash_inventory(self) -> None:
         import tempfile
         from scripts.run_q3_h1_formal_v1 import verify_hash_dag
         with tempfile.TemporaryDirectory() as td:
@@ -352,7 +396,7 @@ class TestHashDag(unittest.TestCase):
             with self.assertRaises(AssertionError):
                 verify_hash_dag(root)
 
-    def test_inventory_must_not_self_hash(self) -> None:
+    def test_inventory_does_not_self_hash(self) -> None:
         import tempfile
         from scripts.run_q3_h1_formal_v1 import verify_hash_dag
         with tempfile.TemporaryDirectory() as td:

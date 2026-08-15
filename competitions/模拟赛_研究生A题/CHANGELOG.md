@@ -2,6 +2,17 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q3-H1-E2 FINAL PROVENANCE CONSISTENCY CLOSURE`
+
+### 修改
+
+- **Q3-H1-E2（Final Provenance Consistency Closure）完成**：修复 E1 clean reissue 的最后一个 provenance bug——E1 `run_manifest.json` 记录的 `C21_REQUALIFICATION_REPORT.json` SHA（`5afd45ce…`）与最终 `file_hashes.sha256`（`83521c37…`）不一致（E1 脚本在 manifest 生成后回写 `inventory_count` 重写 C21 report，仅重生成 file_hashes，未重生成 manifest）。未重跑任何 Q3 DES batch、未消费新 q3_formal 随机世界、未改变任何 T/S/PL/PW/YXB。
+- **根因修复原则（已落实）**：所有被 manifest 记录 SHA 的 artifact 必须在 manifest 生成前 FINALIZED，之后绝不再修改；写入顺序 = 物理 cells → 衍生分析 → checks/commands/env/config/input hashes → **FINALIZE C21 report（inventory_count 由计划最终集合预先确定）** → FINALIZE task_package_snapshot → 由 FINAL 字节构建 manifest outputs[] → 写 run_manifest.json → **file_hashes.sha256 最后写**（含 run_manifest 与 C21，永不含自身）→ 只读 verify（禁止 verify 后写回任何已哈希 artifact）。
+- **新增 fail-closed checker** `verify_manifest_inventory_consistency()`：验证 manifest.outputs[].sha256 == actual == file_hashes 条目（对重叠文件 100% 一致），并专项检查 C21 report 三向一致。
+- **E2 clean reissue**：`05_结果/Q3/formal/reissue_20260815T150613626910Z_f4da8f9d/`（type = Q3_H1_FORMAL_FINAL_PROVENANCE_REISSUE；physical_source_run `run_20260815T133840057668Z_7ee48fc0`；physical_source_commit `a2a9690…`；supersedes_provenance_reissue = E1 reissue；new_physical_simulation = NO；new_q3_formal_random_world_consumption = NO）。**14/14 cell 与源字节一致**；衍生数值 0 差异；k\* = K12、strong = TRUE（两 tier）；21/21 pair CI 排除 0；**HASH_GRAPH_ACYCLIC = PASS、HASH_INVENTORY = 28/28、MANIFEST_OUTPUT_HASHES = 27/27、MANIFEST_INVENTORY_CROSSCHECK = 27/27、C21_REPORT_SHA_CONSISTENCY = PASS（C21 三向 SHA = `9bb544a5…`）**；task_package_snapshot SHA `a0864c87…` 一致；`C21_REQUALIFICATION_REPORT.json` verdict = PASS。
+- **状态标记**：源物理 run（`7ee48fc0`）物理结果有效、provenance packaging 已被 E1/E2 逐级 supersede；E1 reissue（`ee6c5ab7`）= **HISTORICAL_PROVENANCE_REISSUE_WITH_STALE_MANIFEST_ARTIFACT_HASH**（保留不可改，物理/衍生数值不声明错误）；E2 reissue 为提交 Human Gate 最终验收的证据。
+- **状态**：Q3 H1 FORMAL = **EXECUTION COMPLETED / FINAL PROVENANCE REQUALIFICATION COMPLETED / AWAITING HUMAN GATE FINAL REVIEW**（非 ACCEPTED；最终 Q3 K 推荐待 Human Gate）；Density recheck / P1 / C23 / C25 未执行。
+
 ## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q3-H1-E1 PROVENANCE CLEAN REISSUE COMPLETED`
 
 ### 修改
