@@ -2201,27 +2201,62 @@ class G3ReplayChecker:
             if e > s:
                 busy[resource].append((s, e, "test", (attempt_id,)))
         # calibration intervals
+        # Frozen semantics (Human Gate A2 ruling): the simulation/accounting
+        # horizon is [0, T).  A replacement/calibration scheduled in the
+        # same-timestamp closure may record a planned calibration_end > T
+        # (a+d=240 completion-settles-first then mandatory replacement at the
+        # same closure) WITHOUT extending T and WITHOUT a post-T completion
+        # event.  Therefore:
+        #   * raw planned [cs, ce)   -> legality / shift-boundary checks
+        #   * effective [cs, ce)_T   -> resource-occupancy / ledger / capacity
+        #                              contribution clipped to [0, T)
+        # Test fragments are NOT relaxed: a real test whose terminal end > T
+        # remains a C12 failure, and any actual event record with event_time>T
+        # remains a C12 failure.
         for rec in self._records_by_type.get(EVENT_EQUIPMENT_REPLACEMENT_START, []):
             resource = rec.get("resource_id")
             cs = self._f(rec["calibration_start"], "calibration_start")
             ce = self._f(rec["calibration_end"], "calibration_end")
-            if ce > cs:
-                busy[resource].append((cs, ce, "calibration", ()))
+            if ce <= cs:
+                continue
+            # effective occupancy clipped to the [0, T) accounting horizon
+            eff_e = ce if (T is None or ce <= T) else T
+            if eff_e > cs:
+                busy[resource].append(
+                    (cs, eff_e, "calibration", ("raw_end", ce))
+                )
+            else:
+                # cs >= T: zero duration contribution to [0, T); do not
+                # manufacture a zero-length interval that would trigger an
+                # unrelated "end <= start" failure.
+                busy[resource].append(
+                    (cs, cs, "calibration", ("raw_end", ce, "clipped_zero"))
+                )
         for resource in PROCESSES:
             intervals = busy[resource]
             intervals.sort(key=lambda iv: (iv[0], iv[1]))
             loc = "resource(%s).busy" % resource
             prev_end: Optional[Fraction] = None
             total = Fraction(0)
-            for start, end, kind, _tag in intervals:
+            for start, end, kind, tag in intervals:
+                # tag: () for test; ("raw_end", ce) for calibration clipped to
+                # [0,T); ("raw_end", ce, "clipped_zero") for calibration with
+                # cs >= T (zero contribution, no manufactured interval).
                 if end <= start:
-                    self._issue("C09", loc, "end > start",
-                                (frac_to_str(start), frac_to_str(end)),
-                                "non-positive busy interval")
+                    if kind == "test":
+                        self._issue("C09", loc, "end > start",
+                                    (frac_to_str(start), frac_to_str(end)),
+                                    "non-positive busy interval")
+                    # calibration with cs >= T is intentionally zero-length;
+                    # it is not an "end <= start" failure (A2 semantics).
                     continue
-                if T is not None and end > T:
-                    self._issue("C12", loc, "<= T", frac_to_str(end),
-                                "busy interval ends after T")
+                if kind == "test":
+                    # test fragments remain strict: a real test ending after T
+                    # contradicts terminal/cancellation semantics.
+                    if T is not None and end > T:
+                        self._issue("C12", loc, "<= T", frac_to_str(end),
+                                    "busy interval ends after T")
+                # capacity / occupancy use the effective [0, T) intervals
                 if prev_end is not None and start < prev_end:
                     self._issue("C09", loc, "disjoint intervals (capacity 1)",
                                 (frac_to_str(start), frac_to_str(prev_end)),
@@ -2234,11 +2269,22 @@ class G3ReplayChecker:
                                 "within an active shift", frac_to_str(start),
                                 "%s started outside any shift (P039)"
                                 % kind)
-                elif end > shift[1]:
-                    self._issue("C12", loc,
-                                "end <= shift_end (%s)" % frac_to_str(shift[1]),
-                                frac_to_str(end),
-                                "%s crosses the shift boundary (P062)" % kind)
+                else:
+                    # shift legality uses the RAW planned end for calibration
+                    # (the full planned interval must not cross the shift
+                    # boundary even when the accounting horizon clips it) and
+                    # the actual end for tests.
+                    check_end = end
+                    if kind == "calibration":
+                        raw_ce = tag[1] if len(tag) >= 2 else end
+                        check_end = raw_ce
+                    if check_end > shift[1]:
+                        self._issue("C12", loc,
+                                    "end <= shift_end (%s)"
+                                    % frac_to_str(shift[1]),
+                                    frac_to_str(check_end),
+                                    "%s crosses the shift boundary (P062)"
+                                    % kind)
                 prev_end = max(prev_end, end) if prev_end is not None else end
             self._recomputed.setdefault("resource_busy", {})[resource] = {
                 "test_intervals": [

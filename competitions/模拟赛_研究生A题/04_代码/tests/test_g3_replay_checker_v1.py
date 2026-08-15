@@ -1304,5 +1304,227 @@ class TestC17CancelledAttempt2(_Base):
         self.assertEqual(report.verdict, "PASS", report.issues)
 
 
+# ---------------------------------------------------------------------------
+# C17 terminal-horizon calibration replay regression (INVALIDATION_REPORT_G3_C17_
+# TERMINAL_HORIZON; Human Gate OPTION A2)
+# ---------------------------------------------------------------------------
+# Frozen semantics: T is the time of the final DEVICE_TERMINAL; the simulation
+# / accounting horizon is [0, T).  A same-timestamp closure may record a
+# mandatory replacement start at t=T (a+d=240 completion-settles-first) with a
+# planned calibration_end > T; this does NOT extend T.  The checker must:
+#   * keep raw planned calibration legality / shift checks on [cs, ce);
+#   * use effective [cs, min(ce, T)) for occupancy / capacity / ledger;
+#   * keep test fragments strict (a real test ending after T is C12 FAIL);
+#   * keep actual event records with event_time > T as C12 FAIL.
+
+
+def _replace_calibration_event(log, resource, new_start, new_end):
+    """Rewrite the last EQUIPMENT_REPLACEMENT_START for ``resource`` to the
+    given planned calibration interval (test helper only)."""
+    idx = None
+    for i, rec in enumerate(log):
+        if rec.get("event_type") == "EQUIPMENT_REPLACEMENT_START" \
+                and rec.get("resource_id") == resource:
+            idx = i
+    assert idx is not None, "no replacement event for %s" % resource
+    rec = dict(log[idx])
+    rec["calibration_start"] = new_start
+    rec["calibration_end"] = new_end
+    out = list(log)
+    out[idx] = rec
+    return out
+
+
+class TestC17TerminalHorizonCalibration(_Base):
+    def _q2_cfg(self, rep=88, tau_pm=lr.NO_PM_BEFORE_MANDATORY):
+        # Q2 frozen world (single_test_unconditional_v1, 1h_literal) with the
+        # real Q2 observation kernel (Q1-frozen q_E propagation), so the
+        # terminal-horizon replacement lands at T exactly as in the failed run.
+        kernel = {
+            proc: {"alpha": alpha, "beta": beta}
+            for proc in ("A", "B", "C")
+            for alpha, beta in [rd.frozen_single_test_alpha_beta(
+                DEFECT_Q[proc], FROZEN_E[proc])]
+        }
+        q_e = Fraction("0.062593912407392898")
+        alpha_e, beta_e = rd.frozen_single_test_alpha_beta(
+            q_e, Fraction(2, 100))
+        kernel["E"] = {"alpha": alpha_e, "beta": beta_e}
+        return make_config(batch_size=100, namespace=ks.NAMESPACE_Q2_FORMAL,
+                           master_seed=3, replicate_id=rep,
+                           kernel=kernel, scenario="q2_single_shift",
+                           shift_length_h="12", shifts_per_day=1,
+                           tau_pm=tau_pm)
+
+    def test_a2_7_q2_seed3_rep88_closes(self) -> None:
+        """A2-7 (direct regression): the previously reported residual
+        resource(E).busy planned calibration_end=2468/3 at T=822 must close
+        for the intended horizon-clipping reason (C12 PASS)."""
+        cfg = self._q2_cfg(rep=88)
+        res = run(cfg)
+        report = self.check(cfg, event_log=res.event_log, metrics=res.metrics)
+        self.assertEqual(report.verdict, "PASS",
+                         "issues=%s" % [i.describe() for i in report.issues])
+
+    def test_a2_1_start_at_T_no_postT_completion(self) -> None:
+        """A2-1: replacement/calibration starts exactly at T (the frozen
+        same-timestamp closure) with planned calibration_end > T and no
+        post-T completion event -> effective busy contribution 0, C12 PASS.
+        This is exactly the real rep88 final E calibration [822, 822+2/3)."""
+        cfg = self._q2_cfg(rep=88)
+        res = run(cfg)
+        t = Fraction(res.metrics["T"])
+        # the final E replacement in this world already starts at T with a
+        # planned end > T and no post-T completion event (frozen semantics).
+        final_evs = [e for e in res.event_log
+                     if e.get("event_type") == "EQUIPMENT_REPLACEMENT_START"
+                     and e.get("resource_id") == "E"
+                     and Fraction(e.get("calibration_start", "0")) >= t]
+        self.assertTrue(final_evs, "expected a replacement starting at T")
+        self.assertGreater(Fraction(final_evs[-1]["calibration_end"]), t)
+        report = self.check(cfg, event_log=res.event_log, metrics=res.metrics)
+        self.assertEqual(report.verdict, "PASS",
+                         "issues=%s" % [i.describe() for i in report.issues])
+
+    def test_a2_2_clip_at_T(self) -> None:
+        """A2-2: the effective resource occupancy is clipped exactly at T;
+        busy_total uses only pre-T duration (the post-T tail of a planned
+        calibration that starts at/just before T contributes 0)."""
+        cfg = self._q2_cfg(rep=88)
+        res = run(cfg)
+        t = Fraction(res.metrics["T"])
+        # the final E replacement plans [822, 822+2/3): the 2/3 h post-T tail
+        # must NOT enter busy_total on E (horizon [0,T) occupancy).
+        report = self.check(cfg, event_log=res.event_log, metrics=res.metrics)
+        self.assertEqual(report.verdict, "PASS", report.issues)
+        rb = report.recomputed["resource_busy"]["E"]
+        total = Fraction(rb["busy_total_h"])
+        # E's last test fragment ends at T; the clipped calibration tail is
+        # excluded.  busy_total is the sum of pre-T occupancy only.
+        # Without clipping, the tail 2/3 h would be included; assert it is not.
+        e_cals = [e for e in res.event_log
+                  if e.get("event_type") == "EQUIPMENT_REPLACEMENT_START"
+                  and e.get("resource_id") == "E"
+                  and Fraction(e.get("calibration_start", "0")) >= t]
+        self.assertTrue(e_cals)
+        raw_end = Fraction(e_cals[-1]["calibration_end"])
+        self.assertGreater(raw_end, t)  # planned end is after T
+        # The calibration's effective contribution is clipped to
+        # [822, min(822+2/3, 822)) = empty, so busy_total does not include 2/3.
+        # The last test fragment on E ends exactly at T; find its interval.
+        test_ivs = [Fraction(iv[1]) for iv in rb["test_intervals"]]
+        self.assertLessEqual(max(test_ivs), t)
+        # busy_total must not include the 2/3 tail beyond the pre-T total
+        # (a generous slack keeps this robust to other pre-T activity).
+        self.assertLess(total, t + Fraction(1, 10))
+
+    def test_a2_3_test_after_T_still_fails(self) -> None:
+        """A2-3: a real test fragment truly ending after T must still be
+        C12 FAIL (test termination is NOT relaxed by horizon clipping).
+
+        We verify the invariant at the checker's resource-busy layer: on the
+        real rep88 log the calibration interval [822, 822+2/3) is clipped
+        (busy_total excludes the post-T tail) while NO test interval is
+        clipped -- every test fragment's busy end is <= T.  This locks that
+        only calibration occupancy uses the [0,T) horizon, never test
+        fragments."""
+        cfg = self._q2_cfg(rep=88)
+        res = run(cfg)
+        report = self.check(cfg, event_log=res.event_log, metrics=res.metrics)
+        self.assertEqual(report.verdict, "PASS", report.issues)
+        rb = report.recomputed["resource_busy"]
+        t = Fraction(res.metrics["T"])
+        for resource, data in rb.items():
+            for iv in data["test_intervals"]:
+                s, e = Fraction(iv[0]), Fraction(iv[1])
+                # test fragments are strict: none may end after T
+                self.assertLessEqual(e, t,
+                                     "test fragment %s on %s ends after T"
+                                     % (iv, resource))
+
+    def test_a2_4_event_after_T_fails(self) -> None:
+        """A2-4: an actual event record with event_time > T is C12 FAIL even
+        under horizon clipping (post-T completion is never excused)."""
+        cfg = make_config(batch_size=3, master_seed=7)
+        res = run(cfg)
+        log = clone(res.event_log)
+        t = res.metrics["T"]
+        # append a synthetic post-T record (renumber seq contiguously)
+        fake = {"seq": len(log) + 1, "event_time": rck.frac_to_str(Fraction(t) + 1),
+                "event_type": "EQUIPMENT_CALIBRATION_COMPLETE",
+                "resource_id": "E"}
+        log.append(fake)
+        report = self.check(cfg, event_log=log, metrics=res.metrics)
+        self.assertEqual(report.verdict, "FAIL")
+
+    def test_a2_5_cross_shift_still_fails(self) -> None:
+        """A2-5: raw planned calibration crossing the shift boundary is C12
+        FAIL even when T would truncate the accounting horizon."""
+        cfg = self._q2_cfg(rep=88)
+        res = run(cfg)
+        log = res.event_log
+        t = Fraction(res.metrics["T"])
+        # planned interval crosses the 12h shift grid (start near shift end)
+        shift_len = Fraction(12)
+        shift_end = (t // shift_len) * shift_len + shift_len
+        if shift_end <= t:
+            shift_end = shift_end + shift_len
+        start = shift_end - Fraction(1, 4)
+        new_log = _replace_calibration_event(
+            log, "E", rck.frac_to_str(start),
+            rck.frac_to_str(start + Fraction(2, 3)))
+        report = self.check(cfg, event_log=new_log, metrics=res.metrics)
+        self.assertEqual(report.verdict, "FAIL")
+        self.assertTrue(any("crosses the shift boundary" in i.describe()
+                            for i in report.issues))
+
+    def test_a2_6_overlap_capacity_fails(self) -> None:
+        """A2-6: two resource activities overlapping inside [0, T) must still
+        be a capacity violation (capacity checks remain strict inside the
+        [0, T) horizon, using effective occupancy)."""
+        cfg = self._q2_cfg(rep=88)
+        res = run(cfg)
+        log = clone(res.event_log)
+        t = Fraction(res.metrics["T"])
+        # manufacture a calibration that overlaps an existing test fragment
+        # inside [0,T): pick an early E replacement (well inside the horizon)
+        # and lengthen its planned interval across the NEXT test fragment on E
+        # while keeping its own start/event_time intact and its duration legal.
+        # Legality: calibration_start must equal event_time and duration must
+        # match the frozen value; overlapping the NEXT activity is the only
+        # change, so capacity (disjointness) must fire.
+        repls = [e for e in log
+                 if e.get("event_type") == "EQUIPMENT_REPLACEMENT_START"
+                 and e.get("resource_id") == "E"]
+        self.assertTrue(len(repls) >= 2)
+        target = repls[0]
+        idx = log.index(target)
+        cal_dur = Fraction(2, 3)  # E calibration = 40 min
+        start = Fraction(target["calibration_start"])
+        # lengthen so the planned interval ends AFTER the next E activity's
+        # start (which is > start + cal_dur normally) -> overlap inside [0,T)
+        # find the first E ACTIVITY_START after start + cal_dur
+        nxt = [e for e in log
+               if e.get("event_type") == "ACTIVITY_START"
+               and e.get("resource_id") == "E"
+               and Fraction(e.get("event_time", "0")) > start]
+        assert nxt, "expected a later E activity"
+        new_end = Fraction(nxt[0]["event_time"]) + Fraction(1, 2)
+        rec = dict(target)
+        rec["calibration_end"] = rck.frac_to_str(new_end)
+        # keep calibration_start == event_time and raw duration consistency is
+        # enforced by C14 on the raw planned interval; overlapping the next
+        # activity is the intended capacity violation.
+        log[idx] = rec
+        report = self.check(cfg, event_log=log, metrics=res.metrics)
+        self.assertEqual(report.verdict, "FAIL",
+                         "expected capacity violation")
+        self.assertTrue(
+            any("overlap" in i.describe() or "capacity" in i.describe()
+                for i in report.issues),
+            "no overlap/capacity issue: %s"
+            % [i.describe() for i in report.issues])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

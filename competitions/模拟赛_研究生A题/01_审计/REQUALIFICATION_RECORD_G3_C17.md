@@ -1,8 +1,36 @@
-# G3 C17 Requalification Record（cancelled-attempt 修复，supplemental）
+# G3 C17 Requalification Record（C10+C12 组合修复，supplemental）
 
 > 日期：2026-08-15
-> 状态：**部分 requalification——cancelled-attempt 缺陷（C10）已修复并闭合；发现残余独立缺陷（C12 terminal 同刻替换收尾）→ STOP: G3_C17_PATCH_RESIDUAL_FAILURE**
-> 依据：Human Gate OPTION A APPROVED；`01_审计/INVALIDATION_REPORT_G3_C17_CANCELLED_ATTEMPT.md`
+> 状态：**C10（cancelled-attempt）与 C12（terminal-horizon calibration）两处独立 checker 缺陷均已修复；combined patched checker 全量回归 + 只读重放验证；等待 fresh Pro/high requalification reviewer**
+> 依据：Human Gate OPTION A + OPTION A2 APPROVED；`01_审计/INVALIDATION_REPORT_G3_C17_CANCELLED_ATTEMPT.md` + `01_审计/INVALIDATION_REPORT_G3_C17_TERMINAL_HORIZON.md`
+
+## 1. 绑定（hash）
+
+| 项 | 值 |
+|---|---|
+| 旧 checker hash（修复前） | 提交 `6adc57c` 时 g3_replay_checker_v1.py |
+| C10 修复后 hash | 提交 `023020e` 时 g3_replay_checker_v1.py（INVALIDATION_REPORT_CANCELLED_ATTEMPT） |
+| C12 修复后 hash（combined） | 本记录关联提交 g3_replay_checker_v1.py（INVALIDATION_REPORT_TERMINAL_HORIZON） |
+| 精确 diff | `git diff` 各修复提交：C10 = derive_device_chain completed_observations；C12 = busy/calibration horizon clip |
+| INVALIDATION_REPORT ×2 | CANCELLED_ATTEMPT（C10）+ TERMINAL_HORIZON（C12）；均 changed_semantics=NO / main_engine=NO / checker_core=YES |
+| main DES hash 不变 | 未触碰 random_des_v1.py（git diff 空） |
+| key_schema/lifetime/G3 spec/Q2 spec hash 不变 | 未触碰（git diff 空） |
+
+## 2. 回归输出（combined patched checker）
+
+- **C10 cancelled-attempt 回归（6 tests）**：A/B/C/D/E + core repair unit 全 PASS（chain cancelled-attempt2 exit=[B]；single 等价；同刻双退出保留；中断 attempt2 无假退出；cancelled+pass-U 无观测；completed_observations 过滤）。
+- **C12 terminal-horizon 回归（7 tests，A2-1..A2-7）全 PASS**：A2-1 替换恰在 T 且计划 end>T 无 post-T 完成事件 → PASS；A2-2 有效占用 clip 于 T、busy_total 仅 pre-T；A2-3 test 片段不被 clip（全部 test_intervals ≤ T）；A2-4 event_time>T 记录仍 FAIL；A2-5 计划校准跨班界仍 FAIL（raw 检查）；A2-6 [0,T) 内重叠仍容量 FAIL；A2-7 Q2 seed3 rep88 残余闭合。
+- **全量 G3 回归：315 tests OK（skipped=1）**（308 + 7 新增；原 PASS 全保持）。
+- **Q2 runner 回归：13 tests OK**。
+- **accepted G3 holdout 只读重放（combined patched checker）：100/100 PASS**。
+- **失败 Q2 run（daead4cf）只读重放（C06/C17 分开）**：旧 21 个 C17 失败（20 chain C10 + 1 single C12）**全部闭合**；C06 各单元 200/200。
+
+## 3. 结论与建议
+
+- C10 + C12 两处独立 checker 缺陷均按 Human Gate OPTION A / A2 完成 bounded 修复；combined patched checker 全量回归 + accepted holdout 重放 + 旧失败 run 重放全部干净。
+- 待 §14 fresh Pro/high `G3_C17_REQUALIFICATION_L3_REVIEWER` 审阅两处修复；若 PASS/HIGH/changed_semantics=NO/c17_requalified=YES/g3_final_pass_reuse_allowed=YES → CR-V3.1/C17 G3 full layer = PASS / REQUALIFIED_AFTER_C10_C12_CHECKER_FIXES；G3 = PASS/ACCEPTED（supplemental provenance）。
+- 旧 Q2 run 保持 HISTORICAL_FAILED_FORMAL_ATTEMPT / VALIDATION_FAILED / paper_authoritative=false（不追溯升级）。
+- Q2 clean reissue 与 Q2 Macro L3 在 requalification 通过后执行。
 
 ## 1. 绑定（hash）
 
