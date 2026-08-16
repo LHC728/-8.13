@@ -2,6 +2,28 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-16 / `STATE-2026-08-13-G2.4` / `Q3-H2-P3-B 完整 rollout 执行核 + (M*,C_eval*) 成本冻结 = COMPLETED / AWAITING HUMAN GATE`
+
+### 修改
+
+- **Human Gate 落文：Q3-H2-P3-A = FINAL PASS / ACCEPTED（accepted lineage：P3-A original `b285131` + P3-A-E1 closure `fcf07f6`；C23 mechanics/continuation = PASS；C23 full production = PENDING）；P3-B = AUTHORIZED（起始锚点 `fcf07f6`）**。
+- **fresh continuation rollout event engine**：`main_model/h2_rollout/rollout_engine_v1.py`（**H2 package 外**——P1 防火墙只扫描 `main_model/h2/*.py`，引擎内部需携带重建的隐藏状态，故与 post-key adapter 同放 `h2_rollout` 包）：起点仅 ObservableState + PosteriorState + ContinuationWorld + post keys（禁 deepcopy live DES / 读 live true_state/lifetime/raw log/u_key）；首动作（START_HEAD / H1_NOOP / WAIT_EVENT / PM_WITH_HEAD / PM_IDLE）只作用于第一步，之后切回 accepted H1 baseline（NO_PM_BEFORE_MANDATORY）至 batch 吸收；same-timestamp closure 序（settle→observe→classify→exits→cancel→materialize D→shift→release→dispatch→turnovers）与 accepted engine 对齐；FCFS min-key dispatch、fragment outcome（illegal-240 后随机故障先于末端则中断、恰末端故障按完成）、replacement_decision（a+d>240 强制先换 / ==240 完成优先 / NO_PM 永不预防）、post-fragment-end 240/lifetime 检查、turnover out/in（1h_literal 与 0.5h_overlap）。
+- **future D materialization（§6）**：未到 E 设备 x_D=None（DEFERRED_TO_CONTINUATION_EVENT_ENGINE）；仅在合法联接点（A/B/C 全 PASSED、E 未释放）消费一次 U_D_post、按 prior q_D 物化；提前退出不反事实生成；同 device 只生成一次。
+- **U_Y_post 仅有效完成消费（§7）**：未启动 / 班末禁启 / 中断 / cancelled / equipment-failure interruption / 无结果 fragment / terminal 后取消任务一律不消费（NO_OBSERVATION_CONSUMED_BY）。
+- **equipment lifetime continuation（§8）**：当前代用 P2 conditional residual（ContinuationWorld.residual_lifetimes）；每次 replacement 后新 generation 绑定新 U_L_post(resource, new_gen)（provider.u_l_lookup）；不用 P2 validation synthetic generation mapping。
+- **Q_hat_M + paired SE（§1.1/§10）**：`main_model/h2/q_estimator_v1.py`——`Q_hat = 1/M Σ[T_end(m; a→H1) − t(s)]`；配对差 `D_m = T_end(a) − T_end(a_H1)`、`SE_M = sample_sd/√M`；a_H1(dispatch)=START_HEAD、a_H1(maintenance)=H1_NOOP；纯计算、不据 Q 调 M/C_eval/动作集。
+- **online quota selector（§2/D-08，参数化）**：`main_model/h2/quota_selector_v1.py`——C_eval ∈ {6,8}；W_cap=⌈C/2⌉、P_cap=⌊C/2⌋（6→3+3、8→4+4）；quota class（both→WAIT 优先；quota class ≠ 动作可用性，both 点保留合法 PM 动作）；wait 在线前 W_cap 个 wait-class 点；PM 桶 B1=[120,160)/B2=[160,200)/B3=[200,240) bucket-first +（P_cap=4 时恰 1 个 extra slot）在线算法；无未来查看 / 无跨桶 backfill / 无批末回溯 / 无跨侧 borrowing；不变量 wait≤W、PM≤P、total≤C_eval、无重复 DP。
+- **C_rollout 硬上限（§2）**：200/batch；候选 (4,8)→96、(8,6)→144、(8,8)→192 均 ≤200（checker 断言）。
+- **H1 fallback parity（§9）**：checker 驱动 accepted H1 engine（`g3.random_des_v1`，parity target 非 oracle 循环），把同一 u 流重放进 continuation provider，6 个确定性场景（normal dispatch chain / retest / random failure / replacement / shift boundary / exact240 / terminal absorption）核心事件 + 最终 T_end 逐场景一致。
+- **独立 checker 11/11 + tests 17/17**：`checker/h2_p3b_checker_v1.py`（ROLLOUT_KERNEL / H1_FALLBACK_PARITY / FUTURE_D_MATERIALIZATION / U_Y_CONSUMPTION / LIFETIME_GENERATION / CRN_WORLD / QUOTA_SELECTOR / QUOTA_CAUSALITY / ROLLOUT_COUNT / Q_ESTIMATOR / C23_ROLLOUT）+ `tests/test_h2_p3b_v1.py`；P1 防火墙回归 28 保持 PASS（引擎移至 h2_rollout 包，h2 包零 g3/des import 不变）。
+- **§1.2 成本测量 + (M*,C_eval*) 冻结**：`scripts/run_h2_p3b_cost_v1.py`——前 5 批（replicate 0..4、K=10.5、batch 100）测 engine-only base_r 与 single-rollout c_r（不含 C06/C17/bootstrap）；base_median=0.264s、c_r_median=0.046s；三候选 w_p = base + (C_eval×3×M)×c_r：(4,8)=4.73s、(8,6)=6.71s、(8,8)=9.19s 全部 ≤90s 可行 → **按冻结规则（max M、M 同取大 C_eval）选 (M*,C_eval*)=(8,8)、W_cap*=4、P_cap*=4**；不存在 H2_BUDGET_INFEASIBLE。**测量命名空间说明**：base_r 在 legacy `development_unit` 下测（accepted engine 结构性拒绝 h2_tuning——P0/C16 防火墙；墙钟与键域无关；c_r 由 h2 continuation engine 在 h2_rollout post keys 下测；scope note，非规则变更）。
+- **C23 rollout path（§24）**：same ObservableState + same PosteriorState + same keys + same config + same first action → 隐藏 live world 改变 → 完整 rollout T_end identical（PASS）；full final policy C23 仍 PENDING UNTIL FINAL POLICY CONFIG。
+- **证据根** `05_结果/H2/tuning/cost_calibration/run_20260816T072245476180Z_45e12558/`：checker 11/11 + tests 17/17 + 回归 28/36/38/23/44 + cost PASS；ACYCLIC hash DAG + manifest/inventory 26/26 + semantic mapping + C21 = PASS（fail-closed promote + 只读复验）。
+- **dev budget ledger 追加**：entry `P3-B-20260816T072245476180Z_45e12558` wall_clock=6.63s；累计 **62.18s（0.0173h）**；soft 4h / hard 8h 均未达。
+- **状态**：**P3-B rollout kernel + cost calibration = COMPLETED / AWAITING HUMAN GATE**；**M* = 8、C_eval* = 8、W_cap* = 4、P_cap* = 4**；**action stability = NOT STARTED**；**cross-K transfer = NOT STARTED**；**h2_holdout = NOT AUTHORIZED**；**C25 = NOT AUTHORIZED**。
+- 范围审计：action stability §4(b)(c)、cross-K transfer §4.1、h2_tuning policy experiments、h2_holdout、C25、final H2 numbers、Q3 K recommendation = 全部 **NO**；P1/P2/P3-A accepted 未修改；未消费 h2_holdout/q3_formal；无新 formal/holdout worlds。
+- 状态同步：`CURRENT_STATE.md`（Gate 行、§5.1、§6 禁止、§7 下一出口）。
+
 ## 2026-08-16 / `STATE-2026-08-13-G2.4` / `Q3-H2-P3-A-E1 WAIT fragment identity + continuation posterior world = COMPLETED / AWAITING HUMAN GATE FINAL P3-A REVIEW`
 
 ### 修改

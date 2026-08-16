@@ -53,16 +53,40 @@ class RolloutPostKeys:
     seed: int
     namespace: str
     u_x_by_device: dict[int, Fraction] = field(default_factory=dict)
+    u_x_subsystem_by_device: dict[int, dict[str, Fraction]] = field(
+        default_factory=dict)
     u_d_by_device: dict[int, Fraction] = field(default_factory=dict)
     u_l_by_resource: dict[str, Fraction] = field(default_factory=dict)
     # U_Y_post interface (attempt slot); consumed ONLY on a valid completion
     # by the continuation event engine (not in this package).
     u_y_lookup: Optional[Callable[[int, str, int], Fraction]] = None
+    u_l_lookup: Optional[Callable[[str, int], Fraction]] = None
 
     def u_y(self, device: int, process: str, attempt: int) -> Fraction:
         if self.u_y_lookup is None:
             raise ValueError("U_Y_post interface not bound")
         return self.u_y_lookup(device, process, attempt)
+
+    def u_l(self, resource: str, generation: int) -> Fraction:
+        if self.u_l_lookup is not None:
+            return self.u_l_lookup(resource, generation)
+        if generation == 1:
+            try:
+                return self.u_l_by_resource[resource]
+            except KeyError:
+                raise ValueError(
+                    f"missing U_L_post for {resource} gen 1") from None
+        raise ValueError(
+            f"U_L_post generation {generation} of {resource} requires "
+            f"u_l_lookup")
+
+    def u_x_subsystem(self, device: int, subsystem: str) -> Fraction:
+        try:
+            return self.u_x_subsystem_by_device[device][subsystem]
+        except KeyError:
+            raise ValueError(
+                f"missing per-subsystem U_X_post for device {device} "
+                f"subsystem {subsystem}") from None
 
     def to_canonical_dict(self) -> dict[str, Any]:
         return {
@@ -74,6 +98,9 @@ class RolloutPostKeys:
             "namespace": self.namespace,
             "u_x_by_device": {str(k): str(v)
                               for k, v in sorted(self.u_x_by_device.items())},
+            "u_x_subsystem_by_device": {
+                str(k): {s: str(v) for s, v in sorted(sub.items())}
+                for k, sub in sorted(self.u_x_subsystem_by_device.items())},
             "u_d_by_device": {str(k): str(v)
                               for k, v in sorted(self.u_d_by_device.items())},
             "u_l_by_resource": {k: str(v)
@@ -95,10 +122,14 @@ def rollout_post_keys(master_seed_h2: int, replicate_id: int, dp: int, m: int,
     """
     seed = rollout_seed(master_seed_h2, replicate_id, dp, m)
     u_x: dict[int, Fraction] = {}
+    u_x_sub: dict[int, dict[str, Fraction]] = {}
     u_d: dict[int, Fraction] = {}
     for dev in devices:
         u_x[dev] = ks.u_x_post(ROLLOUT_NAMESPACE, replicate_id, dev,
                                ABC_CATEGORICAL_SUBSYSTEM, seed)
+        u_x_sub[dev] = {
+            sub: ks.u_x_post(ROLLOUT_NAMESPACE, replicate_id, dev, sub, seed)
+            for sub in ks.SUBSYSTEMS}
         u_d[dev] = ks.u_d_post(ROLLOUT_NAMESPACE, replicate_id, dev, seed)
     u_l: dict[str, Fraction] = {}
     for r in resources:
@@ -109,8 +140,13 @@ def rollout_post_keys(master_seed_h2: int, replicate_id: int, dp: int, m: int,
         return ks.u_y_post(ROLLOUT_NAMESPACE, replicate_id, device, process,
                            attempt, seed)
 
+    def _u_l(resource: str, generation: int) -> Fraction:
+        return ks.u_l_post(ROLLOUT_NAMESPACE, replicate_id, resource,
+                           generation, seed)
+
     return RolloutPostKeys(
         master_seed_h2=master_seed_h2, replicate_id=replicate_id, dp=dp, m=m,
         seed=seed, namespace=ROLLOUT_NAMESPACE,
-        u_x_by_device=u_x, u_d_by_device=u_d, u_l_by_resource=u_l,
-        u_y_lookup=_u_y)
+        u_x_by_device=u_x, u_x_subsystem_by_device=u_x_sub,
+        u_d_by_device=u_d, u_l_by_resource=u_l,
+        u_y_lookup=_u_y, u_l_lookup=_u_l)
