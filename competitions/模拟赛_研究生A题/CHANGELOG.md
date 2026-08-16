@@ -2,6 +2,24 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-16 / `STATE-2026-08-13-G2.4` / `Q3-H2-P3-C action stability diagnostics = COMPLETED → H2_NO_EFFECTIVE_DEVIATION → H2 = DELETE（AUTOPILOT STOP）`
+
+### 修改
+
+- **Q3-H2-P3-C（action stability，SPEC §4/D-10）在冻结 H2 政策（M\*=8、C_eval\*=8、W_cap\*=4、P_cap\*=4、2SE confident deviation、canonical tie order）下完成**；证据根 `05_结果/H2/tuning/stability/run_20260816T101049163825Z_791506d8`（fail-closed probe/confirm/promote/final 四段验证；ACYCLIC hash DAG（RULE A）+ manifest/inventory 一致 + semantic mapping；RESULT 数字由 final evidence 机械生成）。
+- **B-1 样本**：h2_tuning/seed 6/rep 0..9/K=10.5 十个物理批（H1 baseline；批升序→批内时间序取前 50 wait-eligible + 前 50 PM-only）→ **n=100（wait=50、PM=50、both=20，≥50 硬门 PASS）**；每点评估全部合法动作 Q_hat_M（M=8、跨动作 CRN rollout_seed(dp,m)）。
+- **stability (a) 确定性 / C23 policy**：hidden 变异（true_state / lifetime_h / raw u）不改变 policy decision = **PASS**。
+- **stability (b) ALT-salt agreement = 0.9900（99/100）≥ 0.95 点估计硬门 = PASS**（Clopper-Pearson 95% [0.9455, 0.9997] 仅披露、不设第二门；唯一不匹配点 = ALT salt 恰在 2SE 边界偏离一次，normal salt deviation_count=0）。
+- **stability (c) M=8 vs M=16 = 1.0000（100/100）≥ 0.95 = PASS**（生产 M\*=8 不变；M=16 仅离线诊断）。
+- **deviation_count = 0（normal salt，100 点全部选 a_H1）→ 冻结硬门 H2_NO_EFFECTIVE_DEVIATION → H2 = DELETE**（未降低 2SE 阈值、未换样本、未重跑、未改动作集；deviation_rate=0.0000、deviation_types={} 如实披露）。
+- **P3-C 阶段实现修复（engine FIX）**：`main_model/h2_rollout/rollout_engine_v1.py` `_init_from_projections` 重建「决策时刻 in-flight calibration」资源时**未调度 calibration_complete** → 资源永久卡在校准、队列积压、日历清空、`_is_terminal()` 永假 → `run()` 沿班界推进并记录 `WAKE_UP` 无限循环（now 膨胀至 ~8M h、log 无界增长 → 首次完整运行 MemoryError/0xC0000005 失败，保留为负证据处理）。修复：重建时按 `state.time + r.in_flight_remaining_h` 调度 `calibration_complete`（与 `_begin_replacement` 一致）；另加 **fail-closed runaway guard**（`MAX_CLOSURES=1_000_000`，触发即 `RuntimeError`，将任何未来非终止转为可检测失败）。新增 3 项回归测试（`test_h2_p3c_v1.py`：calibration_completion_is_scheduled / rollout_terminates_with_in_flight_calibration / runaway_guard_raises_fail_closed）；修复后 100 样本点逐点 M=1 复检全部终止（NO RUNAWAY FOUND）。
+- **新增/修改实现**：`main_model/h2_rollout/h2_policy_v1.py`（冻结政策：M_STAR/C_EVAL_STAR/W_CAP_STAR/P_CAP_STAR、ACTION_ORDER canonical、ActionEstimate/PolicyDecision、evaluate_decision_point：M 轮询 Q_hat + 配对 D_m/SE_M + 2SE confident deviation + ACTION_RANK tie-break；rollout 键覆盖 1..batch_size 全部设备——续演中 turnover 会创建后续设备，仅覆盖决策时刻已进入设备会导致 KeyError）；`main_model/h2_rollout/h2_batch_runner_v1.py`（H2BatchRunner：决策点重建→online quota（C_eval\*=8、W_cap\*=4、P_cap\*=4）→冻结政策评估→动作注入（WAIT hold / PM pending / START_HEAD·H1_NOOP 走引擎默认）；fresh batch 自动 seed TRUE_STATE_GENERATED+SHIFT_CHANGE 进引擎日志，保证后续可观测投影/决策重建看到已进入设备）；`main_model/h2_rollout/post_keys_v1.py`（rollout_post_keys 加 salt 参数：normal `q3h2-bootstrap-v1` / ALT `q3h2-bootstrap-alt-v1`；physical_post_provider 供 h2_tuning/h2_holdout 物理世界键）。
+- **tests / 回归**：`tests/test_h2_p3c_v1.py` **20/20 PASS**（冻结常量/canonical 顺序/2SE 不变量/CRN+salt 分离/physical provider 确定性/H2BatchRunner smoke/CP95 独立 beta oracle 回归/calibration 回归）；回归 P1 防火墙 28 / Density E2 36 / key_schema 38 / Q3 H1 23 / G3 44 / P3-B 26 全 PASS。
+- **dev budget ledger 追加**：entry `P3-C-20260816T101049163825Z_791506d8` wall_clock=685.53s；累计 **755.70s（0.2099h）**；soft 4h / hard 8h 均未达；旧 entries 保留。
+- **AUTOPILOT STOP（冻结授权链）**：action stability = AUTHORIZED → 执行 → deviation_count=0 → H2 DELETE；cross-K transfer = AUTHORIZED CONDITIONAL ON STABILITY PASS → 条件未满足 → **NOT RUN**；h2_holdout / C25 = **NOT RUN**；**未创建 transfer/holdout/C25 commit**；等待 Human Gate final Q3 review。
+- 范围审计：cross-K transfer、h2_holdout、C25、per-K tuning、H2 正式收益统计、Q3 K 推荐 = 全部 **NO**；P1/P2/P3-A/P3-B accepted 数学与 checker 未修改；无新 formal/holdout worlds；`development_unit` 未被本包使用。
+- 状态同步：`CURRENT_STATE.md`（Gate 行、§5.1、§6 禁止、§7 下一出口）。
+
 ## 2026-08-16 / `STATE-2026-08-13-G2.4` / `Q3-H2-P3-B-E1 current-generation residual lifetime 坐标修复 + 成本 requalification = COMPLETED / AWAITING HUMAN GATE FINAL P3-B REVIEW`
 
 ### 修改

@@ -71,6 +71,10 @@ from main_model.h2.lifetime_generator_v1 import inverse_cdf  # noqa: E402
 
 NO_PM_BEFORE_MANDATORY: str = "NO_PM_BEFORE_MANDATORY"
 
+# fail-closed runaway guard: legitimate 100-device batches settle in a few
+# thousand closures; this is a huge headroom (see RolloutEngine.run).
+MAX_CLOSURES: int = 1_000_000
+
 # action names (frozen, imported for interface consistency)
 A_START_HEAD = "START_HEAD"
 A_H1_NOOP = "H1_NOOP"
@@ -466,7 +470,7 @@ class RolloutEngine:
                     p.status = "PASSED"
                 elif p.status != "PASSED":
                     p.status = ("AWAITING_RETEST"
-                                if o.effective_attempt_no == 1
+                                if o.attempt == 1
                                 else "IN_PROGRESS")
         # resources / equipment from ObservableState (age from age_h)
         for r in state.resources:
@@ -477,10 +481,20 @@ class RolloutEngine:
                 equip.calibration_in_flight = True
                 equip.available = False
                 self.resources[r.resource].status = "BUSY"
+                cal_end = state.time + r.in_flight_remaining_h
                 self.resources[r.resource].current_activity = {
                     "kind": "calibration", "resource_id": r.resource,
                     "start_time": state.time,
-                    "end_time": state.time + r.in_flight_remaining_h}
+                    "end_time": cal_end}
+                # FIX (P3-C): a rebuild must also schedule the completion
+                # of the in-flight calibration, exactly like
+                # _begin_replacement does -- otherwise the resource is
+                # stuck in calibration forever, its queue backs up, the
+                # calendar empties, _is_terminal() never turns True and
+                # run() advances over shift boundaries recording WAKE_UP
+                # indefinitely (runaway now/log -> MemoryError).
+                self._schedule("calibration_complete", cal_end,
+                               r.resource)
             elif r.status == "testing":
                 self.resources[r.resource].status = "BUSY"
                 self.resources[r.resource].current_activity = {
@@ -586,6 +600,17 @@ class RolloutEngine:
                         ps_.status = "IN_PROGRESS"
         # remaining_not_entered devices will be created by turnovers
         self._remaining_to_create = state.remaining_not_entered
+        # seed the engine log with the observable prefix records (so the
+        # H2 driver's per-closure decision reconstruction sees the full
+        # observable history including entered devices / releases / etc.)
+        if self._log_prefix is not None:
+            for r in self._log_prefix:
+                if (r.get("event_time") is not None
+                        and Fraction(r["event_time"]) <= state.time):
+                    rec = dict(r)
+                    rec.setdefault("seq", 0)
+                    self._seq = max(self._seq, rec["seq"])
+                    self.log.append(rec)
         self._apply_first_action_if_dispatch()
 
     # -- event machinery --------------------------------------------------
@@ -889,9 +914,9 @@ class RolloutEngine:
             self.consumed_u_y += 1
             kern = self.kernel[process]
             if true_problem:
-                outcome = ("NORMAL" if u >= 1 - kern["beta"] else "ABNORMAL")
+                outcome = ("PASS" if u >= 1 - kern["beta"] else "ABNORMAL")
             else:
-                outcome = ("ABNORMAL" if u < kern["alpha"] else "NORMAL")
+                outcome = ("ABNORMAL" if u < kern["alpha"] else "PASS")
             attempt.outcome = outcome
             task.outcome = outcome
             self._record("OBSERVATION_MATERIALIZED", device_id=device_id,
@@ -912,7 +937,7 @@ class RolloutEngine:
         for attempt in completed:
             dev = self.devices[attempt.device_id]
             p = dev.process_state[attempt.process]
-            p.status = "PASSED" if attempt.outcome == "NORMAL" else \
+            p.status = "PASSED" if attempt.outcome == "PASS" else \
                 ("AWAITING_RETEST" if attempt.effective_attempt_no == 1
                  else "IN_PROGRESS")
             if attempt.outcome == "ABNORMAL" and attempt.effective_attempt_no == 1:
@@ -927,7 +952,7 @@ class RolloutEngine:
             if (attempt.outcome == "ABNORMAL"
                     and attempt.effective_attempt_no == 2):
                 exit_devices.append(attempt.device_id)
-            if (attempt.outcome == "NORMAL" and attempt.process == "E"):
+            if (attempt.outcome == "PASS" and attempt.process == "E"):
                 passed.append(attempt.device_id)
         exit_set = sorted(set(exit_devices))
         for device_id in exit_set:
@@ -1116,12 +1141,19 @@ class RolloutEngine:
                 starts.append((head.fcfs_key, attempt))
         starts.sort(key=lambda item: item[0])
         for _key, attempt in starts:
+            act = self.resources[attempt.task_id and
+                                 self.tasks[attempt.task_id].resource_id] \
+                .current_activity
+            scheduled_end = (act.get("end_time") if act is not None
+                             else None)
+            end_rec = (attempt.end_time if attempt.end_time is not None
+                       else scheduled_end)
             self._record("ACTIVITY_START", device_id=attempt.device_id,
                          process=attempt.process,
                          effective_attempt_no=attempt.effective_attempt_no,
                          resource_id=self.tasks[attempt.task_id].resource_id,
                          attempt_start_time=attempt.start_time,
-                         attempt_end_time=attempt.end_time,
+                         attempt_end_time=end_rec,
                          outcome="NONE")
 
     def _begin_replacement(self, resource_id: str) -> None:
@@ -1351,10 +1383,21 @@ class RolloutEngine:
         # initial closure at the start time (releases + dispatch, mirroring
         # the accepted engine's run(): _closure(Fraction(0)) first)
         self._closure(self.now)
+        # fail-closed runaway guard: a legitimate 100-device batch settles
+        # in a few thousand closures; 1e6 is a huge headroom and turns any
+        # future non-termination (e.g. a stuck resource whose completion
+        # event was never scheduled) into a detectable RuntimeError instead
+        # of an unbounded WAKE_UP loop that exhausts memory.
+        closures = 0
         while True:
             if self._is_terminal():
                 self._record("SIMULATION_END")
                 break
+            closures += 1
+            if closures > MAX_CLOSURES:
+                raise RuntimeError(
+                    f"runaway: {closures} closures without termination at "
+                    f"now={self.now} (fail-closed guard)")
             nxt = self._next_event_time()
             if nxt <= self.now:
                 raise RuntimeError(f"no progress: next event {nxt} <= now "

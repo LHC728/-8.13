@@ -1,0 +1,12 @@
+# Q3-H2-P3-C task-package snapshot
+package_ref: Q3-H2-P3-C
+authority: Q3_H2_BOOTSTRAP_SPEC_DRAFT.md FINAL_FREEZE_ACCEPTED sections 4 (action stability) / 4.1 (cross-K transfer: NOT run here) / 5 / 6 / 13 / 17.2 + Q3-H2-P3-C Human Gate authorization (starting HEAD c271a62)
+bootstrap_spec_snapshot: bootstrap_spec_snapshot.md
+bootstrap_spec_sha256: c370aa38cc58c83462b4f280f10628d08ca9cef9d5c04297a2db2ffebbf6eb62
+formal_task_package_sha256: a0864c8728603ef85c12eff91500c78909f70d74738cb42765212d0c035b4472
+p1: FINAL PASS / ACCEPTED (08488e4)
+p2: FINAL PASS / ACCEPTED (a5d2faf)
+p3a: FINAL PASS / ACCEPTED (fcf07f6)
+p3b: FINAL PASS / ACCEPTED (c271a62; M*=8, C_eval*=8, W_cap*=4, P_cap*=4 frozen)
+p3c: action stability (b)(c) + deviation rate + C23 policy diagnostics on the frozen policy; cross-K transfer / h2_holdout / C25 NOT run here
+evidence_rule: ACYCLIC hash DAG (RULE A)

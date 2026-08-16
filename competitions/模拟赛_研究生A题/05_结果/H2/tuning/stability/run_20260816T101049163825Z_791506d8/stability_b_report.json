@@ -1,0 +1,1 @@
+{"agreement":0.99,"check":"STABILITY_B","cp95_hi":0.9997468539670227,"cp95_lo":0.9455406146079193,"gate":0.95,"gate_type":"point-estimate-only; CP interval = disclosure","id":"STABILITY_B","matched":99,"n":100,"status":"PASS"}
