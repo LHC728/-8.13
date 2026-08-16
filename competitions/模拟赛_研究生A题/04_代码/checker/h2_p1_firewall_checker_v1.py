@@ -84,6 +84,13 @@ FORBIDDEN_NAME_FRAGMENTS: tuple[str, ...] = (
     "x_D", "is_right_censored", "d_state", "hidden",
 )
 
+# EXACT forbidden raw-field keys (F2a, Q3-H2-P1-E2): the engine event log
+# stores the raw random value under the field name ``u``.  A bare substring
+# matcher for ``"u"`` would false-positive on legitimate keys such as
+# ``resource`` / ``outcome`` / ``duration``, so they are matched EXACTLY
+# (key == "u") in addition to the substring fragments above.
+EXACT_FORBIDDEN_KEYS: tuple[str, ...] = ("u",)
+
 DTO_CLASSES: tuple[type, ...] = (
     obs.ObservableState, obs.BayObs, obs.ResourceObs, obs.QueueObs,
     obs.DeviceObs, obs.ObservationObs, obs.ReplacementObs,
@@ -155,42 +162,46 @@ def _h2_source_files() -> list[Path]:
 def _scan_forbidden(tree: ast.AST, filename: str) -> list[str]:
     """Reusable forbidden-access scanner (used both for the h2 package and
     for the negative AST cases).  Detects, WITHOUT literal-only grep:
-      A. ast.Attribute  -- obj.<hidden_name>
+      A. ast.Attribute  -- obj.<hidden_name>  (substring fragments OR exact
+         forbidden keys such as ``u``)
       B. ast.Subscript with a CONSTANT STRING slice -- obj["<hidden_key>"]
-      C. ast.Call of the form *.get("<hidden_key>")
+         (substring fragments OR exact forbidden keys)
+      C. ast.Call of the form *.get("<hidden_key>")  (same matching)
     plus references to live DES internal classes by name."""
     issues: list[str] = []
+
+    def _key_forbidden(key: str) -> bool:
+        if key in EXACT_FORBIDDEN_KEYS:
+            return True
+        return any(frag in key for frag in FORBIDDEN_NAME_FRAGMENTS)
+
     for node in ast.walk(tree):
         if isinstance(node, ast.Attribute):
             attr = node.attr
-            for frag in FORBIDDEN_NAME_FRAGMENTS:
-                if frag in attr:
-                    issues.append(f"{filename}: attribute access "
-                                  f"{attr!r} contains forbidden fragment "
-                                  f"{frag!r} at line "
-                                  f"{getattr(node, 'lineno', '?')}")
+            if _key_forbidden(attr):
+                issues.append(f"{filename}: attribute access {attr!r} is "
+                              f"forbidden (exact key or forbidden fragment) "
+                              f"at line {getattr(node, 'lineno', '?')}")
         elif isinstance(node, ast.Subscript):
             sl = node.slice
             if isinstance(sl, ast.Constant) and isinstance(sl.value, str):
                 key = sl.value
-                for frag in FORBIDDEN_NAME_FRAGMENTS:
-                    if frag in key:
-                        issues.append(f"{filename}: dict-subscript access "
-                                      f"{key!r} contains forbidden fragment "
-                                      f"{frag!r} at line "
-                                      f"{getattr(node, 'lineno', '?')}")
+                if _key_forbidden(key):
+                    issues.append(f"{filename}: dict-subscript access "
+                                  f"{key!r} is forbidden (exact key or "
+                                  f"forbidden fragment) at line "
+                                  f"{getattr(node, 'lineno', '?')}")
         elif isinstance(node, ast.Call):
             func = node.func
             if isinstance(func, ast.Attribute) and func.attr == "get":
                 if node.args and isinstance(node.args[0], ast.Constant) \
                         and isinstance(node.args[0].value, str):
                     key = node.args[0].value
-                    for frag in FORBIDDEN_NAME_FRAGMENTS:
-                        if frag in key:
-                            issues.append(f"{filename}: dict.get access "
-                                          f"{key!r} contains forbidden "
-                                          f"fragment {frag!r} at line "
-                                          f"{getattr(node, 'lineno', '?')}")
+                    if _key_forbidden(key):
+                        issues.append(f"{filename}: dict.get access "
+                                      f"{key!r} is forbidden (exact key or "
+                                      f"forbidden fragment) at line "
+                                      f"{getattr(node, 'lineno', '?')}")
         if isinstance(node, ast.Name):
             if node.id in ("RandomDesEngine", "DeviceState",
                            "EquipmentState", "ResourceState",
@@ -231,8 +242,11 @@ def check_ast_negative_cases() -> dict[str, Any]:
         "NEG-C": ("x = rec[\"lifetime_h\"]", "reject"),
         "NEG-D": ("x = device.true_state", "reject"),
         "NEG-E": ("x = rec.get(\"x_A\")", "reject"),
+        "NEG-U1": ("x = rec[\"u\"]", "reject"),
+        "NEG-U2": ("x = rec.get(\"u\")", "reject"),
         "LEGAL": ("x = rec[\"event_time\"]\ny = rec.get(\"resource_id\")\n"
-                  "z = rec[\"outcome\"]", "accept"),
+                  "z = rec[\"outcome\"]\nw = rec.get(\"duration\")",
+                  "accept"),
     }
     results = {}
     ok = True

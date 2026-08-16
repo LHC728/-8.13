@@ -25,7 +25,9 @@ Python 3.12, standard library only.
 """
 from __future__ import annotations
 
+import ast
 import dataclasses
+import json
 import sys
 import unittest
 from fractions import Fraction
@@ -317,6 +319,120 @@ class TestFirewallChecker(unittest.TestCase):
         for cls in chk.DTO_CLASSES:
             self.assertTrue(dataclasses.is_dataclass(cls))
             self.assertTrue(cls.__dataclass_params__.frozen)
+
+    # ---- Q3-H2-P1-E2 closures: raw-U firewall + evidence packaging ----
+
+    def test_t23_raw_u_subscript_rejected(self):
+        tree = ast.parse("x = rec[\"u\"]")
+        issues = chk._scan_forbidden(tree, "<T23>")
+        self.assertTrue(len(issues) > 0, issues)
+        res = chk.check_ast_negative_cases()
+        self.assertTrue(res["cases"]["NEG-U1"]["rejected"])
+
+    def test_t24_raw_u_dict_get_rejected(self):
+        tree = ast.parse("x = rec.get(\"u\")")
+        issues = chk._scan_forbidden(tree, "<T24>")
+        self.assertTrue(len(issues) > 0, issues)
+        res = chk.check_ast_negative_cases()
+        self.assertTrue(res["cases"]["NEG-U2"]["rejected"])
+        # legitimate keys containing the letter 'u' must NOT be rejected
+        tree_legal = ast.parse("a = rec[\"outcome\"]\n"
+                               "b = rec.get(\"resource_id\")\n"
+                               "c = rec[\"duration\"]")
+        self.assertEqual(chk._scan_forbidden(tree_legal, "<T24-legal>"), [])
+
+    def test_t25_evidence_report_mapping_exact(self):
+        import tempfile
+        from scripts import run_h2_p1_firewall_v1 as rp1
+        tmp = Path(tempfile.mkdtemp())
+        dummy = {"overall": "PASS", "checks": [
+            {"check": cid, "status": "PASS"}
+            for cid in ("A_FIELD_WHITELIST", "B_FORBIDDEN_ACCESS",
+                        "B_AST_NEGATIVE_CASES", "C_IMPORT_AST_ISOLATION",
+                        "D_SAME_OBSERVABLE_HISTORY", "E_NEGATIVE_LEAK_TESTS",
+                        "REPLACEMENT_HISTORY_SEMANTICS",
+                        "POSTERIOR_STATE_P1_SEAM")]}
+        trep = {"ok": True, "tests_run": 0, "failures": 0, "errors": 0}
+        rp1._build_evidence(tmp, "T25", dummy, trep, [], verification=None,
+                            wall_total=0.0)
+        res = rp1.evidence_mapping_check(tmp)
+        self.assertEqual(res["status"], "PASS", res)
+        self.assertTrue((tmp / "forbidden_access_report.json").is_file())
+        self.assertTrue((tmp / "ast_negative_cases_report.json").is_file())
+        self.assertTrue((tmp / "import_isolation_report.json").is_file())
+        self.assertTrue((tmp / "negative_leak_tests.json").is_file())
+        # no fuzzy ast_import_isolation_report.json single-file overwrite
+        self.assertFalse((tmp / "ast_import_isolation_report.json").exists())
+
+    def test_t26_swapped_evidence_report_rejected(self):
+        import tempfile
+        from scripts import run_h2_p1_firewall_v1 as rp1
+        tmp = Path(tempfile.mkdtemp())
+        dummy = {"overall": "PASS", "checks": [
+            {"check": cid, "status": "PASS"}
+            for cid in ("A_FIELD_WHITELIST", "B_FORBIDDEN_ACCESS",
+                        "B_AST_NEGATIVE_CASES", "C_IMPORT_AST_ISOLATION",
+                        "D_SAME_OBSERVABLE_HISTORY", "E_NEGATIVE_LEAK_TESTS",
+                        "REPLACEMENT_HISTORY_SEMANTICS",
+                        "POSTERIOR_STATE_P1_SEAM")]}
+        trep = {"ok": True, "tests_run": 0, "failures": 0, "errors": 0}
+        rp1._build_evidence(tmp, "T26", dummy, trep, [], verification=None,
+                            wall_total=0.0)
+        # swap: forbidden_access_report.json now carries E_NEGATIVE_LEAK_TESTS
+        swapped = {"check": "E_NEGATIVE_LEAK_TESTS", "status": "PASS"}
+        (tmp / "forbidden_access_report.json").write_text(
+            json.dumps(swapped), encoding="utf-8")
+        res = rp1.evidence_mapping_check(tmp)
+        self.assertEqual(res["status"], "FAIL", res)
+        self.assertFalse(res["files"]["forbidden_access_report.json"]["ok"])
+        self.assertEqual(
+            res["files"]["forbidden_access_report.json"]["got"],
+            "E_NEGATIVE_LEAK_TESTS")
+
+    def test_t27_promoted_final_root_byte_identical(self):
+        import tempfile
+        from scripts import run_h2_p1_firewall_v1 as rp1
+        staging = Path(tempfile.mkdtemp()) / "staging"
+        final = Path(tempfile.mkdtemp()) / "final"
+        dummy = {"overall": "PASS", "checks": [
+            {"check": cid, "status": "PASS"}
+            for cid in ("A_FIELD_WHITELIST", "B_FORBIDDEN_ACCESS",
+                        "B_AST_NEGATIVE_CASES", "C_IMPORT_AST_ISOLATION",
+                        "D_SAME_OBSERVABLE_HISTORY", "E_NEGATIVE_LEAK_TESTS",
+                        "REPLACEMENT_HISTORY_SEMANTICS",
+                        "POSTERIOR_STATE_P1_SEAM")]}
+        trep = {"ok": True, "tests_run": 0, "failures": 0, "errors": 0}
+        rp1._build_evidence(staging, "T27", dummy, trep, [],
+                            verification=None, wall_total=0.0)
+        promo = rp1._promote(staging, final)
+        self.assertTrue(promo["ok"], promo)
+        self.assertEqual(promo["sha_mismatches"], [])
+        for p in staging.rglob("*"):
+            if p.is_file():
+                rel = p.relative_to(staging)
+                self.assertTrue((final / rel).is_file())
+                self.assertEqual(rp1._sha256_file(p),
+                                 rp1._sha256_file(final / rel))
+
+    def test_t28_hash_tamper_negative_path(self):
+        import tempfile
+        from scripts import run_h2_p1_firewall_v1 as rp1
+        tmp = Path(tempfile.mkdtemp())
+        dummy = {"overall": "PASS", "checks": [
+            {"check": cid, "status": "PASS"}
+            for cid in ("A_FIELD_WHITELIST", "B_FORBIDDEN_ACCESS",
+                        "B_AST_NEGATIVE_CASES", "C_IMPORT_AST_ISOLATION",
+                        "D_SAME_OBSERVABLE_HISTORY", "E_NEGATIVE_LEAK_TESTS",
+                        "REPLACEMENT_HISTORY_SEMANTICS",
+                        "POSTERIOR_STATE_P1_SEAM")]}
+        trep = {"ok": True, "tests_run": 0, "failures": 0, "errors": 0}
+        rp1._build_evidence(tmp, "T28", dummy, trep, [], verification=None,
+                            wall_total=0.0)
+        self.assertTrue(rp1._verify(tmp)["ok"])
+        # tamper an artifact AFTER file_hashes was generated
+        with open(tmp / "checks.json", "a", encoding="utf-8") as fh:
+            fh.write("\n# tampered\n")
+        self.assertFalse(rp1._verify(tmp)["ok"])
 
 
 if __name__ == "__main__":

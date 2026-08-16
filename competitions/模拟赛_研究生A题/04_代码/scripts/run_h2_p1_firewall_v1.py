@@ -1,26 +1,39 @@
 #!/usr/bin/env python3
-"""Q3-H2-P1-E1 evidence runner (C23 firewall semantics repair; F1/F2/F3).
+"""Q3-H2-P1-E2 evidence runner (raw-U static firewall + evidence packaging
+final closure; F2a/F2b/F3).
 
 Runs the independent C23 firewall checker (h2_p1_firewall_checker_v1), the
 P1 test suite (test_h2_p1_firewall_v1.py) and the required deterministic
 regression suites, then writes an immutable evidence root with the
 repository's acyclic hash-inventory DAG.
 
-F3 (fail-closed C21 / hash verification): the runner's success exit
-EXPLICITLY depends on the ACTUAL results of verify_hash_dag and
-verify_manifest_inventory_consistency:
-  * hash_graph_acyclic == True
-  * inventory mismatches == []
-  * manifest/inventory consistency == PASS
-  * C21 required consistency == PASS
-Two-phase evidence build: phase 1 probes the identical evidence structure
-in a git-ignored staging dir to obtain the real verification results;
-phase 2 writes the FINAL evidence with C21/checks/manifest statuses
-computed from those ACTUAL results (C21a/C21b are NEVER hard-coded PASS
-before verification passes).  If any verification fails, the runner exits
-non-zero and never prints overall PASS.
+E2 closures:
+  F2a  raw-U firewall: the AST checker rejects EXACT forbidden raw keys
+       (``u``) in dict subscript / dict.get / attribute access, in addition
+       to the substring forbidden fragments (no false positives on
+       ``resource`` / ``outcome`` / ``duration``).
+  F2b  evidence packaging: precise per-check-ID report files
+       (forbidden_access_report.json / ast_negative_cases_report.json /
+       import_isolation_report.json / negative_leak_tests.json) -- no fuzzy
+       filename mapping that can overwrite one report with another; plus an
+       evidence SEMANTIC mapping self-check (the file that claims to be a
+       given check really is that check).
+  F3   final-root verification provenance (section 7, plan A):
+       1. build the FULL staging evidence root (final file_hashes /
+          manifest / checks);
+       2. run the complete verification on staging: verify_hash_dag +
+          verify_manifest_inventory_consistency + evidence semantic
+          mapping; any failure -> STOP / non-zero;
+       3. if all PASS, REBUILD staging with the ACTUAL verification results
+          persisted, regenerate file_hashes, re-verify the final-content
+          bytes;
+       4. promote the verified staging bytes to the final immutable root
+          (per-file SHA identity enforced; staging == final bytes);
+       5. re-verify the final root read-only.
+       The runner's exit depends on every verification; it never prints
+       overall PASS unless all of them pass.
 
-Evidence root: 05_结果/H2/p1/requalification/run_<UTC>_<8hex>/
+Evidence root: 05_结果/H2/p1/requalification_e2/run_<UTC>_<8hex>/
 
 Python 3.12, standard library only.
 """
@@ -29,6 +42,7 @@ from __future__ import annotations
 import io
 import json
 import secrets
+import shutil
 import sys
 import time
 import unittest
@@ -46,19 +60,22 @@ for _entry in (str(MAIN_MODEL), str(CODE_DIR)):
 from scripts import run_q3_h1_formal_v1 as frm  # noqa: E402
 from checker import h2_p1_firewall_checker_v1 as fw  # noqa: E402
 
-PACKAGE_REF = "Q3-H2-P1-E1"
+PACKAGE_REF = "Q3-H2-P1-E2"
 BOOTSTRAP_SPEC_FILE = frm.BOOTSTRAP_SPEC_FILE
 FORMAL_TASK_PACKAGE_FILE = frm.TASK_PACKAGE_FILE
 FORMAL_TASK_PACKAGE_SHA = frm.TASK_PACKAGE_SNAPSHOT_SHA
 REGISTRY_VERSION = "CR-V3.1"
-# Original P1 evidence root (immutable; marked historical in the report).
 ORIGINAL_P1_EVIDENCE = (BASE_DIR / "05_结果" / "H2" / "p1"
                         / "run_20260816T043411841146Z_3d4c6d46")
+E1_REQUAL_EVIDENCE = (BASE_DIR / "05_结果" / "H2" / "p1" / "requalification"
+                     / "run_20260816T045451170450Z_89984d8b")
 
 SCOPE_AUDIT = {
     "density_accepted_evidence_modified": "NO",
     "h1_engine_semantics_modified": "NO",
     "key_schema_modified": "NO",
+    "replacement_history_semantics": "UNCHANGED / VERIFIED (F1 closed; NOT "
+                                     "re-modified)",
     "posterior_math_implemented": "NO",
     "lifetime_resampling_implemented": "NO",
     "h2_policy_implemented": "NO",
@@ -68,23 +85,26 @@ SCOPE_AUDIT = {
     "h2_holdout_consumed": "NO",
     "c25_run": "NO",
     "q4": "NO",
-    "original_p1_evidence": (
-        f"{ORIGINAL_P1_EVIDENCE.name} = "
-        "HISTORICAL_P1_EXECUTION_WITH_C23_FIREWALL_REVIEW_FINDINGS "
-        "(immutable; not modified)"),
+    "original_p1_evidence": f"{ORIGINAL_P1_EVIDENCE.name} = immutable "
+                             "(HISTORICAL_P1_EXECUTION_WITH_C23_FIREWALL_"
+                             "REVIEW_FINDINGS)",
+    "e1_requal_evidence": f"{E1_REQUAL_EVIDENCE.name} = immutable "
+                          "(P1-E1 EXECUTION WITH FINAL HUMAN-GATE FINDINGS)",
     "repair_closures": {
-        "F1": "replacement_history completed-only (ReplacementObs.completed "
-              "removed; CALIBRATION_COMPLETE <= t required)",
-        "F2": "AST checker covers dict subscript + dict.get forbidden keys",
-        "F3": "C21/hash verification truly fail-closed (two-phase evidence "
-              "build; exit depends on actual verifier results)",
+        "F2a": "raw-U exact forbidden key in AST checker (dict subscript / "
+               "dict.get / attribute)",
+        "F2b": "precise per-check-ID evidence report files + evidence "
+               "semantic mapping self-check",
+        "F3": "final-root verification provenance: verified staging "
+              "promoted byte-identical to final; post-promotion read-only "
+              "re-verify",
     },
     "implemented": [
-        "main_model/h2/observable_state_v1.py (F1 fix)",
-        "checker/h2_p1_firewall_checker_v1.py (F2 fix + semantic invariant + "
-        "AST negatives + frozen-per-class)",
-        "tests/test_h2_p1_firewall_v1.py (T18-T20 + AST negatives + "
-        "all-DTO-frozen)",
+        "checker/h2_p1_firewall_checker_v1.py (F2a: EXACT_FORBIDDEN_KEYS + "
+        "NEG-U1/NEG-U2)",
+        "scripts/run_h2_p1_firewall_v1.py (F2b/F3: precise report mapping + "
+        "semantic mapping check + promote-with-identity)",
+        "tests/test_h2_p1_firewall_v1.py (T23-T28)",
     ],
 }
 
@@ -94,6 +114,49 @@ REGRESSION_PATTERNS = (
     "test_q3_h1_formal_v1.py",
     "test_g3_random_des_v1.py",
 )
+
+# Precise per-check-ID evidence report file mapping (F2b).
+REPORT_MAPPING: dict[str, str] = {
+    "A_FIELD_WHITELIST": "field_whitelist_report.json",
+    "B_FORBIDDEN_ACCESS": "forbidden_access_report.json",
+    "B_AST_NEGATIVE_CASES": "ast_negative_cases_report.json",
+    "C_IMPORT_AST_ISOLATION": "import_isolation_report.json",
+    "D_SAME_OBSERVABLE_HISTORY": "same_observable_hidden_world_report.json",
+    "E_NEGATIVE_LEAK_TESTS": "negative_leak_tests.json",
+    "REPLACEMENT_HISTORY_SEMANTICS": "replacement_history_semantic_report.json",
+    "POSTERIOR_STATE_P1_SEAM": "posterior_state_seam_report.json",
+}
+
+
+def evidence_mapping_check(evidence_dir: Path) -> dict[str, Any]:
+    """Semantic evidence mapping (section 6): every report file must carry
+    the check ID it claims to be.  A file with the right hash but the wrong
+    content for its filename is FAIL."""
+    results: dict[str, Any] = {}
+    ok = True
+    for check_id, fname in REPORT_MAPPING.items():
+        p = evidence_dir / fname
+        if not p.is_file():
+            results[fname] = {"ok": False, "expected": check_id,
+                              "got": None, "missing": True}
+            ok = False
+            continue
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+            got = data.get("check")
+        except (json.JSONDecodeError, OSError) as exc:
+            results[fname] = {"ok": False, "expected": check_id,
+                              "got": None, "error": str(exc)}
+            ok = False
+            continue
+        match = got == check_id
+        ok = ok and match
+        results[fname] = {"ok": match, "expected": check_id, "got": got}
+    return {
+        "check": "EVIDENCE_SEMANTIC_MAPPING",
+        "status": "PASS" if ok else "FAIL",
+        "files": results,
+    }
 
 
 def _run_suite(pattern: str) -> dict[str, Any]:
@@ -141,16 +204,19 @@ def _dump_json(path: Path, value: Any) -> None:
 
 
 def _verify(out_dir: Path) -> dict[str, Any]:
-    """Run the fail-closed verifiers; return ACTUAL results (never raises
-    out of the runner; failures are returned as ok=False)."""
+    """Run the fail-closed verifiers: verify_hash_dag +
+    verify_manifest_inventory_consistency + evidence semantic mapping.
+    Returns ACTUAL results; failures are returned as ok=False."""
     try:
         dag = frm.verify_hash_dag(out_dir)
         cons = frm.verify_manifest_inventory_consistency(out_dir)
+        mapping = evidence_mapping_check(out_dir)
         ok = (dag["hash_graph_acyclic"] is True
               and dag["mismatches"] == 0
               and "PASS" in cons["manifest_output_hashes"]
               and "PASS" in cons["manifest_inventory_crosscheck"]
-              and cons["c21_report_sha_consistency"] == "PASS")
+              and cons["c21_report_sha_consistency"] == "PASS"
+              and mapping["status"] == "PASS")
         return {
             "ok": ok,
             "hash_graph_acyclic": dag["hash_graph_acyclic"],
@@ -159,7 +225,8 @@ def _verify(out_dir: Path) -> dict[str, Any]:
             "manifest_output_hashes": cons["manifest_output_hashes"],
             "manifest_inventory_crosscheck": cons["manifest_inventory_crosscheck"],
             "c21_report_sha_consistency": cons["c21_report_sha_consistency"],
-            "detail": {"dag": dag, "consistency": cons},
+            "evidence_semantic_mapping": mapping["status"],
+            "detail": {"dag": dag, "consistency": cons, "mapping": mapping},
         }
     except AssertionError as exc:
         return {"ok": False, "error": f"AssertionError: {exc}"}
@@ -170,29 +237,30 @@ def _build_evidence(out_dir: Path, run_id: str, checks: dict[str, Any],
                     regressions: list[dict[str, Any]],
                     verification: Optional[dict[str, Any]],
                     wall_total: float) -> None:
-    """Build the full evidence.  ``verification`` is None in the phase-1
-    probe (C21 statuses marked PENDING_PROBE) or the actual verifier result
-    in the final build (C21 statuses = real)."""
+    """Build the full evidence.  ``verification`` is None in the probe pass
+    (C21 statuses PENDING_PROBE) or the actual verifier result in the final
+    pass (C21 statuses = real).  Precise per-check-ID report files (F2b)."""
+    if out_dir.exists():
+        shutil.rmtree(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     spec_bytes = Path(BOOTSTRAP_SPEC_FILE).read_bytes()
     spec_sha = _sha256_bytes(spec_bytes)
     (out_dir / "bootstrap_spec_snapshot.md").write_bytes(spec_bytes)
     package_yaml = (
-        "# Q3-H2-P1-E1 task-package snapshot (Human Gate narrow repair)\n"
+        "# Q3-H2-P1-E2 task-package snapshot (Human Gate narrow final "
+        "repair)\n"
         f"package_ref: {PACKAGE_REF}\n"
         "authority: Q3_H2_BOOTSTRAP_SPEC_DRAFT.md FINAL_FREEZE_ACCEPTED "
-        "section 7 (C23 observable-information boundary) + Q3-H2-P1-E1 "
-        "Human Gate package (F1/F2/F3)\n"
+        "section 7 (C23 observable-information boundary) + Q3-H2-P1-E2 "
+        "Human Gate package (F2a/F2b/F3)\n"
         f"bootstrap_spec_snapshot: bootstrap_spec_snapshot.md\n"
         f"bootstrap_spec_sha256: {spec_sha}\n"
         f"formal_task_package_sha256: {FORMAL_TASK_PACKAGE_SHA}\n"
         "density_lineage: FINAL PASS / ACCEPTED (D-14 A 7/7 B 7/7; E1 "
         "43fc39a + E2 79f5c0f)\n"
-        "repair: F1 replacement_history completed-only; F2 AST forbidden "
-        "dict-subscript/get; F3 C21 fail-closed two-phase\n"
-        "original_p1_evidence: run_20260816T043411841146Z_3d4c6d46 = "
-        "HISTORICAL_P1_EXECUTION_WITH_C23_FIREWALL_REVIEW_FINDINGS "
-        "(immutable)\n"
+        "f1_replacement_history: VERIFIED CLOSED (UNCHANGED in E2)\n"
+        "repair: F2a raw-U exact forbidden key; F2b precise evidence report "
+        "mapping; F3 verified-staging promoted byte-identical to final\n"
         "evidence_rule: ACYCLIC hash DAG (RULE A)\n"
     )
     (out_dir / "task_package_snapshot.yaml").write_text(
@@ -212,25 +280,14 @@ def _build_evidence(out_dir: Path, run_id: str, checks: dict[str, Any],
         "regressions": regressions,
     })
     _dump_json(out_dir / "c23_information_firewall_report.json", checks)
+    # precise per-check-ID reports (F2b): NEVER overwrite one check with
+    # another via fuzzy filename conditions.
     for check in checks["checks"]:
-        name = check["check"].lower()
-        if "whitelist" in name:
-            _dump_json(out_dir / "field_whitelist_report.json", check)
-        elif "isolation" in name or "forbidden" in name \
-                or "negative" in name:
-            _dump_json(out_dir / "ast_import_isolation_report.json", check)
-        elif "same_observable" in name:
-            _dump_json(out_dir / "same_observable_hidden_world_report.json",
-                       check)
-        elif "replacement_history" in name:
-            _dump_json(out_dir / "replacement_history_semantic_report.json",
-                       check)
-    _dump_json(out_dir / "negative_leak_tests.json",
-               next(c for c in checks["checks"]
-                    if c["check"] == "E_NEGATIVE_LEAK_TESTS"))
-    _dump_json(out_dir / "posterior_state_seam_report.json",
-               next(c for c in checks["checks"]
-                    if c["check"] == "POSTERIOR_STATE_P1_SEAM"))
+        fname = REPORT_MAPPING.get(check["check"])
+        if fname is not None:
+            _dump_json(out_dir / fname, check)
+    mapping_result = evidence_mapping_check(out_dir)
+    _dump_json(out_dir / "evidence_semantic_mapping_report.json", mapping_result)
 
     hashes = {
         "task_package_snapshot": {"path": "task_package_snapshot.yaml",
@@ -250,7 +307,6 @@ def _build_evidence(out_dir: Path, run_id: str, checks: dict[str, Any],
     }
     _dump_json(out_dir / "input_hashes.json", hashes)
 
-    # ---- C21 / checks / manifest statuses from ACTUAL conditions ----
     verify_ok = verification is not None and verification.get("ok") is True
     c21a = ("PASS" if verify_ok else
             ("PENDING_PROBE" if verification is None else "FAIL"))
@@ -262,18 +318,18 @@ def _build_evidence(out_dir: Path, run_id: str, checks: dict[str, Any],
     c21_report = {
         "run_id": run_id,
         "check_id": "CR-V3.1/C21",
-        "scope": "Q3-H2-P1-E1 evidence root",
+        "scope": "Q3-H2-P1-E2 evidence root",
         "status": "PASS" if overall_ok else "FAIL",
         "verification": verification,
         "items": [
             {"id": "C21a", "status": c21a,
-             "note": ("acyclic hash inventory (RULE A) -- status from the "
-                      "ACTUAL fail-closed verifier result")},
+             "note": "acyclic hash inventory (RULE A) -- status from the "
+                     "ACTUAL fail-closed verifier result"},
             {"id": "C21b", "status": c21b,
-             "note": ("manifest/inventory/actual SHA consistency -- status "
-                      "from the ACTUAL fail-closed verifier result")},
+             "note": "manifest/inventory/actual SHA consistency -- status "
+                     "from the ACTUAL fail-closed verifier result"},
             {"id": "C21c", "status": "PASS" if overall_ok else "FAIL",
-             "note": "P1-E1 firewall checker overall + tests + regressions"},
+             "note": "P1-E2 firewall checker overall + tests + regressions"},
         ],
     }
     _dump_json(out_dir / "C21_REQUALIFICATION_REPORT.json", c21_report)
@@ -291,36 +347,40 @@ def _build_evidence(out_dir: Path, run_id: str, checks: dict[str, Any],
                 "manifest_inventory_crosscheck") if verification else None,
             "c21_report_sha_consistency": verification.get(
                 "c21_report_sha_consistency") if verification else None,
+            "evidence_semantic_mapping": verification.get(
+                "evidence_semantic_mapping") if verification else None,
         },
         "items": [
             {"check_id": "CR-V3.1/C23", "status": checks["overall"],
              "note": ("C23 INFORMATION-FIREWALL / P1-APPLICABLE CLAUSES = "
                       f"{checks['overall']}; FULL C23 END-TO-END = PENDING "
                       "(action/policy path not implemented)")},
-            {"check_id": "REPLACEMENT_HISTORY_SEMANTICS", "status": next(
-                c["status"] for c in checks["checks"]
-                if c["check"] == "REPLACEMENT_HISTORY_SEMANTICS")},
-            {"check_id": "B_AST_NEGATIVE_CASES", "status": next(
-                c["status"] for c in checks["checks"]
-                if c["check"] == "B_AST_NEGATIVE_CASES")},
-            {"check_id": "A_FIELD_WHITELIST", "status": next(
-                c["status"] for c in checks["checks"]
-                if c["check"] == "A_FIELD_WHITELIST")},
             {"check_id": "B_FORBIDDEN_ACCESS", "status": next(
                 c["status"] for c in checks["checks"]
                 if c["check"] == "B_FORBIDDEN_ACCESS")},
+            {"check_id": "B_AST_NEGATIVE_CASES", "status": next(
+                c["status"] for c in checks["checks"]
+                if c["check"] == "B_AST_NEGATIVE_CASES")},
             {"check_id": "C_IMPORT_AST_ISOLATION", "status": next(
                 c["status"] for c in checks["checks"]
                 if c["check"] == "C_IMPORT_AST_ISOLATION")},
+            {"check_id": "A_FIELD_WHITELIST", "status": next(
+                c["status"] for c in checks["checks"]
+                if c["check"] == "A_FIELD_WHITELIST")},
             {"check_id": "D_SAME_OBSERVABLE_HISTORY", "status": next(
                 c["status"] for c in checks["checks"]
                 if c["check"] == "D_SAME_OBSERVABLE_HISTORY")},
             {"check_id": "E_NEGATIVE_LEAK_TESTS", "status": next(
                 c["status"] for c in checks["checks"]
                 if c["check"] == "E_NEGATIVE_LEAK_TESTS")},
+            {"check_id": "REPLACEMENT_HISTORY_SEMANTICS", "status": next(
+                c["status"] for c in checks["checks"]
+                if c["check"] == "REPLACEMENT_HISTORY_SEMANTICS")},
             {"check_id": "POSTERIOR_STATE_P1_SEAM", "status": next(
                 c["status"] for c in checks["checks"]
                 if c["check"] == "POSTERIOR_STATE_P1_SEAM")},
+            {"check_id": "EVIDENCE_SEMANTIC_MAPPING",
+             "status": mapping_result["status"]},
             {"check_id": "TESTS", "status": "PASS" if test_report["ok"] else "FAIL",
              "count": f"{test_report['tests_run'] - test_report['failures'] - test_report['errors']}"
                       f"/{test_report['tests_run']}"},
@@ -345,10 +405,10 @@ def _build_evidence(out_dir: Path, run_id: str, checks: dict[str, Any],
         "run_id": run_id,
         "created_at": _utc_now(),
         "gate": "Q3",
-        "purpose": "h2_p1_c23_firewall_requalification",
+        "purpose": "h2_p1_c23_firewall_final_closure",
         "formal": True,
-        "label": ("Q3-H2-P1-E1 C23 observable-state firewall semantics "
-                  "repair (F1/F2/F3)"),
+        "label": ("Q3-H2-P1-E2 raw-U static firewall + evidence packaging "
+                  "final closure (F2a/F2b/F3)"),
         "paper_authoritative": False,
         "task_package_ref": PACKAGE_REF,
         "task_package_snapshot_path": "task_package_snapshot.yaml",
@@ -365,19 +425,18 @@ def _build_evidence(out_dir: Path, run_id: str, checks: dict[str, Any],
         "random_world": {"consumption": "NONE"},
         "density": {"human_gate": "FINAL PASS / ACCEPTED",
                     "d14": {"A": "7/7", "B": "7/7"}},
+        "f1_replacement_history": "VERIFIED CLOSED / UNCHANGED",
         "repair": {
-            "F1": "replacement_history completed-only (completed flag removed; "
-                  "CALIBRATION_COMPLETE <= t required)",
-            "F2": "AST checker covers Attribute + Subscript(const str) + "
-                  "dict.get forbidden keys; AST negative cases PASS",
-            "F3": "C21/hash verification fail-closed: exit depends on actual "
-                  "verify_hash_dag / verify_manifest_inventory_consistency",
+            "F2a": "EXACT_FORBIDDEN_KEYS=('u',) in AST checker; NEG-U1/U2 "
+                   "reject rec['u'] / rec.get('u')",
+            "F2b": "precise per-check-ID report files + evidence semantic "
+                   "mapping check",
+            "F3": "verified staging promoted byte-identical to final; "
+                  "post-promotion read-only re-verify",
         },
-        "c23": {
-            "applicable_clauses": checks["overall"],
-            "full_end_to_end": "PENDING",
-            "action_equivalence": "DEFERRED_TO_POLICY_STAGE",
-        },
+        "c23": {"applicable_clauses": checks["overall"],
+                "full_end_to_end": "PENDING",
+                "action_equivalence": "DEFERRED_TO_POLICY_STAGE"},
         "p1_final": "NOT YET HUMAN-GATE ACCEPTED",
         "p2": "NOT AUTHORIZED",
         "p3": "NOT AUTHORIZED",
@@ -388,28 +447,32 @@ def _build_evidence(out_dir: Path, run_id: str, checks: dict[str, Any],
         "outputs": artifacts,
         "check_report_paths": ["checks.json", "c23_information_firewall_report.json",
                                "field_whitelist_report.json",
-                               "ast_import_isolation_report.json",
+                               "forbidden_access_report.json",
+                               "ast_negative_cases_report.json",
+                               "import_isolation_report.json",
+                               "negative_leak_tests.json",
                                "replacement_history_semantic_report.json",
                                "same_observable_hidden_world_report.json",
-                               "negative_leak_tests.json",
                                "posterior_state_seam_report.json",
+                               "evidence_semantic_mapping_report.json",
                                "test_report.json", "regression_report.json",
                                "scope_audit.json",
                                "C21_REQUALIFICATION_REPORT.json"],
         "notes": [
-            "Q3-H2-P1-E1：F1 replacement_history 只含已完成更换/校准；F2 AST "
-            "checker 覆盖 dict subscript / dict.get 禁读字段 + AST 负例；F3 "
-            "C21/hash 验证真正 fail-closed（两阶段 build；exit 依赖实际 "
-            "verifier 结果）。",
+            "Q3-H2-P1-E2：F2a raw-U 精确禁读键（u）进入 AST checker（subscript/"
+            "dict.get/attribute；不误杀 resource/outcome/duration）；F2b 按 "
+            "check ID 精确映射报告文件 + evidence semantic mapping 自检；F3 "
+            "最终根 verification provenance（验证过的 staging 字节一致 promote "
+            "到最终根 + promote 后只读复验）。",
+            "F1 replacement_history completed-only = VERIFIED CLOSED（本包未改动）。",
             "C23 P1-APPLICABLE = PASS/FAIL（按实际条件）；FULL C23 END-TO-END "
             "= PENDING；action-equivalence DEFERRED_TO_POLICY_STAGE。",
             "P1 FINAL = NOT YET HUMAN-GATE ACCEPTED；P2/P3 = NOT AUTHORIZED；"
             "C25 = NOT AUTHORIZED。",
-            "原 P1 evidence run_20260816T043411841146Z_3d4c6d46 = "
-            "HISTORICAL_P1_EXECUTION_WITH_C23_FIREWALL_REVIEW_FINDINGS "
-            "（immutable，未修改）。",
-            "C21：acyclic hash inventory（DAG）+ manifest/inventory/actual "
-            "一致性（fail-closed）；C21a/C21b 状态来自实际 verification。",
+            "原 P1 evidence 3d4c6d46 与 E1 requalification evidence 89984d8b "
+            "均 immutable（未修改）。",
+            "C21：acyclic hash inventory（DAG）+ manifest/inventory/actual 一致"
+            "性（fail-closed）；C21a/C21b 状态来自实际 verification。",
         ],
     }
     _dump_json(out_dir / "run_manifest.json", manifest)
@@ -423,40 +486,76 @@ def _build_evidence(out_dir: Path, run_id: str, checks: dict[str, Any],
         "\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
 
+def _promote(staging: Path, final: Path) -> dict[str, Any]:
+    """Promote the verified staging bytes to the final immutable root via
+    copy; require per-file SHA identity between staging and final (every
+    file, including file_hashes.sha256)."""
+    if final.exists():
+        shutil.rmtree(final)
+    shutil.copytree(staging, final)
+    mismatches: list[str] = []
+    for p in sorted(staging.rglob("*")):
+        if not p.is_file():
+            continue
+        rel = p.relative_to(staging)
+        q = final / rel
+        if not q.is_file() or _sha256_file(p) != _sha256_file(q):
+            mismatches.append(rel.as_posix())
+    return {
+        "ok": len(mismatches) == 0,
+        "files_copied": sum(1 for p in staging.rglob("*") if p.is_file()),
+        "sha_mismatches": mismatches,
+    }
+
+
 def main(argv: Optional[list[str]] = None) -> int:
-    output_root = BASE_DIR / "05_结果" / "H2" / "p1" / "requalification"
+    output_root = BASE_DIR / "05_结果" / "H2" / "p1" / "requalification_e2"
     run_id = _new_run_id()
     final_dir = output_root / f"run_{run_id}"
-    staging_dir = BASE_DIR / ".." / "tmp" / f"p1_staging_{run_id}"
-    print(f"[p1-e1] run_id={run_id}")
+    staging_dir = BASE_DIR / ".." / "tmp" / f"p1_e2_staging_{run_id}"
+    print(f"[p1-e2] run_id={run_id}")
     t0 = time.perf_counter()
     checks = fw.run_all()
     test_report = _run_tests()
     regressions = [_run_suite(p) for p in REGRESSION_PATTERNS]
     wall_total = time.perf_counter() - t0
-    print(f"[p1-e1] checker={checks['overall']} tests={test_report['tests_run']} "
+    print(f"[p1-e2] checker={checks['overall']} tests={test_report['tests_run']} "
           f"regressions={[r['tests_run'] for r in regressions]}")
 
-    # ---- F3: two-phase fail-closed evidence build ----
+    # ---- F3 (plan A): probe -> final-content build -> promote -> re-verify ----
     _build_evidence(staging_dir, run_id, checks, test_report, regressions,
                     verification=None, wall_total=wall_total)
     probe = _verify(staging_dir)
-    print(f"[p1-e1] phase-1 (staging) verification ok={probe.get('ok')} "
+    print(f"[p1-e2] probe verification ok={probe.get('ok')} "
           f"{probe.get('error', '')}")
     if not probe.get("ok"):
-        print("[p1-e1] FAIL: phase-1 hash/C21 verification failed; no final "
-              "evidence written")
+        print("[p1-e2] FAIL: probe verification failed; no final evidence "
+              "written")
         return 1
-    _build_evidence(final_dir, run_id, checks, test_report, regressions,
+    # final-content build with the ACTUAL verification persisted
+    _build_evidence(staging_dir, run_id, checks, test_report, regressions,
                     verification=probe, wall_total=wall_total)
+    confirm = _verify(staging_dir)
+    print(f"[p1-e2] final-content verification ok={confirm.get('ok')} "
+          f"{confirm.get('error', '')}")
+    if not confirm.get("ok"):
+        print("[p1-e2] FAIL: final-content verification failed")
+        return 1
+    promo = _promote(staging_dir, final_dir)
+    print(f"[p1-e2] promote ok={promo['ok']} files={promo['files_copied']} "
+          f"sha_mismatches={promo['sha_mismatches']}")
+    if not promo["ok"]:
+        print("[p1-e2] FAIL: staging -> final byte identity broken")
+        return 1
     final_verify = _verify(final_dir)
-    print(f"[p1-e1] phase-2 (final) verification ok={final_verify.get('ok')} "
-          f"{final_verify.get('error', '')}")
-    ok = (probe.get("ok") and final_verify.get("ok")
+    print(f"[p1-e2] final-root read-only verification ok="
+          f"{final_verify.get('ok')} {final_verify.get('error', '')}")
+    ok = (probe.get("ok") and confirm.get("ok") and promo["ok"]
+          and final_verify.get("ok")
           and checks["overall"] == "PASS"
           and test_report["ok"] and all(r["ok"] for r in regressions))
-    print(f"[p1-e1] evidence written: {final_dir}")
-    print(f"[p1-e1] DONE overall={'PASS' if ok else 'FAIL'} "
+    print(f"[p1-e2] evidence written: {final_dir}")
+    print(f"[p1-e2] DONE overall={'PASS' if ok else 'FAIL'} "
           f"wall={wall_total:.1f}s")
     return 0 if ok else 1
 

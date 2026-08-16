@@ -1,0 +1,10 @@
+# Q3-H2-P1-E2 task-package snapshot (Human Gate narrow final repair)
+package_ref: Q3-H2-P1-E2
+authority: Q3_H2_BOOTSTRAP_SPEC_DRAFT.md FINAL_FREEZE_ACCEPTED section 7 (C23 observable-information boundary) + Q3-H2-P1-E2 Human Gate package (F2a/F2b/F3)
+bootstrap_spec_snapshot: bootstrap_spec_snapshot.md
+bootstrap_spec_sha256: c370aa38cc58c83462b4f280f10628d08ca9cef9d5c04297a2db2ffebbf6eb62
+formal_task_package_sha256: a0864c8728603ef85c12eff91500c78909f70d74738cb42765212d0c035b4472
+density_lineage: FINAL PASS / ACCEPTED (D-14 A 7/7 B 7/7; E1 43fc39a + E2 79f5c0f)
+f1_replacement_history: VERIFIED CLOSED (UNCHANGED in E2)
+repair: F2a raw-U exact forbidden key; F2b precise evidence report mapping; F3 verified-staging promoted byte-identical to final
+evidence_rule: ACYCLIC hash DAG (RULE A)

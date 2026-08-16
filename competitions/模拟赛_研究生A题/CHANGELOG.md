@@ -2,6 +2,23 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-16 / `STATE-2026-08-13-G2.4` / `Q3-H2-P1-E2 raw-U 防火墙 + Evidence Packaging 最终闭环 = COMPLETED / AWAITING HUMAN GATE FINAL P1 REVIEW`
+
+### 修改
+
+- **Q3-H2-P1-E2（C23 raw-U 静态防火墙 + Evidence Packaging 最终闭环；Human Gate narrow final repair）完成**：P1-E1 = BLOCKED / NARROW FINAL REPAIR（F1 replacement_history completed-only = **VERIFIED CLOSED，本包未再改动**）；本包闭合 F2a / F2b / F3：
+  - **F2a — raw `u` 进入 forbidden checker**：新增 `EXACT_FORBIDDEN_KEYS = ("u",)`（精确键匹配，**不**用 substring `"u"` 以免误杀 `resource`/`outcome`/`duration`）；`_scan_forbidden` 对 `ast.Attribute` / `ast.Subscript`（常量字符串键）/ `ast.Call *.get("KEY")` 同时应用 substring fragments + 精确禁读键；新增 **NEG-U1（`rec["u"]`）/ NEG-U2（`rec.get("u")`）必须拒绝**，合法片段 `rec["event_time"]` / `rec.get("resource_id")` / `rec["outcome"]` / `rec.get("duration")` 必须通过；对 `04_代码/main_model/h2/` 全量重扫：raw `u` / u_key / true_state / lifetime / x_* / d_state 值 / is_right_censored 访问 = **NONE**。
+  - **F2b — Evidence 文件不得相互覆盖**：废弃模糊文件名 `ast_import_isolation_report.json`（曾被 E_NEGATIVE_LEAK_TESTS 覆盖）；改为按 check ID 精确映射：`forbidden_access_report.json`（B_FORBIDDEN_ACCESS）、`ast_negative_cases_report.json`（B_AST_NEGATIVE_CASES）、`import_isolation_report.json`（C_IMPORT_AST_ISOLATION）、`negative_leak_tests.json`（E_NEGATIVE_LEAK_TESTS）等 8 个精确报告文件；新增 **evidence semantic mapping 自检**（`evidence_mapping_check`：文件内 `check` 字段必须等于其文件名对应的 check ID——"文件是否真的声称自己是该证据"）。
+  - **F3 — final root verification provenance（§7 方案 A）**：staging 完整构建（最终 file_hashes/manifest/checks）→ 对 staging 做完整验证（verify_hash_dag + verify_manifest_inventory_consistency + evidence semantic mapping）→ 全部 PASS 后以实际验证结果重建最终内容并再次验证 → **将 verified staging 字节一致 promote（copy + 逐文件 SHA 身份校验）到最终 immutable root** → promote 后只读复验；`probe 验证对象 == final accepted evidence bytes`；runner 成功退出显式依赖全部验证（probe / final-content / promote / final 四阶段），任何失败 non-zero 且不输出 overall PASS。
+  - **§8 负路径真实测试**：T28 hash 篡改（生成 file_hashes 后篡改 artifact → verifier FAIL `inventory mismatches: 1`）；T26 swapped-report（`forbidden_access_report.json` 内容换成 E_NEGATIVE_LEAK_TESTS → 即使文件自身 hash 可重算，semantic mapping 也必须 FAIL）。
+- **测试**：`test_h2_p1_firewall_v1.py` **28/28 PASS**（原 22 + T23 raw-u subscript rejected + T24 raw-u dict.get rejected + T25 evidence report mapping exact + T26 swapped report rejected + T27 promoted final root byte-identical + T28 hash tamper negative）；checker 8 项检查全 PASS。
+- **回归（写入 evidence，真实 command/exit/test-count）**：key_schema 38、Density E2 checker 36、Q3 H1 formal 23、G3 random_des 44 —— 全部 exit 0；**未跑 formal 1400 worlds**。
+- **新证据根** `05_结果/H2/p1/requalification_e2/run_20260816T050635039392Z_b8ff180e/`：ACYCLIC hash DAG + manifest/inventory 一致性 + C21 = PASS（fail-closed；verification_fail_closed 记录真实 verifier 结果）；checks.json overall = PASS（13 项：C23 / B_FORBIDDEN_ACCESS / B_AST_NEGATIVE_CASES / C_IMPORT_AST_ISOLATION / A / D / E / REPLACEMENT_HISTORY_SEMANTICS / POSTERIOR_STATE_P1_SEAM / EVIDENCE_SEMANTIC_MAPPING / TESTS / REGRESSIONS / C21）；含 4 个精确报告文件 + evidence_semantic_mapping_report。
+- **原证据 immutable**：`run_20260816T043411841146Z_3d4c6d46` = HISTORICAL_P1_EXECUTION_WITH_C23_FIREWALL_REVIEW_FINDINGS；`requalification/run_20260816T045451170450Z_89984d8b` = P1-E1 EXECUTION WITH FINAL HUMAN-GATE FINDINGS——均未修改。
+- **状态**：**P1-E2 EXECUTION PASS / AWAITING HUMAN GATE FINAL P1 REVIEW**；**P1 HUMAN GATE ACCEPTED = 不写**；C23 P1-applicable = EXECUTION PASS / AWAITING HUMAN GATE；C23 full end-to-end = **PENDING**；**P2 / P3 = NOT AUTHORIZED**（不授权 P2）；C25 = NOT AUTHORIZED。
+- 范围审计：posterior / lifetime / policy / rollout / tuning / holdout / C25 / Q4 = 全部 **NO**；F1 replacement_history / Density / H1 / DES engine / key_schema / D-01..D-25 未改动；无新随机世界。
+- 状态同步：`CURRENT_STATE.md`（Gate 行、§6 禁止、§7 下一出口）。
+
 ## 2026-08-16 / `STATE-2026-08-13-G2.4` / `Q3-H2-P1-E1 C23 防火墙语义闭环修复 = COMPLETED / AWAITING HUMAN GATE REVIEW`
 
 ### 修改
