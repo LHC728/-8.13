@@ -1,0 +1,1 @@
+{"agreement":1.0,"check":"STABILITY_C","cp95_hi":1.0,"cp95_lo":0.9637833073548235,"gate":0.95,"gate_type":"point-estimate-only; CP interval = disclosure","id":"STABILITY_C","matched":100,"n":100,"note":"M=16 offline diagnostic only; production M*=8 unchanged","status":"PASS"}
