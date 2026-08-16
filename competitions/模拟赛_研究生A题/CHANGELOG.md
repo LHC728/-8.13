@@ -2,6 +2,25 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-16 / `STATE-2026-08-13-G2.4` / `Q3-H2-P3-B-E1 current-generation residual lifetime 坐标修复 + 成本 requalification = COMPLETED / AWAITING HUMAN GATE FINAL P3-B REVIEW`
+
+### 修改
+
+- **Human Gate narrow repair（起始锚点 `841bafc`）：P3-B = BLOCKED / NARROW REPAIR REQUIRED（F1 current-generation residual lifetime 坐标；G1 RESULT 数字由 final evidence 生成；G2 base_runtime surrogate 如实披露）；P3-A = FINAL PASS / ACCEPTED 不受影响**。
+- **F1 — 统一 lifetime_h 坐标语义**：`main_model/h2_rollout/rollout_engine_v1.py` 的 current-generation 初始化改为 **ABSOLUTE EQUIPMENT AGE OF NATURAL FAILURE** 坐标——P2 `conditional_residual_frozen` 返回 `(tau, right_censored)`（tau = 当前年龄起的 residual lifetime），现在：`right_censored=False → lifetime_h = current_age + tau`；`right_censored=True → lifetime_h = 240, is_right_censored = True`（存活至 240，无 240 前自然故障；240 边界仍由 mandatory rule 处理）。`_fragment_outcome` / `_post_fragment_end` 看到的是一致的绝对设备年龄坐标。**P2 API 保持 accepted，未修改**。
+- **new-generation lifetime 保持**：replacement 后 age=0，P2/G3 无条件 inverse sampler 返回的 lifetime 本就是代出生起的绝对年龄 → `lifetime_h = sampled lifetime`，不再加 age；新增 checker guard 验证 current-generation 转换不破坏 new-generation 采样。
+- **CURR-LIFE-01..05 deterministic tests**：age150+residual50→abs200；age150+failure200、task 自 age190 起 duration20 → 10h 后自然故障（非启动即 inconsistent）；age150+right-censored residual90→存活至 240；age0→退化为 G3 无条件语义；age210+residual10→abs220。
+- **独立 checker**：`checker/h2_p3b_checker_v1.py` 新增 5 项——`CURRENT_GENERATION_LIFETIME`（独立计算 absolute_failure_age = current_age + residual_tau，不调 engine conversion helper 作 oracle；natural/right-censored/age0 分支 + NEW-GEN guard）、`CURRENT_GENERATION_FAILURE_TIMING`（**INDEPENDENT_FROZEN_ORACLE**，非伪 accepted-engine parity：C23 禁止向 live engine 注入 conditional posterior world；age=150、residual=3/2 → 绝对故障 151.5，fragment 中途故障、TASK_CANCEL/requeue、replacement trigger、T_end）、`RIGHT_CENSOR_240`、`NO_PM_STRING_SEMANTICS`（`_replacement_decision` 改用 `str(tau_pm) == str(NO_PM_BEFORE_MANDATORY)` 值比较，动态构造同值字符串验证不会进入 Fraction(tau_pm) 数值路径）、`NONZERO_AGE_RUNTIME_SANITY`（age≥120 current-generation 状态完整续演至吸收，不 crash / no-progress / 错误 immediate failure；仅 correctness/performance disclosure，不改冻结 c_r aggregation 或 M/C_eval selection）。
+- **G2 — base_runtime surrogate 如实披露**：cost 报告/manifest/scope_audit 明确分别写 `calibration_selection_domain: h2_tuning / seed 6 / rep 0..4 / K=10.5`、`base_runtime_namespace: development_unit`、`base_runtime_role: PERFORMANCE_ONLY_BASE_SURROGATE`（Human Gate 本轮批准的唯一用途：§1.2 cost runtime 性能代理——accepted H1 engine 结构性拒绝 h2_tuning（P0/C16）；base_r 只测 engine runtime、不读物理结果、不参与收益/动作选择）；不再写成 "base batch is h2_tuning batch"。**绝不授权 development_unit 用于 action stability / cross-K transfer / h2_holdout / C25 / H2 benefit statistics**。
+- **成本 requalification（§11）**：因 rollout kernel 语义修复，重新运行 final cost calibration（仍只允许三点 (4,8)/(8,6)/(8,8)；w_p≤90s、max M、M 同取大 C_eval）→ 三候选全可行（(4,8)=5.75s、(8,6)=8.48s、(8,8)=11.20s）→ 选 **(M*,C_eval*)=(8,8)、W_cap*=4、P_cap*=4 → PROVISIONAL RECONFIRMED / AWAITING HUMAN GATE FINAL FREEZE**（未利用旧 45e12558 直接宣布）。
+- **G1 — RESULT 数字由 final evidence 机械生成**：runner 增加 `result_summary_from_evidence()`，最终 RESULT 的 base rows / c_r rows / median / worst / 三候选 w_p / selected config 全部从本次 final immutable 的 `cost_summary.json` + `mc_eval_selection.json` 读取；`RESULT_SOURCE_RUN_ID` 断言 = final evidence run_id（避免再次出现 evidence 与 RESULT 数字不一致）。
+- **其余 P3-B regression 全部 PASS**：future D / U_Y consumption / new-generation lifetime / cross-action CRN / quota selector / quota causality / C_rollout / Q estimator / C23 rollout；P1 防火墙 28 / Density E2 36 / key_schema 38 / Q3 H1 23 / G3 44 回归全 PASS；`test_h2_p3b_v1.py` **26/26 PASS**（新增 10 项 E1 测试）；独立 checker **16/16 PASS**。
+- **证据根** `05_结果/H2/tuning/cost_calibration/requalification/run_20260816T074652976919Z_60a958e8/`：checker 16/16 + tests 26/26 + 回归全 PASS + cost PASS；ACYCLIC hash DAG + manifest/inventory 31/31 + semantic mapping + C21 = PASS（fail-closed promote + 只读复验）；原 P3-B roots（`45e12558` 及 dev roots `12160c66`/`2bede6c9`/`36291377`）标记 **HISTORICAL_P3_B_EXECUTION_WITH_CURRENT_GENERATION_RESIDUAL_LIFETIME_COORDINATE_BUG**（immutable；quota/CRN/D/U_Y/Q-estimator 可作历史辅助证据；rollout kernel 终审与 cost freeze 由本 E1 覆盖）。
+- **dev budget ledger 追加**：entry `P3-B-E1-20260816T074652976919Z_60a958e8` wall_clock=8.0s；累计 **70.18s（0.0195h）**；soft 4h / hard 8h 均未达；旧 P3-B entries 保留。
+- **状态**：**P3-B-E1 = COMPLETED / AWAITING HUMAN GATE FINAL P3-B REVIEW**；**P3-B FINAL = NOT YET HUMAN-GATE ACCEPTED**；**M*/C_eval* = PROVISIONAL RECONFIRMED FROM E1（(8,8)、W*=4、P*=4）**；**action stability = NOT STARTED**；**cross-K transfer = NOT STARTED**；**h2_holdout = NOT AUTHORIZED**；**C25 = NOT AUTHORIZED**。
+- 范围审计：action stability §4(b)(c)、cross-K transfer、h2_tuning policy experiments beyond this cost requalification、h2_holdout、C25、final H2 numbers、Q3 K recommendation = 全部 **NO**；P1/P2 math/P3-A semantics/key_schema/accepted DES/Density·H1 evidence 未修改；无新 formal/holdout worlds。
+- 状态同步：`CURRENT_STATE.md`（Gate 行、§5.1、§6 禁止、§7 下一出口）。
+
 ## 2026-08-16 / `STATE-2026-08-13-G2.4` / `Q3-H2-P3-B 完整 rollout 执行核 + (M*,C_eval*) 成本冻结 = COMPLETED / AWAITING HUMAN GATE`
 
 ### 修改

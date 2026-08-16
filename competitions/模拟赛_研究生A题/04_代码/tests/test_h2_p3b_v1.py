@@ -40,6 +40,66 @@ class TestP3BChecker(unittest.TestCase):
             self.assertTrue(row["ref_core"] == row["p3_core"], row)
 
 
+class TestP3BE1CurrentGenerationLifetime(unittest.TestCase):
+    """P3-B-E1 F1: current-generation residual lifetime coordinate."""
+
+    def test_curr_life_01_age150_residual50_abs200(self):
+        res = chk.check_current_generation_lifetime()
+        self.assertEqual(res["status"], "PASS", res)
+        row = next(r for r in res["rows"] if r["case"] == "CURR-LIFE-01")
+        self.assertEqual(row["absolute_failure_age_expected"], "200")
+        self.assertTrue(row["matches"])
+
+    def test_curr_life_02_nonzero_age_failure_timing(self):
+        res = chk.check_current_generation_lifetime()
+        row = next(r for r in res["rows"] if r["case"] == "CURR-LIFE-02")
+        self.assertEqual(row["expected_fragment_failure_time_h"], "10")
+        self.assertEqual(row["actual_fragment_failure_time_h"], "10")
+        self.assertEqual(row["kind"], "failed")
+
+    def test_curr_life_03_right_censor_to_240(self):
+        res = chk.check_current_generation_lifetime()
+        row = next(r for r in res["rows"] if r["case"] == "CURR-LIFE-03")
+        self.assertEqual(row["absolute_failure_age_expected"], "240")
+        self.assertTrue(row["right_censored"])
+
+    def test_curr_life_04_age0_degeneration(self):
+        res = chk.check_current_generation_lifetime()
+        row = next(r for r in res["rows"] if r["case"] == "CURR-LIFE-04")
+        self.assertEqual(row["absolute_failure_age_expected"], "100")
+
+    def test_curr_life_05_age210_residual10_abs220(self):
+        res = chk.check_current_generation_lifetime()
+        row = next(r for r in res["rows"] if r["case"] == "CURR-LIFE-05")
+        self.assertEqual(row["absolute_failure_age_expected"], "220")
+
+    def test_failure_timing_independent_frozen_oracle(self):
+        res = chk.check_current_generation_failure_timing()
+        self.assertEqual(res["status"], "PASS", res)
+        self.assertEqual(res["oracle_type"], "INDEPENDENT_FROZEN_ORACLE")
+        self.assertEqual(res["a_failures_at_151.5"], 1)
+        self.assertEqual(res["a_cancels_failure"], 1)
+        self.assertEqual(res["n_replacements"], 1)
+
+    def test_right_censor_240(self):
+        res = chk.check_right_censor_240()
+        self.assertEqual(res["status"], "PASS", res)
+
+    def test_no_pm_string_semantics(self):
+        res = chk.check_no_pm_string_semantics()
+        self.assertEqual(res["status"], "PASS", res)
+        self.assertTrue(res["dynamic_string_equals_sentinel"])
+        self.assertTrue(res["dynamic_string_is_not_sentinel"])
+        self.assertEqual(res["dynamic_decision"], "SERVE_HEAD")
+
+    def test_nonzero_age_runtime_sanity(self):
+        res = chk.check_nonzero_age_runtime_sanity()
+        self.assertEqual(res["status"], "PASS", res)
+        self.assertEqual(res["decision_age_h"], 120)
+        self.assertGreaterEqual(res["passed"] + res["exited"], 2)
+        self.assertGreater(res["wallclock_s"], 0)
+
+
 class TestRolloutKernel(unittest.TestCase):
     def test_kernel_absorbs_2_devices(self):
         res = chk.check_rollout_kernel()

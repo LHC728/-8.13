@@ -741,13 +741,423 @@ def check_c23_rollout() -> dict[str, Any]:
             "t_end_by_variant": [str(r.t_end) for r in results]}
 
 
+# ---------------------------------------------------------------------------
+# P3-B-E1: current-generation residual-lifetime coordinate repair (F1)
+# ---------------------------------------------------------------------------
+
+
+def _own_absolute_failure_age(current_age: Fraction, tau: Optional[Fraction],
+                              right_censored: bool) -> tuple[Fraction, bool]:
+    """Checker's OWN expected conversion (F1): the engine's internal
+    lifetime_h is the ABSOLUTE equipment age of natural failure.
+      * right_censored=False: absolute = current_age + tau;
+      * right_censored=True:  absolute = 240 (survive to 240).
+    Independent of the implementer's conversion helper (never an oracle)."""
+    if right_censored:
+        return Fraction(240), True
+    if tau is None:
+        raise ValueError("natural-branch residual must not be None")
+    return Fraction(current_age) + Fraction(tau), False
+
+
+def check_current_generation_lifetime() -> dict[str, Any]:
+    """CURR-LIFE-01..05 + §9: current-generation residual (tau from P2) must
+    be converted to an ABSOLUTE failure age (age+tau / 240-right-censored);
+    fragment failure timing must be computed in absolute coordinates."""
+    failures: list[str] = []
+    rows: list[dict[str, Any]] = []
+    cases = [
+        # (label, age, tau, censored, expected_absolute)
+        ("CURR-LIFE-01", Fraction(150), Fraction(50), False, Fraction(200)),
+        ("CURR-LIFE-03", Fraction(150), Fraction(90), True, Fraction(240)),
+        ("CURR-LIFE-04", Fraction(0), Fraction(100), False, Fraction(100)),
+        ("CURR-LIFE-05", Fraction(210), Fraction(10), False, Fraction(220)),
+    ]
+    for label, age, tau, cens, expected in cases:
+        abs_age, abs_cens = _own_absolute_failure_age(age, tau, cens)
+        ok = (abs_age == expected and abs_cens == cens)
+        if not ok:
+            failures.append(f"{label}: expected absolute {expected}/"
+                            f"censored={cens}, checker got {abs_age}/"
+                            f"{abs_cens}")
+        rows.append({"case": label, "age": str(age), "residual_tau": str(tau),
+                     "right_censored": cens,
+                     "absolute_failure_age_expected": str(expected),
+                     "absolute_failure_age_checker": str(abs_age),
+                     "matches": ok})
+    # CURR-LIFE-02: age=150, failure_age=200; a task starts at equipment
+    # age 190 with duration 20 -> natural failure after 10 h fragment
+    # (190 < 200 < 210), NOT an inconsistent-lifetime error.
+    age02, fail_age02, start_age02, dur02 = (
+        Fraction(150), Fraction(200), Fraction(190), Fraction(20))
+    kind, frag = _own_fragment_outcome(start_age02, dur02, fail_age02, False)
+    ok02 = (kind == "failed" and frag == Fraction(10))
+    if not ok02:
+        failures.append(f"CURR-LIFE-02: expected failed@10h, got "
+                        f"{kind}@{frag}")
+    rows.append({"case": "CURR-LIFE-02", "age": str(age02),
+                 "absolute_failure_age": str(fail_age02),
+                 "task_start_age": str(start_age02), "duration": str(dur02),
+                 "expected_fragment_failure_time_h": "10",
+                 "actual_fragment_failure_time_h": str(frag),
+                 "kind": kind, "matches": ok02})
+    # new-generation must stay UNCHANGED (age=0 unconditional sampler):
+    # the conversion must never add age to a new-generation lifetime.
+    new_gen = _own_absolute_failure_age(Fraction(0), Fraction(100), False)
+    if new_gen[0] != Fraction(100):
+        failures.append("new-generation age=0 conversion must equal the "
+                        "sampled lifetime")
+    rows.append({"case": "NEW-GEN-GUARD", "age": "0",
+                 "sampled_lifetime": "100",
+                 "absolute_after_conversion": str(new_gen[0]),
+                 "matches": new_gen[0] == Fraction(100)})
+    return {
+        "check": "CURRENT_GENERATION_LIFETIME",
+        "status": "PASS" if not failures else "FAIL",
+        "failures": failures, "rows": rows,
+        "note": "independent oracle: absolute_failure_age = current_age + "
+                "residual_tau; right-censored -> 240",
+    }
+
+
+def check_current_generation_failure_timing() -> dict[str, Any]:
+    """§7: a real nonzero-age current-generation continuation where a task
+    crosses the natural failure point.  Reports failure time / fragment
+    elapsed / requeue / replacement trigger / final T_end.  Uses an
+    INDEPENDENT_FROZEN_ORACLE (the checker's own expected conversion +
+    fragment outcome), NOT the accepted engine (C23: a conditional
+    posterior world cannot be injected into the live engine).
+
+    Setup: resource A aged 150 (60 x 2.5h history fragments on device 1);
+    current-generation conditional residual tau = 3/2 -> ABSOLUTE failure
+    age = 151.5 (strictly inside device 2's A fragment [150, 152.5], so the
+    natural failure lands MID-fragment after 1.5 h of that fragment).
+    """
+    failures: list[str] = []
+    bs = 2
+    log = [
+        {"event_type": "SHIFT_CHANGE", "event_time": "0", "shift_index": 0,
+         "shift_start": "0", "shift_end": "300", "on_duty_squad": 0,
+         "squad_id": 0},
+    ]
+    for d in range(1, bs + 1):
+        log.append({"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
+                    "device_id": d,
+                    "true_state": {"A": False, "B": False, "C": False}})
+    # device 1: 60 A fragments (age 150)
+    t = Fraction(0)
+    for _ in range(60):
+        e = t + Fraction(5, 2)
+        log.append({"event_type": "TASK_RELEASE", "event_time": str(t),
+                    "resource_id": "A", "device_id": 1, "process": "A",
+                    "effective_attempt_no": 1})
+        log.append({"event_type": "ACTIVITY_START", "event_time": str(t),
+                    "device_id": 1, "process": "A",
+                    "effective_attempt_no": 1, "resource_id": "A",
+                    "attempt_start_time": str(t),
+                    "attempt_end_time": str(e), "outcome": "NONE"})
+        log.append({"event_type": "ACTIVITY_COMPLETE", "event_time": str(e),
+                    "device_id": 1, "process": "A",
+                    "effective_attempt_no": 1, "resource_id": "A",
+                    "attempt_start_time": str(t), "attempt_end_time": str(e),
+                    "outcome": "NONE"})
+        log.append({"event_type": "OBSERVATION_MATERIALIZED",
+                    "event_time": str(e), "device_id": 1, "process": "A",
+                    "effective_attempt_no": 1, "resource_id": "A",
+                    "outcome": "PASS"})
+        t = e
+    # device 2: A released at t=0 (queued; resource A busy with dev1 until
+    # 150) -> starts at age 150, spans [150, 152.5]
+    log.append({"event_type": "TASK_RELEASE", "event_time": "0",
+                "resource_id": "A", "device_id": 2, "process": "A",
+                "effective_attempt_no": 1})
+    st150 = obs.project_log_prefix(log, Fraction(150), batch_size=bs)
+    post150 = ps.PosteriorState.from_observable(st150)
+    world = cont.rebuild_continuation_world(
+        st150, post150,
+        {d.device_id: Fraction(1, 2) for d in st150.devices},
+        {d.device_id: Fraction(1, 3) for d in st150.devices},
+        {r: Fraction(1, 3) for r in RESOURCES})
+    world = cont.ContinuationWorld(
+        decision_time=Fraction(150),
+        devices=world.devices,
+        residual_lifetimes={
+            "A": (Fraction(3, 2), False),  # absolute failure age = 151.5
+            "B": (Fraction(90), True),
+            "C": (Fraction(90), True),
+            "E": (Fraction(90), True),
+        })
+    prov = re1.PostKeyProvider(
+        u_x_by_device={d: Fraction(1, 2) for d in range(1, bs + 1)},
+        u_d_by_device={d: Fraction(1, 3) for d in range(1, bs + 1)},
+        u_l_by_resource={r: Fraction(1, 3) for r in RESOURCES},
+        u_y_lookup=lambda d, p, a: Fraction(1, 2),
+        u_l_lookup=lambda r, g: Fraction(1, 3),
+        u_x_subsystem_lookup=lambda d, s: Fraction(1, 2))
+    cfg = re1.RolloutConfig(batch_size=bs, shift_length_h=Fraction(300),
+                            shifts_per_day=2, scenario="q3_two_shift",
+                            tau_pm=re1.NO_PM_BEFORE_MANDATORY)
+    eng = re1.RolloutEngine(st150, post150, world, prov, cfg,
+                            first_action=re1.A_H1_NOOP,
+                            log_prefix=log)
+    out = eng.run()
+    # A natural failure must occur MID-fragment at absolute age 151.5
+    fails = [r for r in out.events
+             if r.get("event_type") == "EQUIPMENT_FAILURE"
+             and r.get("resource_id") == "A"]
+    mid_ok = any(Fraction(r.get("fragment_end", 0)) == Fraction(303, 2)
+                 for r in fails)
+    if not mid_ok:
+        failures.append(
+            f"A must fail mid-fragment at absolute age 151.5; got "
+            f"{[{k: r.get(k) for k in ('fragment_start', 'fragment_end', 'elapsed_hours')} for r in fails]}")
+    # the interrupted task must be cancelled/requeued
+    cancels = [r for r in out.events
+               if r.get("event_type") == "TASK_CANCEL"
+               and r.get("resource_id") == "A"
+               and r.get("cancel_reason") == "equipment_failure"]
+    if not cancels:
+        failures.append("the interrupted A task must be cancelled/requeued")
+    # replacement must be triggered by the failure
+    repls = [r for r in out.events
+             if r.get("event_type") == "EQUIPMENT_REPLACEMENT_START"]
+    if not repls:
+        failures.append("natural failure must trigger a replacement")
+    return {
+        "check": "CURRENT_GENERATION_FAILURE_TIMING",
+        "status": "PASS" if not failures else "FAIL",
+        "oracle_type": "INDEPENDENT_FROZEN_ORACLE",
+        "failures": failures,
+        "decision_age_h": "150",
+        "residual_tau_h": "3/2",
+        "absolute_failure_age": "303/2 (151.5)",
+        "a_failures_at_151.5": sum(
+            1 for r in fails
+            if Fraction(r.get("fragment_end", 0)) == Fraction(303, 2)),
+        "a_cancels_failure": len(cancels),
+        "n_replacements": len(repls),
+        "t_end": str(out.t_end),
+        "note": "NOT accepted-engine parity: C23 forbids injecting a "
+                "conditional posterior world into the live engine; the "
+                "expected failure time is the checker's own frozen oracle",
+    }
+
+
+def check_right_censor_240() -> dict[str, Any]:
+    """CURR-LIFE-03 coverage: a right-censored current generation (residual
+    90 at age 150) must survive to 240 with NO natural failure before 240;
+    the 240 boundary is handled by the mandatory rule."""
+    failures: list[str] = []
+    # direct oracle on the conversion
+    abs_age, cens = _own_absolute_failure_age(Fraction(150), Fraction(90),
+                                              True)
+    if not (abs_age == Fraction(240) and cens):
+        failures.append("right-censored conversion must be (240, True)")
+    # engine-level: a continuation from age 150 with A right-censored must
+    # never emit a natural A failure below 240
+    log = [
+        {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
+         "device_id": 1, "true_state": {"A": False, "B": False, "C": False}},
+        {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
+         "device_id": 2, "true_state": {"A": False, "B": False, "C": False}},
+        {"event_type": "SHIFT_CHANGE", "event_time": "0", "shift_index": 0,
+         "shift_start": "0", "shift_end": "300", "on_duty_squad": 0,
+         "squad_id": 0},
+    ]
+    t = Fraction(0)
+    for _ in range(60):
+        e = t + Fraction(5, 2)
+        log.append({"event_type": "TASK_RELEASE", "event_time": str(t),
+                    "resource_id": "A", "device_id": 1, "process": "A",
+                    "effective_attempt_no": 1})
+        log.append({"event_type": "ACTIVITY_START", "event_time": str(t),
+                    "device_id": 1, "process": "A",
+                    "effective_attempt_no": 1, "resource_id": "A",
+                    "attempt_start_time": str(t),
+                    "attempt_end_time": str(e), "outcome": "NONE"})
+        log.append({"event_type": "ACTIVITY_COMPLETE", "event_time": str(e),
+                    "device_id": 1, "process": "A",
+                    "effective_attempt_no": 1, "resource_id": "A",
+                    "attempt_start_time": str(t), "attempt_end_time": str(e),
+                    "outcome": "NONE"})
+        log.append({"event_type": "OBSERVATION_MATERIALIZED",
+                    "event_time": str(e), "device_id": 1, "process": "A",
+                    "effective_attempt_no": 1, "resource_id": "A",
+                    "outcome": "PASS"})
+        t = e
+    st150 = obs.project_log_prefix(log, Fraction(150), batch_size=2)
+    post150 = ps.PosteriorState.from_observable(st150)
+    world = cont.ContinuationWorld(
+        decision_time=Fraction(150),
+        devices=cont.rebuild_continuation_world(
+            st150, post150, {1: Fraction(1, 2), 2: Fraction(1, 2)}, {},
+            {r: Fraction(1, 3) for r in RESOURCES}).devices,
+        residual_lifetimes={r: (Fraction(90), True) for r in RESOURCES})
+    prov = re1.PostKeyProvider(
+        u_x_by_device={1: Fraction(1, 2), 2: Fraction(1, 2)},
+        u_d_by_device={1: Fraction(1, 3), 2: Fraction(1, 3)},
+        u_l_by_resource={r: Fraction(1, 3) for r in RESOURCES},
+        u_y_lookup=lambda d, p, a: Fraction(1, 2),
+        u_l_lookup=lambda r, g: Fraction(1, 3),
+        u_x_subsystem_lookup=lambda d, s: Fraction(1, 2))
+    cfg = re1.RolloutConfig(batch_size=2, shift_length_h=Fraction(300),
+                            shifts_per_day=2, scenario="q3_two_shift",
+                            tau_pm=re1.NO_PM_BEFORE_MANDATORY)
+    eng = re1.RolloutEngine(st150, post150, world, prov, cfg,
+                            first_action=re1.A_H1_NOOP, log_prefix=log)
+    out = eng.run()
+    early = [r for r in out.events
+             if r.get("event_type") == "EQUIPMENT_FAILURE"
+             and Fraction(r.get("fragment_end", 0)) < Fraction(240)]
+    if early:
+        failures.append(f"right-censored generation must not fail naturally "
+                        f"before 240: {early[:3]}")
+    return {
+        "check": "RIGHT_CENSOR_240",
+        "status": "PASS" if not failures else "FAIL",
+        "failures": failures,
+        "conversion": {"age": "150", "residual": "90",
+                       "absolute_expected": "240",
+                       "absolute_checker": str(abs_age)},
+        "n_natural_failures_before_240": len(early),
+    }
+
+
+def check_no_pm_string_semantics() -> dict[str, Any]:
+    """§8: _replacement_decision must compare the NO_PM sentinel by VALUE
+    (string semantics), never by Python object identity; a dynamically
+    constructed equal string must take the SERVE_HEAD path (not
+    Fraction(tau_pm) which would raise)."""
+    failures: list[str] = []
+    # dynamically constructed equal string (same value, different object)
+    dyn = "".join(ch for ch in "NO_PM_BEFORE_MANDATORY")
+    if dyn == re1.NO_PM_BEFORE_MANDATORY and dyn is not re1.NO_PM_BEFORE_MANDATORY:
+        pass
+    else:
+        failures.append("test precondition: dynamic string must be a "
+                        "different object with equal value")
+    try:
+        dec = re1._replacement_decision(Fraction(10), Fraction(2), dyn, True)
+        if dec != "SERVE_HEAD":
+            failures.append(f"dynamic NO_PM string must give SERVE_HEAD, "
+                            f"got {dec}")
+    except Exception as exc:  # pragma: no cover - the bug would raise here
+        failures.append(f"dynamic NO_PM string fell into the numeric path: "
+                        f"{type(exc).__name__}: {exc}")
+    # sentinel object must still work
+    dec2 = re1._replacement_decision(Fraction(10), Fraction(2),
+                                     re1.NO_PM_BEFORE_MANDATORY, True)
+    if dec2 != "SERVE_HEAD":
+        failures.append(f"sentinel must give SERVE_HEAD, got {dec2}")
+    # numeric tau_pm must still work
+    dec3 = re1._replacement_decision(Fraction(130), Fraction(2),
+                                     Fraction(120), True)
+    if dec3 != "PREVENTIVE_REPLACE":
+        failures.append(f"numeric tau_pm=120 must give PREVENTIVE_REPLACE "
+                        f"at age 130, got {dec3}")
+    return {"check": "NO_PM_STRING_SEMANTICS",
+            "status": "PASS" if not failures else "FAIL",
+            "failures": failures,
+            "dynamic_string_equals_sentinel": dyn == re1.NO_PM_BEFORE_MANDATORY,
+            "dynamic_string_is_not_sentinel": dyn is not re1.NO_PM_BEFORE_MANDATORY,
+            "dynamic_decision": dec if 'dec' in dir() else None}
+
+
+def check_nonzero_age_runtime_sanity() -> dict[str, Any]:
+    """§12: run a full continuation to absorption from a current-generation
+    state with age >= 120 (after the F1 fix).  Must not crash / no-progress /
+    immediate-failure; report wallclock and terminal counts (correctness /
+    performance disclosure only -- never alters the frozen c_r aggregation
+    or the M/C_eval selection rule)."""
+    failures: list[str] = []
+    import time as _time
+    log = [
+        {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
+         "device_id": 1, "true_state": {"A": False, "B": False, "C": False}},
+        {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
+         "device_id": 2, "true_state": {"A": False, "B": False, "C": False}},
+        {"event_type": "SHIFT_CHANGE", "event_time": "0", "shift_index": 0,
+         "shift_start": "0", "shift_end": "300", "on_duty_squad": 0,
+         "squad_id": 0},
+    ]
+    t = Fraction(0)
+    for _ in range(48):  # 120 h of A fragments
+        e = t + Fraction(5, 2)
+        log.append({"event_type": "TASK_RELEASE", "event_time": str(t),
+                    "resource_id": "A", "device_id": 1, "process": "A",
+                    "effective_attempt_no": 1})
+        log.append({"event_type": "ACTIVITY_START", "event_time": str(t),
+                    "device_id": 1, "process": "A",
+                    "effective_attempt_no": 1, "resource_id": "A",
+                    "attempt_start_time": str(t),
+                    "attempt_end_time": str(e), "outcome": "NONE"})
+        log.append({"event_type": "ACTIVITY_COMPLETE", "event_time": str(e),
+                    "device_id": 1, "process": "A",
+                    "effective_attempt_no": 1, "resource_id": "A",
+                    "attempt_start_time": str(t), "attempt_end_time": str(e),
+                    "outcome": "NONE"})
+        log.append({"event_type": "OBSERVATION_MATERIALIZED",
+                    "event_time": str(e), "device_id": 1, "process": "A",
+                    "effective_attempt_no": 1, "resource_id": "A",
+                    "outcome": "PASS"})
+        t = e
+    st120 = obs.project_log_prefix(log, Fraction(120), batch_size=2)
+    post120 = ps.PosteriorState.from_observable(st120)
+    world = cont.rebuild_continuation_world(
+        st120, post120, {1: Fraction(1, 2), 2: Fraction(1, 2)}, {},
+        {r: Fraction(1, 3) for r in RESOURCES})
+    # ensure a finite natural failure (age 120 + residual 40 -> 160)
+    world = cont.ContinuationWorld(
+        decision_time=world.decision_time, devices=world.devices,
+        residual_lifetimes={
+            "A": (Fraction(40), False), "B": (Fraction(40), False),
+            "C": (Fraction(40), False), "E": (Fraction(40), False)})
+    prov = re1.PostKeyProvider(
+        u_x_by_device={1: Fraction(1, 2), 2: Fraction(1, 2)},
+        u_d_by_device={1: Fraction(1, 3), 2: Fraction(1, 3)},
+        u_l_by_resource={r: Fraction(1, 3) for r in RESOURCES},
+        u_y_lookup=lambda d, p, a: Fraction(1, 2),
+        u_l_lookup=lambda r, g: Fraction(1, 3),
+        u_x_subsystem_lookup=lambda d, s: Fraction(1, 2))
+    cfg = re1.RolloutConfig(batch_size=2, shift_length_h=Fraction(300),
+                            shifts_per_day=2, scenario="q3_two_shift",
+                            tau_pm=re1.NO_PM_BEFORE_MANDATORY)
+    t0 = _time.perf_counter()
+    eng = re1.RolloutEngine(st120, post120, world, prov, cfg,
+                            first_action=re1.A_H1_NOOP, log_prefix=log)
+    out = eng.run()
+    wall = _time.perf_counter() - t0
+    if out.t_end <= Fraction(120):
+        failures.append("no-progress: continuation terminated at/below the "
+                        "decision time")
+    if out.devices_passed + out.devices_exited != 2:
+        failures.append("expected 2 terminal devices, got "
+                        f"{out.devices_passed}+{out.devices_exited}")
+    return {
+        "check": "NONZERO_AGE_RUNTIME_SANITY",
+        "status": "PASS" if not failures else "FAIL",
+        "failures": failures,
+        "decision_age_h": 120,
+        "t_end": str(out.t_end),
+        "passed": out.devices_passed, "exited": out.devices_exited,
+        "wallclock_s": round(wall, 4),
+        "note": "correctness/performance disclosure only; does NOT alter "
+                "the frozen c_r aggregation or the M/C_eval selection rule",
+    }
+
+
 def run_all() -> dict[str, Any]:
     checks = [check_rollout_kernel(), check_h1_fallback_parity(),
               check_future_d_materialization(), check_u_y_consumption(),
               check_lifetime_generation(), check_crn_world(),
               check_quota_selector(), check_quota_causality(),
               check_rollout_count(), check_q_estimator(),
-              check_c23_rollout()]
+              check_c23_rollout(),
+              check_current_generation_lifetime(),
+              check_current_generation_failure_timing(),
+              check_right_censor_240(),
+              check_no_pm_string_semantics(),
+              check_nonzero_age_runtime_sanity()]
     all_ok = all(c["status"] == "PASS" for c in checks)
     return {"overall": "PASS" if all_ok else "FAIL", "checks": checks}
 

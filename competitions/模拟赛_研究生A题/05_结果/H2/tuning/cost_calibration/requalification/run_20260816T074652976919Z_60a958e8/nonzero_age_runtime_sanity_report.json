@@ -1,0 +1,1 @@
+{"check":"NONZERO_AGE_RUNTIME_SANITY","decision_age_h":120,"exited":0,"failures":[],"note":"correctness/performance disclosure only; does NOT alter the frozen c_r aggregation or the M/C_eval selection rule","passed":2,"status":"PASS","t_end":"257/2","wallclock_s":0.0012}

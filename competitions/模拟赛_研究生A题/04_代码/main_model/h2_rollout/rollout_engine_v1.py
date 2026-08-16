@@ -23,9 +23,16 @@ DESIGN (C23 / P1 hard constraints):
     legal junction (A/B/C all PASSED, E not yet released), prior q_D; never
     counterfactually before exit; never twice;
   * equipment lifetime: current generation uses the P2 conditional-residual
-    lifetime from ContinuationWorld; every new generation after a
-    replacement binds a NEW U_L_post(resource, new_generation); the P2
-    validation synthetic generation mapping is never used;
+    lifetime from ContinuationWorld; the engine's INTERNAL coordinate for
+    ``equipment.lifetime_h`` is the ABSOLUTE equipment age of natural
+    failure (P3-B-E1 F1): a current-generation draw (tau, right_censored)
+    with right_censored=False is converted to lifetime_h = current_age +
+    tau; right_censored=True -> lifetime_h = 240 (survive to 240, no
+    natural failure before the mandatory boundary).  Every new generation
+    after a replacement binds a NEW U_L_post(resource, new_generation) and
+    is sampled from the P2/G3 UNCONDITIONAL inverse sampler (age=0 ->
+    absolute failure age from generation birth; never add age again); the
+    P2 validation synthetic generation mapping is never used;
   * mandatory / exact_240 semantics are carried verbatim from the frozen
     engine contract (a+d>240 force-replace first; a+d==240 complete-first
     then replace; age==240 post-completion mandatory; random failure at
@@ -308,14 +315,20 @@ def _fragment_outcome(a_start, d, lifetime_h, is_right_censored
 
 def _replacement_decision(a, d, tau_pm, is_idle_decision_point) -> str:
     """Frozen C26 A-H decision: MANDATORY_REPLACE_FIRST / EXACT_240 /
-    SERVE_HEAD / PREVENTIVE_REPLACE (NO_PM => preventive never triggers)."""
+    SERVE_HEAD / PREVENTIVE_REPLACE (NO_PM => preventive never triggers).
+
+    P3-B-E1 (string semantics): the NO_PM sentinel is compared by VALUE
+    (== on the frozen literal string), never by Python object identity
+    (``is``), so a dynamically constructed equal string cannot fall into
+    the Fraction(tau_pm) numeric path."""
     a = Fraction(a)
     d = Fraction(d)
     if a + d > MANDATORY_AGE_H:
         return "MANDATORY_REPLACE_FIRST"
     if a + d == MANDATORY_AGE_H:
         return "EXACT_240_COMPLETE_FIRST"
-    if tau_pm is NO_PM_BEFORE_MANDATORY:
+    no_pm = (str(tau_pm) == str(NO_PM_BEFORE_MANDATORY))
+    if no_pm:
         return "SERVE_HEAD"
     if a >= Fraction(tau_pm) and is_idle_decision_point:
         return "PREVENTIVE_REPLACE"
@@ -477,12 +490,30 @@ class RolloutEngine:
             elif r.status == "replacement" or r.status == "failed":
                 equip.replacement_pending = True
                 equip.available = False
-            # conditional-residual lifetime from the continuation world
+            # conditional-residual lifetime from the continuation world.
+            # P2 returns (tau, right_censored) with tau = RESIDUAL lifetime
+            # from the current age.  The engine's internal coordinate is the
+            # ABSOLUTE equipment age of natural failure (F1, P3-B-E1):
+            #   * natural branch (right_censored=False):
+            #       lifetime_h = current_age + tau   (absolute failure age)
+            #   * right-censored branch (survive to 240):
+            #       lifetime_h = 240, is_right_censored = True
+            #         (no natural failure inside [0, 240]; the mandatory-240
+            #          rule handles the boundary).
+            # P2 API stays accepted (never modified).
             rl = world.residual_lifetimes.get(r.resource)
             if rl is not None:
                 tau, cens = rl
-                equip.lifetime_h = tau
-                equip.is_right_censored = cens
+                if cens:
+                    equip.lifetime_h = MANDATORY_AGE_H
+                    equip.is_right_censored = True
+                else:
+                    if tau is None:
+                        raise ValueError(
+                            f"natural-branch conditional residual for "
+                            f"{r.resource} must not be None")
+                    equip.lifetime_h = r.age_h + tau
+                    equip.is_right_censored = False
             elif not equip.is_right_censored:
                 # no lifetime yet (calibration in flight): draw later at the
                 # first dispatch via the generation provider

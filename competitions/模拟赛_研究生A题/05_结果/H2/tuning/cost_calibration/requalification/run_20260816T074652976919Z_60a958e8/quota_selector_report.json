@@ -1,0 +1,1 @@
+{"check":"QUOTA_SELECTOR","failures":[],"rows":{"6":{"p_cap":3,"pm_selected":3,"selected_total":6,"w_cap":3,"wait_selected":3},"8":{"p_cap":4,"pm_selected":4,"selected_total":8,"w_cap":4,"wait_selected":4}},"status":"PASS"}

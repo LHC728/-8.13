@@ -42,20 +42,20 @@ for _entry in (str(_MAIN_MODEL), str(_CODE_DIR)):
 from g3 import key_schema_v1 as ks  # noqa: E402
 from g3 import random_des_v1 as rd  # noqa: E402
 
-NS = ks.NAMESPACE_H2_TUNING          # "h2_tuning"
-# The accepted H1 engine structurally cannot consume the h2_tuning
-# namespace (P0/C16 firewall: the three H2 namespaces are reserved for the
-# H2 *post* streams; the legacy physical helpers reject them).  P3-B must
-# not modify key_schema / the engine.  The frozen §1.2 cost measurement is
-# a WALLCLOCK calibration on the first 5 tuning batches (replicate 0..4,
-# K=10.5); wallclock is insensitive to the key domain, so the engine-only
-# base batch is measured under the read-only legacy namespace
-# development_unit with the IDENTICAL world structure (batch_size=100,
-# K=10.5 two shifts/day, master_seed=6, replicate 0..4).  This is a
-# documented measurement-namespace note (scope_audit), not a rule change;
-# the c_r rollout wallclock is measured by the h2 continuation engine
-# (h2_rollout post keys).
+NS = ks.NAMESPACE_H2_TUNING          # "h2_tuning" (calibration selection domain)
+# P3-B-E1 Human Gate disposition (2026-08-16): base_r MAY use
+# development_unit ONLY as a PERFORMANCE_ONLY_BASE_SURROGATE.  The
+# accepted H1 engine structurally rejects the h2_tuning namespace (P0/C16
+# firewall: H2 namespaces are reserved for the H2 post streams), so the
+# engine-only base runtime is measured on the identical world structure
+# (batch 100, K=10.5 two shifts, seed 6, rep 0..4) under development_unit.
+# This is NOT h2_tuning physical-world evidence; it measures runtime only,
+# reads no physical results, and never participates in benefit/action
+# selection.  The exception is LIMITED to the §1.2 cost runtime; it NEVER
+# authorizes development_unit for action stability / cross-K transfer /
+# h2_holdout / C25 / H2 benefit statistics.
 BASE_NS = ks.NAMESPACE_DEVELOPMENT_UNIT
+BASE_RUNTIME_ROLE = "PERFORMANCE_ONLY_BASE_SURROGATE"
 MASTER_SEED = 6
 REPLICATES = (0, 1, 2, 3, 4)
 K = Fraction(21, 2)                  # 10.5 h
@@ -187,17 +187,20 @@ def run_cost_measurement(base_samples: int = 1,
     return {
         "check": "COST_CALIBRATION",
         "status": "PASS" if selected is not None else "FAIL",
-        "namespace": NS, "master_seed": MASTER_SEED,
-        "replicate_ids": list(REPLICATES), "K": str(K),
+        "calibration_selection_domain": {
+            "namespace": NS, "master_seed": MASTER_SEED,
+            "replicate_ids": list(REPLICATES), "K": str(K),
+            "purpose": "M/C_eval cost calibration only"},
+        "base_runtime_namespace": BASE_NS,
+        "base_runtime_role": BASE_RUNTIME_ROLE,
+        "base_runtime_note": (
+            "development_unit used ONLY as a performance surrogate for the "
+            "engine-only base runtime (the accepted H1 engine structurally "
+            "rejects h2_tuning per P0/C16); identical world structure "
+            "(batch 100, K=10.5 two shifts, seed 6, rep 0..4); NOT "
+            "h2_tuning physical-world evidence; never used for benefit/"
+            "action selection; exception limited to the §1.2 cost runtime"),
         "batch_size": BATCH_SIZE,
-        "measurement_namespace_note": (
-            "base_r measured under legacy development_unit namespace with "
-            "identical world structure (batch 100, K=10.5 two shifts, "
-            "seed 6, rep 0..4) because the accepted H1 engine rejects "
-            "h2_tuning (P0/C16: H2 namespaces reserved for H2 post "
-            "streams); wallclock is key-domain-insensitive; c_r measured "
-            "by the h2 continuation engine (h2_rollout post keys); "
-            "documented scope note, not a rule change"),
         "base_rows": base_rows, "rollout_rows": rollout_rows,
         "base_median_s": round(base_median, 6),
         "base_worst_s": round(base_worst, 6),
