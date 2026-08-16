@@ -2,6 +2,15 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-17 / `Q3 FINAL CLOSURE — CURRENT_STATE 状态修复`（Human Gate：authoritative header + prohibitions 过时矛盾）
+
+### 修改
+
+- **CURRENT_STATE.md 权威头部重写**（状态版本 `STATE-2026-08-17-Q3-FINAL`）：当前 Gate = **Q3 FINAL MODEL SELECTION CLOSED（H1 正式主策略、k\*=K12 范围限定、H2 = FINAL DELETE / ACCEPTED AS CHALLENGER RESULT、Q3 FINAL STATUS = READY_FOR_PAPER）**；Q4 = NOT STARTED（状态修复后待授权）；历史链压缩为最终 accepted 状态（Q2 H1 `2d1466ba`、Q3 H1 FORMAL `7ee48fc0`+`f4da8f9d`、Q3-H2 全链 FINAL DELETE `7b490ce6`、论文包 ACCEPTED）。
+- **第 6 节「当前禁止」重写**：删除过期禁令（「不实现 H2 rollout」「不选 rollout M」「不比 H1 vs H2」「不枚举 K、不推荐 K」「P3-C 重跑待执行」「cross-K = 下一授权步骤」等）；新增 **H2 冻结禁令（FROZEN_HISTORICAL_CHALLENGER）**、**论文措辞禁令**（K12 非全局最优 / H2 非失败 / agreement=1 非 H2 优于 H1 / 0/100 非全状态相等 / cross-K·holdout·C25 非 PASS 非 FAILED）、**不自动进入 Q4**、不重跑 Q1/Q2/已接受 H1 formal、不删 H2 负证据。
+- **第 7 节「下一出口」清理**：移除已完成的旧自动推进路线段（density→P1→P2→P3 链），仅保留 Q3 全封闭 → 论文写作 → Human Gate 审阅 → 不自动进入 Q4。
+- 其余 Q3/H2 模型结果与 evidence 一律未改（immutable）。
+
 ## 2026-08-17 / `Q3 FINAL CLOSURE`（H2 DELETE Human Gate 落地 + H1/H2 对比 + 论文结果包）
 
 ### 修改
