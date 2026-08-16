@@ -64,6 +64,10 @@
 - 一个文件同一时刻只能有一个写入 Agent；未明确授予写权限的子 Agent 一律只读。checker Agent 只能读取冻结契约、参数、schema、原始输出和必要日志，不接收主实现者的推理摘要。
 - 子 Agent 完成后，主 Agent 必须汇报 Agent ID、请求模型、模型来源（显式/继承）、运行时型号是否可独立验证、实际改动、验收结果和是否生成下级 Agent。详细协议见 `08_项目管理/模型分级与任务路由规则.md`，派单必须使用 `执行模型派单模板.yaml`。
 
+## 模型路由（`MODEL_ROUTING_PRO_MAX_V1.0`）
+
+- **L3/YELLOW 与 L4 semantic review 必须走 `pro_max_review` 且 `VERIFIED_PRO_MAX`**（fresh spawn + `deepseek-pro-max`/`deepseek-v4-pro` + reasoning=max + workspace delta=0）；无 VERIFIED_PRO_MAX 不得 PASS formal task；Pro-Max 失败禁止 fallback 到 Flash/Pro-high（ROUTING_BLOCKED → STOP）。触发清单、packet 模板与 ROUTE-01..12 见 `08_项目管理/MODEL_ROUTING_PRO_MAX_V1.0.md`；路由证据根 `05_结果/governance/model_routing/`。
+
 ## 自动驾驶治理（`AUTOPILOT-PLAN-V1.1-FINAL`，Pilot #1）
 
 - 当前自动推进治理依据：`08_项目管理/全流程自动推进计划_AUTOPILOT-PLAN-V1.1.md`。

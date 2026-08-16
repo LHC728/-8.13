@@ -1,0 +1,4 @@
+﻿ M competitions/模拟赛_研究生A题/AGENTS.md
+?? .mimosa/
+?? competitions/模拟赛_研究生A题/05_结果/governance/
+?? competitions/模拟赛_研究生A题/08_项目管理/MODEL_ROUTING_PRO_MAX_V1.0.md

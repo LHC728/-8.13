@@ -1,0 +1,26 @@
+{
+  "decision": "ROUTING_DECISION",
+  "records": [
+    {
+      "task_id": "MODEL_ROUTING_PRO_MAX_V1.0-INSTALL",
+      "risk_level": "L2",
+      "reason": "additive harness infrastructure configuration (provider route + tool instance + evidence tooling); no modeling semantics touched; verified by deterministic config/unit tests (wire_semantic_check.mjs T1-T5) and composition diffs",
+      "required_executor": "FLASH + deterministic checks",
+      "actual_executor": "FLASH",
+      "pro_max_required": false,
+      "notes": "installation itself is L2 per MODEL_ROUTING_PRO_MAX_V1.0 §7 (mechanical implementation under clear spec with deterministic verification); the smoke that validates the channel is an L3 verification run (recorded below)"
+    },
+    {
+      "task_id": "PRO_MAX_SMOKE",
+      "risk_level": "L3",
+      "reason": "verification of the new L3/L4 reviewer channel: fresh-spawn + provider/model/effort/wire/delta acceptance run",
+      "required_executor": "PRO_MAX",
+      "actual_executor": "PRO_MAX",
+      "pro_max_required": true,
+      "verified": true,
+      "reference": "routing_verification.json"
+    }
+  ],
+  "enforcement_gap_closed": true,
+  "rule": "MODEL_ROUTING_ENFORCEMENT_GAP: every task start, every semantic failure, and every semantic-changing patch re-records ROUTING_DECISION; YELLOW/L3/L4 without VERIFIED_PRO_MAX must not PASS formal status (MODEL_ROUTING_PRO_MAX_V1.0 §14)"
+}

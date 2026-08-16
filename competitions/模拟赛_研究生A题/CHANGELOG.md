@@ -2,6 +2,16 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-16 / `MODEL_ROUTING_PRO_MAX_V1.0`（Pro-Max 独立 reviewer 通道，additive）
+
+### 修改
+
+- **新增 harness 级独立 reviewer 通道（additive；Harness core 零修改）**：`deepseek-pro-max` provider route（llm-pi-ai，复用 `DEEPSEEK_API_KEY` credential ref 与 `https://api.deepseek.com` endpoint；model `deepseek-v4-pro`（contextWindow 1,000,000 / maxTokens 256,000，均继承官方 route 已验证容量）；`reasoning: max` 路由默认；`compat.thinkingFormat=deepseek` + `supportsReasoningEffort=true`；`reasoningEfforts: high→high, max→max`）+ `pro_max_review` tool instance（spawn provider、fresh child、`enableRunInBackground=false`、`backgroundMode=one-shot`、`maxDepth=1`、persona=`READ_ONLY_SEMANTIC_REVIEWER`、toolFilter deny 全部 mutation tools）。配置位置：`$DSH_HOME/settings.yaml`（llm-pi-ai 节）与 `$DSH_HOME/cordis.patch.yml`（home user layer insert 行）；**rollback = 删除两处配置（已验证）**。
+- **验证**：SOURCE AUTHORITY facts A–E 全 PASS（无 drift）；`pro_max_precheck_report.json`；wire_semantic_check T1–T5 ALL PASS（官方 adapter max→`thinking:{type:enabled}`+`reasoning_effort:max`；pi-ai deepseek 方言同语义；负例：未声明 max 不提供、request 在 I/O 前拒绝 → L3/L4 BLOCKED 无 fallback；隔离：pi-ai routes 仅含 deepseek-pro-max）；**smoke = PASS**（headless driver 经 `pro_max_review` → fresh child 实测 request/header `provider=deepseek-pro-max, model=deepseek-v4-pro, reasoningEffort=max`（含 adapterDefaults），child session 无 parent transcript、零工具调用、输出 `PRO_MAX_SMOKE_OK`，workspace delta=0）；Flash non-regression = PASS（父 run header `deepseek-official/deepseek-v4-flash` 不变，reasoningEffort=max 为既有设置）；**ROUTE-01..12 + FLASH_NON_REGRESSION 全部 PASS**（`tools/check_model_routing_v1.py`）；rollback 测试 = PASS（删除配置后 composition 不再含 tool 行，恢复后复现）。
+- **文档**：`08_项目管理/MODEL_ROUTING_PRO_MAX_V1.0.md`（架构/隔离/路由规则/L3·L4 触发/fail-closed/验证程序/wire 语义/packet 模板/ROUTE-01..12/rollback）；`AGENTS.md` 增加短规则引用（L3/L4 必须 `pro_max_review` 且 `VERIFIED_PRO_MAX`，禁止 fallback）。
+- **路由证据根**：`05_结果/governance/model_routing/`（precheck/composition before·after/workspace before·after/wire check/dispatch/request header/review/verification/decision/route check result）。
+- **模型/数学/evidence 零触碰**：Q3 模型、H1/H2 代码语义、冻结阈值、formal evidence、C25、CURRENT numeric conclusions 均未修改。
+
 ## 2026-08-16 / `STATE-2026-08-13-G2.4` / `Q3-H2-P3-C action stability diagnostics = COMPLETED → H2_NO_EFFECTIVE_DEVIATION → H2 = DELETE（AUTOPILOT STOP）`
 
 ### 修改

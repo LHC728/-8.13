@@ -1,0 +1,7 @@
+[PASS] T1_deepseek_adapter_wire_max: {"thinking":{"type":"enabled"},"reasoning_effort":"max"}
+[PASS] T2_pi_ai_route_resolution: {"route":"deepseek-pro-max","model":"deepseek-v4-pro","contextWindow":1000000,"maxTokens":256000,"reasoningDefault":"max","offeredLevels":["high","max"],"thinkingLevelMap":{"off":null,"minimal":null,"low":null,"medium":null,"high":"high","xhigh":null,"max":"max"}}
+[PASS] T3_pi_ai_deepseek_dialect_max: {"dialect":"deepseek","wireThinking":{"type":"enabled"},"wireEffort":"max","source":"@earendil-works/pi-ai@0.82.1 dist/api/openai-completions.js (thinkingFormat deepseek branch)"}
+[PASS] T4_negative_max_undeclared: {"maxOffered":false,"contract":"undeclared level -> UNSUPPORTED_REASONING_EFFORT pre-network; L3/L4 route = BLOCKED (no Flash fallback)"}
+[PASS] T5_provider_isolation: {"pi_ai_routes":["deepseek-pro-max"],"deepseek_official_owner":"@deepseek-ai/dsh-llm-deepseek (composition row llm-deepseek)"}
+
+WIRE_SEMANTIC_CHECK: ALL PASS

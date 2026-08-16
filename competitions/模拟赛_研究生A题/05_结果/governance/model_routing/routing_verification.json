@@ -1,0 +1,28 @@
+{
+  "verification": "PRO_MAX_VERIFICATION",
+  "task_id": "PRO_MAX_SMOKE",
+  "risk_level": "L3",
+  "required_executor": "PRO_MAX",
+  "actual_executor": "PRO_MAX",
+  "tool_name": "pro_max_review",
+  "child_run_id": "0db7564d-1871-4319-a47c-e4083ab4c7b0",
+  "fresh_spawn": true,
+  "provider": "deepseek-pro-max",
+  "model": "deepseek-v4-pro",
+  "reasoning_effort": "max",
+  "verdict": "PRO_MAX_SMOKE_OK",
+  "workspace_delta": 0,
+  "baseline_dirty": "2 pre-existing untracked lines (governance evidence dir + design doc staging) recorded in workspace_before.txt",
+  "verified": true,
+  "evidence": [
+    "pro_max_request_header.json (child request/header provider/model/reasoningEffort from session JSONL)",
+    "pro_max_dispatch.json (tool call + result)",
+    "pro_max_review.txt (child final message with reasoning block)",
+    "wire_semantic_check.log (T1-T5 ALL PASS)",
+    "workspace_before.txt / workspace_after.txt (delta 0)"
+  ],
+  "notes": [
+    "reasoningEffort=max appears both in the recorded header config and as adapterDefaults.reasoningEffort=true (the pi-ai route profile default materializes the effort; the adapter owns the default).",
+    "The child produced real reasoning-chunks, confirming thinking was enabled on the wire."
+  ]
+}

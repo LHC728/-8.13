@@ -1,0 +1,41 @@
+# PRO_MAX_REVIEW (smoke)
+
+TASK_ID: PRO_MAX_SMOKE
+RISK_LEVEL: L3
+CHILD_RUN: 0db7564d-1871-4319-a47c-e4083ab4c7b0
+PROVIDER: deepseek-pro-max
+MODEL: deepseek-v4-pro
+REASONING_EFFORT: max (header config + adapterDefaults.reasoningEffort=true; reasoning-chunks observed)
+FRESH_SPAWN: true (child session contains only the packet, no parent transcript)
+WORKSPACE_DELTA: 0 (child session shows zero tool calls; git status after == expected own files only)
+
+VERDICT: PASS
+AUTHORITY_CHECK: PASS
+
+FINDINGS:
+
+F1: severity=info — the delegated packet was a read-only smoke packet
+    (no tools, no file modification, exact-token reply); the child complied:
+    produced a reasoning block and the exact text PRO_MAX_SMOKE_OK.
+
+IMPLEMENTATION_CHANGE_ALLOWED: NO
+
+NEXT_ROUTE: CONTINUE_FLASH
+
+---
+(Verbatim child final message)
+{
+  "role": "assistant",
+  "content": [
+    {"type": "reasoning", "text": "The user is asking for a smoke-test packet: reply with exactly \"PRO_MAX_SMOKE_OK\" and nothing else. No tools, no file modifications, no web search. I should simply output that exact text. ..."},
+    {"type": "text", "text": "PRO_MAX_SMOKE_OK"}
+  ],
+  "source": {
+    "kind": "model",
+    "provider": "deepseek-pro-max",
+    "model": "deepseek-v4-pro",
+    "replayState": {"kind": "pi-ai", "version": 1, "api": "openai-completions",
+                    "provider": "deepseek-pro-max", "model": "deepseek-v4-pro",
+                    "stopReason": "stop"}
+  }
+}

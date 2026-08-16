@@ -1,0 +1,62 @@
+{
+  "report": "PRO_MAX_PRECHECK_REPORT",
+  "version": "V1.0",
+  "date": "2026-08-16",
+  "harness": {
+    "version": "0.1.0-rc.5",
+    "commit": "47f943859b",
+    "checkout": "C:\\Users\\观后感h\\Documents\\Default Project\\deepseek-harness"
+  },
+  "source_authority": {
+    "facts_verified": {
+      "A_GenerateOptions_LlmCallConfig_support_reasoningEffort": "PASS (packages/llm/llm/src/types.ts GenerateOptions.reasoningEffort; call-config.ts LlmCallConfig.reasoningEffort)",
+      "B_DeepSeek_off_high_max": "PASS (packages/llm/llm-deepseek/src/adapter.ts REASONING_EFFORTS = off/high/max)",
+      "C_wire_serializer_reasoning_effort_max": "PASS (packages/llm/llm-deepseek/src/serialize.ts resolveThinking: max -> thinking enabled + reasoning_effort=max)",
+      "D_AgentOptions_no_per_child_reasoningEffort": "PASS (packages/core/agent/src/runtime-types.ts AgentOptions = provider/model/maxTokens only; tool-subagent agentOptions mirrors it)",
+      "E_llm_pi_ai_independent_profiles_route_reasoning_max_per_model_efforts_deepseek_compat": "PASS (packages/llm/llm-pi-ai README + src/config.ts + src/catalog.ts: providers dict keyed by route; profile reasoning level; per-model reasoningEfforts with wire spelling; compat.thinkingFormat deepseek + supportsReasoningEffort; THINKING_LEVELS includes max)",
+      "drift": "NONE — no SOURCE_DRIFT_REPORT required"
+    }
+  },
+  "active_composition": {
+    "profile": "web",
+    "profile_dir": "C:\\Users\\观后感h\\.dsh\\profiles\\web",
+    "bundles": ["@deepseek-ai/dsh-base", "@deepseek-ai/dsh-web-app"],
+    "profile_patch": "C:\\Users\\观后感h\\.dsh\\profiles\\web\\cordis.patch.yml",
+    "home_user_layer": "C:\\Users\\观后感h\\.dsh\\cordis.patch.yml",
+    "home_user_layer_present": false,
+    "settings_path": "C:\\Users\\观后感h\\.dsh\\settings.yaml",
+    "config_hmr": "PASS — profile-boot watchUserPatches watches BOTH the profile patch layer and the home user layer (config-only HMR, live on the running harness); settings.yaml is chokidar-watched by dsh-settings-file (external edits reload live)"
+  },
+  "deepseek": {
+    "credential_ref": "DEEPSEEK_API_KEY",
+    "credential_store": "C:\\Users\\观后感h\\.dsh\\.credentials.yaml (value redacted, never printed)",
+    "endpoint_resolution": "DEEPSEEK_BASE_URL unset (shell); no .env in project dir or DSH_HOME; official route resolves to PUBLIC_BASE_URL = https://api.deepseek.com",
+    "current_verified_pro_capacity": {
+      "deepseek-v4-pro": {"contextWindow": 1000000, "maxTokens": 256000, "source": "packages/llm/llm-deepseek/src/index.ts DEFAULT_CONTEXT_WINDOW=1_000_000, DEFAULT_MAX_TOKENS=256_000 applied to deepseek-v4-pro"}
+    }
+  },
+  "existing_routes": {
+    "providers": ["deepseek-official"],
+    "llm_pi_ai_mounted": "YES (dormant — no providers section yet; settings-driven registration)",
+    "web_search_provider": "deepseek-official",
+    "agent_default_model": {"provider": "deepseek-official", "model": "deepseek-v4-flash", "reasoningEffort": "max (pre-existing settings; NOT caused by this package)"}
+  },
+  "subagents": {
+    "spawn_provider": "PRESENT (@deepseek-ai/dsh-subagent-spawn-in-process, providerName=spawn; capabilities outputSchema/depthLimit/toolFilter/persona)",
+    "fork_provider": "PRESENT (@deepseek-ai/dsh-subagent-fork-in-process, providerName=fork)",
+    "tool_instances": [
+      {"id": "tool-subagent", "provider": "spawn", "toolName": "subagent", "backgroundMode": "continuable"},
+      {"id": "tool-subagent-fork", "provider": "fork", "toolName": "subagent_fork", "backgroundMode": "one-shot"}
+    ],
+    "workflow_worker": {"id": "workflow-worker-thread", "provider": "spawn", "maxConcurrentAgents": 2}
+  },
+  "tool_catalog_mutation_names": [
+    "edit", "write", "pwsh", "subagent", "subagent_fork", "send_message",
+    "interrupt_agent", "job_kill", "create_goal", "update_goal", "todo_write",
+    "workflow", "ralph", "exit_plan_mode"
+  ],
+  "notes": [
+    "No API key content is recorded anywhere in this report or any evidence file.",
+    "Pi-ai deepseek-dialect wire encoding verified from @earendil-works/pi-ai@0.82.1 dist source: thinkingFormat=deepseek + reasoningEffort set -> params.thinking={type:'enabled'} + params.reasoning_effort = thinkingLevelMap[effort] ?? effort."
+  ]
+}

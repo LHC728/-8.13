@@ -1,0 +1,39 @@
+{
+  "report": "PRO_MAX_REQUEST_HEADER",
+  "task_id": "PRO_MAX_SMOKE",
+  "source": "session JSONL ($DSH_HOME/sessions/.../0db7564d-1871-4319-a47c-e4083ab4c7b0/session.jsonl, request/header event seq 13)",
+  "child_request_header": {
+    "config": {
+      "provider": "deepseek-pro-max",
+      "model": "deepseek-v4-pro",
+      "maxTokens": 256000,
+      "reasoningEffort": "max"
+    },
+    "adapterDefaults": {
+      "reasoningEffort": true
+    }
+  },
+  "child_request_context": {
+    "provider": "deepseek-pro-max",
+    "model": "deepseek-v4-pro",
+    "contextWindow": 1000000
+  },
+  "parent_request_header_flash_non_regression": {
+    "config": {
+      "provider": "deepseek-official",
+      "model": "deepseek-v4-flash",
+      "reasoningEffort": "max",
+      "maxTokens": 256000
+    },
+    "note": "deepseek-official / deepseek-v4-flash unchanged; reasoningEffort=max is the pre-existing agent-default-model setting, not introduced by this package"
+  },
+  "fresh_spawn_evidence": [
+    "child session user/message events contain ONLY the smoke packet (no parent conversation transcript)",
+    "child session contains no tool-call events (read-only reviewer used zero tools)"
+  ],
+  "wire_max_evidence": [
+    "reasoning-chunks events present in the child session (real thinking content produced)",
+    "assistant/message source.kind=model provider=deepseek-pro-max model=deepseek-v4-pro replayState.kind=pi-ai api=openai-completions stopReason=stop"
+  ],
+  "no_credentials_recorded": true
+}
