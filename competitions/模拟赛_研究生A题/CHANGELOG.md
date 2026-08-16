@@ -2,6 +2,23 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-16 / `STATE-2026-08-13-G2.4` / `Q3-H2-P2 后验缺陷状态 + 条件剩余寿命生成器 = COMPLETED / AWAITING HUMAN GATE REVIEW`
+
+### 修改
+
+- **Q3-H2-P1 = FINAL PASS / ACCEPTED（Human Gate 2026-08-16；closure `08488e4`；lineage P1 `db2e894` + P1-E1 `3568010` + P1-E2 `08488e4`；C23 P1-applicable = PASS / ACCEPTED；C23 full end-to-end = PENDING）**；**P2 = AUTHORIZED → 本包执行完成**。
+- **P2-A 后验缺陷状态生成器（§8）**：`main_model/h2/posterior_generator_v1.py`——16-state 精确 Fraction 联合后验 `P(x_A,x_B,x_C,x_D|obs)`（已到 E 装置）+ 8-state ABC 后验（x_D 积分掉；未到 E 装置，D 不提前物化）+ 单工序似然（仅已完成有效 attempt；中断/取消/在途不计）+ E 非独立子系统（H={x_A..x_D 至少一缺陷}；E 似然只依赖 H 非空）+ 分层采样（U_X_post 采 ABC → U_D_post 采 x_D）；**推论**：H_ABC 非空 ⟹ `P(x_D=1|obs,ABC)=q_D`（E 对 x_D 无信息），仅 ABC 全清时 E 更新 D；装置级：终态吸收、未进入按先验（D 仅在续演到达联接点时按 q_D 物化一次）、未到 E 8-state、到 E 16-state。
+- **P2-B 条件剩余寿命生成器（§9）**：`main_model/h2/lifetime_generator_v1.py`——`p_max(a)=[F(240)-F(a)]/[1-F(a)]`、条件逆 CDF（与 accepted G3 同一分段线性 CDF/逆，仅输入改为条件概率值）、`v>p_max` 右删失分支（τ 截为 `240-a`、survive_to_240 标记）、[0,240] CDF 不重归一（R39）、`a=0` 退化为 G3 无条件采样器、240 边界（`a+τ≤240` 才自然故障；`a+d>240` 启动前强制、`a+d==240` 完成优先——均非 optional PM）。
+- **PosteriorState 正式 schema（P2）**：`posterior_state_v1.py` 由 P1 seam 升级为正式不可变 schema（`from_observable(ObservableState)` 构造；只含分布信息——后验向量/寿命条件信息，无隐藏真值/u/u_key；`P1_SEAM_STATUS=SCHEMA_IMPLEMENTED_IN_P2`）；P1 checker 的 `POSTERIOR_STATE_P1_SEAM` 检查更新为 C23 P2 合同（immutable、from_observable、无禁读字段名）。
+- **独立 deterministic checker（主硬门）**：`checker/h2_posterior_checker_v1.py`（独立重推后验公式，不 import implementer core）——**157 个冻结可达模式、1512 个状态逐状态精确相等、0 mismatch**；H_ABC 非空 ⟹ D=q_D 推论 PASS；same-observable ⟹ same posterior PASS。`checker/h2_residual_lifetime_checker_v1.py`——**4 资源 × 8 年龄 × 10 U 点 = 320 点，max_abs_error=0（精确相等）**；age=0 退化 PASS；240 边界/右删失标记 PASS。
+- **冻结 secondary smoke（次级，非硬门）**：后验 8 代表模式 × N=5000 × 32 边际 z，`#(|z|>3.5)=0 ≤1` PASS；寿命 32 配置 × N=2000 × Pearson χ²（E<5 并桶），`#(p<0.001)=0 ≤1` PASS；全部 z/p̂/π/χ²/obs/exp/N 入 evidence。
+- **随机流（冻结）**：仅 `namespace=h2_tuning`、`master_seed=6`，消费 `U_X_post`/`U_D_post`/`U_L_post`（后验 smoke replicate 0..4999；寿命 smoke replicate 0..1999，记录于 evidence）；**未消费 U_Y_post / h2_holdout / q3_formal**；key_schema 未修改。
+- **C23 继续生效**：P1 防火墙回归（field whitelist / forbidden raw-access / raw-u / import isolation / same-observable）= 28 tests PASS；C23 P2（same observable ⟹ same posterior；same key ⟹ same sampled hidden state）PASS；Density E2 36 / key_schema 38 / Q3 H1 23 / G3 44 回归全 PASS；`test_h2_p2_v1.py` **25/25 PASS**（POST-01..14 + LIFE-01..10）。
+- **新证据根** `05_结果/H2/p2/run_20260816T052713579034Z_3fc5e200/`：ACYCLIC hash DAG + manifest/inventory 一致性 + semantic evidence mapping + C21 = PASS（fail-closed：verified staging 字节一致 promote 到最终根 + promote 后只读复验）；checks.json overall = PASS（10 项全 PASS）。
+- **状态**：**P2 posterior + conditional lifetime = COMPLETED / AWAITING HUMAN GATE REVIEW**；**P3 = NOT AUTHORIZED**；**C23 full end-to-end = PENDING**；**C25 = NOT AUTHORIZED**；不自行启动 P3。
+- 范围审计：H2 policy / action execution / rollout / Q-hat / M / C_eval / quota / h2_holdout / C25 / Q4 = 全部 **NO**；key_schema / DES engine / H1 / Density accepted evidence / D-01..D-25 未修改。
+- 状态同步：`CURRENT_STATE.md`（Gate 行、§6 禁止、§7 下一出口）。
+
 ## 2026-08-16 / `STATE-2026-08-13-G2.4` / `Q3-H2-P1-E2 raw-U 防火墙 + Evidence Packaging 最终闭环 = COMPLETED / AWAITING HUMAN GATE FINAL P1 REVIEW`
 
 ### 修改

@@ -534,45 +534,33 @@ def check_replacement_history_semantics() -> dict[str, Any]:
 
 
 def check_posterior_seam() -> dict[str, Any]:
-    """P1 PosteriorState seam: the module must carry NO posterior math and
-    NO numeric posterior placeholders."""
+    """PosteriorState C23 P2 contract (supersedes the P1 SCHEMA_DEFERRED
+    seam check): the posterior object must (i) be immutable; (ii) be
+    constructible ONLY from an ObservableState + frozen parameters
+    (``from_observable``); (iii) carry distribution/posterior information
+    only -- NO hidden-truth fields (true_state / lifetime / u / u_key /
+    x_* values); (iv) contain no raw random-key material (covered by the
+    AST scan)."""
     issues: list[str] = []
-    path = Path(post.__file__).resolve()
-    src = path.read_text(encoding="utf-8")
-    tree = ast.parse(src)
-    has_math = False
-    for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef) and node.name not in (
-                "get", "posterior_state_contract"):
-            if any(kw in node.name for kw in ("posterior", "bayes", "sample",
-                                              "likelihood", "lifetime")):
-                has_math = True
-                issues.append(f"{path.name}: function {node.name} looks like "
-                              f"posterior/lifetime mathematics")
-        if isinstance(node, ast.Call):
-            fname = ""
-            if isinstance(node.func, ast.Name):
-                fname = node.func.id
-            elif isinstance(node.func, ast.Attribute):
-                fname = node.func.attr
-            if any(kw in fname for kw in ("posterior", "bayes", "sample",
-                                          "likelihood", "inverse_cdf",
-                                          "conditional")):
-                has_math = True
-                issues.append(f"{path.name}: call {fname} looks like "
-                              f"posterior/lifetime mathematics")
-    numeric_placeholders = [n for n in ("0.429", "0.5", "0.0625",
-                                        "posterior_probability", "p_map",
-                                        "p_max")
-                            if n in src]
-    seam_ok = post.P1_SEAM_STATUS == "SCHEMA_DEFERRED_TO_P2"
-    ok = (not has_math and not numeric_placeholders and seam_ok)
+    cls = post.PosteriorState
+    if not dataclasses.is_dataclass(cls) or not cls.__dataclass_params__.frozen:
+        issues.append("PosteriorState must be a frozen dataclass")
+    if not hasattr(cls, "from_observable"):
+        issues.append("PosteriorState must expose from_observable(obs)")
+    for f in dataclasses.fields(cls):
+        for frag in FORBIDDEN_NAME_FRAGMENTS:
+            if frag in f.name:
+                issues.append(f"PosteriorState.{f.name}: forbidden-name "
+                              f"fragment {frag!r}")
+    seam_ok = post.P1_SEAM_STATUS == "SCHEMA_IMPLEMENTED_IN_P2"
+    if not seam_ok:
+        issues.append(f"P1_SEAM_STATUS must be SCHEMA_IMPLEMENTED_IN_P2, "
+                      f"got {post.P1_SEAM_STATUS!r}")
+    ok = not issues and seam_ok
     return {
         "check": "POSTERIOR_STATE_P1_SEAM",
         "status": "PASS" if ok else "FAIL",
         "seam_status": post.P1_SEAM_STATUS,
-        "posterior_math_detected": has_math,
-        "numeric_placeholders_detected": numeric_placeholders,
         "issues": issues,
     }
 

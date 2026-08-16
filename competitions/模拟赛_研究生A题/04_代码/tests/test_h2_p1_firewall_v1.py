@@ -221,11 +221,18 @@ class TestFirewallChecker(unittest.TestCase):
                              dataclasses.fields(obs.DeviceObs)))
 
     def test_posterior_seam_no_math(self):
+        # Q3-H2-P2: PosteriorState is now the formal schema (constructed
+        # only from ObservableState + frozen params; distribution-only).
         res = chk.check_posterior_seam()
         self.assertEqual(res["status"], "PASS", res)
-        self.assertEqual(post.P1_SEAM_STATUS, "SCHEMA_DEFERRED_TO_P2")
-        self.assertFalse(res["posterior_math_detected"])
-        self.assertEqual(res["numeric_placeholders_detected"], [])
+        self.assertEqual(post.P1_SEAM_STATUS, "SCHEMA_IMPLEMENTED_IN_P2")
+        self.assertTrue(dataclasses.is_dataclass(post.PosteriorState))
+        self.assertTrue(post.PosteriorState.__dataclass_params__.frozen)
+        self.assertTrue(hasattr(post.PosteriorState, "from_observable"))
+        # distribution-only: no hidden-truth fields
+        for f in dataclasses.fields(post.PosteriorState):
+            for frag in chk.FORBIDDEN_NAME_FRAGMENTS:
+                self.assertNotIn(frag, f.name)
 
     # ---- Q3-H2-P1-E1 closures: replacement-history semantics (F1) ----
 
