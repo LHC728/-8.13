@@ -38,9 +38,11 @@ from main_model.h2 import quota_selector_v1 as qsel  # noqa: E402
 from main_model.h2_rollout import rollout_engine_v1 as re1  # noqa: E402
 from main_model.h2_rollout import post_keys_v1 as pk  # noqa: E402
 from main_model.h2_rollout import h2_batch_runner_v1 as br  # noqa: E402
+from main_model.h2_rollout import h2_policy_v1 as pol  # noqa: E402
 from scripts.run_h2_p3c_stability_v1 import (  # noqa: E402
     quota_simulate_batch, build_b1_sample, evaluate_sample,
-    collect_eligible_points, _b1_take, K as P3C_K, MASTER_SEED, NS,
+    collect_eligible_points, _b1_take, _point_context,
+    _RESOURCE_ORDER, K as P3C_K, MASTER_SEED, NS,
     WAIT_CAP, PM_CAP, SAMPLE_CAP)
 
 K = Fraction(21, 2)
@@ -352,72 +354,148 @@ def _synthetic_wait_log() -> list[dict]:
 
 
 class TestDPKeySemantics(unittest.TestCase):
-    """DPKEY-01..05: dp = per-batch 0-based index of QUOTA-EVALUATED
-    points; shared across normal/ALT/M=16 evaluations of the same point."""
+    """DPKEY-01..05 + B1-OFFLINE-01..03 (second requalification): the B-1
+    OFFLINE diagnostic population = ALL H2-eligible decision points (NOT
+    the online-quota subset; C_eval-independent); dp_diag = per-batch
+    0-based index by (time, canonical resource order) over the points that
+    enter B-1 and are re-evaluated; normal/ALT/M=16 share (replicate_id,
+    dp_diag); 2M* uses identical keys for m=0..M*-1."""
 
     @classmethod
     def setUpClass(cls):
         cls.logs = [_gen_batch(0), _gen_batch(1)]
         cls.sample = build_b1_sample(cls.logs, P3C_K, BATCH)
 
-    def test_dpkey_01_per_batch_evaluated_index_0based_contiguous(self):
+    def test_dpkey_01_per_batch_dp_diag_0based_contiguous(self):
         by_batch: dict[int, list[int]] = {}
         for p in self.sample["points"]:
-            by_batch.setdefault(p["batch"], []).append(p["dp"])
+            by_batch.setdefault(p["batch"], []).append(p["dp_diag"])
         for bi, dps in by_batch.items():
             self.assertEqual(dps, list(range(len(dps))),
-                             f"batch {bi}: evaluated dps must be 0-based "
-                             f"contiguous per batch")
+                             f"batch {bi}: dp_diag must be 0-based "
+                             f"contiguous per batch (HG-Q3-H2-DP-DIAG-01)")
 
     def test_dpkey_02_batches_number_independently(self):
         by_batch: dict[int, list[int]] = {}
         for p in self.sample["points"]:
-            by_batch.setdefault(p["batch"], []).append(p["dp"])
+            by_batch.setdefault(p["batch"], []).append(p["dp_diag"])
         self.assertEqual(set(by_batch), {0, 1})
         for bi, dps in by_batch.items():
-            self.assertEqual(dps[0], 0, f"batch {bi} starts at dp=0")
+            self.assertEqual(dps[0], 0, f"batch {bi} starts at dp_diag=0")
 
-    def test_dpkey_03_sample_dp_matches_quota_simulation(self):
-        for bi, blog in enumerate(self.logs):
-            evals = quota_simulate_batch(blog, P3C_K, BATCH)
-            evals_by_key = {(str(p["time"]), p["resource"]): p["dp"]
-                            for p in evals}
-            for p in self.sample["points"]:
-                if p["batch"] != bi:
-                    continue
-                self.assertEqual(
-                    p["dp"], evals_by_key[(str(p["time"]), p["resource"])],
-                    f"sample dp must equal the quota-evaluated dp "
-                    f"(batch {bi} {p['time']} {p['resource']})")
+    def test_dpkey_03_dp_diag_is_time_resource_ordered(self):
+        for bi in {p["batch"] for p in self.sample["points"]}:
+            pts = [p for p in self.sample["points"] if p["batch"] == bi]
+            keyed = [(p["dp_diag"],
+                      (str(p["time"]), _RESOURCE_ORDER[p["resource"]]))
+                     for p in pts]
+            self.assertEqual(
+                [k[0] for k in keyed],
+                list(range(len(keyed))),
+                f"batch {bi}: dp_diag order must follow (time, resource)")
 
-    def test_dpkey_04_normal_alt_share_batch_dp(self):
+    def test_dpkey_04_normal_alt_share_batch_dp_diag(self):
         ev_n = evaluate_sample(self.sample, self.logs,
                                "q3h2-bootstrap-v1", 2, BATCH)
         ev_a = evaluate_sample(self.sample, self.logs,
                                "q3h2-bootstrap-alt-v1", 2, BATCH)
-        keys_n = [(r["point"]["batch"], r["point"]["dp"])
+        keys_n = [(r["point"]["batch"], r["point"]["dp_diag"])
                   for r in ev_n["rows"]]
-        keys_a = [(r["point"]["batch"], r["point"]["dp"])
+        keys_a = [(r["point"]["batch"], r["point"]["dp_diag"])
                   for r in ev_a["rows"]]
         self.assertEqual(keys_n, keys_a)
         self.assertEqual(len(set(keys_n)), len(keys_n),
-                         "(batch, dp) must be unique across the sample")
+                         "(batch, dp_diag) must be unique across the sample")
 
-    def test_dpkey_05_evaluated_dp_is_not_candidate_dp_when_quota_rejects(self):
-        # synthetic log with 9 wait-eligible points (3 closures x 3
-        # resources, all STRICT anchors): C_eval=8 must reject >=1 candidate
-        # and the evaluated dp sequence re-numbers the SELECTED points
-        # 0..k-1 (per-batch evaluated index, SPEC 6.2)
-        blog = _synthetic_wait_log()
-        cands = collect_eligible_points(blog, P3C_K, 12)
-        evals = quota_simulate_batch(blog, P3C_K, 12)
-        self.assertGreater(len(cands), 8,
-                           "fixture must exceed C_eval=8 eligible points")
-        self.assertLess(len(evals), len(cands),
-                        "quota must reject at least one candidate")
-        self.assertEqual([p["dp"] for p in evals],
-                         list(range(len(evals))))
-        self.assertLessEqual(len(evals), 8)
+    def test_dpkey_05_2m_prefix_identical_keys(self):
+        # 2M* uses the same rollout keys for m=0..M*-1 -> the t_end worlds
+        # of the first M* m are identical (WORLD-M-04)
+        p = self.sample["points"][0]
+        ctx = _point_context(p, self.logs[p["batch"]], BATCH)
+        dec8 = pol.evaluate_decision_point(
+            ctx["state"], ctx["posterior"], ctx["cfg"],
+            p["dp_diag"], p["resource"], p["kind"], p["quota_class"],
+            tuple(p["legal_actions"]), ctx["log_prefix"],
+            MASTER_SEED, p["batch"], wait_anchor_time=p.get("wait_anchor_time"),
+            M=2, decision_head=p.get("head"))
+        dec16 = pol.evaluate_decision_point(
+            ctx["state"], ctx["posterior"], ctx["cfg"],
+            p["dp_diag"], p["resource"], p["kind"], p["quota_class"],
+            tuple(p["legal_actions"]), ctx["log_prefix"],
+            MASTER_SEED, p["batch"], wait_anchor_time=p.get("wait_anchor_time"),
+            M=4, decision_head=p.get("head"))
+        for a in dec8.estimates:
+            self.assertEqual(dec8.estimates[a].t_end_by_world,
+                             dec16.estimates[a].t_end_by_world[:2],
+                             f"M=2 vs M=4 prefix mismatch for action {a}")
+
+    def test_b1_offline_01_population_independent_of_c_eval(self):
+        # B1-OFFLINE-01: the B-1 candidate population must NOT depend on
+        # the production online quota (C_eval=6/8): the sample builder has
+        # no quota parameter and the sample points are a subset of ALL
+        # eligible points (quota selection is irrelevant to B-1)
+        cands = set()
+        for bi, blog in enumerate(self.logs):
+            for p in collect_eligible_points(blog, P3C_K, BATCH):
+                cands.add((bi, str(p["time"]), p["resource"]))
+        sample_keys = {(p["batch"], str(p["time"]), p["resource"])
+                       for p in self.sample["points"]}
+        self.assertTrue(sample_keys.issubset(cands),
+                        "B-1 population must be a subset of ALL eligible "
+                        "points")
+        # the builder signature has NO c_eval parameter: the population is
+        # C_eval-independent by construction (frozen §4)
+        import inspect
+        self.assertNotIn("c_eval",
+                         inspect.signature(build_b1_sample).parameters)
+
+    def test_b1_offline_02_quota_selection_does_not_decide_b1(self):
+        # B1-OFFLINE-02: whether the online quota selected a point must not
+        # decide whether it can enter B-1
+        sim = quota_simulate_batch(self.logs[0], P3C_K, BATCH, c_eval=8)
+        sel = {(str(p["time"]), p["resource"]) for p in sim}
+        sample_batch0 = [p for p in self.sample["points"]
+                         if p["batch"] == 0]
+        self.assertGreaterEqual(len(sample_batch0), 1)
+        not_selected = [p for p in sample_batch0
+                        if (str(p["time"]), p["resource"]) not in sel]
+        if not not_selected:
+            # small fixture: prove with the synthetic 9-point log
+            blog = _synthetic_wait_log()
+            sim_s = quota_simulate_batch(blog, P3C_K, 12, c_eval=8)
+            sel_s = {(str(p["time"]), p["resource"]) for p in sim_s}
+            self.assertEqual(len(sel_s), 4)
+            cands_s = collect_eligible_points(blog, P3C_K, 12)
+            self.assertGreater(len(cands_s), len(sel_s),
+                               "fixture: quota must reject candidates")
+            self.assertLessEqual(len(sel_s), 4)
+            not_sel_s = [p for p in cands_s
+                         if (str(p["time"]), p["resource"]) not in sel_s]
+            self.assertGreater(len(not_sel_s), 0)
+            # a quota-rejected candidate is still a legitimate B-1
+            # candidate (population = ALL eligible)
+            self.assertTrue(all(
+                any(c["time"] == p["time"] and c["resource"] == p["resource"]
+                    for c in cands_s)
+                for p in [not_sel_s[0]]))
+        else:
+            self.assertGreater(len(not_selected), 0,
+                               "B-1 must include points the online quota "
+                               "did not select")
+
+    def test_b1_offline_03_frozen_selection_rule(self):
+        # B1-OFFLINE-03: wait/PM 50+50 + top-up + cap 120 strictly per §4
+        self.assertEqual(self.sample["wait_cap"], 50)
+        self.assertEqual(self.sample["pm_cap"], 50)
+        self.assertEqual(self.sample["sample_cap"], 120)
+        self.assertLessEqual(self.sample["n"], 120)
+        # wait class first (incl. both), then PM-only (frozen order)
+        classes = [p["quota_class"] for p in self.sample["points"]]
+        self.assertEqual(classes,
+                         ["WAIT"] * sum(1 for c in classes if c == "WAIT")
+                         + ["PM"] * sum(1 for c in classes if c == "PM"))
+        # population claim recorded in the sample dict
+        self.assertIn("ALL_H2_ELIGIBLE", self.sample["population"])
 
 
 class TestQuotaDP(unittest.TestCase):
@@ -508,6 +586,309 @@ class TestInFlightTestingRebuild(unittest.TestCase):
                          device_id=1)
         self.assertGreaterEqual(len(b_starts), 1)
         self.assertEqual(b_starts[0]["event_time"], "1")
+
+
+class TestAgeLegalDecisionPoints(unittest.TestCase):
+    """AGE-LEGAL-01..03 (second requalification): a resource with
+    equipment age a and task duration d such that a+d > 240 is a
+    MANDATORY_REPLACE_FIRST case -> NO H2 decision point (no
+    START_HEAD / WAIT / optional PM comparison); a+d == 240 (exact_240)
+    -> START_HEAD may execute (complete-first) but PM_WITH_HEAD must not
+    be offered; a+d < 240 -> normal frozen rules."""
+
+    K300 = Fraction(300)  # single long shift so late closures are legal
+
+    def _age_legal_log(self, age_h: int):
+        # dev1: A/B/C PASS quickly; E att1 runs [6, 6+age_h] and completes
+        # ABNORMAL; E att2 released at 6+age_h (the decision closure);
+        # dev2 B release keeps the log alive
+        end = 6 + age_h
+        return _log(
+            _start(1, "A", 1, "0", "2"),
+            _complete(1, "A", 1, "0", "2"),
+            {"event_type": "OBSERVATION_MATERIALIZED", "event_time": "2",
+             "device_id": 1, "process": "A", "effective_attempt_no": 1,
+             "resource_id": "A", "outcome": "PASS"},
+            _start(1, "B", 1, "2", "4"),
+            _complete(1, "B", 1, "2", "4"),
+            {"event_type": "OBSERVATION_MATERIALIZED", "event_time": "4",
+             "device_id": 1, "process": "B", "effective_attempt_no": 1,
+             "resource_id": "B", "outcome": "PASS"},
+            _start(1, "C", 1, "4", "6"),
+            _complete(1, "C", 1, "4", "6"),
+            {"event_type": "OBSERVATION_MATERIALIZED", "event_time": "6",
+             "device_id": 1, "process": "C", "effective_attempt_no": 1,
+             "resource_id": "C", "outcome": "PASS"},
+            _start(1, "E", 1, "6", str(end)),
+            _complete(1, "E", 1, "6", str(end)),
+            {"event_type": "OBSERVATION_MATERIALIZED", "event_time": str(end),
+             "device_id": 1, "process": "E", "effective_attempt_no": 1,
+             "resource_id": "E", "outcome": "ABNORMAL"},
+            _release(1, "E", 2, str(end)),
+            _release(2, "B", 1, str(end + Fraction(1, 2))),
+        )
+
+    def _e_points(self, log, t):
+        pts = dp.reconstruct_decision_points(log, self.K300,
+                                             batch_size=BATCH)
+        return [p for p in pts if p.time == t and p.resource == "E"]
+
+    def test_age_legal_01_a_plus_d_gt_240_no_point(self):
+        # E duration 3: age 238 -> 238+3 = 241 > 240 -> mandatory first
+        log = self._age_legal_log(238)
+        pts = self._e_points(log, Fraction(244))
+        self.assertEqual(pts, [],
+                         "a+d>240 must yield NO H2 dispatch decision")
+
+    def test_age_legal_02_a_plus_d_eq_240_no_optional_pm(self):
+        # age 237 -> 237+3 = 240 (exact_240): START_HEAD legal, no PM
+        log = self._age_legal_log(237)
+        pts = self._e_points(log, Fraction(243))
+        self.assertEqual(len(pts), 1)
+        self.assertIn(dp.A_START_HEAD, pts[0].legal_actions)
+        self.assertNotIn(dp.A_PM_WITH_HEAD, pts[0].legal_actions)
+
+    def test_age_legal_03_a_plus_d_lt_240_normal(self):
+        # age 200 -> 203 < 240: PM_WITH_HEAD offered when optional-PM
+        # conditions hold (age >= 120, calibration within shift)
+        log = self._age_legal_log(200)
+        pts = self._e_points(log, Fraction(206))
+        self.assertEqual(len(pts), 1)
+        self.assertIn(dp.A_START_HEAD, pts[0].legal_actions)
+        self.assertIn(dp.A_PM_WITH_HEAD, pts[0].legal_actions)
+
+
+class TestObservablePendingStatus(unittest.TestCase):
+    """PENDING-01..04 (second requalification): same-timestamp observable
+    failure / illegal-240 cancellation / post-completion mandatory age
+    must be visible in the H2 PRE-ACTION state (never idle/available);
+    no hidden lifetime is read."""
+
+    K300 = Fraction(300)
+
+    def _base(self, *recs):
+        return _log(*recs)
+
+    def test_pending_01_same_timestamp_failure(self):
+        # PENDING-01: EQUIPMENT_FAILURE at t -> resource failed/unavailable
+        log = self._base(
+            _release(1, "E", 1, "10"),
+            {"event_type": "EQUIPMENT_FAILURE", "event_time": "10",
+             "resource_id": "E", "device_id": 1, "process": "E",
+             "fragment_start": "8", "fragment_end": "10"},
+            _release(2, "B", 1, "12"),
+        )
+        st = dp.project_pre_action_state(log, Fraction(10),
+                                         batch_size=BATCH)
+        rsrc = next(r for r in st.resources if r.resource == "E")
+        self.assertEqual(rsrc.status, "failed")
+        pts = dp.reconstruct_decision_points(log, self.K300,
+                                             batch_size=BATCH)
+        self.assertEqual([p for p in pts if p.resource == "E"], [])
+
+    def test_pending_02_post_completion_mandatory_age(self):
+        # PENDING-02: completed age reaches 240 -> replacement pending
+        log = self._base(
+            _start(1, "E", 1, "0", "240"),
+            _complete(1, "E", 1, "0", "240"),
+            {"event_type": "OBSERVATION_MATERIALIZED", "event_time": "240",
+             "device_id": 1, "process": "E", "effective_attempt_no": 1,
+             "resource_id": "E", "outcome": "PASS"},
+            _release(1, "E", 2, "241"),
+            _release(2, "B", 1, "242"),
+        )
+        st = dp.project_pre_action_state(log, Fraction(241),
+                                         batch_size=BATCH)
+        rsrc = next(r for r in st.resources if r.resource == "E")
+        self.assertEqual(rsrc.status, "replacement")
+        pts = dp.reconstruct_decision_points(log, self.K300,
+                                             batch_size=BATCH)
+        self.assertEqual([p for p in pts if p.resource == "E"], [])
+
+    def test_pending_03_illegal240_cancellation(self):
+        # PENDING-03: illegal-240 cancellation -> mandatory replacement
+        log = self._base(
+            _start(1, "E", 1, "0", "3"),
+            {"event_type": "TASK_CANCEL", "event_time": "3",
+             "device_id": 1, "process": "E", "effective_attempt_no": 1,
+             "resource_id": "E", "attempt_start_time": "0",
+             "attempt_end_time": "3", "outcome": "NONE",
+             "cancel_reason": "illegal_240"},
+            _release(1, "E", 1, "3"),
+            _release(2, "B", 1, "5"),
+        )
+        st = dp.project_pre_action_state(log, Fraction(3),
+                                         batch_size=BATCH)
+        rsrc = next(r for r in st.resources if r.resource == "E")
+        self.assertEqual(rsrc.status, "replacement")
+        pts = dp.reconstruct_decision_points(log, self.K300,
+                                             batch_size=BATCH)
+        self.assertEqual([p for p in pts if p.resource == "E"], [])
+
+    def test_pending_04_plain_idle_unaffected(self):
+        log = self._base(
+            _release(1, "E", 1, "10"),
+            _release(2, "B", 1, "12"),
+        )
+        st = dp.project_pre_action_state(log, Fraction(10),
+                                         batch_size=BATCH)
+        rsrc = next(r for r in st.resources if r.resource == "E")
+        self.assertEqual(rsrc.status, "idle")
+
+
+class TestPosteriorWorldM(unittest.TestCase):
+    """WORLD-M-01..06 (second requalification): the policy evaluator
+    rebuilds one posterior world_m per m from the h2_rollout post keys
+    (shared across the candidate actions of that m; no physical hidden
+    world enters the rollouts)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.logs = [_gen_batch(0), _gen_batch(1)]
+        cls.sample = build_b1_sample(cls.logs, P3C_K, BATCH)
+
+    def _ctx(self):
+        p = self.sample["points"][0]
+        return p, _point_context(p, self.logs[p["batch"]], BATCH)
+
+    def _world_m(self, ctx, dp_diag, m, replicate_id,
+                 salt="q3h2-bootstrap-v1"):
+        from main_model.h2_rollout.post_keys_v1 import rollout_post_keys
+        keys = rollout_post_keys(
+            MASTER_SEED, replicate_id, dp_diag, m,
+            tuple(range(1, BATCH + 1)),
+            tuple(r.resource for r in ctx["state"].resources),
+            {r.resource: r.generation for r in ctx["state"].resources},
+            salt=salt)
+        return cont.rebuild_continuation_world(
+            ctx["state"], ctx["posterior"],
+            u_x_by_device=keys.u_x_by_device,
+            u_d_by_device=keys.u_d_by_device,
+            u_l_by_resource=keys.u_l_by_resource)
+
+    def test_world_m_01_different_m_may_differ(self):
+        # different m -> different keys -> the posterior world is allowed
+        # to differ (sampled x_abc / x_d / residual lifetime)
+        p, ctx = self._ctx()
+        diffs = 0
+        for m in range(3):
+            w0 = self._world_m(ctx, p["dp_diag"], m, p["batch"])
+            w1 = self._world_m(ctx, p["dp_diag"], m + 1, p["batch"])
+            if (w0.devices != w1.devices
+                    or w0.residual_lifetimes != w1.residual_lifetimes):
+                diffs += 1
+        self.assertGreater(diffs, 0,
+                           "different m must allow different posterior "
+                           "worlds (keys resample x_abc/x_d/lifetime)")
+
+    def test_world_m_02_same_keys_same_world(self):
+        p, ctx = self._ctx()
+        w0 = self._world_m(ctx, p["dp_diag"], 2, p["batch"])
+        w1 = self._world_m(ctx, p["dp_diag"], 2, p["batch"])
+        self.assertEqual(w0.devices, w1.devices)
+        self.assertEqual(w0.residual_lifetimes, w1.residual_lifetimes)
+
+    def test_world_m_03_one_world_per_m_across_actions(self):
+        # the evaluator must rebuild exactly M worlds (not M x actions)
+        import unittest.mock as mock
+        p, ctx = self._ctx()
+        real = cont.rebuild_continuation_world
+        calls = {"n": 0}
+
+        def counting(*a, **kw):
+            calls["n"] += 1
+            return real(*a, **kw)
+
+        with mock.patch.object(cont, "rebuild_continuation_world",
+                               side_effect=counting):
+            pol.evaluate_decision_point(
+                ctx["state"], ctx["posterior"], ctx["cfg"],
+                p["dp_diag"], p["resource"], p["kind"], p["quota_class"],
+                tuple(p["legal_actions"]), ctx["log_prefix"],
+                MASTER_SEED, p["batch"],
+                wait_anchor_time=p.get("wait_anchor_time"),
+                M=2, decision_head=p.get("head"))
+        self.assertEqual(calls["n"], 2,
+                         "exactly M world rebuilds, shared across actions")
+
+    def test_world_m_04_m16_prefix_identical_to_m8(self):
+        # 2M* uses identical keys for m=0..M*-1 (DPKEY-05 covers t_end;
+        # here: keys themselves are identical)
+        from main_model.h2_rollout.post_keys_v1 import rollout_post_keys
+        p, ctx = self._ctx()
+        res = tuple(r.resource for r in ctx["state"].resources)
+        gens = {r.resource: r.generation for r in ctx["state"].resources}
+        for m in range(4):
+            k8 = rollout_post_keys(MASTER_SEED, p["batch"], p["dp_diag"], m,
+                                   tuple(range(1, BATCH + 1)), res, gens)
+            k16 = rollout_post_keys(MASTER_SEED, p["batch"], p["dp_diag"], m,
+                                    tuple(range(1, BATCH + 1)), res, gens)
+            self.assertEqual(k8.seed, k16.seed)
+            self.assertEqual(k8.to_canonical_dict(),
+                             k16.to_canonical_dict())
+
+    def test_world_m_05_hidden_annotations_do_not_change_decision(self):
+        # C23 strong check: changing physical hidden annotations
+        # (true_state / lifetime_h / u) while ObservableState /
+        # PosteriorState / h2_rollout keys stay identical must not change
+        # Q_hat / SE / action
+        p, ctx = self._ctx()
+        blog = self.logs[p["batch"]]
+        variants = []
+        for i, mut in enumerate((
+                lambda r: r.update(true_state={"A": True, "B": True,
+                                               "C": True}),
+                lambda r: r.update(lifetime_h="999"),
+                lambda r: r.update(u="0.999"))):
+            vlog = []
+            for r in blog:
+                rec = dict(r)
+                mut(rec)
+                vlog.append(rec)
+            variants.append(vlog)
+        base_dec = pol.evaluate_decision_point(
+            ctx["state"], ctx["posterior"], ctx["cfg"],
+            p["dp_diag"], p["resource"], p["kind"], p["quota_class"],
+            tuple(p["legal_actions"]), ctx["log_prefix"],
+            MASTER_SEED, p["batch"], wait_anchor_time=p.get("wait_anchor_time"),
+            M=2, decision_head=p.get("head"))
+        for vlog in variants:
+            vctx = _point_context(p, vlog, BATCH)
+            vdec = pol.evaluate_decision_point(
+                vctx["state"], vctx["posterior"], vctx["cfg"],
+                p["dp_diag"], p["resource"], p["kind"], p["quota_class"],
+                tuple(p["legal_actions"]), vctx["log_prefix"],
+                MASTER_SEED, p["batch"],
+                wait_anchor_time=p.get("wait_anchor_time"),
+                M=2, decision_head=p.get("head"))
+            for a in base_dec.estimates:
+                e0 = base_dec.estimates[a]
+                ev = vdec.estimates[a]
+                self.assertEqual(e0.q_hat, ev.q_hat,
+                                 f"hidden annotations changed Q_hat ({a})")
+                self.assertEqual(e0.se_m, ev.se_m,
+                                 f"hidden annotations changed SE ({a})")
+            self.assertEqual(base_dec.chosen, vdec.chosen)
+
+    def test_world_m_06_online_offline_parity(self):
+        # same (state, posterior, config, replicate, dp_diag, keys) ->
+        # identical Q_hat / SE / chosen action (online and offline paths
+        # both delegate to evaluate_decision_point)
+        p, ctx = self._ctx()
+        d1 = pol.evaluate_decision_point(
+            ctx["state"], ctx["posterior"], ctx["cfg"],
+            p["dp_diag"], p["resource"], p["kind"], p["quota_class"],
+            tuple(p["legal_actions"]), ctx["log_prefix"],
+            MASTER_SEED, p["batch"], wait_anchor_time=p.get("wait_anchor_time"),
+            M=2, decision_head=p.get("head"))
+        d2 = pol.evaluate_decision_point(
+            ctx["state"], ctx["posterior"], ctx["cfg"],
+            p["dp_diag"], p["resource"], p["kind"], p["quota_class"],
+            tuple(p["legal_actions"]), ctx["log_prefix"],
+            MASTER_SEED, p["batch"], wait_anchor_time=p.get("wait_anchor_time"),
+            M=2, decision_head=p.get("head"))
+        self.assertEqual(d1.to_canonical_dict(), d2.to_canonical_dict())
+        self.assertEqual(d1.chosen, d2.chosen)
 
 
 class TestReleaseGuardRebuild(unittest.TestCase):

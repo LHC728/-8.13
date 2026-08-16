@@ -234,7 +234,8 @@ class TestPolicyEvaluationInvariants(unittest.TestCase):
     def test_single_legal_action_is_a_h1(self):
         # REQUALIFIED (decision semantics): the START_HEAD candidate is
         # bound to its FROZEN decision head (the queue head of the
-        # pre-action projection at t=0)
+        # pre-action projection at t=0); the policy evaluator rebuilds its
+        # own posterior world_m per m (no caller-supplied world)
         log = [
             {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
              "device_id": 1,
@@ -251,17 +252,11 @@ class TestPolicyEvaluationInvariants(unittest.TestCase):
         ]
         st = obs.project_log_prefix(log, Fraction(0), batch_size=BATCH_SIZE)
         post = ps.PosteriorState.from_observable(st)
-        prov = physical_post_provider("h2_tuning", MASTER_SEED, 0,
-                                      BATCH_SIZE, ("A", "B", "C", "E"))
-        ux = {1: prov.u_x(1), 2: prov.u_x(2)}
-        ud = {1: prov.u_d(1), 2: prov.u_d(2)}
-        ul = {r: prov.u_l(r, 1) for r in ("A", "B", "C", "E")}
-        world = cont.rebuild_continuation_world(st, post, ux, ud, ul)
         cfg = re1.RolloutConfig(batch_size=BATCH_SIZE, shift_length_h=K,
                                 shifts_per_day=2, scenario="q3_two_shift",
                                 tau_pm=re1.NO_PM_BEFORE_MANDATORY)
         dec = pol.evaluate_decision_point(
-            st, post, world, prov, cfg, 0, "A", "dispatch", "WAIT",
+            st, post, cfg, 0, "A", "dispatch", "WAIT",
             (re1.A_START_HEAD,), None, MASTER_SEED, 0, M=2,
             decision_head=(1, "A", 1))
         self.assertEqual(dec.a_h1, re1.A_START_HEAD)
@@ -270,7 +265,7 @@ class TestPolicyEvaluationInvariants(unittest.TestCase):
         self.assertEqual(dec.legal_actions, (re1.A_START_HEAD,))
 
     def test_determinism_same_inputs(self):
-        st, post, world, prov = _fresh_state(1)
+        st, post, _world, _prov = _fresh_state(1)
         cfg = re1.RolloutConfig(batch_size=BATCH_SIZE, shift_length_h=K,
                                 shifts_per_day=2, scenario="q3_two_shift",
                                 tau_pm=re1.NO_PM_BEFORE_MANDATORY)
@@ -278,18 +273,18 @@ class TestPolicyEvaluationInvariants(unittest.TestCase):
                   legal_actions=(re1.A_H1_NOOP, re1.A_PM_IDLE),
                   log_prefix=None, master_seed_h2=MASTER_SEED,
                   replicate_id=1, M=2)
-        d1 = pol.evaluate_decision_point(st, post, world, prov, cfg, **kw)
-        d2 = pol.evaluate_decision_point(st, post, world, prov, cfg, **kw)
+        d1 = pol.evaluate_decision_point(st, post, cfg, **kw)
+        d2 = pol.evaluate_decision_point(st, post, cfg, **kw)
         self.assertEqual(d1.chosen, d2.chosen)
         self.assertEqual(d1.to_canonical_dict(), d2.to_canonical_dict())
 
     def test_se_m_nonnegative(self):
-        st, post, world, prov = _fresh_state(1)
+        st, post, _world, _prov = _fresh_state(1)
         cfg = re1.RolloutConfig(batch_size=BATCH_SIZE, shift_length_h=K,
                                 shifts_per_day=2, scenario="q3_two_shift",
                                 tau_pm=re1.NO_PM_BEFORE_MANDATORY)
         dec = pol.evaluate_decision_point(
-            st, post, world, prov, cfg, 1, "A", "maintenance", "PM",
+            st, post, cfg, 1, "A", "maintenance", "PM",
             (re1.A_H1_NOOP, re1.A_PM_IDLE), None, MASTER_SEED, 1, M=2)
         for a, e in dec.estimates.items():
             self.assertGreaterEqual(e.q_hat, Fraction(-10**9))

@@ -170,18 +170,12 @@ class H2BatchRunner(re1.RolloutEngine):
             legal = tuple(p.legal_actions)
             wait_anchor = (p.wait_anchor.completion_time
                            if p.wait_anchor is not None else None)
-            # build the continuation world from the observable posterior
-            # (h2_rollout keys will be drawn inside the policy evaluator)
-            world = cont.rebuild_continuation_world(
-                st, post,
-                u_x_by_device={d.device_id: Fraction(1, 2)
-                               for d in st.devices},
-                u_d_by_device={d.device_id: Fraction(1, 3)
-                               for d in st.devices},
-                u_l_by_resource={r: Fraction(1, 3)
-                                 for r in self._resources()})
+            # policy evaluation rebuilds its OWN posterior world_m per m
+            # from the h2_rollout post keys (second requalification: no
+            # fixed physical/dummy world enters the rollouts; x_abc / x_d /
+            # residual lifetimes are resampled from the rollout keys only)
             dec = pol.evaluate_decision_point(
-                st, post, world, self.provider, self.config,
+                st, post, self.config,
                 ev.dp, ev.resource, ev.kind, cls, legal,
                 pre_log, self.master_seed_h2, self.batch_replicate_id,
                 wait_anchor_time=wait_anchor, M=self.M,

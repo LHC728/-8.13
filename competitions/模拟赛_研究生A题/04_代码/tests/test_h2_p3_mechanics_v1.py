@@ -197,13 +197,17 @@ class TestPM(unittest.TestCase):
                          Fraction(135))
 
     def test_pm_r2_exact240_head_no_pm_with_head(self):
-        # PM-R2: age == 240 with a legal head -> PM_WITH_HEAD must NOT be a
-        # policy action (mandatory node)
+        # PM-R2 (REQUALIFIED, HG §7 AGE-LEGAL-01): age == 240 with a legal
+        # head -> a+d > 240 -> MANDATORY_REPLACE_FIRST -> NO H2 dispatch
+        # decision point at all (no START_HEAD / WAIT / optional PM
+        # comparison point); the old expectation of a dispatch point
+        # without PM_WITH_HEAD is superseded by the second requalification
         log, K, tend = chk._pm_logs()["PM-R2-EXACT240-HEAD"]
         pts = dp.reconstruct_decision_points(log, K, batch_size=2, t_end=tend)
         d = [p for p in pts if p.kind == "dispatch" and p.time == 240]
-        self.assertTrue(d, "dispatch point with legal head at age=240")
-        self.assertNotIn(dp.A_PM_WITH_HEAD, d[0].legal_actions)
+        self.assertFalse(d,
+                         "a+d>240 (mandatory) must yield NO H2 dispatch "
+                         "decision point (AGE-LEGAL-01)")
 
     def test_pm_r3_exact240_nohead_no_pm_idle(self):
         # PM-R3: age == 240, maintenance conditions otherwise satisfied ->

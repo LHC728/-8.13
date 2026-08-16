@@ -93,11 +93,15 @@ EV_TRUE_STATE = "TRUE_STATE_GENERATED"
 EV_REPLACEMENT_START = "EQUIPMENT_REPLACEMENT_START"
 EV_REPLACEMENT_DEFERRED = "EQUIPMENT_REPLACEMENT_DEFERRED"
 EV_CALIBRATION_COMPLETE = "EQUIPMENT_CALIBRATION_COMPLETE"
+EV_EQUIPMENT_FAILURE = "EQUIPMENT_FAILURE"
 EV_SHIFT_CHANGE = "SHIFT_CHANGE"
 EV_TURNOVER_OUT_START = "TURNOVER_OUT_START"
 EV_TURNOVER_OUT_COMPLETE = "TURNOVER_OUT_COMPLETE"
 EV_TURNOVER_IN_START = "TURNOVER_IN_START"
 EV_TURNOVER_IN_COMPLETE = "TURNOVER_IN_COMPLETE"
+
+# Frozen mandatory-240 boundary (P017), declared locally (P1 isolation).
+MANDATORY_AGE_H: Fraction = Fraction(240)
 
 
 # ---------------------------------------------------------------------------
@@ -368,6 +372,53 @@ def project_log_prefix(event_log: list[dict[str, Any]], t: Fraction,
                 return (w0, w1)
         return None
 
+    def _observable_pending_status(rsrc: str, t: Fraction
+                                   ) -> Optional[str]:
+        """PENDING-01..03 (second requalification): replacement-pending
+        detected from OBSERVABLE events ONLY (never a hidden lifetime read):
+
+          * PENDING-01: same-timestamp natural equipment failure
+            (EQUIPMENT_FAILURE) -> "failed" (unavailable; no dispatch/PM);
+          * PENDING-03: illegal-240 cancellation (TASK_CANCEL
+            cancel_reason=illegal_240) -> "replacement" (mandatory pending);
+          * PENDING-02: observable completed age reaching the mandatory
+            boundary (>= 240) -> "replacement" (post-completion mandatory).
+
+        Either pending state is SETTLED (resource usable again) once a
+        replacement started at/after the event has its calibration
+        completed by t.  Returns None when no observable pending state."""
+        last_fail: Optional[Fraction] = None
+        last_illegal: Optional[Fraction] = None
+        for r in pre:
+            if r.get("resource_id") != rsrc:
+                continue
+            tt = _frac(r["event_time"])
+            if tt > t:
+                continue
+            et = r.get("event_type")
+            if et == EV_EQUIPMENT_FAILURE:
+                if last_fail is None or tt > last_fail:
+                    last_fail = tt
+            elif (et == EV_TASK_CANCEL
+                  and r.get("cancel_reason") == "illegal_240"):
+                if last_illegal is None or tt > last_illegal:
+                    last_illegal = tt
+
+        def _settled(after: Fraction) -> bool:
+            for r in repl_records[rsrc]:
+                if _frac(r["event_time"]) >= after \
+                        and _frac(r["calibration_end"]) <= t:
+                    return True
+            return False
+
+        if last_fail is not None and not _settled(last_fail):
+            return "failed"      # PENDING-01
+        if last_illegal is not None and not _settled(last_illegal):
+            return "replacement"  # PENDING-03
+        if _equipment_age(rsrc, t) >= MANDATORY_AGE_H:
+            return "replacement"  # PENDING-02 (post-completion mandatory)
+        return None
+
     def _gen_start(rsrc: str, t: Fraction) -> Fraction:
         gs = Fraction(0)
         for r in repl_records[rsrc]:
@@ -433,15 +484,25 @@ def project_log_prefix(event_log: list[dict[str, Any]], t: Fraction,
                 status = "testing"
                 in_flight = running[1] - t
             else:
-                win = _repl_window(rsrc, t)
-                if win is not None:
-                    # failure-driven replacement (kind=failure) -> "failed",
-                    # otherwise mandatory/preventive pending -> "replacement"
-                    trigger = ""
-                    for r in repl_records[rsrc]:
-                        if _frac(r["event_time"]) <= t and _frac(r["event_time"]) >= win[0]:
-                            trigger = r.get("trigger", "")
-                    status = "failed" if "failure" in trigger else "replacement"
+                # PENDING-01..03 (second requalification): observable
+                # same-timestamp failure / illegal-240 cancellation /
+                # post-completion mandatory age must NOT be projected as
+                # idle/available at the H2 decision boundary (safe
+                # pre-action status; never a hidden lifetime read)
+                pending = _observable_pending_status(rsrc, t)
+                if pending is not None:
+                    status = pending
+                else:
+                    win = _repl_window(rsrc, t)
+                    if win is not None:
+                        # failure-driven replacement (kind=failure) ->
+                        # "failed", otherwise mandatory/preventive pending
+                        # -> "replacement"
+                        trigger = ""
+                        for r in repl_records[rsrc]:
+                            if _frac(r["event_time"]) <= t and _frac(r["event_time"]) >= win[0]:
+                                trigger = r.get("trigger", "")
+                        status = "failed" if "failure" in trigger else "replacement"
         resources.append(ResourceObs(
             resource=rsrc, status=status, age_h=_equipment_age(rsrc, t),
             in_flight_remaining_h=in_flight, generation=_generation(rsrc, t)))

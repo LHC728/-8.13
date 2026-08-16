@@ -294,6 +294,19 @@ def reconstruct_decision_points(event_log: list[dict[str, Any]], K: Fraction,
             rsrc = next((r for r in st.resources if r.resource == resource),
                         None)
             resource_idle = rsrc is not None and rsrc.status == "idle"
+            # AGE-LEGAL-01/02 (second requalification): the H1-legal
+            # decision-point definition must exclude mandatory-replacement
+            # situations -- a resource with equipment age a and task
+            # duration d such that a+d > 240 is a MANDATORY_REPLACE_FIRST
+            # case and yields NO H2 candidate decision point (no
+            # START_HEAD / WAIT / optional PM comparison); a+d == 240 is
+            # the frozen exact_240 case (START_HEAD may execute under the
+            # complete-first rule, but PM_WITH_HEAD must NOT be offered as
+            # an optional H2 candidate).
+            a_plus_d = (rsrc.age_h + DURATIONS_H[resource]
+                        if rsrc is not None else Fraction(0))
+            if a_plus_d > MANDATORY_AGE_H:
+                continue  # mandatory replacement first: no H2 point at all
             head = None
             for q in st.queue:
                 if q.process_order == _process_order(resource):
@@ -306,7 +319,8 @@ def reconstruct_decision_points(event_log: list[dict[str, Any]], K: Fraction,
                 if anchor is not None:
                     actions.append(A_WAIT_EVENT)
                 rsrc = next(r for r in st.resources if r.resource == resource)
-                pm_ok = (MIN_PREVENTIVE_AGE_H <= rsrc.age_h
+                pm_ok = (a_plus_d < MANDATORY_AGE_H  # exact-240: no optional PM
+                         and MIN_PREVENTIVE_AGE_H <= rsrc.age_h
                          < MANDATORY_AGE_H
                          and t + CALIBRATION_MINUTES[resource] / Fraction(60)
                          <= sh[1])

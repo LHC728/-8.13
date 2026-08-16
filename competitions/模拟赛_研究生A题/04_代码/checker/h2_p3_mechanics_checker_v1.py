@@ -203,6 +203,8 @@ def _own_maintenance(st: obs.ObservableState, resource: str, t,
     rsrc = next((r for r in st.resources if r.resource == resource), None)
     if rsrc is None or rsrc.status != "idle":
         return False
+    if rsrc.age_h + DURATIONS_H[resource] > MANDATORY_AGE_H:
+        return False  # AGE-LEGAL-01: mandatory replacement, no H2 point
     if not (MIN_PREVENTIVE_AGE_H <= rsrc.age_h < MANDATORY_AGE_H):
         return False
     if t + CALIBRATION_MINUTES[resource] / Fraction(60) > shift_end:
@@ -219,7 +221,13 @@ def _own_maintenance(st: obs.ObservableState, resource: str, t,
 def _own_actions(st: obs.ObservableState, resource: str, t, shift_end,
                  head, active) -> tuple[str, ...]:
     # REQUALIFICATION: a DISPATCH decision point additionally requires the
-    # resource to be idle/available (pre-action view).
+    # resource to be idle/available (pre-action view); AGE-LEGAL (second
+    # requalification): a+d > 240 (mandatory) yields NO point at all and
+    # a+d == 240 (exact_240) must NOT offer optional PM_WITH_HEAD.
+    rsrc = next((r for r in st.resources if r.resource == resource), None)
+    if rsrc is not None \
+            and rsrc.age_h + DURATIONS_H[resource] > MANDATORY_AGE_H:
+        return ()  # mandatory replacement first: no H2 decision point
     if (_own_resource_idle(st, resource)
             and head is not None
             and _own_head_legal(st, head, t, shift_end)):
@@ -227,8 +235,9 @@ def _own_actions(st: obs.ObservableState, resource: str, t, shift_end,
         anchor = _own_wait_anchor(head, t, shift_end, active)
         if anchor is not None:
             actions.append(dpimpl.A_WAIT_EVENT)
-        rsrc = next(r for r in st.resources if r.resource == resource)
-        if (MIN_PREVENTIVE_AGE_H <= rsrc.age_h < MANDATORY_AGE_H
+        if (rsrc is not None
+                and rsrc.age_h + DURATIONS_H[resource] < MANDATORY_AGE_H
+                and MIN_PREVENTIVE_AGE_H <= rsrc.age_h < MANDATORY_AGE_H
                 and t + CALIBRATION_MINUTES[resource] / Fraction(60)
                 <= shift_end):
             actions.append(dpimpl.A_PM_WITH_HEAD)
@@ -340,14 +349,22 @@ def check_decision_points() -> dict[str, Any]:
             for resource in RESOURCES:
                 head = _own_head(st, resource)
                 own = _own_actions(st, resource, t, sh[1], head, active)
+                rsrc0 = next((r for r in st.resources
+                              if r.resource == resource), None)
+                a_plus_d = (rsrc0.age_h + DURATIONS_H[resource]
+                            if rsrc0 is not None else Fraction(0))
+                # AGE-LEGAL-01 (second requalification): a+d>240 mandatory
+                # -> no H2 decision point of any kind
+                mandatory = a_plus_d > MANDATORY_AGE_H
                 expected = {
-                    "kind": ("dispatch" if (_own_resource_idle(st, resource)
-                                            and head is not None
-                                            and _own_head_legal(
-                                                st, head, t, sh[1]))
-                             else ("maintenance"
-                                   if _own_maintenance(st, resource, t, sh[1])
-                                   else "none")),
+                    "kind": ("none" if mandatory else
+                             ("dispatch" if (_own_resource_idle(st, resource)
+                                             and head is not None
+                                             and _own_head_legal(
+                                                 st, head, t, sh[1]))
+                              else ("maintenance"
+                                    if _own_maintenance(st, resource, t, sh[1])
+                                    else "none"))),
                     "actions": own}
                 got = [p for p in impl if p.time == t
                        and p.resource == resource]
@@ -1252,9 +1269,12 @@ def _pm_logs() -> dict[str, tuple[list[dict], Fraction, Fraction]]:
 
 
 def check_mandatory_optional_pm() -> dict[str, Any]:
-    """PM-R2/R3/R4: age == 240 (mandatory node) excludes optional PM even
-    with a legal head; age == 120 allows optional PM (positive case);
-    PM_WITH_HEAD positive case with a head present."""
+    """PM-R2/R3/R4: age == 240 (mandatory node) excludes optional PM; under
+    AGE-LEGAL-01 (second requalification, HG §7) age==240 -> a+d > 240 ->
+    MANDATORY_REPLACE_FIRST -> NO H2 dispatch decision point at all
+    (supersedes the earlier expectation of a dispatch point without PM);
+    age == 120 allows optional PM (positive case); PM_WITH_HEAD positive
+    case with a head present."""
     failures: list[str] = []
     rows: list[dict[str, Any]] = []
     logs = _pm_logs()
@@ -1271,12 +1291,10 @@ def check_mandatory_optional_pm() -> dict[str, Any]:
                          "actions": [list(p.legal_actions) for p in pts]})
         elif label == "PM-R2-EXACT240-HEAD":
             d = [p for p in pts if p.kind == "dispatch" and p.time == 240]
-            if not d:
-                failures.append("PM-R2: dispatch point with legal head at "
-                                "age=240 must exist")
-            elif dpimpl.A_PM_WITH_HEAD in d[0].legal_actions:
-                failures.append("PM-R2: PM_WITH_HEAD must NOT be a policy "
-                                "action at age==240 (mandatory node)")
+            if d:
+                failures.append("PM-R2: a+d > 240 (mandatory) must yield NO "
+                                "H2 dispatch decision point at age==240 "
+                                "(AGE-LEGAL-01)")
             rows.append({"label": label,
                          "dispatch_actions": [list(p.legal_actions)
                                               for p in d]})

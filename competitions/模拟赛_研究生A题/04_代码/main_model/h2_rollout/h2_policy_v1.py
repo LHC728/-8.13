@@ -113,8 +113,6 @@ def _argmin_action(estimates: dict[str, ActionEstimate]) -> str:
 def evaluate_decision_point(
         state: obs.ObservableState,
         posterior: ps.PosteriorState,
-        world: cont.ContinuationWorld,
-        provider: re1.PostKeyProvider,
         cfg: re1.RolloutConfig,
         dp: int, resource: str, kind: str, quota_class: str,
         legal_actions: tuple[str, ...],
@@ -125,15 +123,30 @@ def evaluate_decision_point(
         salt: str = "q3h2-bootstrap-v1",
         decision_head: Optional[tuple[int, str, int]] = None,
 ) -> PolicyDecision:
-    """Evaluate one decision point: run M rollouts per legal action (CRN:
-    same (dp, m) post-key bundle across actions) and apply the 2SE rule.
-    ``salt`` selects the rollout salt (normal ROLLOUT_SALT or the frozen
-    ALT salt for stability (b)).
+    """Evaluate one decision point: for every legal candidate action run
+    M continuation rollouts and apply the 2SE rule.
 
-    REQUALIFIED: ``decision_head`` is the FROZEN FCFS head identity of the
-    decision point (from the decision-point reconstruction); it is bound
-    into every candidate rollout so START_HEAD / WAIT_EVENT act on the
-    frozen decision context, never on a re-derived queue head."""
+    POSTERIOR WORLD_m (second requalification, HG §4/§5): the policy
+    evaluator itself rebuilds ONE posterior continuation world per m from
+    the m-th h2_rollout post-key bundle:
+
+        keys_m = rollout_post_keys(master_seed_h2, replicate_id, dp, m, ...)
+        world_m = rebuild_continuation_world(state, posterior,
+                                             keys_m.u_x_by_device,
+                                             keys_m.u_d_by_device,
+                                             keys_m.u_l_by_resource)
+        provider_m = PostKeyProvider(keys_m.u_x / u_d / u_y / u_l ...)
+
+    ALL candidate actions of the SAME m share the SAME world_m + provider_m
+    (cross-action CRN); different m use different keys -> the posterior
+    hidden world may differ per m.  The physical h2_tuning hidden world
+    NEVER enters the policy rollouts (x_abc / x_d / current-generation
+    residual lifetimes are resampled from the h2_rollout keys only).
+    The caller no longer supplies a fixed world/provider.
+
+    ``decision_head`` is the FROZEN FCFS head identity of the decision
+    point; it is bound into every candidate rollout so START_HEAD /
+    WAIT_EVENT act on the frozen decision context."""
     a_h1 = (re1.A_START_HEAD if kind == "dispatch" else re1.A_H1_NOOP)
     actions = tuple(legal_actions) if legal_actions else (a_h1,)
     if a_h1 not in actions:
@@ -147,28 +160,36 @@ def evaluate_decision_point(
     # batch world and identical across all candidate actions, so CRN is
     # preserved (same (dp, m, device) -> same draws).
     device_ids = tuple(range(1, cfg.batch_size + 1))
+    resources_tuple = tuple(r.resource for r in state.resources)
+    gens = {r.resource: r.generation for r in state.resources}
+    # -- per-m posterior world + provider (WORLD-M-01..03) ----------------
+    worlds_m: list[tuple[cont.ContinuationWorld, re1.PostKeyProvider]] = []
+    for m in range(M):
+        keys = rollout_post_keys(master_seed_h2, replicate_id, dp, m,
+                                 device_ids, resources_tuple, gens, salt=salt)
+        world_m = cont.rebuild_continuation_world(
+            state, posterior,
+            u_x_by_device=keys.u_x_by_device,
+            u_d_by_device=keys.u_d_by_device,
+            u_l_by_resource=keys.u_l_by_resource)
+        prov_m = re1.PostKeyProvider(
+            u_x_by_device=keys.u_x_by_device,
+            u_x_subsystem_lookup=(
+                lambda d, s, _k=keys: _k.u_x_subsystem_by_device[d][s]),
+            u_d_by_device=keys.u_d_by_device,
+            u_l_by_resource=keys.u_l_by_resource,
+            u_y_lookup=keys.u_y_lookup, u_l_lookup=keys.u_l_lookup)
+        worlds_m.append((world_m, prov_m))
     for a in actions:
         t_ends: list[Fraction] = []
         for m in range(M):
-            keys = rollout_post_keys(master_seed_h2, replicate_id, dp, m,
-                                     device_ids,
-                                     tuple(r.resource for r in state.resources),
-                                     {r.resource: r.generation
-                                      for r in state.resources},
-                                     salt=salt)
-            eng_prov = re1.PostKeyProvider(
-                u_x_by_device=keys.u_x_by_device,
-                u_x_subsystem_lookup=(
-                    lambda d, s, _k=keys: _k.u_x_subsystem_by_device[d][s]),
-                u_d_by_device=keys.u_d_by_device,
-                u_l_by_resource=keys.u_l_by_resource,
-                u_y_lookup=keys.u_y_lookup, u_l_lookup=keys.u_l_lookup)
+            world_m, prov_m = worlds_m[m]
             first_action = a
             pm_resource = resource if a in (re1.A_PM_WITH_HEAD,
                                             re1.A_PM_IDLE) else None
             anchor = wait_anchor_time if a == re1.A_WAIT_EVENT else None
             eng = re1.RolloutEngine(
-                state, posterior, world, eng_prov, cfg,
+                state, posterior, world_m, prov_m, cfg,
                 first_action=first_action, wait_anchor_time=anchor,
                 pm_resource=pm_resource, log_prefix=log_prefix,
                 decision_resource=resource, decision_head=decision_head,
@@ -224,7 +245,7 @@ def evaluate_batch_sample(
     for p in sample_points:
         ctx = state_builder(p)
         dec = evaluate_decision_point(
-            ctx["state"], ctx["posterior"], ctx["world"], ctx["provider"],
+            ctx["state"], ctx["posterior"],
             ctx["cfg"], p["dp"], p["resource"], p["kind"], p["quota_class"],
             tuple(p["legal_actions"]), ctx["log_prefix"],
             master_seed_h2, replicate_id,

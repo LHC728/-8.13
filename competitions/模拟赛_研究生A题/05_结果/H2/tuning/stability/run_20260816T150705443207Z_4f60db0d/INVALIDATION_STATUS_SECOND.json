@@ -1,0 +1,14 @@
+{
+  "run_id": "20260816T150705443207Z_4f60db0d",
+  "status": "INVALIDATED_FOR_FROZEN_SAMPLE_AND_ROLLOUT_WORLD_SEMANTICS",
+  "numbers_unchanged": true,
+  "authority": "Human Gate second semantic requalification (2026-08-16; e4fd435 H2 DELETE not accepted)",
+  "reasons": [
+    "A. B-1 population incorrectly used the online quota-evaluated subset instead of the frozen ALL H2-eligible population (spec §4; production C_eval*/W_cap/P_cap must not shrink the offline §4 B-1 population)",
+    "B. rollout world m was not rebuilt per-m from h2_rollout post keys (a fixed world was shared across all m; the posterior hidden world must be resampled per (dp_diag, m) from U_X/U_D/U_L keys)",
+    "C. decision legality / mandatory replacement paths remain unclosed (a+d>240 mandatory must not be an H2 candidate decision point; exact-240 must not offer optional PM; same-timestamp replacement_pending must be visible in the H2 pre-action state)"
+  ],
+  "previous_root_791506d8": "keeps its existing INVALIDATED_FOR_DECISION_SEMANTICS status (unchanged)",
+  "decision": "this root is retained immutably (all numbers unchanged) and no longer serves as H2-decision evidence",
+  "report": "05_结果/H2/requalification/2026-08-16_decision_semantics/INVALIDATION_REPORT_SECOND.md"
+}

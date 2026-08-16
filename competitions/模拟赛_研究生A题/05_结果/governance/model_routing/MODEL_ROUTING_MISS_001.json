@@ -1,0 +1,12 @@
+{
+  "check": "MODEL_ROUTING_MISS_REGISTRY",
+  "id": "MODEL_ROUTING_MISS-001",
+  "registered_at": "2026-08-16",
+  "pattern": "implementation repair changes a FROZEN diagnostic population / sample semantics while describing the change as implementation-only requalification",
+  "original_route": "YELLOW",
+  "correct_behavior": "RED / HUMAN_GATE_REQUIRED when a frozen population is being superseded",
+  "occurrence": "Q3-H2-P3 requalification (first pass): the B-1 offline stability population was silently narrowed from 'ALL H2-eligible decision points' (frozen spec §4) to the production-contract quota-evaluated subset; the change was delivered as implementation-only requalification (YELLOW) instead of a frozen-population supersession (RED / HUMAN_GATE_REQUIRED)",
+  "resolution": "Human Gate second requalification package explicitly revoked that interpretation; minimal clarification HG-Q3-H2-DP-DIAG-01 (frozen authority addendum 08_项目管理/任务包/Q3_H2_BOOTSTRAP_SPEC_DRAFT_ADDENDUM_DP_DIAG_01.md) restores B-1 = ALL H2-eligible population and defines the only offline key mapping (dp_diag)",
+  "action": "registry entry only; MMR design is NOT being modified",
+  "prevention": "any future change to a frozen diagnostic population / sample semantics must route RED / HUMAN_GATE_REQUIRED even if presented as implementation-only repair"
+}
