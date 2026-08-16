@@ -1,0 +1,9 @@
+# Q3-H2-P1 task-package snapshot (Human Gate authorization)
+package_ref: Q3-H2-P1
+authority: Q3_H2_BOOTSTRAP_SPEC_DRAFT.md FINAL_FREEZE_ACCEPTED section 7 (C23 observable-information boundary) + sections 8/9 (interface references only) + Q3-H2-P1 Human Gate package
+bootstrap_spec_snapshot: bootstrap_spec_snapshot.md
+bootstrap_spec_sha256: c370aa38cc58c83462b4f280f10628d08ca9cef9d5c04297a2db2ffebbf6eb62
+formal_task_package_sha256: a0864c8728603ef85c12eff91500c78909f70d74738cb42765212d0c035b4472
+density_lineage: E1 43fc39a (run a2669aa9) + E2 79f5c0f (checker_requalification/run 0713f171); D-14 A 7/7 B 7/7
+scope: ObservableState/PosteriorState information firewall + C23 P1-applicable clauses; posterior/lifetime/policy/rollout NOT implemented (P2/P3 NOT AUTHORIZED)
+evidence_rule: ACYCLIC hash DAG (RULE A)

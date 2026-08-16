@@ -2,6 +2,23 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-16 / `STATE-2026-08-13-G2.4` / `Q3-H2 DENSITY = FINAL PASS / ACCEPTED；P1 信息防火墙 = COMPLETED / AWAITING HUMAN GATE REVIEW`
+
+### 修改
+
+- **Q3-H2 Density Gate = FINAL PASS / ACCEPTED（Human Gate 2026-08-16）**：D-14 A 7/7（meaningful>=0.20）+ B 7/7（strict>=2/批）；accepted lineage = E1 temporal reconstruction `43fc39a`（evidence `05_结果/H2/density_recheck/run_20260815T173625059534Z_a2669aa9`）+ E2 fragment-aware checker requalification `79f5c0f`（evidence `05_结果/H2/density_recheck/checker_requalification/run_20260815T214701262919Z_0713f171`）。**P1 = AUTHORIZED**（仅 ObservableState/PosteriorState 信息防火墙 + C23 P1-applicable 条款）。
+- **Q3-H2-P1 完成（ObservableState / PosteriorState information firewall + C23 P1-applicable-scope checker）**：
+  - `04_代码/main_model/h2/observable_state_v1.py`：不可变 `ObservableState` DTO（冻结 §7 白名单：时间/班历/值班分队、未进入装置数 n、台位/周转、资源状态 idle/testing/failed/replacement/calibration、年龄 a_j、在途剩余 ℓ_j、代次 g_j、队列与 FCFS 键、各装置已完成观测序列与有效尝试号、D 物化仅布尔、终态、已完成更换/校准历史）+ 特权 log-prefix 投影适配器（**时间因果**：仅 event_time<=t；**fragment-aware**：fragment 只被相同 attempt_start_time 的 COMPLETE/CANCEL 结算——E1/E2 教训复用）；不保留任何原始 log/engine/device/equipment 引用；canonical dict + SHA-256 fingerprint。
+  - `04_代码/main_model/h2/posterior_state_v1.py`：PosteriorState **P1 边界 seam 仅**（`SCHEMA_DEFERRED_TO_P2`；无后验数学、无 fake 数字；§8 后验/§9 条件寿命 = P2，未实现）。
+  - `04_代码/checker/h2_p1_firewall_checker_v1.py`（独立 checker，不调用 H2 实现作 oracle）：A 字段白名单（递归 introspection，嵌套 DTO 隐藏信息仍算泄漏）；B 禁读字段/名称/AST 访问扫描（true_state / lifetime / u_key / x_* / is_right_censored / d_state 值）；C import/AST 隔离（H2 包不 import live DES 引擎内部类）；D same-observed-history / different-hidden-world 投影一致性（ABC / D / lifetime / future-U / 全隐藏 5 变体指纹相等）；E 负向泄漏测试（构造带禁读字段的 fixture 并证明被拒绝）；+ PosteriorState seam 无数学检查——**全部按实际条件计算（无硬编码 PASS）**。
+  - `04_代码/tests/test_h2_p1_firewall_v1.py`：**T1-T17 全 PASS（16 tests）**；Q3-H1 formal / admission / Density E2 / key_schema / G3 回归全部 exit 0。
+  - **证据根** `05_结果/H2/p1/run_20260816T043411841146Z_3d4c6d46/`：ACYCLIC hash DAG（RULE A）+ manifest/inventory 一致性 + C21 = PASS；checks.json overall = PASS（C23 P1-applicable / A / B / C / D / E / PosteriorState seam / TESTS / C21）。
+  - **C23 措辞（冻结）**：`C23 INFORMATION-FIREWALL / P1-APPLICABLE CLAUSES = PASS`；`FULL C23 END-TO-END = PENDING`（动作/政策路径未实现；same-observed-history action-equivalence = DEFERRED_TO_POLICY_STAGE）；不写 FULL C23 FINAL PASS。
+- **禁止信息零泄漏**：ObservableState 无 true_state / x_A..x_D / live U_L / live lifetime / future U / u_key / is_right_censored / 未物化 D 真值 / 原始 DES 引用；随机键防火墙保持（key_schema 未修改，不消费 u_x_post/u_d_post/u_y_post/u_l_post）。
+- **状态**：P1 ObservableState/PosteriorState information firewall = **COMPLETED / AWAITING HUMAN GATE REVIEW**；C23 P1-applicable = **EXECUTION PASS / AWAITING HUMAN GATE**；C23 full end-to-end = **PENDING**；**P2 / P3 = NOT AUTHORIZED**；**C25 = NOT AUTHORIZED**；不写 P1 HUMAN GATE ACCEPTED / P1 READY TO AUTO START。
+- 范围审计：posterior math / lifetime resampling / H2 policy / rollout / tuning / holdout / C25 / Q4 = 全部 **NO**；Density accepted evidence / H1 engine / key_schema / D-01..D-25 / E2 checker runner 未修改；无新随机世界。
+- 状态同步：`CURRENT_STATE.md`（Gate 行、§6 禁止、§7 下一出口）。
+
 ## 2026-08-15 / `STATE-2026-08-13-G2.4` / `Q3 H2 DENSITY E2 CHECKER REQUALIFICATION COMPLETED / AWAITING HUMAN GATE FINAL REVIEW`
 
 ### 修改
