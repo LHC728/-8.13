@@ -1,0 +1,34 @@
+{
+  "report": "SENTINEL_REQUEST_HEADER",
+  "router_version": "MMR_V2.1.2",
+  "date": "2026-08-16",
+  "task_id": "SENTINEL-LIVE-001",
+  "source": "session JSONL (request/header + request/context events) of the actual Sentinel child run — extracted from the persisted session, NOT inferred from tool configuration",
+  "child_run_id": "5562219f-fe17-43f9-a45a-fd505022e0b0",
+  "provenance": "C:\\Users\\观后感h\\.dsh\\sessions\\...\\5562219f-fe17-43f9-a45a-fd505022e0b0\\session.jsonl.zstd",
+  "request_header": {
+    "config": {
+      "provider": "deepseek-official",
+      "model": "deepseek-v4-flash",
+      "maxTokens": 256000,
+      "reasoningEffort": "high"
+    },
+    "adapterDefaults": {"reasoningEffort": true}
+  },
+  "request_context": {
+    "provider": "deepseek-official",
+    "model": "deepseek-v4-flash",
+    "contextWindow": 1000000
+  },
+  "fresh_spawn": true,
+  "child_tools_used": ["read", "grep", "glob"],
+  "child_mutation_tools_used": [],
+  "workspace_delta": 0,
+  "identity_verified": true,
+  "sentinel_verdict": "AGREE_GREEN",
+  "notes": [
+    "Runtime model identity is based on the ACTUAL request/header of the executed child session (same standard as Pro-Max identity evidence).",
+    "reasoningEffort=high is the low-cost Flash default; the Sentinel is deliberately not reasoning=max.",
+    "No new model call was made for this receipt."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "fixture": "frozen_solver_fixture_spec",
+  "purpose": "Deterministic fixture authority file for formal-GREEN authority-receipt tests (MMR V2.1.2 §3/§4). Synthetic only; not a project authority.",
+  "authority_state": "FROZEN",
+  "version": "1.0",
+  "content": {
+    "solver": "deterministic_fixture_solver",
+    "config": {"frozen": true, "seed_policy": "fixed", "tolerance": "frozen"}
+  }
+}

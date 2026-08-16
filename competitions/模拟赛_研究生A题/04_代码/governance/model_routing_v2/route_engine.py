@@ -176,17 +176,29 @@ def route_gate_v2_1_1(
         sentinel_required: bool = False,
         sentinel_identity_verified: bool = False,
         sentinel_verdict: Optional[str] = None,
+        authority_receipt_verified: bool = False,
         checkpoint: str = "R0",
         formal_scope: bool = True,
 ) -> dict[str, Any]:
-    """Fail-closed, outcome-aware gate decision (V2.1.1).
+    """Fail-closed, outcome-aware gate decision (V2.1.1 as hardened by
+    V2.1.2).
 
     REVIEW IDENTITY (review_identity_verified) proves only that the review
     ran on the verified channel — it is NEVER semantic approval.
 
+    V2.1.2 hardening:
+    * authority_conflict=true -> HUMAN_GATE_REQUIRED for YELLOW regardless of
+      verdict: an unresolved authority conflict must not be silently
+      adjudicated by the reviewer.  PASS / PASS_WITH_CAVEAT combined with
+      authority_conflict=true is contradictory and cannot formal-pass.
+    * formal GREEN at R4 additionally requires authority_receipt_verified
+      (the referenced frozen/accepted authority actually exists and was
+      receipt-verified) before the Sentinel Gate may pass.
+
     YELLOW:
       identity=false                    -> ROUTING_BLOCKED
       verdict missing/unknown           -> ROUTING_BLOCKED
+      authority_conflict=true           -> HUMAN_GATE_REQUIRED
       verdict=BLOCKED                   -> ROUTING_BLOCKED
       verdict=HUMAN_GATE_REQUIRED       -> HUMAN_GATE_REQUIRED
       verdict=PASS & actions closed     -> PASS
@@ -195,14 +207,13 @@ def route_gate_v2_1_1(
       verdict=PASS_WITH_CAVEAT & open   -> ROUTING_BLOCKED
 
     RED: human_gate_verdict ACCEPTED -> PASS; PENDING -> HUMAN_GATE_REQUIRED;
-         REJECTED/unknown -> ROUTING_BLOCKED.  A gate that merely "happened"
-         is never acceptance.
+         REJECTED/unknown -> ROUTING_BLOCKED.
 
     GREEN (formal_scope + checkpoint=R4): runtime Sentinel Gate — requires
       sentinel_required=true, an actual low-cost Sentinel run
-      (sentinel_identity_verified) and sentinel_verdict=AGREE_GREEN;
-      missing/malformed -> ROUTING_BLOCKED.  GREEN outside the R4 formal
-      gate passes without the Sentinel requirement.
+      (sentinel_identity_verified), sentinel_verdict=AGREE_GREEN AND
+      authority_receipt_verified=true; any missing piece -> ROUTING_BLOCKED.
+      GREEN outside the R4 formal gate passes without these requirements.
     """
     if route == RED:
         if human_gate_verdict == "ACCEPTED":
@@ -215,6 +226,11 @@ def route_gate_v2_1_1(
                 "note": f"human gate {human_gate_verdict!r} is not acceptance"}
 
     if route == YELLOW:
+        if authority_conflict:
+            return {"status": HUMAN_GATE_REQUIRED, "route": route,
+                    "note": "authority_conflict=true: unresolved authority "
+                            "conflict routes to Human Gate; PASS is "
+                            "contradictory with authority_conflict"}
         if not review_identity_verified:
             return {"status": ROUTING_BLOCKED, "route": route,
                     "note": "review identity not verified -> BLOCKED"}
@@ -259,8 +275,13 @@ def route_gate_v2_1_1(
                         "note": f"formal GREEN at R4: Sentinel verdict "
                                 f"{sentinel_verdict!r} is not AGREE_GREEN "
                                 "-> BLOCKED"}
+            if not authority_receipt_verified:
+                return {"status": ROUTING_BLOCKED, "route": route,
+                        "note": "formal GREEN at R4: authority receipt not "
+                                "verified -> BLOCKED"}
             return {"status": GATE_PASS, "route": route,
-                    "note": "formal GREEN at R4 with Sentinel AGREE_GREEN"}
+                    "note": "formal GREEN at R4 with Sentinel AGREE_GREEN and "
+                            "authority receipt verified"}
         return {"status": GATE_PASS, "route": route,
                 "note": "GREEN route (outside the R4 formal gate)"}
 
@@ -271,6 +292,62 @@ def route_gate_v2_1_1(
 # verified_pro_max argument no longer exists; callers must use the
 # outcome-aware arguments.
 route_gate_v2_1 = route_gate_v2_1_1
+
+
+def verify_authority_receipts(card: RiskCard, workspace_root: str
+                              ) -> dict[str, Any]:
+    """V2.1.2 §3: resolve authority receipts against the workspace.
+
+    Each receipt must name a workspace-relative authority file that EXISTS;
+    sha256 (when recorded) must match the actual file.  An arbitrary free-text
+    string is NOT a formal authority receipt.  Returns PASS/FAIL with per-
+    receipt detail; FAIL is fail-closed (formal GREEN cannot proceed).
+    """
+    import hashlib
+    from pathlib import Path
+    root = Path(workspace_root)
+    receipts = card.authority_receipts or []
+    results = []
+    if not receipts:
+        return {"status": "FAIL", "receipts": [],
+                "reason": "no authority_receipts on the card"}
+    ok = True
+    for rec in receipts:
+        ref = rec.get("ref")
+        detail = {"ref": ref}
+        if not ref:
+            detail["ok"] = False
+            detail["reason"] = "missing ref"
+            ok = False
+            results.append(detail)
+            continue
+        p = root / ref
+        if not p.is_file():
+            detail["ok"] = False
+            detail["reason"] = f"authority file does not exist: {ref}"
+            ok = False
+            results.append(detail)
+            continue
+        detail["exists"] = True
+        actual = hashlib.sha256(p.read_bytes()).hexdigest()
+        detail["sha256"] = actual
+        if rec.get("sha256") and rec["sha256"] != actual:
+            detail["ok"] = False
+            detail["reason"] = "sha256 mismatch"
+            ok = False
+            results.append(detail)
+            continue
+        if rec.get("authority_state") not in ("FROZEN", "HUMAN_ACCEPTED"):
+            detail["ok"] = False
+            detail["reason"] = ("authority_state must be FROZEN or "
+                                "HUMAN_ACCEPTED")
+            ok = False
+            results.append(detail)
+            continue
+        detail["ok"] = True
+        detail["authority_state"] = rec["authority_state"]
+        results.append(detail)
+    return {"status": "PASS" if ok else "FAIL", "receipts": results}
 
 
 # ---------------------------------------------------------------------------
@@ -291,18 +368,20 @@ REVIEW_CONDITIONS = {
 
 
 class SemanticIssueStore:
-    """Durable semantic-issue store.  V2.1.1 repair: identity verification is
-    strictly separated from issue resolution.  An issue may be deduped
-    ("no repeated Pro-Max required") ONLY when:
+    """Durable semantic-issue store.
 
-      review_identity_verified = true
-      AND review_verdict is an acceptable terminal outcome
-      AND required_actions_closed = true
-      AND contract_hash unchanged.
+    V2.1.1 repair: identity verification is strictly separated from issue
+    resolution; BLOCKED never becomes RESOLVED merely because the reviewer
+    identity was verified; HUMAN_GATE_REQUIRED never resolves without
+    accepted Human Gate evidence; PASS_WITH_CAVEAT stays open while caveat
+    actions are open.
 
-    BLOCKED never becomes RESOLVED merely because the reviewer identity was
-    verified; HUMAN_GATE_REQUIRED never resolves without accepted Human Gate
-    evidence; PASS_WITH_CAVEAT stays open while caveat actions are open.
+    V2.1.2 hardening (§7): `needs_review()` is separated from
+    `is_resolved()`.  A BLOCKED issue with an UNCHANGED contract and no new
+    re-review condition is UNRESOLVED but does NOT automatically require
+    another Pro-Max review (it stays BLOCKED awaiting the decision layer);
+    re-review happens only when the contract changed or a re-review
+    condition fires.
     """
 
     def __init__(self, path: Optional[str] = None) -> None:
@@ -315,21 +394,49 @@ class SemanticIssueStore:
             if p.is_file():
                 self._issues = json.loads(p.read_text(encoding="utf-8"))
 
-    def needs_pro_max(self, issue_id: str, contract_hash: str) -> bool:
+    def is_resolved(self, issue_id: str) -> bool:
+        """Only RESOLVED (with a terminal outcome) counts as resolved."""
+        rec = self._issues.get(issue_id)
+        if rec is None:
+            return False
+        return rec.get("semantic_status") == "RESOLVED"
+
+    def needs_review(self, issue_id: str, contract_hash: str,
+                     rereview_signals: Optional[dict[str, bool]] = None
+                     ) -> bool:
+        """Whether ANOTHER Pro-Max review is required now.
+
+        True when: unknown issue; identity not verified; status
+        HUMAN_PENDING; status OPEN without a terminal outcome; contract
+        changed; any re-review condition fires; or a RESOLVED outcome lacks
+        closed required actions.  False for BLOCKED with unchanged contract
+        and no re-review condition (stays BLOCKED, no repeated Max) and for
+        a genuinely RESOLVED closed outcome.
+        """
         rec = self._issues.get(issue_id)
         if rec is None:
             return True
         if not rec.get("review_identity_verified"):
             return True
-        if rec.get("semantic_status") in ("BLOCKED", "HUMAN_PENDING"):
+        status = rec.get("semantic_status")
+        if status in ("HUMAN_PENDING",):
             return True
-        if rec.get("semantic_status") != "RESOLVED":
-            return True
-        if not rec.get("required_actions_closed"):
+        if status == "OPEN":
+            # OPEN means the concern is active; without a terminal verdict
+            # recorded, a review is still needed.
             return True
         if rec.get("contract_hash") != contract_hash:
             return True
-        return False
+        if status == "BLOCKED":
+            # unchanged contract: no repeated Pro-Max unless a re-review
+            # condition fires (e.g. the decision layer resolves the block and
+            # changes the contract, or new evidence arrives).
+            return bool(rereview_signals and any(rereview_signals.values()))
+        if status == "RESOLVED":
+            if not rec.get("required_actions_closed"):
+                return True
+            return bool(rereview_signals and any(rereview_signals.values()))
+        return True
 
     def rereview_required(self, issue_id: str,
                           signals: dict[str, bool]) -> bool:
@@ -349,8 +456,8 @@ class SemanticIssueStore:
             raise ValueError(f"unknown review verdict {verdict!r}")
         if semantic_status not in SEMANTIC_STATUSES:
             raise ValueError(f"unknown semantic status {semantic_status!r}")
-        # V2.1.1 invariants: BLOCKED/HUMAN_PENDING can never be stored as
-        # RESOLVED; identity verification never implies resolution.
+        # invariants: BLOCKED/HUMAN_PENDING can never be stored as RESOLVED;
+        # identity verification never implies resolution.
         if semantic_status == "RESOLVED":
             if verdict in ("BLOCKED", "HUMAN_GATE_REQUIRED"):
                 raise ValueError(

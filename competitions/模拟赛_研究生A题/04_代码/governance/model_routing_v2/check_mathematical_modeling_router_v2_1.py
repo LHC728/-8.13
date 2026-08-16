@@ -217,16 +217,16 @@ def main(argv: list[str]) -> int:
     # ---- MMR-15: semantic issue dedup behaves correctly ------------------
     # (V2.1.1 store schema: identity verification is NOT resolution)
     store = SemanticIssueStore()
-    fresh = store.needs_pro_max("MMR-DEMO-001", "h1")
+    fresh = store.needs_review("MMR-DEMO-001", "h1")
     store.record("MMR-DEMO-001", "h1", "PASS", "RESOLVED",
                  review_identity_verified=True, required_actions_closed=True)
-    deduped = not store.needs_pro_max("MMR-DEMO-001", "h1")
-    contract_changed = store.needs_pro_max("MMR-DEMO-001", "h2")
+    deduped = not store.needs_review("MMR-DEMO-001", "h1")
+    contract_changed = store.needs_review("MMR-DEMO-001", "h2")
     persisted = SemanticIssueStore(str(v2 / "semantic_issues.json"))
     live_rec = persisted.snapshot().get("SAMPLING-LIVE-001") or {}
     live_blocked_open = (live_rec.get("semantic_status") == "BLOCKED"
-                         and persisted.needs_pro_max("SAMPLING-LIVE-001",
-                                                     "contract-v1") is True)
+                         and persisted.is_resolved("SAMPLING-LIVE-001")
+                         is False)
     add("MMR-15", fresh and deduped and contract_changed and live_blocked_open,
         f"fresh={fresh} deduped={deduped} contract_changed={contract_changed} "
         f"live_issue_blocked_open={live_blocked_open}")

@@ -1,6 +1,6 @@
 {
  "SAMPLING-LIVE-001": {
-  "commit_sha": "0e8f6612b0274a8e53717f36af23e40701bbc583",
+  "commit_sha": "0db58db0e48331840e4f9288bca4229cc54e8609",
   "contract_hash": "contract-v1",
   "issue_id": "SAMPLING-LIVE-001",
   "required_actions_closed": false,

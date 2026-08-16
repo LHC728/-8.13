@@ -143,33 +143,45 @@ class TestNegativeRuntime(unittest.TestCase):
 
 
 class TestSemanticIssueDedupRepair(unittest.TestCase):
-    """spec 6: identity verification is NOT resolution; BLOCKED never
-    resolves; HUMAN_GATE_REQUIRED never resolves without acceptance."""
+    """spec 6 + §7 (V2.1.2): identity != resolution; BLOCKED is unresolved but
+    does NOT automatically re-call Pro-Max on an unchanged contract."""
 
     def setUp(self):
         self.store = SemanticIssueStore()
 
     def test_first_time_needs_review(self):
-        self.assertTrue(self.store.needs_pro_max("ASSUMPTION-001", "hash-a"))
+        self.assertTrue(self.store.needs_review("ASSUMPTION-001", "hash-a"))
 
     def test_resolved_pass_closed_deduped(self):
         self.store.record("ASSUMPTION-001", "hash-a", "PASS",
                           "RESOLVED", review_identity_verified=True,
                           required_actions_closed=True, commit_sha="abc")
-        self.assertFalse(self.store.needs_pro_max("ASSUMPTION-001", "hash-a"))
+        self.assertFalse(self.store.needs_review("ASSUMPTION-001", "hash-a"))
+        self.assertTrue(self.store.is_resolved("ASSUMPTION-001"))
 
     def test_identity_verified_alone_is_not_resolution(self):
-        # identity verified but status OPEN -> still needs review
         self.store.record("ASSUMPTION-001", "hash-a", "PASS",
                           "OPEN", review_identity_verified=True,
                           required_actions_closed=True, commit_sha="abc")
-        self.assertTrue(self.store.needs_pro_max("ASSUMPTION-001", "hash-a"))
+        self.assertFalse(self.store.is_resolved("ASSUMPTION-001"))
+        self.assertTrue(self.store.needs_review("ASSUMPTION-001", "hash-a"))
 
-    def test_blocked_never_resolves_via_identity(self):
+    def test_blocked_unresolved_but_no_auto_rereview(self):
+        # §7: BLOCKED + unchanged contract + no re-review condition
+        # -> is_resolved=False but needs_review=False (no repeated Max)
         self.store.record("ASSUMPTION-001", "hash-a", "BLOCKED",
                           "BLOCKED", review_identity_verified=True,
                           required_actions_closed=False, commit_sha="abc")
-        self.assertTrue(self.store.needs_pro_max("ASSUMPTION-001", "hash-a"))
+        self.assertFalse(self.store.is_resolved("ASSUMPTION-001"))
+        self.assertFalse(self.store.needs_review("ASSUMPTION-001", "hash-a"))
+
+    def test_blocked_with_rereview_condition_reopens(self):
+        self.store.record("ASSUMPTION-001", "hash-a", "BLOCKED",
+                          "BLOCKED", review_identity_verified=True,
+                          required_actions_closed=False, commit_sha="abc")
+        self.assertTrue(self.store.needs_review(
+            "ASSUMPTION-001", "hash-a",
+            rereview_signals={"new_counterexample": True}))
 
     def test_record_blocked_as_resolved_rejected(self):
         with self.assertRaises(ValueError):
@@ -177,23 +189,25 @@ class TestSemanticIssueDedupRepair(unittest.TestCase):
                               "RESOLVED", review_identity_verified=True,
                               required_actions_closed=False)
 
-    def test_human_pending_never_resolves(self):
+    def test_human_pending_never_resolves_and_needs_review(self):
         self.store.record("ASSUMPTION-001", "hash-a", "HUMAN_GATE_REQUIRED",
                           "HUMAN_PENDING", review_identity_verified=True,
                           required_actions_closed=False, commit_sha="abc")
-        self.assertTrue(self.store.needs_pro_max("ASSUMPTION-001", "hash-a"))
+        self.assertFalse(self.store.is_resolved("ASSUMPTION-001"))
+        self.assertTrue(self.store.needs_review("ASSUMPTION-001", "hash-a"))
 
     def test_caveat_open_stays_open(self):
         self.store.record("ASSUMPTION-001", "hash-a", "PASS_WITH_CAVEAT",
                           "OPEN", review_identity_verified=True,
                           required_actions_closed=False, commit_sha="abc")
-        self.assertTrue(self.store.needs_pro_max("ASSUMPTION-001", "hash-a"))
+        self.assertFalse(self.store.is_resolved("ASSUMPTION-001"))
+        self.assertTrue(self.store.needs_review("ASSUMPTION-001", "hash-a"))
 
     def test_contract_change_reopens(self):
         self.store.record("ASSUMPTION-001", "hash-a", "PASS",
                           "RESOLVED", review_identity_verified=True,
                           required_actions_closed=True, commit_sha="abc")
-        self.assertTrue(self.store.needs_pro_max("ASSUMPTION-001", "hash-b"))
+        self.assertTrue(self.store.needs_review("ASSUMPTION-001", "hash-b"))
 
     def test_rereview_conditions(self):
         self.store.record("ASSUMPTION-001", "hash-a", "PASS",
@@ -202,6 +216,63 @@ class TestSemanticIssueDedupRepair(unittest.TestCase):
         self.assertFalse(self.store.rereview_required("ASSUMPTION-001", {}))
         self.assertTrue(self.store.rereview_required(
             "ASSUMPTION-001", {"new_counterexample": True}))
+
+
+class TestAuthorityConflictGate(unittest.TestCase):
+    """§1 (V2.1.2): authority_conflict fails closed."""
+
+    def test_conflict_routes_human_gate(self):
+        g = route_gate_v2_1_1(YELLOW, review_identity_verified=True,
+                              review_verdict="PASS",
+                              required_actions_closed=True,
+                              authority_conflict=True)
+        self.assertEqual(g["status"], HUMAN_GATE_REQUIRED)
+
+    def test_pass_with_conflict_cannot_pass(self):
+        g = route_gate_v2_1_1(YELLOW, review_identity_verified=True,
+                              review_verdict="PASS",
+                              required_actions_closed=True,
+                              authority_conflict=True)
+        self.assertNotEqual(g["status"], GATE_PASS)
+
+    def test_caveat_with_conflict_cannot_pass(self):
+        g = route_gate_v2_1_1(YELLOW, review_identity_verified=True,
+                              review_verdict="PASS_WITH_CAVEAT",
+                              required_actions_closed=True,
+                              authority_conflict=True)
+        self.assertNotEqual(g["status"], GATE_PASS)
+
+
+class TestAuthorityBackedGreen(unittest.TestCase):
+    """§2 (V2.1.2): authority-dependent GREEN needs FROZEN/HUMAN_ACCEPTED."""
+
+    def test_exploratory_under_frozen_config_invalid(self):
+        c = RiskCard(task_id="X", stage="FORMULATION",
+                     authority_state="EXPLORATORY", formal_scope=True,
+                     green_allowlist_class="MECHANICAL_SOLVER_EXECUTION_UNDER_FROZEN_CONFIG",
+                     frozen_mechanical_execution=True,
+                     authority_refs=["ref"])
+        from governance.model_routing_v2.risk_card import RiskCardInvalid  # noqa: E402
+        with self.assertRaises(RiskCardInvalid):
+            compute_model_route_v2_1_1(c)
+
+    def test_proposed_under_frozen_exact_formula_invalid(self):
+        c = RiskCard(task_id="X", stage="FORMULATION",
+                     authority_state="PROPOSED", formal_scope=True,
+                     green_allowlist_class="MECHANICAL_FORMULA_IMPLEMENTATION_UNDER_FROZEN_EXACT_FORMULA",
+                     frozen_mechanical_execution=True,
+                     authority_refs=["ref"])
+        from governance.model_routing_v2.risk_card import RiskCardInvalid  # noqa: E402
+        with self.assertRaises(RiskCardInvalid):
+            compute_model_route_v2_1_1(c)
+
+    def test_frozen_with_ref_qualifies(self):
+        c = RiskCard(task_id="X", stage="FORMULATION",
+                     authority_state="FROZEN", formal_scope=True,
+                     green_allowlist_class="MECHANICAL_SOLVER_EXECUTION_UNDER_FROZEN_CONFIG",
+                     frozen_mechanical_execution=True,
+                     authority_refs=["authority: frozen solver spec"])
+        self.assertEqual(compute_model_route_v2_1_1(c).route, GREEN)
 
 
 class TestProjectTokenLeakGuard(unittest.TestCase):

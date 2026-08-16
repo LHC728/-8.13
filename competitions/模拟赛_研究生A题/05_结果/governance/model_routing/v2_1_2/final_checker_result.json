@@ -1,0 +1,81 @@
+{
+ "checker": "MATHEMATICAL_MODELING_ROUTER_V2.1.2",
+ "overall": "PASS",
+ "checks": [
+  {
+   "check": "F-01",
+   "status": "PASS",
+   "detail": "PASS + authority_conflict -> HUMAN_GATE_REQUIRED (cannot PASS)"
+  },
+  {
+   "check": "F-02",
+   "status": "PASS",
+   "detail": "PASS_WITH_CAVEAT + authority_conflict -> HUMAN_GATE_REQUIRED (cannot PASS)"
+  },
+  {
+   "check": "F-03",
+   "status": "PASS",
+   "detail": "authority_conflict -> HUMAN_GATE_REQUIRED (both verdicts)"
+  },
+  {
+   "check": "F-04",
+   "status": "PASS",
+   "detail": "EXPLORATORY + UNDER_FROZEN_CONFIG is invalid"
+  },
+  {
+   "check": "F-05",
+   "status": "PASS",
+   "detail": "PROPOSED + UNDER_FROZEN_EXACT_FORMULA is invalid"
+  },
+  {
+   "check": "F-06",
+   "status": "PASS",
+   "detail": "FROZEN + valid authority ref can qualify for mechanical GREEN"
+  },
+  {
+   "check": "F-07",
+   "status": "PASS",
+   "detail": "missing authority file: receipt=FAIL gate=ROUTING_BLOCKED"
+  },
+  {
+   "check": "F-08",
+   "status": "PASS",
+   "detail": "valid authority receipt: receipt=PASS gate=PASS (proceeds to Sentinel Gate)"
+  },
+  {
+   "check": "F-09",
+   "status": "PASS",
+   "detail": "Sentinel runtime identity receipt based on actual session evidence (sentinel_request_header.json): ok=True"
+  },
+  {
+   "check": "F-10",
+   "status": "PASS",
+   "detail": "formal GREEN passes only with receipt verification (artifact present + booleans consistent)"
+  },
+  {
+   "check": "F-11",
+   "status": "PASS",
+   "detail": "BLOCKED issue unresolved: BLOCKED"
+  },
+  {
+   "check": "F-12",
+   "status": "PASS",
+   "detail": "BLOCKED unchanged issue does not automatically re-call Pro-Max"
+  },
+  {
+   "check": "F-13",
+   "status": "PASS",
+   "detail": "new contract/evidence can reopen review"
+  },
+  {
+   "check": "F-14",
+   "status": "PASS",
+   "detail": "Phase-A route unchanged (deepseek-pro-max/deepseek-v4-pro/reasoning max/pro_max_review configs intact; deepseek-official intact)"
+  },
+  {
+   "check": "F-15",
+   "status": "PASS",
+   "detail": "V2.1.1 core behaviors non-regressed (identity/outcome gate, leak guard, bilingual classifier, DES refinement, sentinel never-de-escalate)"
+  }
+ ]
+}

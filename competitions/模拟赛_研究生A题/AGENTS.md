@@ -68,10 +68,10 @@
 
 - **L3/YELLOW 与 L4 semantic review 必须走 `pro_max_review` 且 `VERIFIED_PRO_MAX`**（fresh spawn + `deepseek-pro-max`/`deepseek-v4-pro` + reasoning=max + workspace delta=0）；无 VERIFIED_PRO_MAX 不得 PASS formal task；Pro-Max 失败禁止 fallback 到 Flash/Pro-high（ROUTING_BLOCKED → STOP）。触发清单、packet 模板与 ROUTE-01..12 见 `08_项目管理/MODEL_ROUTING_PRO_MAX_V1.0.md`；路由证据根 `05_结果/governance/model_routing/`。
 
-## 通用数学建模路由（`MATHEMATICAL_MODELING_ROUTER_V2.1.1`）
+## 通用数学建模路由（`MATHEMATICAL_MODELING_ROUTER_V2.1.2`）
 
-- **`MATHEMATICAL_MODELING_ROUTER_V2.1.1` 是通用数学建模路由权威（V2.1 已由 V2.1.1 取代路由门）**。**权威优先级（显式）**：对于实质数学建模任务的 GREEN/YELLOW/RED 分类，以 `MATHEMATICAL_MODELING_ROUTER_V2.1.1` 为准；`MODEL_ROUTING_PRO_MAX_V1.0` 仅在"HOW VERIFIED_PRO_MAX 被调用/验证"上保持权威；`AUTOPILOT-PLAN-V1.1` 继续管辖阶段推进/预算/停机边界/产物纪律/变更与恢复规则，但其旧模型风险措辞**不覆盖** MMR 分类。Human Gate 始终为最终权威。
-- **V2.1.1 核心语义**：`VERIFIED_PRO_MAX` 只证明 review identity（fresh spawn + deepseek-pro-max/deepseek-v4-pro + reasoning=max + delta=0），**绝不等于语义 PASS**——YELLOW 门还要求 review_verdict（PASS/PASS_WITH_CAVEAT/BLOCKED/HUMAN_GATE_REQUIRED）+ required_actions_closed；BLOCKED 永不视为解决。Formal GREEN 在 R4 门必须通过 Route Sentinel（实际低成本 Flash/E2 运行，AGREE_GREEN），否则 ROUTING_BLOCKED。Risk Card 校验 fail-closed（ROUTING_INVALID）；frozen_mechanical_execution 不再是语义风险的全局开关；方法族双语（中/英）分类且 generic "simulation" 不再自动归为 DES。详见 `08_项目管理/模型路由/MATHEMATICAL_MODELING_ROUTER_V2.1.1.md` 与 `08_项目管理/模型路由/MATHEMATICAL_MODELING_ROUTER_V2.1.md`（后者标记 SUPERSEDED_FOR_ROUTING_GATE）。
+- **`MATHEMATICAL_MODELING_ROUTER_V2.1.2` 是通用数学建模路由权威（FINAL HARDENING；V2.1 / V2.1.1 已由 V2.1.2 取代路由门）**。**权威优先级（显式）**：对于实质数学建模任务的 GREEN/YELLOW/RED 分类，以 `MATHEMATICAL_MODELING_ROUTER_V2.1.2` 为准；`MODEL_ROUTING_PRO_MAX_V1.0` 仅在"HOW VERIFIED_PRO_MAX 被调用/验证"上保持权威；`AUTOPILOT-PLAN-V1.1` 继续管辖阶段推进/预算/停机边界/产物纪律/变更与恢复规则，但其旧模型风险措辞**不覆盖** MMR 分类。Human Gate 始终为最终权威。
+- **V2.1.2 核心语义**：`VERIFIED_PRO_MAX` 只证明 review identity，**绝不等于语义 PASS**（YELLOW 门 = identity + verdict + required_actions_closed；`authority_conflict=true` → HUMAN_GATE_REQUIRED，PASS/CAVEAT 与之组合永不通过）。Formal GREEN @ R4 = Route Sentinel（实际 Flash/E2 运行，AGREE_GREEN）+ **authority receipt verified**（workspace-relative 文件存在、sha/state 校验），否则 ROUTING_BLOCKED。Risk Card 校验 fail-closed（ROUTING_INVALID）；authority 依赖 GREEN 类要求 FROZEN/HUMAN_ACCEPTED + authority_refs；frozen_mechanical_execution 不是语义风险开关；BLOCKED 语义问题未解决但同 contract 不自动重复 Pro-Max。详见 `08_项目管理/模型路由/MATHEMATICAL_MODELING_ROUTER_V2.1.2.md`（V2.1.1 / V2.1 文档标记 superseded）。
 
 ## 自动驾驶治理（`AUTOPILOT-PLAN-V1.1-FINAL`，Pilot #1）
 

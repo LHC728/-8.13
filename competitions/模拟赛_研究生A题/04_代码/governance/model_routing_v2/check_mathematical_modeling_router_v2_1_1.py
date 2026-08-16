@@ -90,14 +90,18 @@ def main(argv: list[str]) -> int:
     # ---- R-04: BLOCKED semantic issue is not dedup-resolved ---------------
     store = SemanticIssueStore(str(v2 / "semantic_issues.json"))
     rec = store.snapshot().get("SAMPLING-LIVE-001") or {}
+    # V2.1.2 §7 API: BLOCKED + unchanged contract -> unresolved, no auto
+    # re-review (no repeated Pro-Max).
     blocked_not_resolved = (rec.get("semantic_status") == "BLOCKED"
                             and rec.get("review_verdict") == "BLOCKED"
-                            and store.needs_pro_max("SAMPLING-LIVE-001",
-                                                    "contract-v1") is True)
+                            and store.is_resolved("SAMPLING-LIVE-001") is False
+                            and store.needs_review("SAMPLING-LIVE-001",
+                                                   "contract-v1") is False)
     add("R-04", blocked_not_resolved,
         f"semantic_status={rec.get('semantic_status')} "
-        f"verdict={rec.get('review_verdict')} needs_pro_max="
-        f"{store.needs_pro_max('SAMPLING-LIVE-001', 'contract-v1')}")
+        f"verdict={rec.get('review_verdict')} is_resolved="
+        f"{store.is_resolved('SAMPLING-LIVE-001')} needs_review="
+        f"{store.needs_review('SAMPLING-LIVE-001', 'contract-v1')}")
 
     # ---- R-05/06/07: Human Gate verdicts ----------------------------------
     g_pending = route_gate_v2_1_1(RED, human_gate_verdict="PENDING")
@@ -125,7 +129,8 @@ def main(argv: list[str]) -> int:
     g_yes = route_gate_v2_1_1(GREEN, checkpoint="R4", formal_scope=True,
                               sentinel_required=True,
                               sentinel_identity_verified=True,
-                              sentinel_verdict="AGREE_GREEN")
+                              sentinel_verdict="AGREE_GREEN",
+                              authority_receipt_verified=True)
     add("R-08", g_no["status"] == ROUTING_BLOCKED,
         f"formal GREEN without Sentinel -> {g_no['status']}")
     add("R-09", g_yes["status"] == GATE_PASS and sentinel_ok,
@@ -219,7 +224,8 @@ def main(argv: list[str]) -> int:
     if agents.is_file():
         text = agents.read_text(encoding="utf-8")
         precedence_ok = (
-            "MATHEMATICAL_MODELING_ROUTER_V2.1.1" in text
+            ("MATHEMATICAL_MODELING_ROUTER_V2.1.2" in text
+             or "MATHEMATICAL_MODELING_ROUTER_V2.1.1" in text)
             and ("是通用数学建模路由权威" in text or "authoritative" in text)
             and "MODEL_ROUTING_PRO_MAX_V1.0" in text)
     else:

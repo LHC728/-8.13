@@ -1,5 +1,8 @@
 # MATHEMATICAL_MODELING_ROUTER_V2.1.1 — 通用数学建模风险路由（修复版权威）
 
+> **SUPERSEDED_FOR_FINAL_GATE by MATHEMATICAL_MODELING_ROUTER_V2.1.2**（2026-08-16 FINAL HARDENING）。
+> 本文档为 V2.1.1 修复历史记录，保留用于追溯；最终路由门语义以 `MATHEMATICAL_MODELING_ROUTER_V2.1.2.md` 为准（authority_conflict fail-closed、authority receipt、Sentinel runtime identity receipt、BLOCKED no-auto-rereview）。
+
 > 状态：IMPLEMENTED（Phase B REPAIR；targeted repair of V2.1，架构保留）
 > 日期：2026-08-16
 > Phase-A accepted commit：`7f670557f8b6e7787386f10908608eea0327d20e`

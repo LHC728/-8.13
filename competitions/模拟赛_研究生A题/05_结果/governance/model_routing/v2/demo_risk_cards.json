@@ -34,13 +34,14 @@
    },
    "green_allowlist_class": "TYPO_FIX",
    "authority_refs": [],
+   "authority_receipts": [],
    "risk_evidence": [],
    "computed_route": "GREEN",
    "route_reason": [
     "green allowlist class TYPO_FIX (authority_refs=[])"
    ],
    "checkpoint": "R0",
-   "router_version": "MMR_V2.1.1",
+   "router_version": "MMR_V2.1.2",
    "task_description": "fix a file path typo in a runner script",
    "method_families": [
     "HYBRID_OTHER"
@@ -79,6 +80,7 @@
    },
    "green_allowlist_class": null,
    "authority_refs": [],
+   "authority_receipts": [],
    "risk_evidence": [
     {
      "dimension": "data_semantics",
@@ -90,7 +92,7 @@
     "semantic risk present (data_semantics) -> YELLOW (risk fields represent unresolved current risk; no frozen-mechanical bypass)"
    ],
    "checkpoint": "R1",
-   "router_version": "MMR_V2.1.1"
+   "router_version": "MMR_V2.1.2"
   },
   {
    "task_id": "D2",
@@ -125,6 +127,7 @@
    },
    "green_allowlist_class": null,
    "authority_refs": [],
+   "authority_receipts": [],
    "risk_evidence": [
     {
      "dimension": "data_semantics",
@@ -136,7 +139,7 @@
     "semantic risk present (data_semantics) -> YELLOW (risk fields represent unresolved current risk; no frozen-mechanical bypass)"
    ],
    "checkpoint": "R2",
-   "router_version": "MMR_V2.1.1",
+   "router_version": "MMR_V2.1.2",
    "task_description": "semantic-affecting patch preparation",
    "method_families": [
     "HYBRID_OTHER"
@@ -175,6 +178,7 @@
    },
    "green_allowlist_class": null,
    "authority_refs": [],
+   "authority_receipts": [],
    "risk_evidence": [
     {
      "dimension": "data_semantics",
@@ -186,7 +190,7 @@
     "semantic risk present (data_semantics) -> YELLOW (risk fields represent unresolved current risk; no frozen-mechanical bypass)"
    ],
    "checkpoint": "R3",
-   "router_version": "MMR_V2.1.1",
+   "router_version": "MMR_V2.1.2",
    "task_description": "post-patch verification",
    "method_families": [
     "HYBRID_OTHER"
@@ -225,6 +229,7 @@
    },
    "green_allowlist_class": null,
    "authority_refs": [],
+   "authority_receipts": [],
    "risk_evidence": [
     {
      "dimension": "data_semantics",
@@ -236,7 +241,7 @@
     "semantic risk present (data_semantics) -> YELLOW (risk fields represent unresolved current risk; no frozen-mechanical bypass)"
    ],
    "checkpoint": "R4",
-   "router_version": "MMR_V2.1.1",
+   "router_version": "MMR_V2.1.2",
    "task_description": "gate decision",
    "method_families": [
     "HYBRID_OTHER"
@@ -275,15 +280,21 @@
    },
    "green_allowlist_class": "MECHANICAL_SOLVER_EXECUTION_UNDER_FROZEN_CONFIG",
    "authority_refs": [
-    "authority: frozen solver specification v1"
+    "frozen solver fixture spec (v2_1_2 fixtures)"
+   ],
+   "authority_receipts": [
+    {
+     "ref": "05_结果/governance/model_routing/v2_1_2/fixtures/frozen_solver_fixture_spec.json",
+     "authority_state": "FROZEN"
+    }
    ],
    "risk_evidence": [],
    "computed_route": "GREEN",
    "route_reason": [
-    "green allowlist class MECHANICAL_SOLVER_EXECUTION_UNDER_FROZEN_CONFIG (authority_refs=['authority: frozen solver specification v1'])"
+    "green allowlist class MECHANICAL_SOLVER_EXECUTION_UNDER_FROZEN_CONFIG (authority_refs=['frozen solver fixture spec (v2_1_2 fixtures)'])"
    ],
    "checkpoint": "R4",
-   "router_version": "MMR_V2.1.1",
+   "router_version": "MMR_V2.1.2",
    "task_description": "run the frozen solver configuration",
    "method_families": [
     "NUMERICAL_COMPUTATION"
@@ -322,6 +333,7 @@
    },
    "green_allowlist_class": null,
    "authority_refs": [],
+   "authority_receipts": [],
    "risk_evidence": [
     {
      "dimension": "statistical_inference",
@@ -337,7 +349,7 @@
     "governance_authority with authority_state=HUMAN_ACCEPTED -> mutation of frozen/accepted authority"
    ],
    "checkpoint": "R2",
-   "router_version": "MMR_V2.1.1",
+   "router_version": "MMR_V2.1.2",
    "task_description": "change the accepted significance threshold",
    "method_families": [
     "PROBABILITY_STATISTICS"
@@ -376,6 +388,7 @@
    },
    "green_allowlist_class": null,
    "authority_refs": [],
+   "authority_receipts": [],
    "risk_evidence": [
     {
      "dimension": "modeling_assumption",
@@ -387,7 +400,7 @@
     "semantic risk present (modeling_assumption) -> YELLOW (risk fields represent unresolved current risk; no frozen-mechanical bypass)"
    ],
    "checkpoint": "R0",
-   "router_version": "MMR_V2.1.1",
+   "router_version": "MMR_V2.1.2",
    "task_description": "unknown hybrid approach with two plausible models",
    "method_families": [
     "HYBRID_OTHER"
@@ -426,6 +439,7 @@
    },
    "green_allowlist_class": null,
    "authority_refs": [],
+   "authority_receipts": [],
    "risk_evidence": [
     {
      "dimension": "statistical_inference",
@@ -437,7 +451,7 @@
     "semantic risk present (statistical_inference) -> YELLOW (risk fields represent unresolved current risk; no frozen-mechanical bypass)"
    ],
    "checkpoint": "R4",
-   "router_version": "MMR_V2.1.1",
+   "router_version": "MMR_V2.1.2",
    "task_description": "bootstrap sampling unit choice",
    "method_families": [
     "PROBABILITY_STATISTICS",
@@ -477,6 +491,7 @@
    },
    "green_allowlist_class": null,
    "authority_refs": [],
+   "authority_receipts": [],
    "risk_evidence": [
     {
      "dimension": "statistical_inference",
@@ -492,7 +507,7 @@
     "semantic risk present (statistical_inference, formal_result_impact) -> YELLOW (risk fields represent unresolved current risk; no frozen-mechanical bypass)"
    ],
    "checkpoint": "R4",
-   "router_version": "MMR_V2.1.1",
+   "router_version": "MMR_V2.1.2",
    "task_description": "repeated-measurement data: bootstrap sampling unit row vs subject; authority undefined",
    "method_families": [
     "PROBABILITY_STATISTICS",
@@ -500,5 +515,5 @@
    ]
   }
  ],
- "commit_sha": "0e8f6612b0274a8e53717f36af23e40701bbc583"
+ "commit_sha": "0db58db0e48331840e4f9288bca4229cc54e8609"
 }

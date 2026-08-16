@@ -349,7 +349,8 @@ class TestSentinelGateNegatives(unittest.TestCase):
         g = route_gate_v2_1_1(GREEN, checkpoint="R4", formal_scope=True,
                               sentinel_required=True,
                               sentinel_identity_verified=True,
-                              sentinel_verdict="AGREE_GREEN")
+                              sentinel_verdict="AGREE_GREEN",
+                              authority_receipt_verified=True)
         self.assertEqual(g["status"], GATE_PASS)
 
 

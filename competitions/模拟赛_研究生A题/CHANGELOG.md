@@ -2,6 +2,21 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-16 / `MATHEMATICAL_MODELING_ROUTER_V2.1.2`（FINAL HARDENING；V2.1.1 路由门被取代）
+
+### 修改
+
+- **§1 authority_conflict fail-closed（P0）**：`route_gate_v2_1_1` 现在消费 `authority_conflict`——YELLOW + conflict=true → **HUMAN_GATE_REQUIRED**（任何本可通过的 verdict）；PASS / PASS_WITH_CAVEAT 与 conflict=true 组合永不 formal-pass（不变量；F-01/02/03）。
+- **§2 Authority-Backed GREEN**：authority 依赖 GREEN 类（UNDER_FROZEN_EXACT_RULE / UNDER_FROZEN_EXACT_FORMULA / UNDER_FROZEN_CONFIG / PLOT_FROM_FROZEN_DATA_AND_SPEC / REPRODUCE_ACCEPTED_RESULT_WITHOUT_METHOD_CHANGE）要求 `authority_state ∈ {FROZEN, HUMAN_ACCEPTED}` 且 `authority_refs` 非空；EXPLORATORY/PROPOSED + UNDER_FROZEN... → `RiskCardInvalid`（ROUTING_INVALID）。
+- **§3 可解析 Authority Receipt**：Risk Card 新增 `authority_receipts: [{ref, exists, sha256, authority_state}]`；`verify_authority_receipts(card, workspace_root)` 校验 workspace-relative 文件存在 + sha256（记录时）+ state∈{FROZEN,HUMAN_ACCEPTED}；自由文本不算正式证据。fixture：`v2_1_2/fixtures/frozen_solver_fixture_spec.json`（authority_state=FROZEN，合成）。
+- **§5 Sentinel 运行时身份 Receipt**：`v2_1_2/sentinel_request_header.json` 从**既有已持久化**的 Sentinel child session（`5562219f-…`）的 request/header+context 事件提取（deepseek-official/deepseek-v4-flash/effort=high/1e6/fresh/只读工具/delta=0）——与 Pro-Max identity 证据同标准；**未发起新模型调用**。旧 SENTINEL-LIVE-001 "frozen solver specification v1" 仅作 runtime-channel 历史证据，不声称 authority 验证（§4）。
+- **§6 Formal GREEN Receipt 强制**：formal GREEN @ R4 门新增 `authority_receipt_verified` 要求（sentinel_required + sentinel_identity_verified + AGREE_GREEN + receipt verified 全满足才 PASS）；formal checker 层要求 receipt 工件存在（调用方布尔值单独不构成验证；F-09/10）。
+- **§7 BLOCKED Dedup 语义**：`SemanticIssueStore` 分离 `needs_review()` 与 `is_resolved()`——BLOCKED + 同 contract + 无新 re-review 条件 → 未解决但**不自动重复 Pro-Max**（保持 BLOCKED 等决策层）；仅 contract 改变/新反例/新 authority 证据/checker 矛盾/required action 实质变化/新 formal implication/先前 caveat 变实质才 re-review。
+- **最终检查器 `check_mathematical_modeling_router_v2_1_2.py`：F-01..F-15 = 15/15 PASS**（全部从 artifact/计算得出；`v2_1_2/final_checker_result.json`）。
+- **测试**：**103/103 PASS**（新增 authority_conflict 门 / authority-backed GREEN / receipt 解析 / BLED 无自动重审；V2.1.1 与 V2.1 检查器在新语义下保持可运行）。
+- **版本**：ROUTER_VERSION=`MMR_V2.1.2`；V2.1.1 文档标记 **SUPERSEDED_FOR_FINAL_GATE by V2.1.2**（历史保留）；`08_项目管理/模型路由/MATHEMATICAL_MODELING_ROUTER_V2.1.2.md`（最终版权威）；AGENTS.md 更新为 V2.1.2 权威。
+- **预算**：新 Pro-Max 调用 = **0**；新 Flash 调用 = **0**；无 Q3/H2/formal modeling 执行；Phase-A route/tool/config、Harness core、formal 建模代码/结果零修改。
+
 ## 2026-08-16 / `MATHEMATICAL_MODELING_ROUTER_V2.1.1`（Phase B REPAIR；V2.1 路由门被取代）
 
 ### 修改

@@ -13,7 +13,7 @@ import json
 from dataclasses import dataclass, field, asdict
 from typing import Any, Optional
 
-ROUTER_VERSION = "MMR_V2.1.1"
+ROUTER_VERSION = "MMR_V2.1.2"
 
 # --- authority states (spec 6) -------------------------------------------------
 AUTHORITY_STATES = ("EXPLORATORY", "PROPOSED", "FROZEN", "HUMAN_ACCEPTED")
@@ -82,6 +82,7 @@ class RiskCard:
     engineering_signals: EngineeringSignals = field(default_factory=EngineeringSignals)
     green_allowlist_class: Optional[str] = None
     authority_refs: list[str] = field(default_factory=list)
+    authority_receipts: list[dict[str, Any]] = field(default_factory=list)
     risk_evidence: list[dict[str, str]] = field(default_factory=list)
     computed_route: Optional[str] = None
     route_reason: list[str] = field(default_factory=list)
@@ -123,6 +124,7 @@ def risk_card_from_dict(data: dict[str, Any]) -> RiskCard:
         **{k: es.get(k, False if k != "repeat_failure_count" else 0)
            for k in ENGINEERING_SIGNALS})
     payload.setdefault("authority_refs", [])
+    payload.setdefault("authority_receipts", [])
     return RiskCard(**payload)
 
 
@@ -181,11 +183,20 @@ def validate_card_fail_closed(card: RiskCard) -> None:
         if not card.frozen_mechanical_execution:
             raise RiskCardInvalid(
                 "green_allowlist_class requires frozen_mechanical_execution")
-        if card.green_allowlist_class in _AUTHORITY_DEPENDENT_GREEN \
-                and not card.authority_refs:
-            raise RiskCardInvalid(
-                f"green_allowlist_class {card.green_allowlist_class} requires "
-                "authority_refs (frozen/accepted authority must be identifiable)")
+        if card.green_allowlist_class in _AUTHORITY_DEPENDENT_GREEN:
+            # V2.1.2: an authority-dependent GREEN class requires a FROZEN or
+            # HUMAN_ACCEPTED authority state AND identifiable refs — an
+            # EXPLORATORY/PROPOSED card cannot claim UNDER_FROZEN... and route
+            # GREEN.
+            if card.authority_state not in ("FROZEN", "HUMAN_ACCEPTED"):
+                raise RiskCardInvalid(
+                    f"green_allowlist_class {card.green_allowlist_class} "
+                    f"requires authority_state FROZEN or HUMAN_ACCEPTED "
+                    f"(got {card.authority_state})")
+            if not card.authority_refs:
+                raise RiskCardInvalid(
+                    f"green_allowlist_class {card.green_allowlist_class} requires "
+                    "authority_refs (frozen/accepted authority must be identifiable)")
     # spec 13: risk fields represent UNRESOLVED CURRENT RISK; a genuinely
     # frozen mechanical task has risk fields false.  Flagging a semantic risk
     # while claiming frozen mechanical execution is contradictory.

@@ -12,6 +12,6 @@
  "routing_blocks": 3,
  "human_gate_routing_misses": 1,
  "no_targets_set": true,
- "commit_sha": "0e8f6612b0274a8e53717f36af23e40701bbc583",
- "basis": "V2.1.1 semantics: demo sequence D1-D5/N1 + LIVE-001 (verdict BLOCKED) + PHASE_A_EXACT_SMOKE + LIVE-002 (BLOCKED not dedup-resolved) + D3 live Flash Sentinel AGREE_GREEN; no targets set"
+ "commit_sha": "0db58db0e48331840e4f9288bca4229cc54e8609",
+ "basis": "V2.1.2 semantics: demo sequence D1-D5/N1 + LIVE-001 (verdict BLOCKED, no auto re-review) + PHASE_A_EXACT_SMOKE + LIVE-002 (BLOCKED unresolved) + D3 live Flash Sentinel AGREE_GREEN; no targets set"
 }
