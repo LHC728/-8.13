@@ -1,0 +1,10 @@
+# Q3-H2-P3-A task-package snapshot
+package_ref: Q3-H2-P3-A
+authority: Q3_H2_BOOTSTRAP_SPEC_DRAFT.md FINAL_FREEZE_ACCEPTED sections 2/5/6.2/7/8/9/10/11/12 + Q3-H2-P3-A Human Gate authorization (P2 FINAL PASS/ACCEPTED at a5d2faf)
+bootstrap_spec_snapshot: bootstrap_spec_snapshot.md
+bootstrap_spec_sha256: c370aa38cc58c83462b4f280f10628d08ca9cef9d5c04297a2db2ffebbf6eb62
+formal_task_package_sha256: a0864c8728603ef85c12eff91500c78909f70d74738cb42765212d0c035b4472
+p1: FINAL PASS / ACCEPTED (08488e4)
+p2: FINAL PASS / ACCEPTED (a5d2faf)
+p3: NOT AUTHORIZED beyond P3-A mechanics; M*/C_eval*/tuning/stability/cross-K/holdout/C25 NOT AUTHORIZED
+evidence_rule: ACYCLIC hash DAG (RULE A)

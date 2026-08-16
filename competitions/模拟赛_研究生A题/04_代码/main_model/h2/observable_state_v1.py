@@ -278,6 +278,27 @@ def _task_completed(pre: list[dict[str, Any]], device: int, process: str,
                for r in pre)
 
 
+def q3_shift_grid(K: Fraction) -> list[tuple[Fraction, Fraction]]:
+    """Frozen Q3 two-shift calendar: day d: shift 1 = [24d, 24d+K),
+    shift 2 = [24d+K, 24d+2K), off [24d+2K, 24(d+1)).  Horizon 400 days
+    is far beyond any 100-device Q3 batch (frozen config, implementer
+    copy; the checker keeps its own independent copy)."""
+    out: list[tuple[Fraction, Fraction]] = []
+    for d in range(0, 400):
+        s1 = Fraction(24) * d
+        out.append((s1, s1 + K))
+        out.append((s1 + K, s1 + 2 * K))
+    return out
+
+
+def active_shift(shifts: list[tuple[Fraction, Fraction]], t: Fraction
+                 ) -> Optional[tuple[Fraction, Fraction]]:
+    for s, e in shifts:
+        if s <= t < e:
+            return (s, e)
+    return None
+
+
 def project_log_prefix(event_log: list[dict[str, Any]], t: Fraction,
                        batch_size: int = 100) -> ObservableState:
     """PRIVILEGED projection of the log PREFIX (event_time <= t) into the

@@ -2,6 +2,24 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-16 / `STATE-2026-08-13-G2.4` / `Q3-H2-P3-A 决策机制与 rollout 基础 = COMPLETED / AWAITING HUMAN GATE P3-A REVIEW`
+
+### 修改
+
+- **Q3-H2-P3-A（决策点重建 + canonical ordering + 五动作续演语义 + rollout_seed/CRN + continuation world + C23 end-to-end mechanics）完成**：Human Gate 授权锚点 = P2 FINAL PASS/ACCEPTED at `a5d2faf`；本包为**纯确定性机制包**（未执行随机 rollout、未消费任何随机键、不改 P2 数学）。
+- **决策点重建（§2/§5/§10/§11/§12）**：`main_model/h2/decision_point_v1.py`——两类决策点（**dispatch** = 存在合法 FCFS head（E 需 A/B/C 全 PASS 前置 + 班内可完成）；**maintenance** = 无合法 head + 资源 idle + `120≤age<240` + 非 mandatory + 未来需求（未进入装置 >0 或存在未 PASS 该工序的非终态装置）+ 校准本班可完成，queue empty 或 nonempty-no-legal-head 均可）；canonical 序 **A/B/C/E**、每资源每闭包至多 1 点、`dp` = 0-based 批内索引纯函数；closure = 去重事件时刻 ∪ Q3 shift starts；WAIT 锚 = 同装置已排定完成事件 `e`（**STRICT** `t<e<latest_start` / **BOUNDARY** `e==latest_start` 合法，锚失效即重判）。
+- **动作续演语义（§10）**：`main_model/h2/action_semantics_v1.py`——`START_HEAD`（只启动 FCFS 合法 head，事件字段与 H1 引擎逐字段一致）、`H1_NOOP`（无合法 head 时保持 idle 推进至下一事件，非战略等待）、`WAIT_EVENT`（推进至有限锚事件 e，无无限等待）、`PM_WITH_HEAD`（dispatch 点先 PM 再重判 head）、`PM_IDLE`（maintenance 点与 H1_NOOP 比较）；**mandatory / exact_240 永非 policy choice**（引擎事实，不进入合法动作集）。
+- **rollout_seed + CRN（§6.2）**：`main_model/h2/rollout_seed_v1.py`——`rollout_seed(dp,m) = uint64_be(SHA256(UTF8("h2_rollout|"+master_seed+"|"+rep+"|"+dp+"|"+m+"|"+salt))[0:8])`；ROLLOUT_SALT=`q3h2-bootstrap-v1`、ALT=`q3h2-bootstrap-alt-v1`；**seed 不含 action/policy/strategy/run_id → 同 dp,m 所有候选动作共享同一组 m 世界（CRN）**；不同 dp / 不同 m 分离流。
+- **continuation world 重建（§8/§9/§13）**：`main_model/h2/continuation_v1.py`——只从 **ObservableState + PosteriorState + 上层提供的 rollout post 键值**（U_X_ABC/U_D/U_L）重建；严禁 deepcopy live world / 读隐藏字段；终态吸收、未进入不重采样、到 E 装置 D 仅在联接点物化；残寿命用 P2 条件寿命生成器（`conditional_residual_frozen`）。
+- **Q3 shift calendar 补位**：`observable_state_v1.py` 增加冻结 Q3 两班历纯函数 `q3_shift_grid(K)` / `active_shift`（implementer 自带副本，checker 保留独立副本；不 import checker）。
+- **独立 checker（主硬门）**：`checker/h2_p3_mechanics_checker_v1.py`——独立重推（不调 implementer 作 oracle）：**DECISION_POINT_CLASSIFICATION**（两类点 + 合法动作集逐闭包比对，含 checker 自有 WAIT STRICT/BOUNDARY 重推）、**CANONICAL_ORDERING**、**ROLLOUT_SEED**（自有 SHA256/uint64 重推逐例相等）、**CRN_SAME_WORLD_ACROSS_ACTIONS**、**C23_MECHANICS**（隐藏世界不同/观察史相同 → ObservableState/PosteriorState/决策点/dp 逐字段一致）、**H1_PARITY**；toy logs 非空（dispatch 玩具产出 B@t0 `{START_HEAD,WAIT_EVENT}` STRICT 锚 + C@t0；maintenance 玩具产出 t=120 `{H1_NOOP,PM_IDLE}`）。
+- **测试**：`tests/test_h2_p3_mechanics_v1.py` **25/25 PASS**（DP-01..05 / WAIT-01..05 / PM-01..06 / CRN-01..05 / C23-01/02 / H1-01/02 / checker overall）。
+- **证据根** `05_结果/H2/p3/mechanics/run_20260816T060111865845Z_d5eafe0e/`：checker **9/9 PASS**（9 checks）+ tests 25/25 + 回归 P1 防火墙 28 / Density E2 36 / key_schema 38 / Q3 H1 23 / G3 44 全 PASS；ACYCLIC hash DAG + manifest/inventory 一致性 + semantic evidence mapping + C21 = PASS（fail-closed；verified staging 字节一致 promote + promote 后只读复验）；`dev_budget_ledger_snapshot.json` 含 ledger 快照。历史 superseded run `run_20260816T055931412559Z_a5f9bd4e/`（checker unused-import cleanup，无逻辑变更；PRIMARY mechanics 有效；ledger status = SUPERSEDED_FOR_CHECKER_CLEANUP）。
+- **dev budget ledger 追加（F2）**：entry `P3-A-20260816T060111865845Z_d5eafe0e` wall_clock=5.0696s（另含 superseded `...a5f9bd4e` 5.135s）；累计 **23.4239s（0.0065h）**；soft 4h / hard 8h 均未达。
+- **状态**：**P3-A mechanics = COMPLETED / AWAITING HUMAN GATE P3-A REVIEW**；**C23 = END-TO-END MECHANICS PASS（full production C23 PENDING UNTIL FINAL POLICY CONFIG）**；**P3 tuning / M* / C_eval* / deviation threshold / action stability / cross-K transfer / h2_holdout / C25 均 NOT AUTHORIZED**；不自行启动 P3 tuning。
+- 范围审计：M*/C_eval* 选择、deviation tuning、action stability (b)/(c)、cross-K transfer、h2_holdout、C25、论文 H2 数字 = 全部 **NO**；P2 数学 / key_schema / DES engine / H1 / Density accepted evidence / D-01..D-25 未修改；未执行随机 rollout、未消费随机键。
+- 状态同步：`CURRENT_STATE.md`（Gate 行、新增 §5.1、§6 禁止、§7 下一出口）。
+
 ## 2026-08-16 / `STATE-2026-08-13-G2.4` / `Q3-H2-P2-E1 h2_tuning 随机域隔离 + 开发预算账本 = COMPLETED / AWAITING HUMAN GATE FINAL P2 REVIEW`
 
 ### 修改

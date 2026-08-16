@@ -1,0 +1,1 @@
+{"check":"CONTINUATION_WORLD_SMOKE","decision_time":"0","deterministic_rebuild":true,"hidden_variants_identical_world":true,"n_devices":2,"n_resources_with_lifetime":4,"note":"pure-function rebuild; no live-DES objects; no hidden fields read (C23)","status":"PASS"}
