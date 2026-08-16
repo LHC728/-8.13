@@ -1,0 +1,31 @@
+{
+  "check": "PRO_MAX_DISPATCH",
+  "id": "PRO_MAX_DISPATCH",
+  "route": "YELLOW",
+  "task": "Q3-H2-P3 requalification outcome-aware semantic review (decision state / first action / dp random-key repair)",
+  "dispatched_at": "2026-08-16",
+  "review_identity": "deepseek-pro-max / deepseek-v4-pro / reasoning=max / fresh spawn / read-only / workspace delta=0",
+  "risk_dimensions": [
+    "MATHEMATICAL_FORMULATION",
+    "ALGORITHMIC_SEMANTICS",
+    "VALIDATION_INTERPRETATION",
+    "FORMAL_RESULT_IMPACT"
+  ],
+  "packet_summary": "Human Gate BLOCKER A-D: (A) pre-action decision state, (B) dispatch resource idle guard, (C) candidate first-action strict effect, (D) per-batch evaluated dp keys. Repair: decision_point_v1 pre-action boundary; rollout_engine fail-closed frozen-head first actions + WAIT hold; h2_policy decision_head binding; h2_batch_runner pre-action state; run_h2_p3c_stability quota-evaluated B-1 sample with per-batch dp; checker rollout-kernel requalification; tests 124/124 + regressions 169/169; cost requalification (8,8) FREEZE RESTORED.",
+  "frozen_unchanged": [
+    "action definitions / canonical tie order",
+    "2SE confident deviation",
+    "agreement gate 0.95 (point estimate)",
+    "B-1 sample rules 50/50/120 + top-up",
+    "random protocol (h2_tuning seed 6 rep 0..9 K=10.5; salts)",
+    "M/C_eval grid",
+    "C25 / C23 authority",
+    "M*=8 C_eval*=8 W_cap=4 P_cap=4 (FREEZE RESTORED by cost requalification)"
+  ],
+  "result": {
+    "review_verdict": "PASS_WITH_CAVEAT",
+    "authority_conflict": false,
+    "required_actions_closed": true,
+    "gate": "P3-C rerun AUTHORIZED"
+  }
+}

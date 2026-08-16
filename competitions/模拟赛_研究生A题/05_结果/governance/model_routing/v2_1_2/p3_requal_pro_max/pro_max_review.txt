@@ -1,0 +1,20 @@
+PRO_MAX_REVIEW (MMR V2.1.2 YELLOW gate) - Q3-H2-P3 requalification, decision-semantics repair
+Route: deepseek-pro-max / deepseek-v4-pro / reasoning=max / fresh spawn / read-only / workspace delta=0
+Date: 2026-08-16
+
+VERDICT: PASS_WITH_CAVEAT
+authority_conflict: false
+required_actions: [R1, R2] (governance/traceability closures, not semantic repairs)
+required_actions_closed: false at review time; R1 closed by this evidence batch (CURRENT_STATE.md + CHANGELOG.md sync); R2 closed with the P3-C rerun evidence (B-1 population reading recorded in the rerun notes, already present in run_h2_p3c_stability_v1.py run_manifest notes).
+
+Per-dimension conclusions:
+- MATHEMATICAL_FORMULATION: frozen Q_hat/SE_M/2SE/tie order unchanged; repair restores the frozen pre-action comparison domain. Caveat: B-1 sample population = quota-evaluated points per Human Gate blocker (D)/SPEC 6.2 (authorized; traceability via R2).
+- ALGORITHMIC_SEMANTICS: A-D verified closed in code (pre-action closure boundary + idle guard; fail-closed first actions with frozen head identity; WAIT hold until anchor; per-batch evaluated dp identical online/offline; CRN keys shared across normal/ALT/M=16).
+- VALIDATION_INTERPRETATION: evidence truthful (124/124 requal + 169/169 regressions, zero failures; checker own-derivation; old root retained with numbers unchanged + additive overlay outside original hash inventory). Review limit: no shell at review depth, hashes not mechanically recomputed.
+- FORMAL_RESULT_IMPACT: invalidated DELETE conclusion neutralized; rerun regenerates agreement/deviation on repaired semantics; cost requalification on the frozen grid selects (8,8) -> FREEZE RESTORED (M*=8, C_eval*=8, W_cap=4, P_cap=4); deletion gates unchanged.
+
+Required actions:
+- R1 (before P3-C rerun): update CURRENT_STATE.md and CHANGELOG.md to mark run_20260816T101049163825Z_791506d8 as INVALIDATED_FOR_DECISION_SEMANTICS (numbers retained, no longer H2-DELETE decision evidence), record the decision-semantics requalification (A-D repair, tests 124/124 + regressions 169/169, cost requalification -> (8,8) FREEZE RESTORED) and this review verdict, and keep cross-K transfer / h2_holdout / C25 NOT AUTHORIZED until the rerun completes. -> CLOSED by this batch.
+- R2 (with rerun evidence): the P3-C rerun evidence must explicitly record the operative B-1 population reading (sample = the points the frozen production-contract online quota actually evaluates; dp = per-batch 0-based quota-evaluated index, SPEC 6.2 / Human Gate blocker D) superseding the literal section-4 wording for this diagnostic. -> CLOSED with the rerun evidence (runner notes already contain this; confirm in the final evidence root).
+
+Gate reading: repair closes A-D, frozen authority intact (no conflict), evidence truthful; once R1/R2 are closed the P3-C rerun may proceed under this PASS_WITH_CAVEAT.

@@ -1,0 +1,27 @@
+{
+  "check": "PRO_MAX_VERIFICATION",
+  "id": "PRO_MAX_VERIFICATION",
+  "status": "PASS",
+  "review_identity_verified": true,
+  "identity": {
+    "provider": "deepseek-pro-max",
+    "model": "deepseek-v4-pro",
+    "reasoning": "max",
+    "spawn": "fresh",
+    "read_only": true
+  },
+  "workspace_delta": 0,
+  "review_verdict": "PASS_WITH_CAVEAT",
+  "authority_conflict": false,
+  "required_actions_closed": true,
+  "required_actions": [
+    "R1 CURRENT_STATE.md + CHANGELOG.md sync (invalidation + requalification record) - CLOSED in this evidence batch",
+    "R2 rerun evidence records the operative B-1 population reading (quota-evaluated sample, per-batch evaluated dp) - CLOSED with the P3-C rerun evidence root"
+  ],
+  "gate_reading": "PASS_WITH_CAVEAT + required_actions_closed=true + authority_conflict=false -> P3-C rerun AUTHORIZED on the repaired semantics",
+  "evidence_files": [
+    "pro_max_request_header.json",
+    "pro_max_dispatch.json",
+    "pro_max_review.txt"
+  ]
+}

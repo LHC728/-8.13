@@ -1,0 +1,35 @@
+{
+  "request": "Q3-H2-P3 requalification outcome-aware semantic review (MMR V2.1.2 YELLOW gate)",
+  "gate": "YELLOW",
+  "review_identity": "deepseek-pro-max / deepseek-v4-pro / reasoning=max / fresh spawn / read-only / workspace delta=0",
+  "risk_dimensions": [
+    "MATHEMATICAL_FORMULATION",
+    "ALGORITHMIC_SEMANTICS",
+    "VALIDATION_INTERPRETATION",
+    "FORMAL_RESULT_IMPACT"
+  ],
+  "authority": "Q3_H2_BOOTSTRAP_SPEC_DRAFT.md FINAL_FREEZE_ACCEPTED; CR-V3.1; MMR V2.1.2 (FINAL HARDENING)",
+  "frozen_unchanged": [
+    "action definitions / canonical tie order",
+    "2SE confident-deviation rule",
+    "agreement gate 0.95 (point estimate)",
+    "B-1 sample rules (50/50/120, top-up)",
+    "random protocol (h2_tuning seed 6 rep 0..9 K=10.5, salts)",
+    "M grid / C_eval grid",
+    "C25 / C23 authority",
+    "M*=8 C_eval*=8 W_cap=4 P_cap=4 (cost requalified on the frozen grid -> FREEZE RESTORED)"
+  ],
+  "repair_scope": [
+    "P3-A: decision-point reconstruction on the PRE-ACTION closure boundary + DISPATCH idle/available guard",
+    "P3-B: candidate first actions strictly bound to the frozen decision context (START_HEAD fail-closed frozen-head start; WAIT_EVENT hold until the frozen anchor; PM fail-closed; H1_NOOP no optional PM)",
+    "dp key semantics: per-batch evaluated-point 0-based index (SPEC 6.2), quota-evaluated sample points, pre-action point context, frozen head passed into every candidate rollout",
+    "checker requalification: rollout kernel runs candidates with the frozen decision context and asserts own expected effects"
+  ],
+  "verification_required": [
+    "review_identity_verified (fresh deepseek-pro-max spawn, workspace delta=0)",
+    "review_verdict in {PASS, PASS_WITH_CAVEAT}",
+    "required_actions_closed=true",
+    "authority_conflict=false"
+  ],
+  "created_at": "2026-08-16T00:00:00Z"
+}
