@@ -1,0 +1,31 @@
+{
+  "receipt": "PRO_MAX_REQUEST_HEADER",
+  "review_name": "FINAL NARROW requalification",
+  "review_file": "pro_max_review_final_narrow.txt",
+  "reviewed_code_commit": "439e1e1 (FINAL NARROW substantive code: PM_IDLE age legality + PENDING-05 + B-1 population/selected split; review request at 2026-08-17T01:39:33+08:00, 13s after the 439e1e1 commit at 01:39:20+08:00)",
+  "child_run_id": "2174b107-bb7e-456c-b531-74a04ff1a312",
+  "provider": "deepseek-pro-max",
+  "model": "deepseek-v4-pro",
+  "reasoningEffort": "max",
+  "fresh_spawn": true,
+  "read_only": true,
+  "workspace_delta": 0,
+  "source": "actual session events (request/header seq=12, request/context seq=13, user/message @2026-08-16T17:39:33.883Z, $DSH_HOME/sessions/--C-Users-...-~4E86~89E3...--/2174b107-bb7e-456c-b531-74a04ff1a312/session.jsonl.zstd)",
+  "header_extract": {
+    "config": {
+      "provider": "deepseek-pro-max",
+      "model": "deepseek-v4-pro",
+      "maxTokens": 256000,
+      "reasoningEffort": "max"
+    },
+    "system_role": "READ_ONLY_SEMANTIC_REVIEWER (never modifies files, evidence, or authority)",
+    "context": {
+      "provider": "deepseek-pro-max",
+      "model": "deepseek-v4-pro",
+      "contextWindow": 1000000
+    }
+  },
+  "read_only_evidence": "62/62 tool calls in the session are glob/grep/read; zero write/edit/pwsh calls -> workspace_delta=0",
+  "not_inferred_from_review_text": true,
+  "status": "VERIFIED_FROM_ACTUAL_SESSION_LOG"
+}

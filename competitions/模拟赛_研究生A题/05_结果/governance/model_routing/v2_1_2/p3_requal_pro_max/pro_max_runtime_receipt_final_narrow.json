@@ -1,0 +1,20 @@
+{
+  "receipt": "PRO_MAX_RUNTIME_RECEIPT",
+  "review_name": "FINAL NARROW requalification",
+  "review_file": "pro_max_review_final_narrow.txt",
+  "reviewed_code_commit": "439e1e1 (review request at 2026-08-17T01:39:33+08:00, 13s after commit 01:39:20+08:00; later commits e279b8a / 50ddec4 / 6126695 are evidence/result/state-sync only, no substantive code)",
+  "child_run_id": "2174b107-bb7e-456c-b531-74a04ff1a312",
+  "provider": "deepseek-pro-max",
+  "model": "deepseek-v4-pro",
+  "reasoningEffort": "max",
+  "fresh_spawn": true,
+  "read_only": true,
+  "workspace_delta": 0,
+  "identity_verified": true,
+  "source": "actual session log events (request/header seq=12 config {provider: deepseek-pro-max, model: deepseek-v4-pro, maxTokens: 256000, reasoningEffort: max}; request/context seq=13 {provider, model, contextWindow: 1000000}; system role READ_ONLY_SEMANTIC_REVIEWER; user/message content = the FINAL NARROW review packet; tool-call audit 62/62 read-only)",
+  "independent_of_review_text": true,
+  "derived_from": [
+    "$DSH_HOME/sessions/--C-Users-~89C2~540E~611Fh-Documents-~4E86~89E3ai~662F~5426~4F1A~5728~4E2D~95F4~8BA1~7B97~51FA~9519~FF0C~5E76~601D~8003~89E3~51B3~65B9~6CD5--/2174b107-bb7e-456c-b531-74a04ff1a312/session.jsonl.zstd"
+  ],
+  "status": "VERIFIED_FROM_ACTUAL_SESSION_LOG"
+}

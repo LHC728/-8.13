@@ -2,30 +2,25 @@
   "check": "PRO_MAX_VERIFICATION",
   "id": "PRO_MAX_VERIFICATION",
   "status": "PASS",
-  "review_identity_verified": true,
-  "identity": {
-    "provider": "deepseek-pro-max",
-    "model": "deepseek-v4-pro",
-    "reasoning": "max",
-    "spawn": "fresh",
-    "read_only": true
-  },
-  "workspace_delta": 0,
+  "note": "identity verification is per-review (each review object carries its own identity receipt reference; no single global flag substitutes for an actual per-round verification)",
   "reviews": [
     {
       "review": "PRIMARY (decision-semantics repair A-D)",
       "review_verdict": "PASS_WITH_CAVEAT",
-      "authority_conflict": false
+      "authority_conflict": false,
+      "identity_receipt": "HISTORICAL (first-round session; packet superseded by HG-Q3-H2-DP-DIAG-01; see pro_max_request_header.json marked PRIMARY/HISTORICAL)"
     },
     {
       "review": "INCREMENTAL (offline-rebuild release-guard fix)",
       "review_verdict": "PASS_WITH_CAVEAT",
-      "authority_conflict": false
+      "authority_conflict": false,
+      "identity_receipt": "HISTORICAL (first-round session; packet superseded by HG-Q3-H2-DP-DIAG-01)"
     },
     {
       "review": "SECOND requalification (frozen B-1 + posterior world_m + AGE-LEGAL/PENDING)",
       "review_verdict": "PASS_WITH_CAVEAT",
       "authority_conflict": false,
+      "identity_receipt": "HISTORICAL (second-round session; superseded as final identity evidence by the FINAL NARROW receipt)",
       "answers": {
         "A": "B-1 restored to ALL H2-eligible, C_eval-independent: YES",
         "B": "HG-Q3-H2-DP-DIAG-01 affects only offline dp_diag, dp_online unchanged: YES",
@@ -36,11 +31,22 @@
         "G": "same-timestamp replacement_pending visible in pre-action state: YES",
         "H": "online/offline policy semantics consistent: YES"
       }
-    }
+    },
     {
       "review": "FINAL NARROW requalification (PM_IDLE age + PENDING-05 + B-1 split; final code)",
       "review_verdict": "PASS_WITH_CAVEAT",
       "authority_conflict": false,
+      "identity_verified": true,
+      "identity_receipt": "pro_max_runtime_receipt_final_narrow.json",
+      "request_header_receipt": "pro_max_request_header_final_narrow.json",
+      "child_run_id": "2174b107-bb7e-456c-b531-74a04ff1a312",
+      "provider": "deepseek-pro-max",
+      "model": "deepseek-v4-pro",
+      "reasoningEffort": "max",
+      "fresh_spawn": true,
+      "read_only": true,
+      "workspace_delta": 0,
+      "reviewed_code_commit": "439e1e1 (runtime HEAD at review time; later commits are evidence/result/state-sync only)",
       "checks": {
         "1_pm_idle_high_age": "PASS",
         "2_pending_05_failure_at_end": "PASS",
@@ -57,16 +63,19 @@
   "required_actions": [
     "R1 tests_report.json regenerated on the final code: 323/323 PASS (169 regression + 154 requal) - CLOSED",
     "R2 checker expected-kind alignment (own actions empty -> kind none) - CLOSED",
-    "R3 state sync (CHANGELOG/CURRENT_STATE final narrow registration) - CLOSED in this evidence batch",
-    "R4 execute the P3-C final rerun under the frozen domain - closes with the new immutable root"
+    "R3 state sync (CHANGELOG/CURRENT_STATE final narrow registration) - CLOSED",
+    "R4 execute the P3-C final rerun under the frozen domain - CLOSED (root run_20260816T175317829317Z_7b490ce6)",
+    "R5 governance receipt closure (actual session identity evidence for the FINAL NARROW review) - CLOSED (pro_max_runtime_receipt_final_narrow.json)"
   ],
-  "gate_reading": "PASS_WITH_CAVEAT (four reviews) + required_actions_closed=true + authority_conflict=false -> P3-C FINAL rerun AUTHORIZED (frozen domain: h2_tuning seed 6 rep 0..9 K=10.5 M*=8 ALT salt M16 0.95 2SE ALL-eligible B-1)",
+  "gate_reading": "PASS_WITH_CAVEAT (final-code review, identity verified from the actual session log) + required_actions_closed=true + authority_conflict=false -> P3-C FINAL rerun AUTHORIZED and COMPLETED (H2_DELETE_NO_EFFECTIVE_DEVIATION)",
   "evidence_files": [
     "pro_max_request_header.json",
     "pro_max_dispatch.json",
     "pro_max_review.txt",
     "pro_max_review_incremental.txt",
     "pro_max_review_second.txt",
-    "pro_max_review_final_narrow.txt"
+    "pro_max_review_final_narrow.txt",
+    "pro_max_request_header_final_narrow.json",
+    "pro_max_runtime_receipt_final_narrow.json"
   ]
 }

@@ -1,4 +1,6 @@
 {
+  "file_status": "PRIMARY / HISTORICAL",
+  "historical_note": "this is the FIRST-round review packet (Q3-H2-P3 decision-semantics repair A-D). Its 'quota-evaluated sample points' wording was REVOKED by the Human Gate (frozen §4 B-1 population supersession; see HG-Q3-H2-DP-DIAG-01 and MODEL_ROUTING_MISS-001). It is retained as historical evidence only and MUST NOT be read as the FINAL NARROW packet; the final-code packet/receipt are pro_max_request_header_final_narrow.json / pro_max_runtime_receipt_final_narrow.json.",
   "request": "Q3-H2-P3 requalification outcome-aware semantic review (MMR V2.1.2 YELLOW gate)",
   "gate": "YELLOW",
   "review_identity": "deepseek-pro-max / deepseek-v4-pro / reasoning=max / fresh spawn / read-only / workspace delta=0",

@@ -1,4 +1,6 @@
 {
+  "file_status": "PRIMARY / HISTORICAL",
+  "historical_note": "this dispatch record belongs to the FIRST-round review; its 'quota-evaluated B-1' packet wording was REVOKED by the Human Gate (HG-Q3-H2-DP-DIAG-01 / MODEL_ROUTING_MISS-001). Retained as historical evidence only; the FINAL NARROW dispatch/receipt is pro_max_runtime_receipt_final_narrow.json.",
   "check": "PRO_MAX_DISPATCH",
   "id": "PRO_MAX_DISPATCH",
   "route": "YELLOW",
