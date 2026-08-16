@@ -1,0 +1,1 @@
+{"check":"PER_DEVICE_POST_DRAW","d1_after_swap":[1,1,0],"d1_before":[0,0,0],"d2_after_swap":[0,0,0],"d2_before":[1,1,0],"d_dev1_u_d_lo":1,"d_dev2_u_d_hi":0,"failures":[],"same_posterior":true,"status":"PASS","u1":"1/100","u2":"999/1000"}

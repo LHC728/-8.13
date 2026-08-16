@@ -106,13 +106,14 @@ def apply_wait_event(anchor_time: Fraction, t: Fraction) -> ContinuationStep:
 
 
 def _replacement_records(resource: str, t: Fraction, kind: str,
-                         trigger: str, generation: int) -> tuple[dict, ...]:
+                         trigger: str, generation: int,
+                         age_h: Fraction) -> tuple[dict, ...]:
     cal = CALIBRATION_MINUTES[resource] / Fraction(60)
     start = {
         "event_type": "EQUIPMENT_REPLACEMENT_START", "event_time": str(t),
         "resource_id": resource, "kind": kind, "trigger": trigger,
         "old_generation": generation, "new_generation": generation + 1,
-        "age_before": str(t), "calibration_duration_hours": str(cal),
+        "age_before": str(age_h), "calibration_duration_hours": str(cal),
         "calibration_start": str(t), "calibration_end": str(t + cal),
     }
     complete = {
@@ -124,13 +125,17 @@ def _replacement_records(resource: str, t: Fraction, kind: str,
     return (start, complete)
 
 
-def apply_pm(resource: str, t: Fraction, kind: str, generation: int
-             ) -> ContinuationStep:
+def apply_pm(resource: str, t: Fraction, kind: str, generation: int,
+             age_h: Fraction) -> ContinuationStep:
     """Preventive replacement (PM_WITH_HEAD at dispatch points or PM_IDLE
     at maintenance points): replacement + calibration, then re-run the
-    closure and re-judge the FCFS head."""
+    closure and re-judge the FCFS head.
+
+    F4 (P3-A-E1): ``age_h`` is the equipment's CURRENT age; the replacement
+    record's ``age_before`` must be age_h (the equipment age), NEVER the
+    wall-clock decision time ``t``."""
     cal = CALIBRATION_MINUTES[resource] / Fraction(60)
     return ContinuationStep(
         action=kind, next_time=t + cal,
         events=_replacement_records(resource, t, "preventive", "preventive",
-                                    generation))
+                                    generation, age_h))

@@ -1,0 +1,12 @@
+# Q3-H2-P3-A-E1 task-package snapshot
+package_ref: Q3-H2-P3-A-E1
+authority: Q3_H2_BOOTSTRAP_SPEC_DRAFT.md FINAL_FREEZE_ACCEPTED sections 2/5/6.2/7/8/9/10/11/12 + Q3-H2-P3-A-E1 Human Gate narrow repair authorization (F1..F4; starting HEAD b285131)
+bootstrap_spec_snapshot: bootstrap_spec_snapshot.md
+bootstrap_spec_sha256: c370aa38cc58c83462b4f280f10628d08ca9cef9d5c04297a2db2ffebbf6eb62
+formal_task_package_sha256: a0864c8728603ef85c12eff91500c78909f70d74738cb42765212d0c035b4472
+p1: FINAL PASS / ACCEPTED (08488e4)
+p2: FINAL PASS / ACCEPTED (a5d2faf)
+p3a: HISTORICAL_P3_A_EXECUTION_WITH_WAIT_AND_CONTINUATION_REVIEW_FINDINGS (immutable roots: run_...d5eafe0e / run_...a5f9bd4e)
+p3a_e1: WAIT fragment identity + continuation posterior world requalification
+p3 tuning / M* / C_eval* / holdout / C25: NOT AUTHORIZED
+evidence_rule: ACYCLIC hash DAG (RULE A)

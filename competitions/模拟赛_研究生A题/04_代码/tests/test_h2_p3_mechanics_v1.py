@@ -185,10 +185,52 @@ class TestPM(unittest.TestCase):
         # positive control: with a wide K the same log IS a maintenance
         # point at t=120 (covered by test_pm01/pm03)
 
-    def test_pm06_exact240_not_optional(self):
-        # exact_240 (age+d==240) is NOT an optional PM; the decision layer
-        # never surfaces it as PM (mandatory handled by the engine)
-        self.assertTrue(dp.MANDATORY_AGE_H > 0)  # guard: constant sanity
+    def test_pm_r1_age_before_is_age_h(self):
+        # F4: replacement record age_before == equipment age_h (135), never
+        # the wall-clock decision time (200)
+        step = asem.apply_pm("A", Fraction(200), dp.A_PM_IDLE, generation=1,
+                             age_h=Fraction(135))
+        self.assertEqual(Fraction(step.events[0]["age_before"]),
+                         Fraction(135))
+
+    def test_pm_r2_exact240_head_no_pm_with_head(self):
+        # PM-R2: age == 240 with a legal head -> PM_WITH_HEAD must NOT be a
+        # policy action (mandatory node)
+        log, K, tend = chk._pm_logs()["PM-R2-EXACT240-HEAD"]
+        pts = dp.reconstruct_decision_points(log, K, batch_size=2, t_end=tend)
+        d = [p for p in pts if p.kind == "dispatch" and p.time == 240]
+        self.assertTrue(d, "dispatch point with legal head at age=240")
+        self.assertNotIn(dp.A_PM_WITH_HEAD, d[0].legal_actions)
+
+    def test_pm_r3_exact240_nohead_no_pm_idle(self):
+        # PM-R3: age == 240, maintenance conditions otherwise satisfied ->
+        # PM_IDLE must NOT become a policy action
+        log, K, tend = chk._pm_logs()["PM-R3-EXACT240-NOHEAD"]
+        pts = dp.reconstruct_decision_points(log, K, batch_size=2, t_end=tend)
+        self.assertFalse(any(p.kind == "maintenance" and p.time == 240
+                             for p in pts))
+
+    def test_pm_r4_age120_pm_offered(self):
+        # PM-R4: age == 120 with calendar/other conditions legal -> optional
+        # PM appears
+        log, K, tend = chk._pm_logs()["PM-POSITIVE-120"]
+        pts = dp.reconstruct_decision_points(log, K, batch_size=2, t_end=tend)
+        m = [p for p in pts if p.kind == "maintenance"]
+        self.assertTrue(m)
+        self.assertIn(dp.A_PM_IDLE, m[0].legal_actions)
+
+    def test_pm_with_head_positive(self):
+        # PM_WITH_HEAD positive: age=120 + legal head -> offered
+        log, K, _ = chk._pm_logs()["PM-POSITIVE-120"]
+        log = [dict(r) for r in log]
+        log.append({"event_type": "TASK_RELEASE", "event_time": "120",
+                    "resource_id": "A", "device_id": 2, "process": "A",
+                    "effective_attempt_no": 1})
+        pts = dp.reconstruct_decision_points(log, K, batch_size=2,
+                                             t_end=Fraction(121))
+        d = [p for p in pts if p.kind == "dispatch" and p.time == 120]
+        self.assertTrue(d)
+        self.assertIn(dp.A_PM_WITH_HEAD, d[0].legal_actions)
 
 
 class TestRolloutSeedAndCRN(unittest.TestCase):
@@ -248,6 +290,176 @@ class TestC23Mechanics(unittest.TestCase):
         self.assertEqual(res["overall"], "PASS", res)
         for c in res["checks"]:
             self.assertEqual(c["status"], "PASS", c["check"])
+
+
+class TestE1WaitFragment(unittest.TestCase):
+    """P3-A-E1 F1/F2 + WAIT-R1..R5."""
+
+    def test_wait_r1_cancelled_old_fragment_not_anchor(self):
+        res = chk.check_wait_fragment_identity()
+        self.assertEqual(res["status"], "PASS", res)
+        for row in res["rows"]:
+            if row["label"] == "WAIT-R1" and row["closure_t"] == "1":
+                self.assertIsNone(row["impl_anchor"])
+                self.assertIsNone(row["own_anchor"])
+
+    def test_wait_r2_restarted_fragment_identity(self):
+        res = chk.check_wait_fragment_identity()
+        self.assertEqual(res["status"], "PASS", res)
+        row = next(r for r in res["rows"]
+                   if r["label"] == "WAIT-R2" and r["closure_t"] == "2")
+        self.assertEqual(row["impl_anchor"]["process"], "A")
+        self.assertEqual(row["impl_anchor"]["attempt_start_time"], "2")
+        self.assertEqual(row["impl_anchor"]["completion_time"], "4")
+
+    def test_wait_r3_completed_fragment_not_anchor(self):
+        res = chk.check_wait_fragment_identity()
+        self.assertEqual(res["status"], "PASS", res)
+        for row in res["rows"]:
+            if row["label"] == "WAIT-R3" and row["closure_t"] == "1":
+                self.assertIsNone(row["impl_anchor"])
+
+    def test_wait_r4_anchor_identity_is_inflight_process(self):
+        res = chk.check_wait_fragment_identity()
+        self.assertEqual(res["status"], "PASS", res)
+        row = next(r for r in res["rows"]
+                   if r["label"] == "WAIT-R4" and r["closure_t"] == "0")
+        self.assertEqual(row["impl_anchor"]["process"], "A")
+        self.assertNotEqual(row["impl_anchor"]["process"], "B")
+        self.assertEqual(row["impl_anchor"]["resource"], "A")
+
+    def test_wait_r5_invalidation(self):
+        res = chk.check_wait_invalidation()
+        self.assertEqual(res["status"], "PASS", res)
+        self.assertTrue(res["wait_legal_at_t0"])
+        self.assertEqual(res["stale_after_terminal_head_change"], 0)
+        self.assertEqual(res["stale_after_anchor_cancel"], 0)
+
+    def test_wait_anchor_impl_own_agree(self):
+        # every impl WAIT anchor must be matched by the checker's own
+        # exact-fragment anchor (identity-level agreement)
+        for label, log, K, tend in chk._toy_logs():
+            pts = dp.reconstruct_decision_points(log, K, batch_size=2,
+                                                 t_end=tend)
+            for p in pts:
+                if p.wait_anchor is None:
+                    continue
+                own = chk._own_wait_anchor(
+                    p.head, p.time,
+                    obs.active_shift(obs.q3_shift_grid(K), p.time)[1],
+                    chk._own_active_fragments(log, p.time))
+                self.assertIsNotNone(own, (label, p.to_canonical_dict()))
+                self.assertEqual(own[1], p.wait_anchor.process, label)
+                self.assertEqual(own[3], p.wait_anchor.attempt_start_time,
+                                 label)
+                self.assertEqual(own[0], p.wait_anchor.completion_time, label)
+
+
+class TestE1Continuation(unittest.TestCase):
+    """P3-A-E1 F3: per-device draws, reached-E D posterior, fail-close."""
+
+    def test_cont_reached_e_d_posterior_counterexample(self):
+        res = chk.check_continuation_posterior()
+        self.assertEqual(res["status"], "PASS", res)
+        self.assertTrue(res["e_observation_changes_d_continuation_draw"])
+        self.assertNotEqual(res["x_D_correct_continuation"],
+                            res["x_D_wrong_prior"])
+
+    def test_cont_per_device_independence(self):
+        res = chk.check_per_device_post_draw()
+        self.assertEqual(res["status"], "PASS", res)
+        self.assertTrue(res["same_posterior"])
+        self.assertNotEqual(res["d1_before"], res["d2_before"])
+        self.assertEqual(res["d1_after_swap"], res["d2_before"])
+        self.assertEqual(res["d2_after_swap"], res["d1_before"])
+
+    def test_cont_missing_draw_fail_close(self):
+        from main_model.h2 import continuation_v1 as cont
+        log = chk._e1_continuation_log()
+        st = obs.project_log_prefix(log, Fraction(4), batch_size=2)
+        from main_model.h2 import posterior_state_v1 as ps
+        post = ps.PosteriorState.from_observable(st)
+        with self.assertRaises(ValueError):
+            cont.rebuild_continuation_world(
+                st, post, u_x_by_device={}, u_d_by_device={},
+                u_l_by_resource={"A": Fraction(1, 2)})
+        with self.assertRaises(ValueError):
+            cont.rebuild_continuation_world(
+                st, post,
+                u_x_by_device={1: Fraction(1, 2), 2: Fraction(1, 2)},
+                u_d_by_device={}, u_l_by_resource={})
+        with self.assertRaises(ValueError):
+            cont.rebuild_continuation_world(
+                st, post,
+                u_x_by_device={1: Fraction(1, 2), 2: Fraction(1, 2)},
+                u_d_by_device={1: Fraction(1, 2)},
+                u_l_by_resource={"A": Fraction(1, 2)})
+
+    def test_cont_not_reached_e_d_deferred(self):
+        from main_model.h2 import continuation_v1 as cont
+        # device 2 of the E1 log is entered at t=0 but has NO observations
+        # (not reached E) -> its x_D must be None (deferred), and it must
+        # NOT require a U_D_post draw
+        log2 = chk._e1_continuation_log()
+        st = obs.project_log_prefix(log2, Fraction(0), batch_size=2)
+        from main_model.h2 import posterior_state_v1 as ps
+        post = ps.PosteriorState.from_observable(st)
+        w = cont.rebuild_continuation_world(
+            st, post, u_x_by_device={1: Fraction(1, 2), 2: Fraction(1, 2)},
+            u_d_by_device={}, u_l_by_resource={
+                r: Fraction(1, 2) for r in ("A", "B", "C", "E")})
+        for d in w.devices:
+            if not d.terminal and not d.reached_e:
+                self.assertIsNone(d.x_d)
+
+
+class TestE1RolloutAdapter(unittest.TestCase):
+    """P3-A-E1 section 12: rollout_seed -> h2_rollout post-key adapter."""
+
+    def test_adapter_crn_and_separation(self):
+        res = chk.check_rollout_post_keys()
+        self.assertEqual(res["status"], "PASS", res)
+        self.assertEqual(res["namespace"], "h2_rollout")
+
+    def test_adapter_same_dp_m_identical(self):
+        from main_model.h2_rollout import post_keys_v1 as pk
+        a = pk.rollout_post_keys(6, 0, 2, 3, (1, 2), ("A", "B", "C", "E"),
+                                 {"A": 1, "B": 1, "C": 1, "E": 1})
+        b = pk.rollout_post_keys(6, 0, 2, 3, (1, 2), ("A", "B", "C", "E"),
+                                 {"A": 1, "B": 1, "C": 1, "E": 1})
+        self.assertEqual(a.to_canonical_dict(), b.to_canonical_dict())
+
+    def test_adapter_different_dp_m_separated(self):
+        from main_model.h2_rollout import post_keys_v1 as pk
+        gens = {"A": 1, "B": 1, "C": 1, "E": 1}
+        a = pk.rollout_post_keys(6, 0, 2, 3, (1,), ("A",), {"A": 1})
+        b = pk.rollout_post_keys(6, 0, 2, 4, (1,), ("A",), {"A": 1})
+        c = pk.rollout_post_keys(6, 0, 3, 3, (1,), ("A",), {"A": 1})
+        self.assertNotEqual(a.u_x_by_device[1], b.u_x_by_device[1])
+        self.assertNotEqual(a.u_x_by_device[1], c.u_x_by_device[1])
+        self.assertNotEqual(a.u_d_by_device[1], b.u_d_by_device[1])
+
+    def test_adapter_no_p2_synthetic_mapping(self):
+        from main_model.h2_rollout import post_keys_v1 as pk
+        k = pk.rollout_post_keys(6, 0, 0, 0, (1, 2, 3), ("A",), {"A": 1})
+        for dev in (1, 2, 3):
+            self.assertIn(dev, k.u_x_by_device)
+            self.assertIn(dev, k.u_d_by_device)
+        self.assertNotIn(100001, k.u_x_by_device)
+
+
+class TestE1C23Continuation(unittest.TestCase):
+    def test_c23_continuation(self):
+        res = chk.check_c23_continuation()
+        self.assertEqual(res["status"], "PASS", res)
+        self.assertTrue(res["same_keys_same_world_across_hidden"])
+        self.assertTrue(res["different_keys_world_differs"])
+
+
+class TestE1H1RealParity(unittest.TestCase):
+    def test_h1_real_parity(self):
+        res = chk.check_h1_real_parity()
+        self.assertEqual(res["status"], "PASS", res)
 
 
 if __name__ == "__main__":

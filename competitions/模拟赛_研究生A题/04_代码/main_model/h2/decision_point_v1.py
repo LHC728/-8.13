@@ -52,13 +52,43 @@ A_PM_IDLE = "PM_IDLE"
 
 @dataclass(frozen=True)
 class WaitAnchor:
-    """A concrete scheduled same-device completion event (finite event
-    identity) used to anchor WAIT_EVENT."""
+    """A concrete in-flight same-device fragment (finite event identity)
+    used to anchor WAIT_EVENT.
+
+    F2 (P3-A-E1): the anchor stores the TRUE identity of the waited-upon
+    fragment -- the in-flight ACTIVITY_START's process / effective_attempt_no
+    / attempt_start_time / resource -- NOT the head's fields.  Example:
+    A running, B the waiting head -> anchor.process == "A" (never "B").
+    """
+    completion_time: Fraction
+    device_id: int
+    process: str               # in-flight fragment's process (NOT head's)
+    effective_attempt_no: int  # in-flight fragment's attempt
+    attempt_start_time: Fraction  # in-flight fragment's start identity
+    resource: str              # in-flight fragment's resource
+    boundary: str              # "STRICT" | "BOUNDARY"
+
+    def to_canonical_dict(self) -> dict[str, Any]:
+        return {
+            "completion_time": str(self.completion_time),
+            "device_id": self.device_id,
+            "process": self.process,
+            "effective_attempt_no": self.effective_attempt_no,
+            "attempt_start_time": str(self.attempt_start_time),
+            "resource": self.resource,
+            "boundary": self.boundary,
+        }
+
+
+@dataclass(frozen=True)
+class ActiveFragment:
+    """A scheduled same-device in-flight fragment (F1 exact identity)."""
     completion_time: Fraction
     device_id: int
     process: str
-    attempt: int
-    boundary: str  # "STRICT" | "BOUNDARY"
+    effective_attempt_no: int
+    attempt_start_time: Fraction
+    resource: str
 
 
 @dataclass(frozen=True)
@@ -77,12 +107,8 @@ class DecisionPoint:
             "dp": self.dp, "time": str(self.time), "resource": self.resource,
             "kind": self.kind, "head": self.head,
             "legal_actions": list(self.legal_actions),
-            "wait_anchor": (None if self.wait_anchor is None else {
-                "completion_time": str(self.wait_anchor.completion_time),
-                "device_id": self.wait_anchor.device_id,
-                "process": self.wait_anchor.process,
-                "attempt": self.wait_anchor.attempt,
-                "boundary": self.wait_anchor.boundary}),
+            "wait_anchor": (None if self.wait_anchor is None else
+                            self.wait_anchor.to_canonical_dict()),
             "pm_eligible": self.pm_eligible,
         }
 
@@ -97,19 +123,58 @@ def _device_passed(st: obs.ObservableState, device_id: int,
     return False
 
 
-def _scheduled_completions(event_log: list[dict[str, Any]], t: Fraction
-                           ) -> dict[int, list[Fraction]]:
-    """Same-device in-flight scheduled completion events from the OBSERVABLE
-    fields of the log prefix (ACTIVITY_START attempt_end_time > t)."""
-    out: dict[int, list[Fraction]] = {}
-    for r in event_log:
+def _fragment_settled(pre: list[dict[str, Any]], device: int, process: str,
+                      attempt: int, fstart: Fraction) -> bool:
+    """F1: fragment-aware settle -- ONLY a COMPLETE/CANCEL with the SAME
+    exact identity (device_id, process, effective_attempt_no,
+    attempt_start_time) settles this fragment (Density E2 principle;
+    implemented independently here, never calling the Density analyzer)."""
+    for r in pre:
+        if r.get("event_type") not in ("ACTIVITY_COMPLETE", "TASK_CANCEL"):
+            continue
+        if r.get("attempt_start_time") is None:
+            continue
+        if (r.get("device_id") == device and r.get("process") == process
+                and r.get("effective_attempt_no") == attempt
+                and Fraction(r["attempt_start_time"]) == fstart):
+            return True
+    return False
+
+
+def _active_fragments(event_log: list[dict[str, Any]], t: Fraction
+                      ) -> dict[int, list[ActiveFragment]]:
+    """F1: exact-fragment scheduled-completion reconstruction.  A fragment
+    is a scheduled completion candidate at t iff there EXISTS an
+    ACTIVITY_START with identity (device_id, process, effective_attempt_no,
+    attempt_start_time), start_time <= t < attempt_end_time, AND the <= t
+    prefix contains NO matching COMPLETE/CANCEL for that exact fragment.
+    An old fragment's CANCEL never settles a new fragment (different
+    attempt_start_time); a new fragment's existence is never erased by an
+    old CANCEL.  Returns per-device lists sorted deterministically."""
+    pre = [r for r in event_log
+           if r.get("event_time") is not None
+           and Fraction(r["event_time"]) <= t]
+    out: dict[int, list[ActiveFragment]] = {}
+    for r in pre:
         if r.get("event_type") != "ACTIVITY_START":
             continue
-        if Fraction(r.get("event_time", 0)) > t:
-            continue
+        s = Fraction(r.get("attempt_start_time", r["event_time"]))
         end = Fraction(r["attempt_end_time"])
-        if end > t:
-            out.setdefault(r["device_id"], []).append(end)
+        if not (s <= t < end):
+            continue
+        if _fragment_settled(pre, r["device_id"], r["process"],
+                             r["effective_attempt_no"], s):
+            continue
+        frag = ActiveFragment(
+            completion_time=end, device_id=r["device_id"],
+            process=r["process"], effective_attempt_no=r["effective_attempt_no"],
+            attempt_start_time=s, resource=r.get("resource_id", r["process"]))
+        out.setdefault(r["device_id"], []).append(frag)
+    for dev in out:
+        out[dev].sort(key=lambda f: (f.completion_time,
+                                     _process_order(f.resource),
+                                     f.effective_attempt_no,
+                                     f.attempt_start_time))
     return out
 
 
@@ -164,7 +229,7 @@ def reconstruct_decision_points(event_log: list[dict[str, Any]], K: Fraction,
         if sh is None:
             continue
         st = obs.project_log_prefix(event_log, t, batch_size=batch_size)
-        scheduled = _scheduled_completions(event_log, t)
+        active = _active_fragments(event_log, t)
         for resource in RESOURCES:
             head = None
             for q in st.queue:
@@ -173,7 +238,7 @@ def reconstruct_decision_points(event_log: list[dict[str, Any]], K: Fraction,
                     break
             if head is not None and _head_is_legal(st, head, t, sh[1]):
                 actions = [A_START_HEAD]
-                anchor = _wait_anchor(st, head, t, sh[1], scheduled)
+                anchor = _wait_anchor(st, head, t, sh[1], active)
                 if anchor is not None:
                     actions.append(A_WAIT_EVENT)
                 rsrc = next(r for r in st.resources if r.resource == resource)
@@ -207,20 +272,35 @@ def _process_name(order: int) -> str:
 
 def _wait_anchor(st: obs.ObservableState, head: tuple[int, str, int],
                  t: Fraction, shift_end: Fraction,
-                 scheduled: dict[int, list[Fraction]]) -> Optional[WaitAnchor]:
-    """STRICT / BOUNDARY WAIT anchor: a scheduled same-device completion
-    event e with t < e < latest_start (STRICT) or e == latest_start
-    (BOUNDARY, legal per the frozen contract)."""
+                 active: dict[int, list[ActiveFragment]]
+                 ) -> Optional[WaitAnchor]:
+    """STRICT / BOUNDARY WAIT anchor: a scheduled same-device IN-FLIGHT
+    fragment e with t < e < latest_start (STRICT) or e == latest_start
+    (BOUNDARY, legal per the frozen contract).  F1: only active fragments
+    (not settled by a matching COMPLETE/CANCEL) are candidates.  F2: the
+    anchor stores the TRUE in-flight fragment identity.  Deterministic
+    selection: earliest completion_time; tie-break by resource A/B/C/E
+    (process_order), effective_attempt_no, attempt_start_time."""
     dev, proc, att = head
     latest_start = shift_end - DURATIONS_H[proc]
-    best: Optional[WaitAnchor] = None
-    for e in scheduled.get(dev, []):
-        if t < e < latest_start:
-            anchor = WaitAnchor(completion_time=e, device_id=dev,
-                                process=proc, attempt=att, boundary="STRICT")
-            if best is None or e < best.completion_time:
-                best = anchor
-        elif e == latest_start:
-            return WaitAnchor(completion_time=e, device_id=dev, process=proc,
-                              attempt=att, boundary="BOUNDARY")
-    return best
+    candidates: list[WaitAnchor] = []
+    for f in active.get(dev, []):
+        if t < f.completion_time < latest_start:
+            candidates.append(WaitAnchor(
+                completion_time=f.completion_time, device_id=f.device_id,
+                process=f.process, effective_attempt_no=f.effective_attempt_no,
+                attempt_start_time=f.attempt_start_time, resource=f.resource,
+                boundary="STRICT"))
+        elif f.completion_time == latest_start:
+            candidates.append(WaitAnchor(
+                completion_time=f.completion_time, device_id=f.device_id,
+                process=f.process, effective_attempt_no=f.effective_attempt_no,
+                attempt_start_time=f.attempt_start_time, resource=f.resource,
+                boundary="BOUNDARY"))
+    if not candidates:
+        return None
+    candidates.sort(key=lambda a: (a.completion_time,
+                                   _process_order(a.resource),
+                                   a.effective_attempt_no,
+                                   a.attempt_start_time))
+    return candidates[0]

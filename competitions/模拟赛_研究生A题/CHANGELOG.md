@@ -2,6 +2,32 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-16 / `STATE-2026-08-13-G2.4` / `Q3-H2-P3-A-E1 WAIT fragment identity + continuation posterior world = COMPLETED / AWAITING HUMAN GATE FINAL P3-A REVIEW`
+
+### 修改
+
+- **Q3-H2-P3-A-E1（Human Gate narrow repair；起始锚点 `b285131`）完成**：P3-A 主架构不推翻（两类决策点 / canonical A/B/C/E / 每资源每闭包至多 1 点 / STRICT|BOUNDARY 数值定义 / rollout_seed 公式 / CRN / P1 / P2 accepted 保持）；修复四项 + 真实回归。
+- **F1 — 活动 fragment 才能成为 WAIT anchor**：`decision_point_v1._active_fragments`（exact-fragment reconstruction）取代旧的「只看 ACTIVITY_START + future end」逻辑——candidate 必须存在 ACTIVITY_START（device_id, process, effective_attempt_no, attempt_start_time）且 `start ≤ t < end`，且 ≤t prefix 中无与该 exact fragment 匹配的 ACTIVITY_COMPLETE / TASK_CANCEL（matching identity 含 attempt_start_time）；旧 CANCEL 不 settle 新 fragment、新 fragment 不被旧 CANCEL 抹掉（Density E2 fragment-aware 原则，P3 checker 独立实现、不调 Density analyzer）。
+- **F2 — WaitAnchor 保存真实 in-flight event identity**：`WaitAnchor` 增加 `effective_attempt_no` / `attempt_start_time` / `resource` 字段，process 等指向**被等待的 fragment**（如 A 在跑、B 是 head → anchor.process == "A"，绝不记录成 B）；WAIT_EVENT 等待「同设备另一项当前仍 in-flight 的具体 fragment」，不是「某个时间点」。
+- **WAIT candidate 确定性选择**：同一设备多 active fragments 时优先最早 completion_time；相同时 tie-break = resource A/B/C/E（process_order）→ effective_attempt_no → attempt_start_time；不依赖 event insertion order / dict 序。
+- **真实 WAIT regression（WAIT-R1..R5）**：R1 cancelled old fragment 不得 anchor；R2 cancelled-then-restarted fragment（fragment2 start=2/end=4）anchor 必须 process=A、attempt_start_time=2、completion_time=4（不被 fragment1 CANCEL settle）；R3 completed fragment 不得 anchor；R4 anchor identity = in-flight A（非 head B）；R5 terminal / head-change 后下一 closure 重新 reconstruct、旧 anchor/WAIT_EVENT 不沿用。
+- **F3 — continuation 每设备独立 posterior draws**：`rebuild_continuation_world(state, posterior, u_x_by_device, u_d_by_device, u_l_by_resource)`——每 entered/non-terminal 设备用自己的 U_X_post(device)、reached-E 设备用自己的 U_D_post(device)；**缺 required draw 一律 raise（fail-close），无静默 0.5 fallback**。
+- **reached-E D posterior 使用 P2 PosteriorState**：采出 ABC 后 `p_D = PosteriorState.d_posterior_given_abc[ABC]`，`x_D = 1 if U_D_post < p_D else 0`；不再伪造 obs_e=() 调 sample_d(empty)、不再重读 raw log 重建 E history。
+- **reached-E deterministic counterexample**：ABC 全过 + E ABNORMAL，ABC sampled=(0,0,0) 时 `P(D=1|obs,ABC=000) ≠ q_D`（q_D=1/1000，p_D≈0.0731）；选 U_D 于两者之间 → 正确 continuation draw（用 posterior）= 1，错误 prior draw = 0，证明 E→D 后验真实进入 continuation。
+- **多设备 independence（§11）**：两设备同 posterior、u1/u2 落不同 categorical 区间 → 各自 ABC 不同；交换 u1/u2 → 结果随设备 key 交换；D 同理 per-device（u_d_lo→x_D=1、u_d_hi→x_D=0）。
+- **rollout post-key adapter（§12）**：新增 `main_model/h2_rollout/post_keys_v1.py`（**H2 package 外**，不破坏 P1 import firewall）：`rollout_seed(dp,m) → h2_rollout namespace → U_X_post/U_D_post/U_L_post`（U_Y_post 接口仅定义不消费）；同 (dp,m,entity) 跨动作 exact identical（CRN）、不同 dp/m 分离；**不用 P2 generator-validation synthetic entity/generation mapping**。
+- **F4 — PM age_before = 设备 age_h**：`apply_pm(resource, t, kind, generation, age_h)`，replacement record `age_before = age_h`（非墙钟 t）；PM-R1（t=200、age_h=135 → age_before=135）。
+- **PM / mandatory 真实覆盖**：PM-R2（age=240 + 合法 head → PM_WITH_HEAD 不得成为 policy action）、PM-R3（age=240 + 其余条件满足 → PM_IDLE 不得成为 policy action）、PM-R4（age=120 → optional PM 出现）、PM_WITH_HEAD positive（age=120 + head → 出现）。
+- **real H1 parity（§17）**：`check_h1_real_parity` 驱动 accepted H1 engine（`g3.random_des_v1`，parity target 非 oracle 循环）——A. START_HEAD：engine 默认 dispatch 产出 ACTIVITY_START（device 1, B, att 1, @0→2）与 P3 apply_start_head 逐字段一致；B. H1_NOOP：maintenance 态 engine 推进至真实下一事件（5/2）且无主动 PM，与 P3 apply_h1_noop 一致；不消费 formal/holdout worlds。
+- **C23 continuation（§18）**：隐藏世界不同 + ObservableState/PosteriorState 相同 + 同 rollout post keys → ContinuationWorld 完全一致；同 observable 不同 (dp,m) keys → world 实际不同（差异来自冻结随机子流，非 live hidden world）。
+- **独立 checker**：`checker/h2_p3_mechanics_checker_v1.py` 独立实现 `active_fragment_at`（own `_own_active_fragments` + `_own_fragment_settled`，exact identity + prefix settle matching）、`scheduled_completion_candidates`、`wait_anchor_expected`（own `_own_wait_anchor`，含 tie-break）——不复制旧逻辑、不调 Density analyzer / implementer 作 oracle；**15/15 PASS**。
+- **测试**：`tests/test_h2_p3_mechanics_v1.py` **45/45 PASS**（新增 WAIT-R1..R5 / PM-R1..R4 / continuation posterior counterexample / per-device independence / fail-close / adapter CRN / C23 continuation / real H1 parity）。
+- **证据根** `05_结果/H2/p3/mechanics/requalification/run_20260816T063153810486Z_1b405934/`：checker **15/15 PASS** + tests 45/45 + 回归 P1 防火墙 28 / Density E2 36 / key_schema 38 / Q3 H1 23 / G3 44 全 PASS；ACYCLIC hash DAG + manifest/inventory 一致性 + semantic evidence mapping + C21 = PASS（fail-closed；verified staging 字节一致 promote + promote 后只读复验）；原 P3-A 两 root（`...d5eafe0e` / `...a5f9bd4e`）标记 **HISTORICAL_P3_A_EXECUTION_WITH_WAIT_AND_CONTINUATION_REVIEW_FINDINGS**（immutable，未改写）。
+- **dev budget ledger 追加（F2）**：entry `P3-A-E1-20260816T063153810486Z_1b405934` wall_clock=10.0243s；累计 **33.4482s（0.0093h）**；soft 4h / hard 8h 均未达；历史 P3-A entries 保留不删。
+- **状态**：**P3-A-E1 mechanics requalification = COMPLETED / AWAITING HUMAN GATE FINAL P3-A REVIEW**；**P3-A FINAL = NOT YET HUMAN-GATE ACCEPTED**；**C23 = MECHANICS REQUALIFIED / FULL PRODUCTION FINAL PENDING**；**P3 tuning / M* / C_eval* / deviation threshold / action stability / cross-K transfer / h2_holdout / C25 = NOT AUTHORIZED**。
+- 范围审计：M*/C_eval* 选择、deviation tuning、action stability、cross-K transfer、h2_tuning policy experiments、h2_holdout、C25、final H2 numbers、Q3 K recommendation = 全部 **NO**；P1/P2 accepted 数学/接口未修改；未执行随机 rollout、未消费随机键、无新 formal/holdout worlds。
+- 状态同步：`CURRENT_STATE.md`（Gate 行、§5.1、§6 禁止、§7 下一出口）。
+
 ## 2026-08-16 / `STATE-2026-08-13-G2.4` / `Q3-H2-P3-A 决策机制与 rollout 基础 = COMPLETED / AWAITING HUMAN GATE P3-A REVIEW`
 
 ### 修改

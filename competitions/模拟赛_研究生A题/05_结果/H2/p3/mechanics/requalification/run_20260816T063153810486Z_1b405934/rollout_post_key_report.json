@@ -1,0 +1,1 @@
+{"check":"ROLLOUT_POST_KEYS","cross_action_crn":"same bundle for all actions (adapter has no action argument)","failures":[],"namespace":"h2_rollout","seed_dp0_m0":18194960657090098448,"status":"PASS","u_x_dp0_m0_dev1":"12445996425539232521/36893488147419103232","u_x_dp0_m1_dev1":"13768605229005358905/36893488147419103232"}
