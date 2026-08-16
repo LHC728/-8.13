@@ -49,6 +49,56 @@ A_WAIT_EVENT = "WAIT_EVENT"
 A_PM_WITH_HEAD = "PM_WITH_HEAD"
 A_PM_IDLE = "PM_IDLE"
 
+# Event types produced by the DISPATCH / post-action phases of a closure.
+# The frozen closure order is: settle -> observe -> classify -> exits ->
+# cancel -> materialize D -> shift -> release -> [H2 policy decision] ->
+# equipment dispatch -> start turnovers.  The H2 decision boundary sits
+# BEFORE equipment dispatch, so same-timestamp records from the dispatch /
+# turnover phases must NOT enter the pre-action decision state.
+DISPATCH_PHASE_EVENT_TYPES = frozenset({
+    "ACTIVITY_START",
+    "TURNOVER_OUT_START",
+    "TURNOVER_IN_START",
+    "EQUIPMENT_REPLACEMENT_START",
+    "EQUIPMENT_REPLACEMENT_DEFERRED",
+    "WAKE_UP",
+})
+
+
+def pre_action_log(event_log: list[dict[str, Any]], t: Fraction
+                   ) -> list[dict[str, Any]]:
+    """Deterministic PRE-ACTION / PRE-DISPATCH view of the log at closure t.
+
+    Keeps every record with event_time < t, plus same-timestamp records that
+    belong to the pre-dispatch phases (settle / observation materialization /
+    classification / second-abnormal exit+cancel / D materialization / shift
+    update / task release); EXCLUDES same-timestamp records produced by the
+    equipment-dispatch and turnover phases (ACTIVITY_START, turnover starts,
+    replacement starts/deferrals, WAKE_UP) — the candidate action must be
+    compared on the state BEFORE any action at t.
+
+    This is phase-semantics based (accepted closure ordering + event identity),
+    not a 'delete the ACTIVITY_START' result-guessing patch.
+    """
+    out: list[dict[str, Any]] = []
+    for r in event_log:
+        et = r.get("event_time")
+        if et is None:
+            continue
+        tt = Fraction(et)
+        if tt < t:
+            out.append(r)
+        elif tt == t and r.get("event_type") not in DISPATCH_PHASE_EVENT_TYPES:
+            out.append(r)
+    return out
+
+
+def project_pre_action_state(event_log: list[dict[str, Any]], t: Fraction,
+                             batch_size: int = 100) -> obs.ObservableState:
+    """Observable state at the PRE-ACTION decision boundary of closure t."""
+    return obs.project_log_prefix(pre_action_log(event_log, t), t,
+                                  batch_size=batch_size)
+
 
 @dataclass(frozen=True)
 class WaitAnchor:
@@ -216,7 +266,16 @@ def reconstruct_decision_points(event_log: list[dict[str, Any]], K: Fraction,
     """Reconstruct the H2 decision points of a batch deterministically:
     closure enumeration (distinct canonical event times + Q3 shift starts),
     per closure resources in A/B/C/E order, at most one point per
-    (resource, closure); dp = 0-based batch index (pure function)."""
+    (resource, closure); dp = 0-based batch index (pure function).
+
+    REQUALIFICATION (decision semantics): each closure is evaluated on the
+    PRE-ACTION view (pre_action_log): same-timestamp dispatch-phase records
+    (ACTIVITY_START / turnover starts / replacement starts) do NOT enter the
+    decision state, and a DISPATCH decision point additionally requires the
+    resource to be IDLE / AVAILABLE (status "idle" in the projection) — a
+    resource already testing / calibration / replacement / failed yields NO
+    dispatch point.  MAINTENANCE decision points keep the frozen maintenance
+    conditions unchanged."""
     shifts = obs.q3_shift_grid(K)
     event_times = sorted({Fraction(r.get("event_time", 0)) for r in event_log})
     batch_end = t_end if t_end is not None else max(event_times)
@@ -228,15 +287,20 @@ def reconstruct_decision_points(event_log: list[dict[str, Any]], K: Fraction,
         sh = obs.active_shift(shifts, t)
         if sh is None:
             continue
-        st = obs.project_log_prefix(event_log, t, batch_size=batch_size)
-        active = _active_fragments(event_log, t)
+        pre_log = pre_action_log(event_log, t)
+        st = obs.project_log_prefix(pre_log, t, batch_size=batch_size)
+        active = _active_fragments(pre_log, t)
         for resource in RESOURCES:
+            rsrc = next((r for r in st.resources if r.resource == resource),
+                        None)
+            resource_idle = rsrc is not None and rsrc.status == "idle"
             head = None
             for q in st.queue:
                 if q.process_order == _process_order(resource):
                     head = (q.device_id, _process_name(q.process_order), q.effective_attempt_no)
                     break
-            if head is not None and _head_is_legal(st, head, t, sh[1]):
+            if resource_idle and head is not None \
+                    and _head_is_legal(st, head, t, sh[1]):
                 actions = [A_START_HEAD]
                 anchor = _wait_anchor(st, head, t, sh[1], active)
                 if anchor is not None:

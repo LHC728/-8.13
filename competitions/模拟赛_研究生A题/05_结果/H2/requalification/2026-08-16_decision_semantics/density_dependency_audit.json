@@ -1,0 +1,23 @@
+{
+  "report": "DENSITY_DEPENDENCY_AUDIT",
+  "date": "2026-08-16",
+  "task": "Q3-H2-P3-REQUAL-DECISION-SEMANTICS",
+  "conclusion": "DENSITY = UNAFFECTED_BY_P3_DECISION_RECONSTRUCTION",
+  "audited_files": [
+    "04_代码/checker/h2_q3_density_analyzer_v1.py",
+    "04_代码/checker/h2_q3_density_checker_v1.py",
+    "04_代码/checker/h2_admission_opportunity_analyzer_v1.py"
+  ],
+  "dependency_evidence": {
+    "h2_q3_density_analyzer_v1.py": ["stdlib only", "checker.h2_admission_opportunity_analyzer_v1"],
+    "h2_q3_density_checker_v1.py": ["stdlib only", "checker.h2_q3_density_analyzer_v1"],
+    "h2_admission_opportunity_analyzer_v1.py": ["stdlib only"]
+  },
+  "no_main_model_dependency": true,
+  "no_decision_point_v1_dependency": true,
+  "notes": [
+    "Neither density module imports main_model.* nor decision_point_v1; the admission analyzer is an independent offline reconstruction ('independent; no main-model dispatch').",
+    "Therefore the flawed P3 decision-point reconstruction semantics do not propagate to Density evidence (D-14 A 7/7 + B 7/7; E1 a2669aa9 / E2 0713f171).",
+    "No expansion of the invalidation scope is required."
+  ]
+}

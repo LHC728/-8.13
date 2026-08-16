@@ -1,0 +1,15 @@
+{
+  "status": "INVALIDATED_FOR_DECISION_SEMANTICS",
+  "root": "05_结果/H2/tuning/stability/run_20260816T101049163825Z_791506d8",
+  "invalidation_date": "2026-08-16",
+  "authority": "Human Gate BLOCKER (Q3-H2-P3 requalification: decision state / first action / dp random-key semantics)",
+  "reasons": {
+    "A": "decision state built from a log prefix that already includes same-timestamp H1 dispatch results (post-action state used as pre-action decision state)",
+    "B": "reconstruct_decision_points() did not enforce resource idle/available for dispatch decision points",
+    "C": "START_HEAD / WAIT_EVENT first actions did not strictly follow the frozen candidate first-action semantics (decision_resource defaulted to None; actions could degenerate to the same continuation path)",
+    "D": "offline stability used a cross-batch global sample index as dp instead of the frozen per-batch evaluated-point 0-based index"
+  },
+  "numbers_unchanged": true,
+  "note": "This marker and INVALIDATION_REPORT.md are additive governance overlays; the original file_hashes.sha256 and run_manifest.json are NOT modified and remain re-verifiable. This root no longer serves as final H2 DELETE decision evidence.",
+  "report": "05_结果/H2/requalification/2026-08-16_decision_semantics/INVALIDATION_REPORT.md"
+}

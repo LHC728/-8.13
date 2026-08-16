@@ -41,8 +41,11 @@ def _toy(label: str):
 
 
 def _wait_log(anchor_end: str, shift_end: str) -> list[dict]:
-    """Standalone: device 1 has in-flight A ending at anchor_end and a
-    released B (the queued head B); shift [0, shift_end)."""
+    """Standalone: device 1 has an in-flight A (started at 0, ending at
+    anchor_end) and a RELEASED-at-1 B (the queued head B); shift [0,
+    shift_end).  The B decision closure is t=1, where A is already running
+    (corrected pre-action semantics: the anchor fragment started at an
+    earlier closure)."""
     return [
         {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
          "device_id": 1, "true_state": {"A": False, "B": False, "C": False}},
@@ -52,7 +55,7 @@ def _wait_log(anchor_end: str, shift_end: str) -> list[dict]:
          "process": "A", "effective_attempt_no": 1, "resource_id": "A",
          "attempt_start_time": "0", "attempt_end_time": anchor_end,
          "outcome": "NONE"},
-        {"event_type": "TASK_RELEASE", "event_time": "0", "resource_id": "B",
+        {"event_type": "TASK_RELEASE", "event_time": "1", "resource_id": "B",
          "device_id": 1, "process": "B", "effective_attempt_no": 1},
         {"event_type": "SHIFT_CHANGE", "event_time": "0", "shift_index": 0,
          "shift_start": "0", "shift_end": shift_end, "on_duty_squad": 0,
@@ -109,13 +112,13 @@ class TestDecisionPoints(unittest.TestCase):
 
 class TestWait(unittest.TestCase):
     def test_wait01_strict(self):
-        # head B on device 1 with in-flight A ending at 2.5;
-        # latest_start(B) = 10-2 = 8 -> 0 < 2.5 < 8 STRICT
+        # head B on device 1 with in-flight A ending at 2.5 (A started at 0);
+        # B released at 1; latest_start(B) = 10-2 = 8 -> 1 < 2.5 < 8 STRICT
         log = _wait_log("5/2", "10")
         pts = dp.reconstruct_decision_points(log, Fraction(10),
                                              batch_size=2, t_end=Fraction(10))
         waits = [p for p in pts
-                 if p.wait_anchor is not None and p.time == 0]
+                 if p.wait_anchor is not None and p.time == 1]
         self.assertTrue(waits)
         self.assertTrue(any(w.wait_anchor.boundary == "STRICT"
                             for w in waits))
@@ -127,7 +130,7 @@ class TestWait(unittest.TestCase):
         pts = dp.reconstruct_decision_points(log, Fraction(10),
                                              batch_size=2, t_end=Fraction(10))
         anchors = [p.wait_anchor for p in pts
-                   if p.wait_anchor is not None and p.time == 0]
+                   if p.wait_anchor is not None and p.time == 1]
         self.assertTrue(anchors)
         self.assertTrue(any(a.boundary == "BOUNDARY" for a in anchors))
         self.assertTrue(any(p.wait_anchor is not None
@@ -299,7 +302,7 @@ class TestE1WaitFragment(unittest.TestCase):
         res = chk.check_wait_fragment_identity()
         self.assertEqual(res["status"], "PASS", res)
         for row in res["rows"]:
-            if row["label"] == "WAIT-R1" and row["closure_t"] == "1":
+            if row["label"] == "WAIT-R1" and row["closure_t"] == "2":
                 self.assertIsNone(row["impl_anchor"])
                 self.assertIsNone(row["own_anchor"])
 
@@ -307,7 +310,7 @@ class TestE1WaitFragment(unittest.TestCase):
         res = chk.check_wait_fragment_identity()
         self.assertEqual(res["status"], "PASS", res)
         row = next(r for r in res["rows"]
-                   if r["label"] == "WAIT-R2" and r["closure_t"] == "2")
+                   if r["label"] == "WAIT-R2" and r["closure_t"] == "3")
         self.assertEqual(row["impl_anchor"]["process"], "A")
         self.assertEqual(row["impl_anchor"]["attempt_start_time"], "2")
         self.assertEqual(row["impl_anchor"]["completion_time"], "4")
@@ -323,7 +326,7 @@ class TestE1WaitFragment(unittest.TestCase):
         res = chk.check_wait_fragment_identity()
         self.assertEqual(res["status"], "PASS", res)
         row = next(r for r in res["rows"]
-                   if r["label"] == "WAIT-R4" and r["closure_t"] == "0")
+                   if r["label"] == "WAIT-R4" and r["closure_t"] == "1")
         self.assertEqual(row["impl_anchor"]["process"], "A")
         self.assertNotEqual(row["impl_anchor"]["process"], "B")
         self.assertEqual(row["impl_anchor"]["resource"], "A")
@@ -337,17 +340,18 @@ class TestE1WaitFragment(unittest.TestCase):
 
     def test_wait_anchor_impl_own_agree(self):
         # every impl WAIT anchor must be matched by the checker's own
-        # exact-fragment anchor (identity-level agreement)
+        # exact-fragment anchor (identity-level agreement, PRE-ACTION view)
         for label, log, K, tend in chk._toy_logs():
             pts = dp.reconstruct_decision_points(log, K, batch_size=2,
                                                  t_end=tend)
             for p in pts:
                 if p.wait_anchor is None:
                     continue
+                pre = chk._own_pre_action_log(log, p.time)
                 own = chk._own_wait_anchor(
                     p.head, p.time,
                     obs.active_shift(obs.q3_shift_grid(K), p.time)[1],
-                    chk._own_active_fragments(log, p.time))
+                    chk._own_active_fragments(pre, p.time))
                 self.assertIsNotNone(own, (label, p.to_canonical_dict()))
                 self.assertEqual(own[1], p.wait_anchor.process, label)
                 self.assertEqual(own[3], p.wait_anchor.attempt_start_time,

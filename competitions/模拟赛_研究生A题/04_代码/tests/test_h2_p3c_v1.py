@@ -232,13 +232,38 @@ def _fresh_state(rep: int):
 
 class TestPolicyEvaluationInvariants(unittest.TestCase):
     def test_single_legal_action_is_a_h1(self):
-        st, post, world, prov = _fresh_state(0)
+        # REQUALIFIED (decision semantics): the START_HEAD candidate is
+        # bound to its FROZEN decision head (the queue head of the
+        # pre-action projection at t=0)
+        log = [
+            {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
+             "device_id": 1,
+             "true_state": {"A": False, "B": False, "C": False}},
+            {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
+             "device_id": 2,
+             "true_state": {"A": False, "B": False, "C": False}},
+            {"event_type": "SHIFT_CHANGE", "event_time": "0", "shift_index": 0,
+             "shift_start": "0", "shift_end": "300", "on_duty_squad": 0,
+             "squad_id": 0},
+            {"event_type": "TASK_RELEASE", "event_time": "0", "device_id": 1,
+             "process": "A", "effective_attempt_no": 1, "resource_id": "A",
+             "release_time": "0"},
+        ]
+        st = obs.project_log_prefix(log, Fraction(0), batch_size=BATCH_SIZE)
+        post = ps.PosteriorState.from_observable(st)
+        prov = physical_post_provider("h2_tuning", MASTER_SEED, 0,
+                                      BATCH_SIZE, ("A", "B", "C", "E"))
+        ux = {1: prov.u_x(1), 2: prov.u_x(2)}
+        ud = {1: prov.u_d(1), 2: prov.u_d(2)}
+        ul = {r: prov.u_l(r, 1) for r in ("A", "B", "C", "E")}
+        world = cont.rebuild_continuation_world(st, post, ux, ud, ul)
         cfg = re1.RolloutConfig(batch_size=BATCH_SIZE, shift_length_h=K,
                                 shifts_per_day=2, scenario="q3_two_shift",
                                 tau_pm=re1.NO_PM_BEFORE_MANDATORY)
         dec = pol.evaluate_decision_point(
             st, post, world, prov, cfg, 0, "A", "dispatch", "WAIT",
-            (re1.A_START_HEAD,), None, MASTER_SEED, 0, M=2)
+            (re1.A_START_HEAD,), None, MASTER_SEED, 0, M=2,
+            decision_head=(1, "A", 1))
         self.assertEqual(dec.a_h1, re1.A_START_HEAD)
         self.assertEqual(dec.chosen, re1.A_START_HEAD)
         self.assertFalse(dec.deviated)

@@ -360,7 +360,10 @@ class RolloutEngine:
                  first_action: str = A_H1_NOOP,
                  wait_anchor_time: Optional[Fraction] = None,
                  pm_resource: Optional[str] = None,
-                 log_prefix: Optional[list[dict[str, Any]]] = None) -> None:
+                 log_prefix: Optional[list[dict[str, Any]]] = None,
+                 decision_resource: Optional[str] = None,
+                 decision_head: Optional[tuple[int, str, int]] = None,
+                 decision_kind: Optional[str] = None) -> None:
         self.config = config
         self.provider = provider
         self.now: Fraction = state.time
@@ -390,9 +393,13 @@ class RolloutEngine:
         self.wait_anchor_time = wait_anchor_time
         self.pm_resource = pm_resource
         self._first_action_done = False
-        # decision point context (set by the caller via rebuild_from_*)
-        self.decision_resource: Optional[str] = None
-        self.decision_head: Optional[tuple[int, str, int]] = None
+        # decision point context (frozen decision boundary facts, REQUALIFIED)
+        self.decision_resource: Optional[str] = decision_resource
+        self.decision_head: Optional[tuple[int, str, int]] = decision_head
+        self.decision_kind: Optional[str] = decision_kind
+        # strategic-wait holds: resource -> anchor time (WAIT_EVENT first
+        # action); the resource's head is not dispatched before the anchor.
+        self.wait_holds: dict[str, Fraction] = {}
         self._log_prefix = list(log_prefix) if log_prefix is not None else None
         self._init_from_projections(state, posterior, world)
 
@@ -670,11 +677,23 @@ class RolloutEngine:
             return False
         return True
 
-    # -- first action (frozen Q_hat semantics) -----------------------------
+    # -- first action (frozen Q_hat semantics, REQUALIFIED) ------------------
 
     def _apply_first_action_if_dispatch(self) -> None:
-        """Apply the candidate first action at the decision point.  Only the
-        FIRST step is influenced; afterwards the H1 baseline governs."""
+        """Apply the candidate first action at the decision boundary.  Only
+        the FIRST step is influenced; afterwards the H1 baseline governs.
+
+        REQUALIFICATION (decision semantics): the candidate action must
+        really take effect on the FROZEN decision context:
+          * START_HEAD  starts the frozen FCFS head identity at t (fail
+                        closed when the frozen head is missing / no longer
+                        the queue head / not legal);
+          * WAIT_EVENT  holds the decision resource's head until the frozen
+                        WaitAnchor (no H1 dispatch in [t, anchor));
+          * PM_WITH_HEAD / PM_IDLE begin a preventive replacement of the
+            decision resource; H1_NOOP does nothing.
+        Any candidate action that needs decision context but does not have
+        it FAILS CLOSED (never a silent no-op)."""
         if self._first_action_done:
             return
         a = self.first_action
@@ -682,29 +701,81 @@ class RolloutEngine:
             self._first_action_done = True
             return
         if a == A_START_HEAD:
-            # start the frozen FCFS head of the decision resource (the head
-            # was already selected by the caller / reconstruction)
-            if self.decision_resource is not None:
-                self._dispatch_decision_resource(force=True)
+            if self.decision_resource is None or self.decision_head is None:
+                raise ValueError(
+                    "START_HEAD requires decision_resource and decision_head "
+                    "(fail-closed; no silent default dispatch)")
+            self._start_frozen_head()
             self._first_action_done = True
             return
         if a == A_WAIT_EVENT:
-            # do nothing now; advance to the anchor event; the closure at the
-            # anchor re-decides under H1.  No random consumption.
-            if self.wait_anchor_time is not None:
-                if self.wait_anchor_time > self.now:
-                    self._schedule("h2_wait_wake", self.wait_anchor_time,
-                                   ("wait", self.decision_resource))
+            if self.decision_resource is None:
+                raise ValueError(
+                    "WAIT_EVENT requires decision_resource (fail-closed)")
+            if self.wait_anchor_time is None:
+                raise ValueError(
+                    "WAIT_EVENT requires a wait anchor (fail-closed)")
+            # strategic wait hold: the decision resource's head must NOT be
+            # dispatched by the H1 closure in [t, anchor).
+            self.wait_holds[self.decision_resource] = self.wait_anchor_time
+            if self.wait_anchor_time > self.now:
+                self._schedule("h2_wait_wake", self.wait_anchor_time,
+                               ("wait", self.decision_resource))
             self._first_action_done = True
             return
         if a in (A_PM_WITH_HEAD, A_PM_IDLE):
-            if self.pm_resource is not None:
-                self._set_replacement_pending(
-                    self.pm_resource, "preventive", "h2_pm")
-                self._begin_replacement(self.pm_resource)
+            r = self.pm_resource if self.pm_resource is not None \
+                else self.decision_resource
+            if r is None:
+                raise ValueError(
+                    f"{a} requires pm_resource/decision_resource "
+                    "(fail-closed)")
+            self._set_replacement_pending(r, "preventive", "h2_pm")
+            self._begin_replacement(r)
             self._first_action_done = True
             return
         raise ValueError(f"unknown first action {a!r}")
+
+    def _start_frozen_head(self) -> None:
+        """START_HEAD: immediately start the FROZEN FCFS head identity of the
+        decision resource at the decision boundary t (ACTIVITY_START at t);
+        then H1 baseline continuation.  Fail closed if the frozen head cannot
+        be found, is not the queue head, or is no longer legal."""
+        r = self.decision_resource
+        frozen = self.decision_head
+        queue = self.queues[r]
+        queue.sort(key=lambda e: e.fcfs_key)
+        if not queue:
+            raise ValueError(
+                f"START_HEAD: decision queue of {r} is empty (fail-closed)")
+        head_entry = queue[0]
+        task = self.tasks[head_entry.task_id]
+        actual = (task.device_id, task.process, task.effective_attempt_no)
+        if actual != frozen:
+            raise ValueError(
+                f"START_HEAD: frozen head {frozen} != actual queue head "
+                f"{actual} (fail-closed; never silently start another task)")
+        if not self._is_legal(head_entry):
+            raise ValueError(
+                f"START_HEAD: frozen head {frozen} is no longer legal at "
+                f"t={self.now} (fail-closed)")
+        attempt = self._start_task(head_entry)
+        self._record_activity_start(attempt)
+
+    def _record_activity_start(self, attempt: _Attempt) -> None:
+        act = self.resources[attempt.task_id and
+                             self.tasks[attempt.task_id].resource_id] \
+            .current_activity
+        scheduled_end = (act.get("end_time") if act is not None else None)
+        end_rec = (attempt.end_time if attempt.end_time is not None
+                   else scheduled_end)
+        self._record("ACTIVITY_START", device_id=attempt.device_id,
+                     process=attempt.process,
+                     effective_attempt_no=attempt.effective_attempt_no,
+                     resource_id=self.tasks[attempt.task_id].resource_id,
+                     attempt_start_time=attempt.start_time,
+                     attempt_end_time=end_rec,
+                     outcome="NONE")
 
     def _dispatch_decision_resource(self, force: bool = False) -> None:
         r = self.decision_resource
@@ -824,7 +895,12 @@ class RolloutEngine:
             elif kind == "turnover_in_complete":
                 turnover_in_done.append(token)
             elif kind == "h2_wait_wake":
-                pass  # the closure re-decides under H1
+                # WAIT_EVENT hold release: at the anchor the strategic wait
+                # ends and the H1 baseline re-decides (the same closure's
+                # equipment_and_dispatch proceeds normally).
+                token_list = list(token) if isinstance(token, tuple) else []
+                if token_list and token_list[0] == "wait":
+                    self.wait_holds.pop(token_list[1], None)
         def _key(a: _Attempt):
             return (a.device_id, _PROCESS_ORDER[a.process],
                     a.effective_attempt_no)
@@ -1108,6 +1184,11 @@ class RolloutEngine:
         for resource_id in RESOURCES:
             resource = self.resources[resource_id]
             equip = self.equipment[resource_id]
+            # WAIT_EVENT strategic hold: the decision resource's head must
+            # not be dispatched before the anchor (first-action-only).
+            hold_until = self.wait_holds.get(resource_id)
+            if hold_until is not None and self.now < hold_until:
+                continue
             if equip.replacement_pending and not equip.calibration_in_flight:
                 self._begin_replacement(resource_id)
             if resource.status != "IDLE":

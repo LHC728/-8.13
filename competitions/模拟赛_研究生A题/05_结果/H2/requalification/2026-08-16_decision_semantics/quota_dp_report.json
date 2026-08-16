@@ -1,0 +1,1 @@
+{"check":"QUOTA_DP","id":"QUOTA_DP","status":"PASS","tests":["QUOTA-DP-01 offline quota simulation equals the frozen online selector (qsel.run_online_selection) on the same points","QUOTA-DP-02 W_cap=4 / P_cap=4 / C_eval=8 hold per batch","QUOTA-DP-03 evaluated-point age comes from the PRE-ACTION decision-boundary state"]}

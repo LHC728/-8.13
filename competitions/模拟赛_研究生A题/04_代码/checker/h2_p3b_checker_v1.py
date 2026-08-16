@@ -286,48 +286,178 @@ def _core_events(log: list[dict], t0: Fraction = Fraction(0)
 
 def check_rollout_kernel() -> dict[str, Any]:
     """Kernel smoke: run the fresh continuation engine on a tiny world with
-    each first action; assert progress, absorption, and event sanity."""
+    each candidate first action BOUND TO ITS FROZEN DECISION CONTEXT; assert
+    progress, absorption, and the strict first-action semantics:
+
+    REQUALIFIED (decision semantics): the checker derives the FROZEN FCFS
+    head from its OWN queue projection (never from the implementer's
+    reconstruction) and derives the OWN expected effects:
+      * START_HEAD  -> ACTIVITY_START of the frozen head at the decision
+                       time t (fail-closed when the frozen head is not the
+                       queue head);
+      * WAIT_EVENT  -> NO ACTIVITY_START of the decision resource in
+                       [t, anchor); the H1 baseline resumes at the anchor;
+      * PM_WITH_HEAD / PM_IDLE -> EQUIPMENT_REPLACEMENT_START of the
+                       decision resource (preventive);
+      * H1_NOOP     -> no optional PM (equipment age 0), H1 serves the head.
+    """
     failures: list[str] = []
     rows: list[dict[str, Any]] = []
-    log = [
-        {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
-         "device_id": 1, "true_state": {"A": False, "B": False, "C": False}},
-        {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
-         "device_id": 2, "true_state": {"A": False, "B": False, "C": False}},
-        {"event_type": "SHIFT_CHANGE", "event_time": "0", "shift_index": 0,
-         "shift_start": "0", "shift_end": "300", "on_duty_squad": 0,
-         "squad_id": 0},
-    ]
-    st = obs.project_log_prefix(log, Fraction(0), batch_size=2)
-    post = ps.PosteriorState.from_observable(st)
-    world = cont.rebuild_continuation_world(
-        st, post, {1: Fraction(1, 2), 2: Fraction(1, 2)}, {},
-        {r: Fraction(1, 3) for r in RESOURCES})
-    prov = re1.PostKeyProvider(
-        u_x_by_device={1: Fraction(1, 2), 2: Fraction(1, 2)},
-        u_d_by_device={1: Fraction(1, 3), 2: Fraction(1, 3)},
-        u_l_by_resource={r: Fraction(1, 3) for r in RESOURCES},
-        u_y_lookup=lambda d, p, a: Fraction(1, 2),
-        u_l_lookup=lambda r, g: Fraction(1, 3),
-        u_x_subsystem_lookup=lambda d, s: Fraction(1, 2))
-    for action in (re1.A_H1_NOOP, re1.A_START_HEAD, re1.A_WAIT_EVENT,
-                   re1.A_PM_IDLE):
+    _PROC = {"A": 0, "B": 1, "C": 2, "E": 3}
+    _PNAME = {0: "A", 1: "B", 2: "C", 3: "E"}
+
+    def _own_head(st, resource: str):
+        for q in st.queue:
+            if q.process_order == _PROC[resource]:
+                return (q.device_id, _PNAME[q.process_order],
+                        q.effective_attempt_no)
+        return None
+
+    def _base_log() -> list[dict]:
+        return [
+            {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
+             "device_id": 1,
+             "true_state": {"A": False, "B": False, "C": False}},
+            {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
+             "device_id": 2,
+             "true_state": {"A": False, "B": False, "C": False}},
+            {"event_type": "SHIFT_CHANGE", "event_time": "0", "shift_index": 0,
+             "shift_start": "0", "shift_end": "300", "on_duty_squad": 0,
+             "squad_id": 0},
+        ]
+
+    def _world(st, post):
+        return cont.rebuild_continuation_world(
+            st, post, {1: Fraction(1, 2), 2: Fraction(1, 2)}, {},
+            {r: Fraction(1, 3) for r in RESOURCES})
+
+    def _prov():
+        return re1.PostKeyProvider(
+            u_x_by_device={1: Fraction(1, 2), 2: Fraction(1, 2)},
+            u_d_by_device={1: Fraction(1, 3), 2: Fraction(1, 3)},
+            u_l_by_resource={r: Fraction(1, 3) for r in RESOURCES},
+            u_y_lookup=lambda d, p, a: Fraction(1, 2),
+            u_l_lookup=lambda r, g: Fraction(1, 3),
+            u_x_subsystem_lookup=lambda d, s: Fraction(1, 2))
+
+    def _run(log, action, *, resource=None, head=None, anchor=None,
+             pm_resource=None):
+        st = obs.project_log_prefix(log, Fraction(0), batch_size=2)
+        post = ps.PosteriorState.from_observable(st)
         cfg = re1.RolloutConfig(batch_size=2, shift_length_h=Fraction(300),
                                 shifts_per_day=2, scenario="q3_two_shift",
                                 tau_pm=re1.NO_PM_BEFORE_MANDATORY)
-        eng = re1.RolloutEngine(st, post, world, prov, cfg,
-                                first_action=action)
-        out = eng.run()
+        eng = re1.RolloutEngine(
+            st, post, _world(st, post), _prov(), cfg,
+            first_action=action, wait_anchor_time=anchor,
+            pm_resource=pm_resource, log_prefix=log,
+            decision_resource=resource, decision_head=head,
+            decision_kind="dispatch")
+        return eng.run()
+
+    # -- fixture A: resource A idle, FCFS head (1, A, 1) released at 0 ----
+    log_a = _base_log() + [
+        {"event_type": "TASK_RELEASE", "event_time": "0", "device_id": 1,
+         "process": "A", "effective_attempt_no": 1, "resource_id": "A",
+         "release_time": "0"},
+    ]
+    st_a = obs.project_log_prefix(log_a, Fraction(0), batch_size=2)
+    own_head_a = _own_head(st_a, "A")
+
+    # H1_NOOP: no optional PM (age 0), H1 serves the head
+    out = _run(log_a, re1.A_H1_NOOP, resource="A", head=own_head_a)
+    repl = [r for r in out.events
+            if r.get("event_type") == "EQUIPMENT_REPLACEMENT_START"
+            and r.get("resource_id") == "A"]
+    starts_a = [r for r in out.events
+                if r.get("event_type") == "ACTIVITY_START"
+                and r.get("device_id") == 1 and r.get("process") == "A"
+                and r.get("effective_attempt_no") == 1
+                and r.get("event_time") == "0"]
+    if repl:
+        failures.append("H1_NOOP must not trigger an optional PM (age 0)")
+    if not starts_a:
+        failures.append("H1_NOOP must serve the FCFS head at t=0")
+    rows.append({"action": re1.A_H1_NOOP, "t_end": str(out.t_end),
+                 "events": len(out.events), "passed": out.devices_passed,
+                 "exited": out.devices_exited, "u_y": out.consumed_u_y,
+                 "own_head": list(own_head_a) if own_head_a else None})
+    if out.t_end <= Fraction(0) or out.devices_passed + out.devices_exited != 2:
+        failures.append("H1_NOOP: kernel did not absorb the 2-device batch")
+
+    # START_HEAD: ACTIVITY_START of the frozen head at t=0
+    out = _run(log_a, re1.A_START_HEAD, resource="A", head=own_head_a)
+    starts_a = [r for r in out.events
+                if r.get("event_type") == "ACTIVITY_START"
+                and r.get("device_id") == 1 and r.get("process") == "A"
+                and r.get("effective_attempt_no") == 1
+                and r.get("event_time") == "0"]
+    if len(starts_a) != 1:
+        failures.append("START_HEAD must record the frozen head's "
+                        "ACTIVITY_START at the decision time t")
+    rows.append({"action": re1.A_START_HEAD, "t_end": str(out.t_end),
+                 "events": len(out.events), "passed": out.devices_passed,
+                 "exited": out.devices_exited, "u_y": out.consumed_u_y})
+    if out.t_end <= Fraction(0) or out.devices_passed + out.devices_exited != 2:
+        failures.append("START_HEAD: kernel did not absorb the 2-device batch")
+
+    # START_HEAD with a NON-head identity must fail closed
+    bad_head = (2, "B", 1)
+    try:
+        _run(log_a, re1.A_START_HEAD, resource="A", head=bad_head)
+        failures.append("START_HEAD with a non-head identity must fail "
+                        "closed (no silent default dispatch)")
+    except ValueError:
+        pass
+
+    # PM_WITH_HEAD / PM_IDLE: preventive replacement of the resource
+    for action, pm in ((re1.A_PM_WITH_HEAD, "A"), (re1.A_PM_IDLE, "A")):
+        out = _run(log_a, action, resource="A", head=own_head_a,
+                   pm_resource=pm)
+        repl = [r for r in out.events
+                if r.get("event_type") == "EQUIPMENT_REPLACEMENT_START"
+                and r.get("resource_id") == "A"]
+        if len(repl) != 1 or repl[0].get("kind") != "preventive":
+            failures.append(f"{action} must begin the preventive "
+                            f"replacement of the decision resource")
         rows.append({"action": action, "t_end": str(out.t_end),
-                     "events": len(out.events),
-                     "passed": out.devices_passed,
-                     "exited": out.devices_exited,
-                     "u_y": out.consumed_u_y})
-        if out.t_end <= Fraction(0):
-            failures.append(f"{action}: non-positive T_end")
-        if out.devices_passed + out.devices_exited != 2:
-            failures.append(f"{action}: expected 2 terminal devices, got "
-                            f"{out.devices_passed}+{out.devices_exited}")
+                     "events": len(out.events), "passed": out.devices_passed,
+                     "exited": out.devices_exited, "u_y": out.consumed_u_y})
+        if out.t_end <= Fraction(0) \
+                or out.devices_passed + out.devices_exited != 2:
+            failures.append(f"{action}: kernel did not absorb the "
+                            f"2-device batch")
+
+    # -- fixture W: device1 A fragment runs [0,2], head (1,B,1) queued ----
+    log_w = _base_log() + [
+        {"event_type": "ACTIVITY_START", "event_time": "0", "device_id": 1,
+         "process": "A", "effective_attempt_no": 1, "resource_id": "A",
+         "attempt_start_time": "0", "attempt_end_time": "2",
+         "outcome": "NONE"},
+        {"event_type": "TASK_RELEASE", "event_time": "0", "device_id": 1,
+         "process": "B", "effective_attempt_no": 1, "resource_id": "B",
+         "release_time": "0"},
+    ]
+    st_w = obs.project_log_prefix(log_w, Fraction(0), batch_size=2)
+    own_head_b = _own_head(st_w, "B")
+
+    # WAIT_EVENT: NO B start in [0, 2); H1 resumes at the anchor 2
+    out = _run(log_w, re1.A_WAIT_EVENT, resource="B", head=own_head_b,
+               anchor=Fraction(2))
+    b_starts = [Fraction(r["event_time"]) for r in out.events
+                if r.get("event_type") == "ACTIVITY_START"
+                and r.get("process") == "B"]
+    if not b_starts:
+        failures.append("WAIT_EVENT: B must start after the anchor")
+    elif min(b_starts) < Fraction(2):
+        failures.append(f"WAIT_EVENT must hold B's dispatch until the "
+                        f"anchor: first B start {min(b_starts)} < 2")
+    rows.append({"action": re1.A_WAIT_EVENT, "t_end": str(out.t_end),
+                 "events": len(out.events), "passed": out.devices_passed,
+                 "exited": out.devices_exited, "u_y": out.consumed_u_y})
+    if out.t_end <= Fraction(0) or out.devices_passed + out.devices_exited != 2:
+        failures.append("WAIT_EVENT: kernel did not absorb the 2-device batch")
+
     return {"check": "ROLLOUT_KERNEL", "status": "PASS" if not failures
             else "FAIL", "failures": failures, "rows": rows}
 

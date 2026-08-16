@@ -123,11 +123,17 @@ def evaluate_decision_point(
         wait_anchor_time: Optional[Fraction] = None,
         M: int = M_STAR,
         salt: str = "q3h2-bootstrap-v1",
+        decision_head: Optional[tuple[int, str, int]] = None,
 ) -> PolicyDecision:
     """Evaluate one decision point: run M rollouts per legal action (CRN:
     same (dp, m) post-key bundle across actions) and apply the 2SE rule.
     ``salt`` selects the rollout salt (normal ROLLOUT_SALT or the frozen
-    ALT salt for stability (b))."""
+    ALT salt for stability (b)).
+
+    REQUALIFIED: ``decision_head`` is the FROZEN FCFS head identity of the
+    decision point (from the decision-point reconstruction); it is bound
+    into every candidate rollout so START_HEAD / WAIT_EVENT act on the
+    frozen decision context, never on a re-derived queue head."""
     a_h1 = (re1.A_START_HEAD if kind == "dispatch" else re1.A_H1_NOOP)
     actions = tuple(legal_actions) if legal_actions else (a_h1,)
     if a_h1 not in actions:
@@ -164,7 +170,9 @@ def evaluate_decision_point(
             eng = re1.RolloutEngine(
                 state, posterior, world, eng_prov, cfg,
                 first_action=first_action, wait_anchor_time=anchor,
-                pm_resource=pm_resource, log_prefix=log_prefix)
+                pm_resource=pm_resource, log_prefix=log_prefix,
+                decision_resource=resource, decision_head=decision_head,
+                decision_kind=kind)
             out = eng.run()
             t_ends.append(out.t_end)
         tw = tuple(t_ends)
@@ -221,7 +229,8 @@ def evaluate_batch_sample(
             tuple(p["legal_actions"]), ctx["log_prefix"],
             master_seed_h2, replicate_id,
             wait_anchor_time=p.get("wait_anchor_time"),
-            M=p.get("M", M_STAR))
+            M=p.get("M", M_STAR),
+            decision_head=p.get("head"))
         cls = p["quota_class"]
         if cls == "WAIT":
             n_wait += 1

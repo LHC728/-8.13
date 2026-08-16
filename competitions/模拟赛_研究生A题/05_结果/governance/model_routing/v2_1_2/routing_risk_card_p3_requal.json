@@ -1,0 +1,62 @@
+{
+  "router_version": "MMR_V2.1.2",
+  "report": "ROUTING_RISK_CARD",
+  "task_id": "Q3-H2-P3-REQUAL-DECISION-SEMANTICS",
+  "semantic_issue_id": "DECISION-SEMANTICS-001",
+  "stage": "IMPLEMENTATION",
+  "authority_state": "FROZEN",
+  "formal_scope": true,
+  "checkpoint": "R0",
+  "task_description": "Repair Q3-H2 P3 decision-state / first-action / per-batch dp random-key semantics so they match the frozen production contract (Q3_H2_BOOTSTRAP_SPEC_DRAFT.md FINAL_FREEZE_ACCEPTED); then requalify P3-A/P3-B/P3-C. Human Gate BLOCKER on the previous P3-C DELETE (deviation_count=0 computed under inconsistent semantics).",
+  "risk": {
+    "problem_semantics": false,
+    "modeling_assumption": false,
+    "mathematical_formulation": true,
+    "data_semantics": false,
+    "statistical_inference": false,
+    "algorithmic_semantics": true,
+    "numerical_method": false,
+    "validation_interpretation": true,
+    "formal_result_impact": true,
+    "governance_authority": false
+  },
+  "multiple_plausible_interpretations": false,
+  "authority_ambiguity": false,
+  "uncertainty_present": false,
+  "frozen_mechanical_execution": false,
+  "engineering_signals": {
+    "new_complex_seam": false,
+    "repeat_failure_count": 1,
+    "checker_disagreement": false,
+    "checker_independence_concern": false,
+    "claimed_coverage_not_exercised": false,
+    "unexpected_behavior_after_pass": true,
+    "formal_numeric_shift": true
+  },
+  "green_allowlist_class": null,
+  "authority_refs": [
+    "08_项目管理/任务包/Q3_H2_BOOTSTRAP_SPEC_DRAFT.md (FINAL_FREEZE_ACCEPTED)",
+    "01_审计/检查注册表_V3.1.md"
+  ],
+  "authority_receipts": [],
+  "risk_evidence": [
+    {"dimension": "mathematical_formulation",
+     "evidence": "candidate first-action semantics (START_HEAD/WAIT_EVENT/PM) were not strictly applied at the decision boundary; Q_hat compares actions that may degenerate to the same continuation path"},
+    {"dimension": "algorithmic_semantics",
+     "evidence": "decision state was reconstructed from a log prefix that already contains the same-timestamp H1 dispatch results (post-action state treated as pre-action decision state); resource idle/availability not enforced for dispatch decision points"},
+    {"dimension": "validation_interpretation",
+     "evidence": "P3-C stability diagnostics used a cross-batch global sample index as dp instead of the frozen per-batch evaluated-point 0-based index, invalidating the deviation/agreement computation"},
+    {"dimension": "formal_result_impact",
+     "evidence": "deviation_count=0 (H2 DELETE) was computed under the inconsistent semantics and cannot serve as the final retain/delete decision evidence"}
+  ],
+  "computed_route": "YELLOW",
+  "route_reason": [
+    "semantic risk present (mathematical_formulation, algorithmic_semantics, validation_interpretation, formal_result_impact) and not frozen_mechanical_execution -> YELLOW",
+    "governance_authority=false: repairing implementation-vs-frozen-contract semantics, NOT modifying the frozen model (not RED)"
+  ],
+  "notes": [
+    "MMR V2.1.2 route = YELLOW per authority (implementation-vs-frozen-contract semantic repair).",
+    "If the repair reveals a required change to action definition / 2SE threshold / sample split / random protocol authority / M candidate grid / C25 retain-delete rule / C23 authority -> immediately RED -> HUMAN_GATE_REQUIRED (not implemented).",
+    "Pro-Max semantic review (fresh VERIFIED_PRO_MAX) is mandatory before any P3-C rerun; outcome-aware gate: review_identity_verified=true AND review_verdict PASS (or governance-approved PASS_WITH_CAVEAT) AND required_actions_closed=true AND authority_conflict=false."
+  ]
+}

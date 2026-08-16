@@ -130,9 +130,12 @@ class H2BatchRunner(re1.RolloutEngine):
         at_t = [p for p in pts if p.time == t]
         if not at_t:
             return
-        # project the observable state at t for policy inputs
-        st = obs.project_log_prefix(list(self.log), t,
-                                    batch_size=self.config.batch_size)
+        # project the PRE-ACTION observable state at t (decision boundary:
+        # same-timestamp dispatch records excluded; REQUALIFIED P3 decision
+        # semantics, identical to the offline decision-point reconstruction)
+        st = dpimpl.project_pre_action_state(
+            list(self.log), t, batch_size=self.config.batch_size)
+        pre_log = dpimpl.pre_action_log(list(self.log), t)
         post = ps.PosteriorState.from_observable(st)
         gen = {r.resource: r.generation for r in st.resources}
         # map decision points to quota events (online, in time order)
@@ -180,8 +183,9 @@ class H2BatchRunner(re1.RolloutEngine):
             dec = pol.evaluate_decision_point(
                 st, post, world, self.provider, self.config,
                 ev.dp, ev.resource, ev.kind, cls, legal,
-                list(self.log), self.master_seed_h2, self.batch_replicate_id,
-                wait_anchor_time=wait_anchor, M=self.M)
+                pre_log, self.master_seed_h2, self.batch_replicate_id,
+                wait_anchor_time=wait_anchor, M=self.M,
+                decision_head=ev.head)
             self._c_rollout += len(dec.legal_actions) * self.M
             self.decision_log.rollout_count += len(dec.legal_actions) * self.M
             self.decision_log.n_selected += 1

@@ -123,6 +123,38 @@ def _own_active_fragments(log: list[dict[str, Any]], t: Fraction
 
 _OWN_ORDER = {"A": 0, "B": 1, "C": 2, "E": 3}
 
+# Checker's OWN pre-action phase filter (independent implementation of the
+# corrected decision-boundary semantics): same-timestamp records produced by
+# the equipment-dispatch / turnover phases must not enter the decision state.
+_OWN_DISPATCH_PHASE_TYPES = frozenset({
+    "ACTIVITY_START", "TURNOVER_OUT_START", "TURNOVER_IN_START",
+    "EQUIPMENT_REPLACEMENT_START", "EQUIPMENT_REPLACEMENT_DEFERRED",
+    "WAKE_UP",
+})
+
+
+def _own_pre_action_log(log: list[dict[str, Any]], t: Fraction
+                        ) -> list[dict[str, Any]]:
+    """Checker's own pre-dispatch view at closure t (see the impl's
+    pre_action_log for the frozen phase semantics; implemented
+    independently here)."""
+    out = []
+    for r in log:
+        et = r.get("event_time")
+        if et is None:
+            continue
+        tt = Fraction(et)
+        if tt < t:
+            out.append(r)
+        elif tt == t and r.get("event_type") not in _OWN_DISPATCH_PHASE_TYPES:
+            out.append(r)
+    return out
+
+
+def _own_resource_idle(st: obs.ObservableState, resource: str) -> bool:
+    rsrc = next((r for r in st.resources if r.resource == resource), None)
+    return rsrc is not None and rsrc.status == "idle"
+
 
 def _own_wait_anchor(head, t, shift_end,
                      active) -> Optional[tuple[Fraction, str, str, int,
@@ -186,7 +218,11 @@ def _own_maintenance(st: obs.ObservableState, resource: str, t,
 
 def _own_actions(st: obs.ObservableState, resource: str, t, shift_end,
                  head, active) -> tuple[str, ...]:
-    if head is not None and _own_head_legal(st, head, t, shift_end):
+    # REQUALIFICATION: a DISPATCH decision point additionally requires the
+    # resource to be idle/available (pre-action view).
+    if (_own_resource_idle(st, resource)
+            and head is not None
+            and _own_head_legal(st, head, t, shift_end)):
         actions = [dpimpl.A_START_HEAD]
         anchor = _own_wait_anchor(head, t, shift_end, active)
         if anchor is not None:
@@ -229,8 +265,9 @@ def _toy_logs() -> list[tuple[str, list[dict], Fraction, Fraction]]:
          "process": "A", "effective_attempt_no": 1, "resource_id": "A",
          "attempt_start_time": "0", "attempt_end_time": "5/2",
          "outcome": "NONE"},
-        # queued head B on the SAME device 1 (released, never started)
-        {"event_type": "TASK_RELEASE", "event_time": "0", "resource_id": "B",
+        # queued head B on the SAME device 1 (released at t=1; A is already
+        # in flight at the t=1 decision boundary -> STRICT WAIT anchor)
+        {"event_type": "TASK_RELEASE", "event_time": "1", "resource_id": "B",
          "device_id": 1, "process": "B", "effective_attempt_no": 1},
         {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
          "device_id": 2, "true_state": {"A": False, "B": False, "C": False}},
@@ -290,20 +327,22 @@ def check_decision_points() -> dict[str, Any]:
                                                   t_end=t_end)
         shifts = obs.q3_shift_grid(K)
         times = sorted({Fraction(r.get("event_time", 0)) for r in log})
-        # checker's own enumeration at the same closures
+        # checker's own enumeration at the same closures (pre-action view)
         for t in sorted(set(times) | {s for s, _e in shifts}):
             if t >= t_end:
                 break
             sh = obs.active_shift(shifts, t)
             if sh is None:
                 continue
-            st = obs.project_log_prefix(log, t, batch_size=2)
-            active = _own_active_fragments(log, t)
+            pre = _own_pre_action_log(log, t)
+            st = obs.project_log_prefix(pre, t, batch_size=2)
+            active = _own_active_fragments(pre, t)
             for resource in RESOURCES:
                 head = _own_head(st, resource)
                 own = _own_actions(st, resource, t, sh[1], head, active)
                 expected = {
-                    "kind": ("dispatch" if (head is not None
+                    "kind": ("dispatch" if (_own_resource_idle(st, resource)
+                                            and head is not None
                                             and _own_head_legal(
                                                 st, head, t, sh[1]))
                              else ("maintenance"
@@ -449,39 +488,45 @@ def _wait_r_logs() -> dict[str, tuple[list[dict], Fraction, Fraction]]:
     true = {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
             "device_id": 1, "true_state": {"A": False, "B": False,
                                            "C": False}}
-    rel_b = {"event_type": "TASK_RELEASE", "event_time": "0",
-             "resource_id": "B", "device_id": 1, "process": "B",
-             "effective_attempt_no": 1}
-    rel_a = {"event_type": "TASK_RELEASE", "event_time": "0",
-             "resource_id": "A", "device_id": 1, "process": "A",
-             "effective_attempt_no": 1}
 
-    # WAIT-R1: A fragment cancelled at t=1 (start=0, planned end=5) must NOT
-    # anchor at t=2 (observed).
-    r1 = [dict(true), dict(rel_b), dict(rel_a),
+    # WAIT-R1: A fragment cancelled at t=2 (start=0, planned end=5) must NOT
+    # anchor at t>=2 (observed); B is released at t=1 so its decision closure
+    # at t=1 sees A still in flight (anchor) and at t=2/3 no anchor.
+    r1 = [dict(true),
+          {"event_type": "TASK_RELEASE", "event_time": "1",
+           "resource_id": "B", "device_id": 1, "process": "B",
+           "effective_attempt_no": 1},
+          {"event_type": "TASK_RELEASE", "event_time": "0",
+           "resource_id": "A", "device_id": 1, "process": "A",
+           "effective_attempt_no": 1},
           {"event_type": "ACTIVITY_START", "event_time": "0", "device_id": 1,
            "process": "A", "effective_attempt_no": 1, "resource_id": "A",
            "attempt_start_time": "0", "attempt_end_time": "5",
            "outcome": "NONE"},
-          {"event_type": "TASK_CANCEL", "event_time": "1", "device_id": 1,
+          {"event_type": "TASK_CANCEL", "event_time": "2", "device_id": 1,
            "process": "A", "effective_attempt_no": 1, "resource_id": "A",
            "attempt_start_time": "0", "attempt_end_time": "5",
            "outcome": "NONE", "cancel_reason": "equipment_failure"},
           dict(shift)]
 
-    # WAIT-R2: A fragment1 (start=0, end=5) cancelled at 1; A fragment2
+    # WAIT-R2: A fragment1 (start=0, end=5) cancelled at 2; A fragment2
     # restarted (SAME effective_attempt_no) start=2, end=4.  At t=3 only
     # fragment2 is active; the anchor must be process=A,
     # attempt_start_time=2, completion_time=4 (not end=5, not settled by the
-    # old CANCEL).
-    r2 = [dict(true), dict(rel_b),
+    # old CANCEL).  B released at 1: closure t=1 anchors fragment1,
+    # closure t=2 anchors nothing (fragment2 not yet started pre-action),
+    # closure t=3 anchors fragment2.
+    r2 = [dict(true),
+          {"event_type": "TASK_RELEASE", "event_time": "1",
+           "resource_id": "B", "device_id": 1, "process": "B",
+           "effective_attempt_no": 1},
           {"event_type": "TASK_RELEASE", "event_time": "0", "resource_id": "A",
            "device_id": 1, "process": "A", "effective_attempt_no": 1},
           {"event_type": "ACTIVITY_START", "event_time": "0", "device_id": 1,
            "process": "A", "effective_attempt_no": 1, "resource_id": "A",
            "attempt_start_time": "0", "attempt_end_time": "5",
            "outcome": "NONE"},
-          {"event_type": "TASK_CANCEL", "event_time": "1", "device_id": 1,
+          {"event_type": "TASK_CANCEL", "event_time": "2", "device_id": 1,
            "process": "A", "effective_attempt_no": 1, "resource_id": "A",
            "attempt_start_time": "0", "attempt_end_time": "5",
            "outcome": "NONE", "cancel_reason": "equipment_failure"},
@@ -491,11 +536,20 @@ def _wait_r_logs() -> dict[str, tuple[list[dict], Fraction, Fraction]]:
            "process": "A", "effective_attempt_no": 1, "resource_id": "A",
            "attempt_start_time": "2", "attempt_end_time": "4",
            "outcome": "NONE"},
+          # an event AT t=3 makes t=3 a closure (where fragment2 is running)
+          {"event_type": "TASK_RELEASE", "event_time": "3", "resource_id": "C",
+           "device_id": 1, "process": "C", "effective_attempt_no": 1},
           dict(shift)]
 
     # WAIT-R3: A fragment completed at t=1 (start=0, planned end=5) must NOT
-    # anchor at t=2.
-    r3 = [dict(true), dict(rel_b), dict(rel_a),
+    # anchor at t>=1; B released at 1 (its closure at t=1 sees A settled).
+    r3 = [dict(true),
+          {"event_type": "TASK_RELEASE", "event_time": "1",
+           "resource_id": "B", "device_id": 1, "process": "B",
+           "effective_attempt_no": 1},
+          {"event_type": "TASK_RELEASE", "event_time": "0",
+           "resource_id": "A", "device_id": 1, "process": "A",
+           "effective_attempt_no": 1},
           {"event_type": "ACTIVITY_START", "event_time": "0", "device_id": 1,
            "process": "A", "effective_attempt_no": 1, "resource_id": "A",
            "attempt_start_time": "0", "attempt_end_time": "5",
@@ -509,16 +563,23 @@ def _wait_r_logs() -> dict[str, tuple[list[dict], Fraction, Fraction]]:
            "resource_id": "A", "outcome": "PASS"},
           dict(shift)]
 
-    # WAIT-R4: A in-flight (end 5/2) with B head -> anchor TRUE identity is
-    # process=A / attempt=1 / attempt_start_time=0 / resource=A, never B.
-    r4 = [dict(true), dict(rel_b), dict(rel_a),
+    # WAIT-R4: A in-flight (end 5/2) with B head at t=1 -> anchor TRUE
+    # identity is process=A / attempt=1 / attempt_start_time=0 / resource=A,
+    # never B.
+    r4 = [dict(true),
+          {"event_type": "TASK_RELEASE", "event_time": "1",
+           "resource_id": "B", "device_id": 1, "process": "B",
+           "effective_attempt_no": 1},
+          {"event_type": "TASK_RELEASE", "event_time": "0",
+           "resource_id": "A", "device_id": 1, "process": "A",
+           "effective_attempt_no": 1},
           {"event_type": "ACTIVITY_START", "event_time": "0", "device_id": 1,
            "process": "A", "effective_attempt_no": 1, "resource_id": "A",
            "attempt_start_time": "0", "attempt_end_time": "5/2",
            "outcome": "NONE"},
           dict(shift)]
 
-    return {"WAIT-R1": (r1, Fraction(10), Fraction(2)),
+    return {"WAIT-R1": (r1, Fraction(10), Fraction(3)),
             "WAIT-R2": (r2, Fraction(10), Fraction(3)),
             "WAIT-R3": (r3, Fraction(10), Fraction(2)),
             "WAIT-R4": (r4, Fraction(10), Fraction(1))}
@@ -536,26 +597,29 @@ def check_wait_fragment_identity() -> dict[str, Any]:
         pts = dpimpl.reconstruct_decision_points(log, K, batch_size=2,
                                                  t_end=tobs + Fraction(1))
         b_pts = [p for p in pts if p.resource == "B" and p.kind == "dispatch"]
-        # checker's own expectation at each impl closure time
+        # checker's own expectation at each impl closure time (PRE-ACTION view)
         for p in b_pts:
             t = p.time
-            st = obs.project_log_prefix(log, t, batch_size=2)
-            own_active = _own_active_fragments(log, t)
+            pre = _own_pre_action_log(log, t)
+            st = obs.project_log_prefix(pre, t, batch_size=2)
+            own_active = _own_active_fragments(pre, t)
             sh = obs.active_shift(obs.q3_shift_grid(K), t)
             own_anchor = (_own_wait_anchor(p.head, t, sh[1], own_active)
                           if p.head is not None and sh is not None else None)
             impl_anchor = p.wait_anchor
             if label == "WAIT-R1":
-                # R1: after the CANCEL (closure at/after t=1) no anchor
-                if t >= 1 and (own_anchor is not None
+                # R1: after the CANCEL (closure at/after t=2) no anchor
+                if t >= 2 and (own_anchor is not None
                                or impl_anchor is not None):
                     failures.append(f"{label} t={t}: cancelled fragment "
                                     f"must not anchor "
                                     f"(own={own_anchor} impl={impl_anchor})")
             elif label == "WAIT-R2":
                 # R2: at the closure where fragment2 (start=2,end=4) is the
-                # only active A fragment the anchor must be A@start=2/end=4
-                if t >= 2:
+                # only active A fragment (t=3) the anchor must be
+                # A@start=2/end=4; at t=2 (fragment2 not yet started in the
+                # pre-action view) no anchor.
+                if t == 3:
                     ok = (own_anchor is not None and impl_anchor is not None
                           and own_anchor[1] == "A"
                           and own_anchor[3] == Fraction(2)
@@ -568,6 +632,12 @@ def check_wait_fragment_identity() -> dict[str, Any]:
                         failures.append(
                             f"{label} t={t}: restarted fragment identity "
                             f"wrong (own={own_anchor} impl={impl_anchor})")
+                elif t == 2:
+                    if own_anchor is not None or impl_anchor is not None:
+                        failures.append(
+                            f"{label} t=2: fragment2 not started at the "
+                            f"pre-action boundary; no anchor expected "
+                            f"(own={own_anchor} impl={impl_anchor})")
             elif label == "WAIT-R3":
                 if t >= 1 and (own_anchor is not None
                                or impl_anchor is not None):
@@ -575,7 +645,7 @@ def check_wait_fragment_identity() -> dict[str, Any]:
                                     f"must not anchor "
                                     f"(own={own_anchor} impl={impl_anchor})")
             elif label == "WAIT-R4":
-                if t == 0:
+                if t == 1:  # B decision closure (released at 1; A in flight)
                     ok = (own_anchor is not None and impl_anchor is not None
                           and own_anchor[1] == "A"
                           and impl_anchor.process == "A"
@@ -615,12 +685,14 @@ def check_wait_invalidation() -> dict[str, Any]:
     """
     failures: list[str] = []
     base = _wait_r_logs()["WAIT-R4"][0]
-    # t=0: anchor valid
+    # t=1 (B decision closure): anchor valid (A in-flight from t=0)
     pts0 = dpimpl.reconstruct_decision_points(base, Fraction(10),
                                               batch_size=2, t_end=Fraction(2))
-    has_wait0 = any(p.wait_anchor is not None for p in pts0)
+    has_wait0 = any(p.wait_anchor is not None for p in pts0
+                    if p.resource == "B")
     if not has_wait0:
-        failures.append("WAIT-R5: baseline WAIT at t=0 must be legal")
+        failures.append("WAIT-R5: baseline WAIT at the B decision closure "
+                        "must be legal")
 
     # (a) device 2 also queued for B; device 1 terminal at t=1 -> head moves
     # to device 2; the new point must have NO anchor and NO WAIT_EVENT.
