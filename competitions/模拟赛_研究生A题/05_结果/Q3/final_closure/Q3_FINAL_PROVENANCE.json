@@ -1,0 +1,73 @@
+{
+  "check": "Q3_FINAL_PROVENANCE",
+  "id": "Q3_FINAL_PROVENANCE",
+  "generated_at": "2026-08-17",
+  "purpose": "Q3 FINAL CLOSURE + PAPER HANDOFF provenance (all numbers mechanically read from accepted evidence; nothing recomputed)",
+  "q3_final_decision": {
+    "formal_strategy": "H1",
+    "h2_disposition": "FINAL DELETE / ACCEPTED AS CHALLENGER RESULT",
+    "h2_prime": "NOT PLANNED",
+    "h2_status": "FROZEN_HISTORICAL_CHALLENGER",
+    "q3_status": "FINAL MODEL SELECTION CLOSED / READY_FOR_PAPER"
+  },
+  "h2_final_p3c": {
+    "root": "05_结果/H2/tuning/stability/run_20260816T175317829317Z_7b490ce6",
+    "source": "result_summary.json (machine-read)",
+    "n": 100,
+    "population_wait": 74,
+    "population_pm": 5396,
+    "selected_wait": 50,
+    "selected_pm": 50,
+    "selected_both": 18,
+    "agreement_b": 1.0,
+    "agreement_c": 1.0,
+    "deviation_count": 0,
+    "final_status": "H2_DELETE_NO_EFFECTIVE_DEVIATION"
+  },
+  "h2_governance": {
+    "human_gate": "FINAL ACCEPTED (2026-08-17)",
+    "governance_closure_commit": "a56a2cd",
+    "pro_max_identity_receipt": "05_结果/governance/model_routing/v2_1_2/p3_requal_pro_max/pro_max_runtime_receipt_final_narrow.json",
+    "child_run_id": "2174b107-bb7e-456c-b531-74a04ff1a312",
+    "reviewed_code_commit": "439e1e1"
+  },
+  "h1_authoritative_formal": {
+    "source_root": "05_结果/Q3/formal/run_20260815T133840057668Z_7ee48fc0",
+    "provenance_reissues": [
+      "05_结果/Q3/formal/reissue_20260815T145531744357Z_ee6c5ab7",
+      "05_结果/Q3/formal/reissue_20260815T150613626910Z_f4da8f9d"
+    ],
+    "k_set": ["K09", "K09p5", "K10", "K10p5", "K11", "K11p5", "K12"],
+    "k_star": "K12",
+    "k_star_hours": "12",
+    "scope": "限于七个 K 与冻结候选政策集（NO_PM_BEFORE_MANDATORY）；非全局最优；不宣称 K=12 弱支配",
+    "wording": "k* 相对其余全部 K 的配对 CI 均位于支持 k* 完成时间更短的一侧并排除 0（orientation-neutral）",
+    "source_file": "05_结果/Q3/formal/reissue_20260815T150613626910Z_f4da8f9d/recommendation.json"
+  },
+  "h2_downstream_gates": {
+    "cross_k_transfer": "NOT_APPLICABLE_AFTER_H2_DELETE (historically NOT RUN)",
+    "h2_holdout": "NOT_APPLICABLE_AFTER_H2_DELETE (historically NOT RUN)",
+    "c25": "NOT_APPLICABLE_AFTER_H2_DELETE (historically NOT RUN)"
+  },
+  "cost_reference": {
+    "source": "05_结果/H2/requalification/2026-08-16_decision_semantics/cost_requalification_report.json",
+    "M_star": 8,
+    "C_eval_star": 8,
+    "W_cap_star": 4,
+    "P_cap_star": 4
+  },
+  "immutability": [
+    "run_20260816T101049163825Z_791506d8 (INVALIDATED_FOR_DECISION_SEMANTICS)",
+    "run_20260816T150705443207Z_4f60db0d (INVALIDATED_FOR_FROZEN_SAMPLE_AND_ROLLOUT_WORLD_SEMANTICS)",
+    "run_20260816T170310179282Z_ea3354ba (second-round DELETE root)",
+    "run_20260816T175317829317Z_7b490ce6 (final accepted DELETE root)"
+  ],
+  "forbidden_wording_guard": [
+    "NO global optimum claim for K=12",
+    "NO 'K larger is always better'",
+    "NO 'H2 failed / invalid / algorithmically wrong'",
+    "NO 'complex model is always worse'",
+    "agreement=1 is NOT 'H2 better than H1'",
+    "0/100 is NOT 'H2 equals H1 in all states'"
+  ]
+}

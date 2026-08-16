@@ -1,0 +1,18 @@
+PRO_MAX_REVIEW (Q3 FINAL CLOSURE paper-semantics) - deepseek-pro-max / deepseek-v4-pro / reasoning=max / fresh / read-only / workspace delta=0
+Date: 2026-08-17
+
+VERDICT: PASS_WITH_CAVEAT
+authority_conflict: false
+required_actions: [RA1: Narrative A batch-count wording (十个代表性批次 unattested by result_summary; either drop or source-cite the frozen §4 B-1 10-batch structure)] -> CLOSED (Narrative A now cites h2_tuning master_seed 6 replicate 0..9 十批 K=10.5 per frozen §4 B-1 source; wording keeps 共 100 个代表性决策点 machine-read from result_summary)
+Advisory (accepted): quote exact final_status H2_DELETE_NO_EFFECTIVE_DEVIATION in Q3_FINAL_RESULT §2 (done); use strong_recommendation=true language in the paper table (done); 845.0 s stays framed as ledger-only offline diagnostic cost.
+
+Checklist A-G (ground truth: recommendation.json k*=K12 scope-limited; result_summary n=100 agreement 1.0/1.0 deviation 0):
+A. H2 DELETE not written as mathematical failure: PASS (pre-registered screen attribution; failure framing negated; sanctioned wording used)
+B. 0/100 not generalized to all-states equality: PASS (limited to 100 representative points at 2SE; guard present)
+C. agreement=1 not 'H2 better than H1': PASS (self-stability only; DELETE driven by deviation_count=0)
+D. K=12 not out-of-scope global optimum: PASS (seven K + frozen policy set; 非全局最优; no dominance claims)
+E. downstream gates not written as PASS: PASS (NOT_APPLICABLE_AFTER_H2_DELETE, historically NOT RUN, 非 PASS 非 FAILED)
+F. numbers faithful to evidence: PASS (n=100; 50/50/18; 74/5396; agreement 1.0/1.0; deviation 0; M*=8 C_eval*=8 W_cap*=4 P_cap*=4; k*=K12 with exact scope wording)
+G. construction value vs production selection separated: PASS (all narrative lengths)
+
+Gate reading: PASS_WITH_CAVEAT + required_actions_closed=true + authority_conflict=false -> Q3 FINAL STATUS = READY_FOR_PAPER.

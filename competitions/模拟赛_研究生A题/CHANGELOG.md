@@ -2,6 +2,18 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-17 / `Q3 FINAL CLOSURE`（H2 DELETE Human Gate 落地 + H1/H2 对比 + 论文结果包）
+
+### 修改
+
+- **Human Gate 最终裁决落地**：**Q3-H2 = FINAL DELETE / ACCEPTED**（reason = H2_NO_EFFECTIVE_DEVIATION；accepted final evidence = `05_结果/H2/tuning/stability/run_20260816T175317829317Z_7b490ce6`：n=100、agreement_b=1.0000、agreement_c=1.0000、deviation_count=0；governance closure = `a56a2cd`——FINAL NARROW Pro-Max 真实 session identity receipt：child `2174b107…`、deepseek-pro-max / deepseek-v4-pro / reasoningEffort=max、read-only 62/62、workspace_delta=0、reviewed code `439e1e1`）。
+- **H2 后续 Gate 关闭**：cross-K transfer / h2_holdout / C25 = **NOT_APPLICABLE_AFTER_H2_DELETE**（historically NOT RUN；非 PASS 非 FAILED；H2 已在更早冻结删除门淘汰，后续验证链不再适用）。
+- **H2 冻结为 FROZEN_HISTORICAL_CHALLENGER**（高级候选/对照模型）：禁止修改 action set / 2SE / M\* / C_eval\* / B-1 / seed/salt；禁止加 tuning sample / 重跑 P3-C / 设计 H2' / cross-K / h2_holdout / C25 / 为论文制造 deviation；除非未来 Human Gate 明确重新授权。
+- **Q3 正式主策略 = H1**（不重算）：七 K（K=9, 9.5, 10, 10.5, 11, 11.5, 12）全部来自 accepted H1 formal chain（`05_结果/Q3/formal/reissue_20260815T150613626910Z_f4da8f9d` 等）；k\*=**K12** = 「七个 K + 冻结 H1 政策集（NO_PM_BEFORE_MANDATORY）」范围内的 strong winner（tier1/tier2 配对 CI 均支持且排除 0）；**保留范围限定**：非全局最优、不宣称 K=12 弱支配、不宣称「K 越大一定越优」。
+- **论文结果包**：`05_结果/Q3/final_closure/`（Q3_FINAL_RESULT.md、Q3_H1_H2_COMPARISON.md、Q3_H1_H2_PAPER_TABLE.md、Q3_H1_H2_PAPER_NARRATIVE.md、Q3_FINAL_PROVENANCE.json、Q3_FINAL_SCOPE_AUDIT.json）；H1/H2 对比与叙事经 fresh Pro-Max 论文语义审查（见该目录/治理证据）。
+- **Q3 状态**：FINAL MODEL SELECTION CLOSED；Q3 FINAL STATUS = READY_FOR_PAPER；**不自动进入 Q4**。
+- 所有历史 H2 evidence（含 invalidated roots）保持 immutable。
+
 ## 2026-08-16 / `Q3-H2-P3 FINAL NARROW REQUALIFICATION`（PM_IDLE legality + completion-boundary failure 可见性 + 最终代码 Pro-Max）
 
 ### 修改
