@@ -200,11 +200,13 @@ def _own_head_legal(st: obs.ObservableState, head, t, shift_end) -> bool:
 
 def _own_maintenance(st: obs.ObservableState, resource: str, t,
                      shift_end) -> bool:
+    # PMIDLE-AGE (final narrow requalification): PM_IDLE legality uses ONLY
+    # the frozen §10/§12 maintenance conditions -- NO hypothetical task
+    # duration a+d is applied (a high-age idle resource without a legal
+    # head still offers {H1_NOOP, PM_IDLE}).
     rsrc = next((r for r in st.resources if r.resource == resource), None)
     if rsrc is None or rsrc.status != "idle":
         return False
-    if rsrc.age_h + DURATIONS_H[resource] > MANDATORY_AGE_H:
-        return False  # AGE-LEGAL-01: mandatory replacement, no H2 point
     if not (MIN_PREVENTIVE_AGE_H <= rsrc.age_h < MANDATORY_AGE_H):
         return False
     if t + CALIBRATION_MINUTES[resource] / Fraction(60) > shift_end:
@@ -221,16 +223,19 @@ def _own_maintenance(st: obs.ObservableState, resource: str, t,
 def _own_actions(st: obs.ObservableState, resource: str, t, shift_end,
                  head, active) -> tuple[str, ...]:
     # REQUALIFICATION: a DISPATCH decision point additionally requires the
-    # resource to be idle/available (pre-action view); AGE-LEGAL (second
-    # requalification): a+d > 240 (mandatory) yields NO point at all and
-    # a+d == 240 (exact_240) must NOT offer optional PM_WITH_HEAD.
+    # resource to be idle/available (pre-action view).  AGE-LEGAL (final
+    # narrow requalification): the a+d mandatory check applies ONLY to a
+    # DISPATCH point with a legal frozen head (a+d > 240 -> no dispatch
+    # point; a+d == 240 -> START_HEAD legal, PM_WITH_HEAD never offered);
+    # a MAINTENANCE/PM_IDLE point uses ONLY the frozen §10/§12 conditions
+    # and NEVER a hypothetical task duration.
     rsrc = next((r for r in st.resources if r.resource == resource), None)
-    if rsrc is not None \
-            and rsrc.age_h + DURATIONS_H[resource] > MANDATORY_AGE_H:
-        return ()  # mandatory replacement first: no H2 decision point
     if (_own_resource_idle(st, resource)
             and head is not None
             and _own_head_legal(st, head, t, shift_end)):
+        if (rsrc is not None
+                and rsrc.age_h + DURATIONS_H[resource] > MANDATORY_AGE_H):
+            return ()  # MANDATORY_REPLACE_FIRST: no H2 dispatch decision
         actions = [dpimpl.A_START_HEAD]
         anchor = _own_wait_anchor(head, t, shift_end, active)
         if anchor is not None:
@@ -349,22 +354,17 @@ def check_decision_points() -> dict[str, Any]:
             for resource in RESOURCES:
                 head = _own_head(st, resource)
                 own = _own_actions(st, resource, t, sh[1], head, active)
-                rsrc0 = next((r for r in st.resources
-                              if r.resource == resource), None)
-                a_plus_d = (rsrc0.age_h + DURATIONS_H[resource]
-                            if rsrc0 is not None else Fraction(0))
-                # AGE-LEGAL-01 (second requalification): a+d>240 mandatory
-                # -> no H2 decision point of any kind
-                mandatory = a_plus_d > MANDATORY_AGE_H
+                # AGE-LEGAL (final narrow): the a+d mandatory check is a
+                # DISPATCH-boundary property (legal frozen head present);
+                # maintenance legality never uses a hypothetical duration
                 expected = {
-                    "kind": ("none" if mandatory else
-                             ("dispatch" if (_own_resource_idle(st, resource)
-                                             and head is not None
-                                             and _own_head_legal(
-                                                 st, head, t, sh[1]))
-                              else ("maintenance"
-                                    if _own_maintenance(st, resource, t, sh[1])
-                                    else "none"))),
+                    "kind": ("dispatch" if (_own_resource_idle(st, resource)
+                                            and head is not None
+                                            and _own_head_legal(
+                                                st, head, t, sh[1]))
+                             else ("maintenance"
+                                   if _own_maintenance(st, resource, t, sh[1])
+                                   else "none")),
                     "actions": own}
                 got = [p for p in impl if p.time == t
                        and p.resource == resource]

@@ -323,11 +323,15 @@ def build_b1_sample(batches: list[list[dict]], K: Fraction, batch_size: int
         pts.sort(key=lambda x: (x["time"], _RESOURCE_ORDER[x["resource"]]))
         for idx, p in enumerate(pts):
             p["dp_diag"] = idx
-    n_wait = len(wait_pts)
-    n_pm = len(pm_pts)
     n_both = sum(1 for p in sample if p["is_both"])
-    return {"n": len(sample), "n_wait": n_wait, "n_pm": n_pm,
-            "n_both": n_both, "wait_cap": WAIT_CAP, "pm_cap": PM_CAP,
+    return {"n": len(sample),
+            "population_wait": len(wait_pts),
+            "population_pm": len(pm_pts),
+            "selected_wait": take_w,
+            "selected_pm": take_p,
+            "selected_both": n_both,
+            "sample_n": len(sample),
+            "wait_cap": WAIT_CAP, "pm_cap": PM_CAP,
             "sample_cap": SAMPLE_CAP, "points": sample,
             "population": "ALL_H2_ELIGIBLE (frozen §4; NOT the online "
                           "quota subset; C_eval-independent)",
@@ -702,8 +706,12 @@ def _build_evidence(out_dir: Path, run_id: str, checks: dict[str, Any],
                 "cap (which applies to the batch driver runs)"})
     _dump_json(out_dir / "result_summary.json", {
         "source_run_id": run_id,
-        "sample_n": sample["n"], "sample_wait": sample["n_wait"],
-        "sample_pm": sample["n_pm"], "sample_both": sample["n_both"],
+        "sample_n": sample["n"],
+        "population_wait": sample["population_wait"],
+        "population_pm": sample["population_pm"],
+        "selected_wait": sample["selected_wait"],
+        "selected_pm": sample["selected_pm"],
+        "selected_both": sample["selected_both"],
         "agreement_b": b_res["agreement"], "cp95_b": [b_res["cp95_lo"],
                                                       b_res["cp95_hi"]],
         "agreement_c": c_res["agreement"], "cp95_c": [c_res["cp95_lo"],
@@ -898,7 +906,11 @@ def main(argv: Optional[list[str]] = None) -> int:
     # 2) B-1 sample
     sample = build_b1_sample(batch_logs, K, BATCH_SIZE)
     print(f"[p3c] tuning batches: {len(batch_logs)}; sample n={sample['n']} "
-          f"wait={sample['n_wait']} pm={sample['n_pm']} both={sample['n_both']}")
+          f"selected_wait={sample['selected_wait']} "
+          f"selected_pm={sample['selected_pm']} "
+          f"selected_both={sample['selected_both']} "
+          f"(population wait={sample['population_wait']} "
+          f"pm={sample['population_pm']})")
     # 3) stability (a): determinism via C23 hidden variants on a sample point
     c23_policy = _c23_policy_check(sample, batch_logs)
     # 4) stability (b): normal vs ALT salt

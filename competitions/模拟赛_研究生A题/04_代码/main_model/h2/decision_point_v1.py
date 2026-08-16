@@ -294,19 +294,6 @@ def reconstruct_decision_points(event_log: list[dict[str, Any]], K: Fraction,
             rsrc = next((r for r in st.resources if r.resource == resource),
                         None)
             resource_idle = rsrc is not None and rsrc.status == "idle"
-            # AGE-LEGAL-01/02 (second requalification): the H1-legal
-            # decision-point definition must exclude mandatory-replacement
-            # situations -- a resource with equipment age a and task
-            # duration d such that a+d > 240 is a MANDATORY_REPLACE_FIRST
-            # case and yields NO H2 candidate decision point (no
-            # START_HEAD / WAIT / optional PM comparison); a+d == 240 is
-            # the frozen exact_240 case (START_HEAD may execute under the
-            # complete-first rule, but PM_WITH_HEAD must NOT be offered as
-            # an optional H2 candidate).
-            a_plus_d = (rsrc.age_h + DURATIONS_H[resource]
-                        if rsrc is not None else Fraction(0))
-            if a_plus_d > MANDATORY_AGE_H:
-                continue  # mandatory replacement first: no H2 point at all
             head = None
             for q in st.queue:
                 if q.process_order == _process_order(resource):
@@ -314,6 +301,16 @@ def reconstruct_decision_points(event_log: list[dict[str, Any]], K: Fraction,
                     break
             if resource_idle and head is not None \
                     and _head_is_legal(st, head, t, sh[1]):
+                # AGE-LEGAL (dispatch, final narrow requalification): the
+                # a+d mandatory check applies ONLY to a DISPATCH point
+                # with a legal frozen head -- a+d(head) > 240 is
+                # MANDATORY_REPLACE_FIRST and yields NO H2 dispatch
+                # decision point (mandatory precedes any optional
+                # decision); a+d == 240 (exact_240) keeps START_HEAD legal
+                # (complete-first) and never offers PM_WITH_HEAD.
+                a_plus_d = rsrc.age_h + DURATIONS_H[resource]
+                if a_plus_d > MANDATORY_AGE_H:
+                    continue  # mandatory first: no H2 decision point here
                 actions = [A_START_HEAD]
                 anchor = _wait_anchor(st, head, t, sh[1], active)
                 if anchor is not None:
@@ -332,6 +329,14 @@ def reconstruct_decision_points(event_log: list[dict[str, Any]], K: Fraction,
                     wait_anchor=anchor, pm_eligible=pm_ok))
                 dp += 1
             elif _maintenance_eligible(st, resource, t, sh[1]):
+                # PMIDLE-AGE (final narrow requalification): PM_IDLE
+                # legality uses ONLY the frozen §10/§12 maintenance
+                # conditions (resource idle/available, age in [120,240),
+                # not replacement-pending, future potential demand,
+                # calibration fits the shift).  NO hypothetical task
+                # duration a+d is applied here -- a high-age idle resource
+                # (e.g. 238/239) without a legal head still offers
+                # {H1_NOOP, PM_IDLE}.
                 points.append(DecisionPoint(
                     dp=dp, time=t, resource=resource, kind="maintenance",
                     head=head, legal_actions=(A_H1_NOOP, A_PM_IDLE),

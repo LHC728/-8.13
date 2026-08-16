@@ -1032,6 +1032,177 @@ class TestBayOccupancyProjection(unittest.TestCase):
         self.assertEqual(bay1.current_device, 3)
 
 
+class TestPMIDLEAgeLegality(unittest.TestCase):
+    """PMIDLE-AGE-01..04 (final narrow requalification): the a+d mandatory
+    check applies ONLY to DISPATCH points with a legal frozen head; a
+    MAINTENANCE / PM_IDLE point uses ONLY the frozen §10/§12 conditions
+    (idle/available, age in [120,240), not replacement-pending, future
+    demand, calibration fits the shift) -- NEVER a hypothetical task
+    duration."""
+
+    K300 = Fraction(300)
+
+    def _pmidle_log(self, age_h: int, with_head: bool):
+        # dev1: A/B/C PASS quickly; E att1 runs [6, 6+age_h] and completes
+        # ABNORMAL; optional E att2 head release; dev2 B release keeps the
+        # log alive (future demand: batch_size 6 with 4 un-entered)
+        end = 6 + age_h
+        recs = [
+            _start(1, "A", 1, "0", "2"),
+            _complete(1, "A", 1, "0", "2"),
+            {"event_type": "OBSERVATION_MATERIALIZED", "event_time": "2",
+             "device_id": 1, "process": "A", "effective_attempt_no": 1,
+             "resource_id": "A", "outcome": "PASS"},
+            _start(1, "B", 1, "2", "4"),
+            _complete(1, "B", 1, "2", "4"),
+            {"event_type": "OBSERVATION_MATERIALIZED", "event_time": "4",
+             "device_id": 1, "process": "B", "effective_attempt_no": 1,
+             "resource_id": "B", "outcome": "PASS"},
+            _start(1, "C", 1, "4", "6"),
+            _complete(1, "C", 1, "4", "6"),
+            {"event_type": "OBSERVATION_MATERIALIZED", "event_time": "6",
+             "device_id": 1, "process": "C", "effective_attempt_no": 1,
+             "resource_id": "C", "outcome": "PASS"},
+            _start(1, "E", 1, "6", str(end)),
+            _complete(1, "E", 1, "6", str(end)),
+            {"event_type": "OBSERVATION_MATERIALIZED", "event_time": str(end),
+             "device_id": 1, "process": "E", "effective_attempt_no": 1,
+             "resource_id": "E", "outcome": "ABNORMAL"},
+        ]
+        if with_head:
+            recs.append(_release(1, "E", 2, str(end)))
+        recs.append(_release(2, "B", 1, str(end + Fraction(1, 2))))
+        return _log(*recs)
+
+    def _e_points(self, log, t):
+        pts = dp.reconstruct_decision_points(log, self.K300,
+                                             batch_size=BATCH)
+        return [p for p in pts if p.time == t and p.resource == "E"]
+
+    def test_pmidle_age_01_age238_no_head_maintenance(self):
+        log = self._pmidle_log(238, with_head=False)
+        pts = self._e_points(log, Fraction(244))
+        self.assertEqual(len(pts), 1)
+        self.assertEqual(pts[0].kind, "maintenance")
+        self.assertEqual(pts[0].legal_actions,
+                         (dp.A_H1_NOOP, dp.A_PM_IDLE))
+
+    def test_pmidle_age_02_age239_no_head_maintenance(self):
+        log = self._pmidle_log(239, with_head=False)
+        pts = self._e_points(log, Fraction(245))
+        self.assertEqual(len(pts), 1)
+        self.assertEqual(pts[0].kind, "maintenance")
+        self.assertEqual(pts[0].legal_actions,
+                         (dp.A_H1_NOOP, dp.A_PM_IDLE))
+
+    def test_pmidle_age_03_age240_no_pm_idle(self):
+        log = self._pmidle_log(240, with_head=False)
+        pts = self._e_points(log, Fraction(246))
+        self.assertEqual(pts, [],
+                         "age==240: PM_IDLE must NOT be offered")
+
+    def test_pmidle_age_04_head_with_a_plus_d_gt_240_no_point(self):
+        # legal head present, age 238 + E duration 3 = 241 > 240 ->
+        # MANDATORY_REPLACE_FIRST -> NO H2 dispatch decision point
+        log = self._pmidle_log(238, with_head=True)
+        pts = self._e_points(log, Fraction(244))
+        self.assertEqual(pts, [],
+                         "a+d>240 with a legal head: mandatory, no H2 "
+                         "dispatch decision point")
+
+
+class TestPending05FailureAtEnd(unittest.TestCase):
+    """PENDING-05 (final narrow requalification): an uncensored natural
+    lifetime reached EXACTLY at fragment completion -- completion-first
+    semantics are preserved (the completion result stands), but the
+    equipment enters failure replacement_pending and a SAFE observable
+    EQUIPMENT_FAILURE marker (trigger=failure_at_end) is written so the
+    same-timestamp H2 pre-action state sees the resource as
+    failed/unavailable (no H2 dispatch/PM decision)."""
+
+    def _engine(self):
+        log = _log(_release(1, "A", 1, "0"), _release(2, "B", 1, "2"))
+        st, post, world, prov, cfg, pre_log = _toy_context(
+            log, Fraction(0), rep=2)
+        return re1.RolloutEngine(st, post, world, prov, cfg,
+                                 first_action=re1.A_H1_NOOP,
+                                 log_prefix=pre_log), st
+
+    def test_pending_05_failure_at_end_marker_written(self):
+        eng, st = self._engine()
+        eng.equipment["A"].age = Fraction(202)  # completion reaches the
+        eng.equipment["A"].lifetime_h = Fraction(202)  # natural lifetime
+        eng.equipment["A"].is_right_censored = False
+        # simulate an in-flight attempt completing at now
+        attempt = re1._Attempt(
+            attempt_id="A001_A_1_1", task_id="t_1_A_1",
+            device_id=1, process="A", effective_attempt_no=1,
+            start_time=Fraction(200), end_time=Fraction(202))
+        eng._post_fragment_end("A", attempt)
+        self.assertTrue(eng.equipment["A"].replacement_pending)
+        self.assertEqual(eng.equipment["A"].pending_kind, "failure")
+        self.assertEqual(eng.equipment["A"].pending_trigger,
+                         "failure_at_end")
+        recs = [r for r in eng.log
+                if r.get("event_type") == "EQUIPMENT_FAILURE"
+                and r.get("resource_id") == "A"]
+        self.assertEqual(len(recs), 1)
+        rec = recs[0]
+        self.assertEqual(rec.get("trigger"), "failure_at_end")
+        self.assertEqual(rec.get("device_id"), 1)
+        # SAFE marker: no hidden fields
+        self.assertNotIn("lifetime_h", rec)
+        self.assertNotIn("u", rec)
+        self.assertNotIn("u_key", rec)
+
+    def test_pending_05_completion_first_preserved(self):
+        # completion-first: the ACTIVITY_COMPLETE result is not cancelled;
+        # the engine's completion flow still records it before/with the
+        # failure marker at the same timestamp
+        eng, st = self._engine()
+        eng.equipment["A"].age = Fraction(202)
+        eng.equipment["A"].lifetime_h = Fraction(202)
+        eng.equipment["A"].is_right_censored = False
+        eng.equipment["A"].available = True
+        task = eng.tasks.get("t_1_A_1")
+        if task is not None:
+            attempt = eng._running_attempt_of(task)
+        else:
+            attempt = None
+        if attempt is None:
+            attempt = re1._Attempt(
+                attempt_id="A001_A_1_1", task_id="t_1_A_1",
+                device_id=1, process="A", effective_attempt_no=1,
+                start_time=Fraction(200), end_time=Fraction(202))
+        eng._post_fragment_end("A", attempt)
+        # the completion outcome itself is untouched (completion-first)
+        self.assertIsNone(attempt.outcome)
+        self.assertEqual(attempt.status, "RUNNING")
+        # an H1 continuation with this state schedules the replacement
+        # (no hidden read) and terminates
+        eng._set_replacement_pending("A", "failure", "failure_at_end")
+        out = eng.run()
+        self.assertGreater(out.t_end, 0)
+
+    def test_pending_05_pre_action_state_failed(self):
+        # same-timestamp marker -> pre-action resource = failed -> no H2
+        # dispatch/PM decision (PENDING-01 projection path)
+        log = _log(
+            _release(1, "E", 1, "10"),
+            {"event_type": "EQUIPMENT_FAILURE", "event_time": "10",
+             "resource_id": "E", "device_id": 1, "process": "E",
+             "trigger": "failure_at_end", "fragment_end": "10"},
+            _release(2, "B", 1, "12"),
+        )
+        st = dp.project_pre_action_state(log, Fraction(10),
+                                         batch_size=BATCH)
+        rsrc = next(r for r in st.resources if r.resource == "E")
+        self.assertEqual(rsrc.status, "failed")
+        pts = dp.reconstruct_decision_points(
+            log, Fraction(300), batch_size=BATCH)
+        self.assertEqual([p for p in pts if p.resource == "E"], [])
+
+
 class TestSampleTopUp(unittest.TestCase):
     """SAMPLE-01..03: frozen B-1 top-up arithmetic."""
 

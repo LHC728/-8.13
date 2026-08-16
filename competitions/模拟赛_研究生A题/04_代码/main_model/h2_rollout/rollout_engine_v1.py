@@ -974,7 +974,8 @@ class RolloutEngine:
             self._finish_turnover_in(bay, t)
         # post-fragment-end equipment check on completions
         for attempt in completed:
-            self._post_fragment_end(self.tasks[attempt.task_id].resource_id)
+            self._post_fragment_end(self.tasks[attempt.task_id].resource_id,
+                                    attempt)
         return (completed, failed, illegal_list, calib_done,
                 turnover_out_done, turnover_in_done)
 
@@ -1354,7 +1355,8 @@ class RolloutEngine:
         self._schedule(event_kind, end, attempt_id)
         return attempt
 
-    def _post_fragment_end(self, resource: str) -> None:
+    def _post_fragment_end(self, resource: str,
+                           attempt: Optional[_Attempt] = None) -> None:
         equip = self.equipment[resource]
         if equip.replacement_pending:
             return
@@ -1364,8 +1366,25 @@ class RolloutEngine:
             return
         if not equip.is_right_censored and equip.lifetime_h is not None:
             if equip.age >= equip.lifetime_h:
+                # PENDING-05 (final narrow requalification): a natural
+                # (uncensored) lifetime reached EXACTLY at the fragment
+                # completion -- completion-first semantics are preserved
+                # (the completion result stands), but the equipment enters
+                # failure replacement_pending and a SAFE observable marker
+                # must be written so the same-timestamp H2 pre-action state
+                # sees the resource as failed/unavailable (no hidden
+                # lifetime / U_L / u_key / future information is written).
                 self._set_replacement_pending(resource, "failure",
                                               "failure_at_end")
+                if attempt is not None:
+                    self._record(
+                        "EQUIPMENT_FAILURE", resource_id=resource,
+                        trigger="failure_at_end",
+                        device_id=attempt.device_id,
+                        process=attempt.process,
+                        effective_attempt_no=attempt.effective_attempt_no,
+                        attempt_start_time=attempt.start_time,
+                        fragment_end=attempt.end_time)
 
     def _set_replacement_pending(self, resource: str, kind: str,
                                  trigger: str) -> None:
