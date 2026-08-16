@@ -1,0 +1,23 @@
+PRO_MAX_REVIEW (FINAL NARROW requalification, final-code review) - Q3-H2-P3
+Route: deepseek-pro-max / deepseek-v4-pro / reasoning=max / fresh spawn / read-only / workspace delta=0
+Base: b499764bf88cedc4510d4c809c8075f7aea01054
+Date: 2026-08-16
+
+VERDICT: PASS_WITH_CAVEAT
+authority_conflict: false
+required_actions: [R1 regenerate tests_report.json on the final code (323/323), R2 checker expected-kind alignment (own actions empty -> kind 'none'), R3 state sync (CHANGELOG/CURRENT_STATE)]
+required_actions_closed: false at review time; R1/R2/R3 closed by this evidence batch.
+
+Checks (final code, frozen authority §1.3/§4/§6.2/§10-13 + HG-Q3-H2-DP-DIAG-01 read directly):
+1. PM_IDLE high-age semantics: PASS (maintenance path uses ONLY frozen §10/§12 conditions, no hypothetical a+d; PMIDLE-AGE-01/02 -> {H1_NOOP, PM_IDLE}, -03 age=240 excluded, -04 head+a+d>240 -> no dispatch point; checker own split)
+2. PENDING-05 failure-at-end: PASS (completion-first preserved; EQUIPMENT_FAILURE marker trigger=failure_at_end with safe observable fields only, no hidden lifetime/U_L/u_key; same-timestamp pre-action state failed -> no H2 decision; G3 accepted core unmodified)
+3. bay occupancy fix 3d32d8f: PASS (TRUE_STATE_GENERATED is the bay occupant; consistent with G3 record ordering)
+4. ALL-eligible B-1 + dp_diag: PASS (C_eval-independent; frozen 50+50+top-up+cap120; population_wait/population_pm vs selected_wait/selected_pm/selected_both/sample_n split reported)
+5. posterior world_m: PASS (exactly M rebuilds from h2_rollout keys; cross-action CRN; no physical hidden world; 2M* prefix identical)
+6. C23: PASS (new marker/decision state expose only whitelist-observable info; WORLD-M-05 holds)
+7. online/offline parity: PASS (both delegate to the same evaluate_decision_point)
+8. frozen items unchanged: PASS (2SE, 0.95 point-estimate gate, seeds/salts, sample rules, action set, M-grid (8,8); no transfer/holdout/C25)
+
+Test battery: 323/323 PASS (169 regression + 154 requal; tests_report.json regenerated on the final code).
+
+Gate reading: authority_conflict=false; required_actions closed -> P3-C final rerun AUTHORIZED under the frozen domain (h2_tuning seed 6 rep 0..9 K=10.5 M*=8 ALT salt M16 0.95 2SE ALL-eligible B-1).

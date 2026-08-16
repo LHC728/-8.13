@@ -2,6 +2,16 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-16 / `Q3-H2-P3 FINAL NARROW REQUALIFICATION`（PM_IDLE legality + completion-boundary failure 可见性 + 最终代码 Pro-Max）
+
+### 修改
+
+- **PM_IDLE 年龄语义修复**：`decision_point_v1.reconstruct_decision_points` 与 checker own 推导——a+d mandatory 检查**只作用于 DISPATCH 点（存在合法 frozen head）**（a+d>240 → MANDATORY_REPLACE_FIRST → 无 H2 dispatch 决策点；==240 → START_HEAD 合法、PM_WITH_HEAD 永不当候选；<240 → 正常）；**MAINTENANCE/PM_IDLE 只按冻结 §10/§12 判断**（idle/available、age∈[120,240)、非 replacement-pending、future demand、calibration 本班可完成），**不使用假想任务 duration**——PMIDLE-AGE-01/02（age=238/239 无合法 head → {H1_NOOP, PM_IDLE}）、PMIDLE-AGE-03（age=240 → 不合法）、PMIDLE-AGE-04（head+a+d>240 → 无 dispatch 点）。
+- **PENDING-05（completion-boundary failure 可观察闭合）**：`rollout_engine_v1._post_fragment_end`——uncensored 自然 lifetime 恰在 fragment completion 达到时：**completion-first 保持**（ACTIVITY_COMPLETE 结果有效），equipment 进入 failure replacement_pending，并写出 **SAFE 可观察 `EQUIPMENT_FAILURE` marker**（trigger=failure_at_end；仅 event_time/resource_id/trigger/已完成 fragment identity；**禁止 hidden lifetime/U_L/u_key/future info**）→ 同 timestamp `project_pre_action_state()` 得到 resource failed/unavailable → 不产生 H2 决策点；**G3 accepted core 未修改**（marker 只在 H2 continuation 引擎的安全可观察路径）。
+- **B-1 报告字段分离**：`build_b1_sample`/`result_summary` 明确区分 **population_wait / population_pm**（ALL-eligible 候选总数）与 **selected_wait / selected_pm / selected_both / sample_n**（冻结选择：first 50 wait-eligible 含 both + first 50 PM-only + top-up + cap 120）。
+- **Pro-Max 最终代码审查（fresh）**：**PASS_WITH_CAVEAT**，`authority_conflict=false`，8 项检查全 PASS（PM_IDLE high-age / dispatch a+d mandatory / failure-at-end completion-first + observable pending / bay occupancy 3d32d8f / ALL-eligible B-1 / posterior world_m / C23 无 hidden leakage / online-offline）；R1（tests_report 最终代码重生成 **323/323** = 169 回归 + 154 requal）、R2（checker kind 对齐）、R3（状态登记）闭合。
+- **阶段状态**：P3-C 最终重跑 = 待执行（冻结域：h2_tuning/seed 6/rep 0..9/K=10.5/M\*=8/ALT salt/M16/0.95/2SE/ALL-eligible B-1）；**cross-K transfer / h2_holdout / C25 保持 NOT AUTHORIZED**。
+
 ## 2026-08-16 / `Q3-H2-P3 第二次语义重新认证`（B-1 冻结样本恢复 + posterior world_m + mandatory/replacement 闭合）
 
 ### 修改

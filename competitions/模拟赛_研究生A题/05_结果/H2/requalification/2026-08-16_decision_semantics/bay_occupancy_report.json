@@ -1,0 +1,1 @@
+{"check":"BAY_OCCUPANCY","id":"BAY_OCCUPANCY","impl":"main_model/h2/observable_state_v1.py bay derivation (TRUE_STATE_GENERATED as the bay occupant; 3d32d8f)","status":"PASS","tests":["BAY-OCCUPANCY-01 TRUE_STATE_GENERATED updates the bay occupant (the transported TURNOVER_IN_COMPLETE device is the OLD device)","BAY-OCCUPANCY-02 no turnover keeps the initial occupant"]}

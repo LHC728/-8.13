@@ -37,19 +37,36 @@
         "H": "online/offline policy semantics consistent: YES"
       }
     }
+    {
+      "review": "FINAL NARROW requalification (PM_IDLE age + PENDING-05 + B-1 split; final code)",
+      "review_verdict": "PASS_WITH_CAVEAT",
+      "authority_conflict": false,
+      "checks": {
+        "1_pm_idle_high_age": "PASS",
+        "2_pending_05_failure_at_end": "PASS",
+        "3_bay_occupancy_3d32d8f": "PASS",
+        "4_all_eligible_b1_dp_diag": "PASS",
+        "5_posterior_world_m": "PASS",
+        "6_c23_new_paths": "PASS",
+        "7_online_offline_parity": "PASS",
+        "8_frozen_items": "PASS"
+      }
+    }
   ],
   "required_actions_closed": true,
   "required_actions": [
-    "R1 CHANGELOG/CURRENT_STATE registration (HG-Q3-H2-DP-DIAG-01 + second invalidation + repair status) - CLOSED",
-    "R2 dp_key_semantics_report.json regenerated with dp_diag semantics (revoked first-round wording marked historical) - CLOSED",
-    "R3 execute the authorized P3-C rerun under the repaired ALL-eligible B-1 semantics - closes with the new immutable root"
+    "R1 tests_report.json regenerated on the final code: 323/323 PASS (169 regression + 154 requal) - CLOSED",
+    "R2 checker expected-kind alignment (own actions empty -> kind none) - CLOSED",
+    "R3 state sync (CHANGELOG/CURRENT_STATE final narrow registration) - CLOSED in this evidence batch",
+    "R4 execute the P3-C final rerun under the frozen domain - closes with the new immutable root"
   ],
-  "gate_reading": "PASS_WITH_CAVEAT (three reviews) + required_actions_closed=true + authority_conflict=false -> P3-C rerun AUTHORIZED on the final repaired code (ALL-eligible B-1, posterior world_m)",
+  "gate_reading": "PASS_WITH_CAVEAT (four reviews) + required_actions_closed=true + authority_conflict=false -> P3-C FINAL rerun AUTHORIZED (frozen domain: h2_tuning seed 6 rep 0..9 K=10.5 M*=8 ALT salt M16 0.95 2SE ALL-eligible B-1)",
   "evidence_files": [
     "pro_max_request_header.json",
     "pro_max_dispatch.json",
     "pro_max_review.txt",
     "pro_max_review_incremental.txt",
-    "pro_max_review_second.txt"
+    "pro_max_review_second.txt",
+    "pro_max_review_final_narrow.txt"
   ]
 }

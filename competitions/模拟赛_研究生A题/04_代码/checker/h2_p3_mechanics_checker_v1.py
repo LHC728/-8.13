@@ -356,15 +356,18 @@ def check_decision_points() -> dict[str, Any]:
                 own = _own_actions(st, resource, t, sh[1], head, active)
                 # AGE-LEGAL (final narrow): the a+d mandatory check is a
                 # DISPATCH-boundary property (legal frozen head present);
-                # maintenance legality never uses a hypothetical duration
+                # maintenance legality never uses a hypothetical duration.
+                # A legal-head dispatch boundary whose own actions are
+                # EMPTY (a+d > 240 mandatory case) yields kind "none".
+                is_dispatch = (_own_resource_idle(st, resource)
+                               and head is not None
+                               and _own_head_legal(st, head, t, sh[1]))
                 expected = {
-                    "kind": ("dispatch" if (_own_resource_idle(st, resource)
-                                            and head is not None
-                                            and _own_head_legal(
-                                                st, head, t, sh[1]))
-                             else ("maintenance"
-                                   if _own_maintenance(st, resource, t, sh[1])
-                                   else "none")),
+                    "kind": (("dispatch" if own else "none")
+                             if is_dispatch else
+                             ("maintenance"
+                              if _own_maintenance(st, resource, t, sh[1])
+                              else "none")),
                     "actions": own}
                 got = [p for p in impl if p.time == t
                        and p.resource == resource]
