@@ -978,6 +978,60 @@ class TestReleaseGuardRebuild(unittest.TestCase):
                          2)
 
 
+class TestBayOccupancyProjection(unittest.TestCase):
+    """BAY-OCCUPANCY-01..02 (second requalification fix): the observable
+    bay's CURRENT OCCUPANT is the device of the latest TRUE_STATE_GENERATED
+    (the new device the bay actually hosts after a turnover), NOT the
+    TURNOVER_IN_COMPLETE device_id (which is the transported OLD device);
+    a stale occupant identity would unbind the live device from its bay and
+    deadlock the engine (bay marked TERMINAL while the device still
+    waits)."""
+
+    def test_bay_occupancy_01_true_state_updates_occupant(self):
+        log = _log(
+            {"event_type": "TURNOVER_OUT_START", "event_time": "10",
+             "bay_id": 1, "device_id": 5},
+            {"event_type": "TURNOVER_OUT_COMPLETE", "event_time": "10",
+             "bay_id": 1, "device_id": 5},
+            {"event_type": "TURNOVER_IN_START", "event_time": "10",
+             "bay_id": 1, "device_id": 5},
+            {"event_type": "TURNOVER_IN_COMPLETE", "event_time": "11",
+             "bay_id": 1, "device_id": 5},
+            {"event_type": "TRUE_STATE_GENERATED", "event_time": "11",
+             "bay_id": 1, "device_id": 6},
+            {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
+             "device_id": 1,
+             "true_state": {"A": False, "B": False, "C": False}},
+            {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
+             "device_id": 2,
+             "true_state": {"A": False, "B": False, "C": False}},
+            _release(2, "B", 1, "12"),
+        )
+        st = dp.project_pre_action_state(log, Fraction(12),
+                                         batch_size=BATCH)
+        bay1 = next(b for b in st.bays if b.bay_id == 1)
+        self.assertEqual(bay1.current_device, 6,
+                         "the bay occupant must be the TRUE_STATE device "
+                         "(6), not the transported device (5)")
+
+    def test_bay_occupancy_02_no_turnover_keeps_initial_occupant(self):
+        log = _log(
+            {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
+             "bay_id": 1, "device_id": 3},
+            {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
+             "device_id": 1,
+             "true_state": {"A": False, "B": False, "C": False}},
+            {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
+             "device_id": 2,
+             "true_state": {"A": False, "B": False, "C": False}},
+            _release(2, "B", 1, "5"),
+        )
+        st = dp.project_pre_action_state(log, Fraction(5),
+                                         batch_size=BATCH)
+        bay1 = next(b for b in st.bays if b.bay_id == 1)
+        self.assertEqual(bay1.current_device, 3)
+
+
 class TestSampleTopUp(unittest.TestCase):
     """SAMPLE-01..03: frozen B-1 top-up arithmetic."""
 

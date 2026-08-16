@@ -575,6 +575,12 @@ def project_log_prefix(event_log: list[dict[str, Any]], t: Fraction,
             observations=tuple(obs), effective_attempts=tuple(atts)))
 
     # -- bays (occupancy / turnover state, deterministic) --
+    # FIX (second requalification): the bay's CURRENT OCCUPANT is the
+    # device of the latest TRUE_STATE_GENERATED (the new device the bay
+    # actually hosts after a turnover) -- TURNOVER_IN_COMPLETE's
+    # device_id is the TRANSPORTED (old) device, not the new occupant;
+    # D_CREATED also carries the occupant (future-D materialization at
+    # the legal junction).
     bay_dev: dict[int, int] = {}
     bay_state: dict[int, str] = {}
     for r in pre:
@@ -582,7 +588,7 @@ def project_log_prefix(event_log: list[dict[str, Any]], t: Fraction,
         bid = r.get("bay_id")
         if bid is None:
             continue
-        if et in (EV_D_CREATED, EV_TURNOVER_IN_COMPLETE) \
+        if et in (EV_D_CREATED, EV_TURNOVER_IN_COMPLETE, EV_TRUE_STATE) \
                 and r.get("device_id") is not None:
             bay_dev[int(bid)] = r["device_id"]
         if et in (EV_TURNOVER_OUT_START, EV_TURNOVER_OUT_COMPLETE,
