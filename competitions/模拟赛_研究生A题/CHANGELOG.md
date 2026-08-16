@@ -2,7 +2,24 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
-## 2026-08-16 / `Q3-H2-P3-C 决策语义重新认证`（MMR V2.1.2 YELLOW；Human Gate BLOCKER A–D）
+## 2026-08-16 / `Q3-H2-P3 第二次语义重新认证`（B-1 冻结样本恢复 + posterior world_m + mandatory/replacement 闭合）
+
+### 修改
+
+- **Human Gate 裁决（e4fd435 的 H2 DELETE 暂不接受）**：撤销第一轮把「production quota-evaluated points」延伸为 §4 B-1 采样总体的解释；**B-1 = ALL H2-ELIGIBLE DECISION POINTS**（冻结 §1.3/§4；不受在线 C_eval\* 约束；50+50+top-up+cap120，n<50→DELETE）。登记 **HG-Q3-H2-DP-DIAG-01**（`08_项目管理/任务包/Q3_H2_BOOTSTRAP_SPEC_DRAFT_ADDENDUM_DP_DIAG_01.md`，追加不重写）：production `dp_online` 不变；offline `dp_diag` = 每批内 (time, canonical resource order) 排序的 0-based 序号（仅对进入 B-1 且被重评估的点）；normal/ALT/2M\* 同点共享 (replicate_id, dp_diag)；2M\* 前 M\* 个 m 键与 M\* 完全一致；action 不入 seed。
+- **MMR 漏判登记**：`05_结果/governance/model_routing/MODEL_ROUTING_MISS_001.json`——implementation repair 改变 FROZEN diagnostic population/sample semantics 而描述为 implementation-only requalification：原 route YELLOW，正确行为 RED/HUMAN_GATE_REQUIRED；本次由 HG-Q3-H2-DP-DIAG-01 最小澄清（不重设计 MMR）。
+- **最新 P3-C root 失效**：`run_20260816T150705443207Z_4f60db0d` = **INVALIDATED_FOR_FROZEN_SAMPLE_AND_ROLLOUT_WORLD_SEMANTICS**（`INVALIDATION_STATUS_SECOND.json`；数字不改；原因 A B-1 population 错用 quota 子集 / B rollout world 未逐 m 重建 / C mandatory+replacement 未闭合）。旧 root `791506d8` 保持原失效。
+- **B-1 恢复**：`run_h2_p3c_stability_v1.py build_b1_sample` 从 `collect_eligible_points`（ALL eligible）构造，**不经 `quota_simulate_batch`**（后者仅用于独立 quota 测试与 production runner）；dp_diag 映射；B1-OFFLINE-01/02/03 机械证明。
+- **posterior world_m（核心）**：`h2_policy_v1.evaluate_decision_point` 移除 caller 提供的固定 world/provider，**每个 m 由该 m 的 h2_rollout post keys（U_X/U_D/U_L）重建 world_m + provider_m**；同 m 的**全部候选动作共享同一 world_m**（跨动作 CRN）；不同 m 后验世界允许不同；`h2_batch_runner_v1._h2_step` 删除 dummy `u_x=1/2、u_d=1/3、u_l=1/3` 固定世界；**physical h2_tuning hidden world 不再进入 policy rollout**（x_abc/x_d/residual lifetime 只由 h2_rollout keys 后验重采样）。
+- **AGE-LEGAL-01/02/03**：`decision_point_v1.reconstruct` —— a+d>240（mandatory）→ 无任何 H2 决策点；a+d==240（exact_240）→ START_HEAD 可（完成优先）、PM_WITH_HEAD 永不当候选；a+d<240 → 冻结规则。P3-A PM-R2 测试与 checker `MANDATORY_OPTIONAL_PM` 依新裁决 requalified。
+- **PENDING-01..04**：`observable_state_v1._observable_pending_status` —— 同 timestamp EQUIPMENT_FAILURE → failed；illegal_240 TASK_CANCEL → replacement；可观察 age≥240（post-completion mandatory）→ replacement；仅用可观察事件/age/generation/status（不读 hidden lifetime）；replacement 完成即恢复；普通 idle 不受影响。
+- **P3-B Q_hat/SE 重新认证**：WORLD-M-01..06 + DPKEY-01..05（dp_diag）——Q_hat/配对 D_m/SE_M/2SE/跨动作 CRN/M8-M16 prefix 公式未改，机械 PASS。
+- **成本重新认证（SECOND）**：c_r 现含 per-m world_m 重建 + engine run（旧值不继承）；冻结网格 (4,8)/(8,6)/(8,8)、w_p≤90s、max M 再大 C_eval → 仍选 **(8,8)** → **冻结恢复 M\* = 8、C_eval\* = 8、W_cap\* = 4、P_cap\* = 4**（`cost_requalification_report.json`）。
+- **测试**：requal **145/145** + 回归 **169/169** PASS（合计 314；含 B1-OFFLINE / AGE-LEGAL / PENDING / WORLD-M / DPKEY-dp_diag / RELEASE-GUARD / INFLIGHT / PM-R2 requal）。
+- **Pro-Max 第二轮审查（fresh）**：**PASS_WITH_CAVEAT**，`authority_conflict=false`，A–H 八问全 YES；R1/R2 闭合、R3（P3-C 重跑）执行授权。
+- **阶段状态**：P3-C 重跑（修复后 ALL-eligible B-1 语义）= 待执行（新 root）；**cross-K transfer / h2_holdout / C25 保持 NOT AUTHORIZED**。
+
+## 2026-08-16 / `Q3-H2-P3-C 决策语义重新认证`（第一轮，被第二次裁决撤销部分语义）
 
 ### 修改
 

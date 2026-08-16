@@ -89,9 +89,14 @@ def measure_base(rep: int, samples: int = 1) -> float:
 
 
 def _single_rollout_wallclock(rep: int, n: int = 3) -> float:
-    """Wallclock of ONE continuation rollout (from a decision point in a
-    batch of batch_size=100; deterministic small world).  Uses the P3
-    continuation engine; excludes C06/C17/bootstrap."""
+    """Wallclock of ONE posterior-world rollout (from a decision point in
+    a batch of batch_size=100; deterministic small world).  Uses the P3
+    continuation engine; excludes C06/C17/bootstrap.
+
+    SECOND REQUALIFICATION (world_m): the measured c_r now includes the
+    per-m posterior-world REBUILD (rebuild_continuation_world from the
+    m-th h2_rollout post-key bundle) plus the engine run -- exactly the
+    per-m cost the repaired policy evaluator pays for each m."""
     from main_model.h2 import observable_state_v1 as obs
     from main_model.h2 import posterior_state_v1 as ps
     from main_model.h2 import continuation_v1 as cont
@@ -106,32 +111,32 @@ def _single_rollout_wallclock(rep: int, n: int = 3) -> float:
             if Fraction(r["event_time"]) <= Fraction(0)]
     st = obs.project_log_prefix(log0, Fraction(0), batch_size=BATCH_SIZE)
     post = ps.PosteriorState.from_observable(st)
-    world = cont.rebuild_continuation_world(
-        st, post,
-        u_x_by_device={d.device_id: Fraction(1, 2) for d in st.devices},
-        u_d_by_device={d.device_id: Fraction(1, 3) for d in st.devices
-                       if any(o.process == "E" for o in d.observations)},
-        u_l_by_resource={r: Fraction(1, 3) for r in ("A", "B", "C", "E")})
     gen = {r: 1 for r in ("A", "B", "C", "E")}
     all_devices = tuple(range(1, BATCH_SIZE + 1))  # future devices included
-    k = pk.rollout_post_keys(MASTER_SEED, rep, 0, 0,
-                             all_devices,
-                             ("A", "B", "C", "E"), gen)
-    prov = re1.PostKeyProvider(
-        u_x_by_device=k.u_x_by_device,
-        u_x_subsystem_lookup=(lambda d, s: k.u_x_subsystem_by_device[d][s]),
-        u_d_by_device=k.u_d_by_device,
-        u_l_by_resource=k.u_l_by_resource,
-        u_y_lookup=k.u_y_lookup, u_l_lookup=k.u_l_lookup)
+    res_tuple = ("A", "B", "C", "E")
     cfg_roll = re1.RolloutConfig(
         batch_size=BATCH_SIZE, shift_length_h=K, shifts_per_day=2,
         scenario="q3_two_shift", tau_pm=re1.NO_PM_BEFORE_MANDATORY)
     times: list[float] = []
-    for _ in range(n):
+    for m in range(n):
+        k = pk.rollout_post_keys(MASTER_SEED, rep, 0, m,
+                                 all_devices, res_tuple, gen)
+        t0 = time.perf_counter()
+        world = cont.rebuild_continuation_world(
+            st, post,
+            u_x_by_device=k.u_x_by_device,
+            u_d_by_device=k.u_d_by_device,
+            u_l_by_resource=k.u_l_by_resource)
+        prov = re1.PostKeyProvider(
+            u_x_by_device=k.u_x_by_device,
+            u_x_subsystem_lookup=(
+                lambda d, s, _k=k: _k.u_x_subsystem_by_device[d][s]),
+            u_d_by_device=k.u_d_by_device,
+            u_l_by_resource=k.u_l_by_resource,
+            u_y_lookup=k.u_y_lookup, u_l_lookup=k.u_l_lookup)
         eng = re1.RolloutEngine(st, post, world, prov, cfg_roll,
                                 first_action=re1.A_H1_NOOP,
                                 log_prefix=refres.event_log)
-        t0 = time.perf_counter()
         eng.run()
         times.append(time.perf_counter() - t0)
     return statistics.median(times)

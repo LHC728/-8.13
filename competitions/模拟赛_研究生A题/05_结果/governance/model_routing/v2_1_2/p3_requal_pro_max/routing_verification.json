@@ -21,18 +21,35 @@
       "review": "INCREMENTAL (offline-rebuild release-guard fix)",
       "review_verdict": "PASS_WITH_CAVEAT",
       "authority_conflict": false
+    },
+    {
+      "review": "SECOND requalification (frozen B-1 + posterior world_m + AGE-LEGAL/PENDING)",
+      "review_verdict": "PASS_WITH_CAVEAT",
+      "authority_conflict": false,
+      "answers": {
+        "A": "B-1 restored to ALL H2-eligible, C_eval-independent: YES",
+        "B": "HG-Q3-H2-DP-DIAG-01 affects only offline dp_diag, dp_online unchanged: YES",
+        "C": "every rollout m rebuilt from its h2_rollout U_X/U_D/U_L keys: YES",
+        "D": "same m shares exactly the same world_m across actions: YES",
+        "E": "physical h2_tuning hidden world out of policy rollouts: YES",
+        "F": "mandatory/exact_240 not offered as optional H2 decisions: YES",
+        "G": "same-timestamp replacement_pending visible in pre-action state: YES",
+        "H": "online/offline policy semantics consistent: YES"
+      }
     }
   ],
   "required_actions_closed": true,
   "required_actions": [
-    "R1 CURRENT_STATE.md + CHANGELOG.md sync (invalidation + requalification + rerun-attempt runaway + release-guard fix) - CLOSED in this evidence batch",
-    "R2 failed first rerun attempt negative evidence retained + cost-requalification timing note - CLOSED (failed_rerun_negative_evidence.txt)",
-    "R3 optional E-path release-guard fixture - CLOSED (RELEASE-GUARD-03)"
+    "R1 CHANGELOG/CURRENT_STATE registration (HG-Q3-H2-DP-DIAG-01 + second invalidation + repair status) - CLOSED",
+    "R2 dp_key_semantics_report.json regenerated with dp_diag semantics (revoked first-round wording marked historical) - CLOSED",
+    "R3 execute the authorized P3-C rerun under the repaired ALL-eligible B-1 semantics - closes with the new immutable root"
   ],
-  "gate_reading": "PASS_WITH_CAVEAT (both reviews) + required_actions_closed=true + authority_conflict=false -> P3-C rerun AUTHORIZED on the final repaired code",
+  "gate_reading": "PASS_WITH_CAVEAT (three reviews) + required_actions_closed=true + authority_conflict=false -> P3-C rerun AUTHORIZED on the final repaired code (ALL-eligible B-1, posterior world_m)",
   "evidence_files": [
     "pro_max_request_header.json",
     "pro_max_dispatch.json",
-    "pro_max_review.txt"
+    "pro_max_review.txt",
+    "pro_max_review_incremental.txt",
+    "pro_max_review_second.txt"
   ]
 }

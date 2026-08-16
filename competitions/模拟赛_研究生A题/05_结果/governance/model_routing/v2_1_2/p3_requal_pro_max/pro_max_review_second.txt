@@ -1,0 +1,22 @@
+PRO_MAX_REVIEW (SECOND requalification) - Q3-H2-P3 B-1 frozen sample + posterior world_m + AGE-LEGAL/PENDING closure
+Route: deepseek-pro-max / deepseek-v4-pro / reasoning=max / fresh spawn / read-only / workspace delta=0
+Date: 2026-08-16
+
+VERDICT: PASS_WITH_CAVEAT
+authority_conflict: false
+required_actions: [R1 state sync (CHANGELOG/CURRENT_STATE registration of HG-Q3-H2-DP-DIAG-01 + second invalidation + repair status), R2 dp_key_semantics_report.json wording regeneration (revoked first-round quota wording marked historical), R3 execute the authorized P3-C rerun under the repaired ALL-eligible B-1 semantics (new immutable root)]
+required_actions_closed: false at review time; R1/R2 closed by this evidence batch; R3 closes with the rerun root.
+
+Answers (frozen §1.3/§4/§6.2/§10-13 + HG-Q3-H2-DP-DIAG-01 addendum read directly):
+A. B-1 = ALL H2-eligible decision points (collect_eligible_points / reconstruct_decision_points), no quota parameter; dp_diag per-batch (time, canonical resource order) 0-based; normal/ALT/2M* share (replicate_id, dp_diag); 2M* keys identical for m=0..M*-1; action never in seed. YES
+B. Addendum affects ONLY offline dp_diag; production dp_online and the online quota selector unchanged. YES
+C. Every rollout m rebuilt from the m-th h2_rollout U_X/U_D/U_L keys (world_m = rebuild_continuation_world(state, posterior, keys_m...)). YES
+D. All candidate actions of the same m share exactly the same world_m/provider_m (exactly M rebuilds; engine copies the frozen world, no in-place mutation). YES
+E. Physical h2_tuning hidden world fully out of the policy rollouts (caller world/provider removed; no dummy u_x=1/2/u_d=1/3/u_l=1/3; hidden annotations structurally ignored; WORLD-M-05 bit-identical). YES
+F. a+d>240 -> no H2 decision point; a+d==240 -> START_HEAD legal, PM_WITH_HEAD never offered; a+d<240 -> frozen rules; P3-A PM-R2 + checker requalified consistently. YES
+G. PENDING-01/02/03 visible in the H2 pre-action state (observable events only, no hidden lifetime read); PENDING-04 idle unchanged. YES
+H. Online/offline delegate to the same evaluate_decision_point (same Q_hat/SE/2SE formulas); online dp_online vs offline dp_diag per the frozen split; WORLD-M-06 parity. YES
+
+Frozen items: UNCHANGED (action set, 2SE, 0.95 point-estimate gate, B-1 50/50/top-up/cap120/n<50 DELETE, h2_tuning seed6 rep0..9 K=10.5, salts+namespace, C25/C23 authority, M-grid (4,8)/(8,6)/(8,8) w_p<=90s; COST_REQUALIFICATION_SECOND -> FREEZE_RESTORED (8,8)). Old roots 791506d8 / 4f60db0d immutable. No holdout/q3_formal, no M-grid change, C25/cross-K NOT RUN. Tests 314/314 (145 requal + 169 regression) PASS.
+
+Gate reading: authority_conflict=false; once R1/R2 close, the P3-C rerun (R3) is authorized under the repaired ALL-eligible B-1 semantics; outcome per frozen gates (deviation_count=0 -> H2 DELETE -> STOP Human Gate).
