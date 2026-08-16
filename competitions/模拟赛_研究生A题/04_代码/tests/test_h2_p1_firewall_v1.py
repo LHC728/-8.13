@@ -225,6 +225,99 @@ class TestFirewallChecker(unittest.TestCase):
         self.assertFalse(res["posterior_math_detected"])
         self.assertEqual(res["numeric_placeholders_detected"], [])
 
+    # ---- Q3-H2-P1-E1 closures: replacement-history semantics (F1) ----
+
+    def test_t18_ongoing_replacement_not_in_completed_history(self):
+        log = [
+            {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
+             "device_id": 1,
+             "true_state": {"A": False, "B": False, "C": False}},
+            {"event_type": "SHIFT_CHANGE", "event_time": "0", "shift_index": 0,
+             "shift_start": "0", "shift_end": "10", "on_duty_squad": 0,
+             "squad_id": 0},
+            {"event_type": "EQUIPMENT_REPLACEMENT_START", "event_time": "1",
+             "resource_id": "A", "kind": "preventive", "trigger": "preventive",
+             "old_generation": 1, "new_generation": 2, "age_before": "1",
+             "calibration_duration_hours": "1/2", "calibration_start": "1",
+             "calibration_end": "3/2", "u_key": "k_L_A_2", "u": "0.5"},
+        ]
+        s = obs.project_log_prefix(log, Fraction(5, 4), batch_size=2)
+        self.assertEqual(len(s.replacement_history), 0)  # ongoing, not completed
+        rsrc_a = next(r for r in s.resources if r.resource == "A")
+        self.assertEqual(rsrc_a.status, "calibration")
+        self.assertEqual(rsrc_a.in_flight_remaining_h, Fraction(1, 4))
+
+    def test_t19_completed_replacement_enters_history(self):
+        log = [
+            {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
+             "device_id": 1,
+             "true_state": {"A": False, "B": False, "C": False}},
+            {"event_type": "SHIFT_CHANGE", "event_time": "0", "shift_index": 0,
+             "shift_start": "0", "shift_end": "10", "on_duty_squad": 0,
+             "squad_id": 0},
+            {"event_type": "EQUIPMENT_REPLACEMENT_START", "event_time": "1",
+             "resource_id": "A", "kind": "preventive", "trigger": "preventive",
+             "old_generation": 1, "new_generation": 2, "age_before": "1",
+             "calibration_duration_hours": "1/2", "calibration_start": "1",
+             "calibration_end": "3/2", "u_key": "k_L_A_2", "u": "0.5"},
+            {"event_type": "EQUIPMENT_CALIBRATION_COMPLETE",
+             "event_time": "3/2", "resource_id": "A", "generation": 2,
+             "calibration_start": "1", "calibration_end": "3/2"},
+        ]
+        s = obs.project_log_prefix(log, Fraction(2), batch_size=2)
+        entries = [rh for rh in s.replacement_history
+                   if rh.resource == "A"
+                   and rh.calibration_end == Fraction(3, 2)]
+        self.assertEqual(len(entries), 1)  # exactly once, completed
+        self.assertFalse(hasattr(entries[0], "completed"))
+
+    def test_t20_future_completion_must_not_leak(self):
+        log = [
+            {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
+             "device_id": 1,
+             "true_state": {"A": False, "B": False, "C": False}},
+            {"event_type": "SHIFT_CHANGE", "event_time": "0", "shift_index": 0,
+             "shift_start": "0", "shift_end": "10", "on_duty_squad": 0,
+             "squad_id": 0},
+            {"event_type": "EQUIPMENT_REPLACEMENT_START", "event_time": "1",
+             "resource_id": "A", "kind": "preventive", "trigger": "preventive",
+             "old_generation": 1, "new_generation": 2, "age_before": "1",
+             "calibration_duration_hours": "1/2", "calibration_start": "1",
+             "calibration_end": "3/2", "u_key": "k_L_A_2", "u": "0.5"},
+            {"event_type": "EQUIPMENT_CALIBRATION_COMPLETE",
+             "event_time": "3/2", "resource_id": "A", "generation": 2,
+             "calibration_start": "1", "calibration_end": "3/2"},
+        ]
+        s = obs.project_log_prefix(log, Fraction(5, 4), batch_size=2)
+        self.assertEqual(len(s.replacement_history), 0)  # future completion
+
+    def test_replacement_history_semantics_check(self):
+        res = chk.check_replacement_history_semantics()
+        self.assertEqual(res["status"], "PASS", res)
+
+    # ---- Q3-H2-P1-E1 closures: AST detector negatives (F2 / section 7) ----
+
+    def test_ast_negative_cases(self):
+        res = chk.check_ast_negative_cases()
+        self.assertEqual(res["status"], "PASS", res)
+        for label, case in res["cases"].items():
+            self.assertTrue(case["passed"], (label, case))
+        self.assertTrue(res["cases"]["NEG-A"]["rejected"])   # rec["true_state"]
+        self.assertTrue(res["cases"]["NEG-B"]["rejected"])   # rec.get("u_key")
+        self.assertTrue(res["cases"]["NEG-C"]["rejected"])   # rec["lifetime_h"]
+        self.assertTrue(res["cases"]["NEG-D"]["rejected"])   # device.true_state
+        self.assertFalse(res["cases"]["LEGAL"]["rejected"])  # allowed keys
+
+    def test_all_dtos_frozen(self):
+        res = chk.check_field_whitelist()
+        self.assertEqual(res["status"], "PASS")
+        self.assertEqual(len(res["frozen_per_class"]), len(chk.DTO_CLASSES))
+        for entry in res["frozen_per_class"]:
+            self.assertTrue(entry["frozen"], entry)
+        for cls in chk.DTO_CLASSES:
+            self.assertTrue(dataclasses.is_dataclass(cls))
+            self.assertTrue(cls.__dataclass_params__.frozen)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -1,0 +1,1 @@
+{"check":"A_FIELD_WHITELIST","frozen_per_class":[{"class":"ObservableState","frozen":true},{"class":"BayObs","frozen":true},{"class":"ResourceObs","frozen":true},{"class":"QueueObs","frozen":true},{"class":"DeviceObs","frozen":true},{"class":"ObservationObs","frozen":true},{"class":"ReplacementObs","frozen":true}],"issues":[],"n_dto_classes":7,"status":"PASS"}

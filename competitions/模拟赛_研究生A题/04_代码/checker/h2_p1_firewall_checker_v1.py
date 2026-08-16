@@ -76,8 +76,7 @@ WHITELIST: dict[str, set[str]] = {
                   "observations", "effective_attempts"},
     "ObservationObs": {"time", "process", "attempt", "outcome"},
     "ReplacementObs": {"resource", "kind", "trigger", "calibration_start",
-                       "calibration_end", "old_generation", "new_generation",
-                       "completed"},
+                       "calibration_end", "old_generation", "new_generation"},
 }
 
 FORBIDDEN_NAME_FRAGMENTS: tuple[str, ...] = (
@@ -127,7 +126,7 @@ def check_field_whitelist() -> dict[str, Any]:
             frozen_ok = False
             issues.append(f"{cls.__name__}: not a dataclass")
             continue
-    if not cls.__dataclass_params__.frozen:
+        if not cls.__dataclass_params__.frozen:
             frozen_ok = False
             issues.append(f"{cls.__name__}: not frozen (must be immutable)")
     for cls in DTO_CLASSES:
@@ -137,6 +136,10 @@ def check_field_whitelist() -> dict[str, Any]:
         "status": "PASS" if not issues and frozen_ok else "FAIL",
         "issues": issues,
         "n_dto_classes": len(DTO_CLASSES),
+        "frozen_per_class": [{"class": cls.__name__,
+                              "frozen": (dataclasses.is_dataclass(cls)
+                                         and cls.__dataclass_params__.frozen)}
+                             for cls in DTO_CLASSES],
     }
 
 
@@ -149,9 +152,58 @@ def _h2_source_files() -> list[Path]:
     return sorted(p for p in H2_DIR.glob("*.py") if p.is_file())
 
 
+def _scan_forbidden(tree: ast.AST, filename: str) -> list[str]:
+    """Reusable forbidden-access scanner (used both for the h2 package and
+    for the negative AST cases).  Detects, WITHOUT literal-only grep:
+      A. ast.Attribute  -- obj.<hidden_name>
+      B. ast.Subscript with a CONSTANT STRING slice -- obj["<hidden_key>"]
+      C. ast.Call of the form *.get("<hidden_key>")
+    plus references to live DES internal classes by name."""
+    issues: list[str] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Attribute):
+            attr = node.attr
+            for frag in FORBIDDEN_NAME_FRAGMENTS:
+                if frag in attr:
+                    issues.append(f"{filename}: attribute access "
+                                  f"{attr!r} contains forbidden fragment "
+                                  f"{frag!r} at line "
+                                  f"{getattr(node, 'lineno', '?')}")
+        elif isinstance(node, ast.Subscript):
+            sl = node.slice
+            if isinstance(sl, ast.Constant) and isinstance(sl.value, str):
+                key = sl.value
+                for frag in FORBIDDEN_NAME_FRAGMENTS:
+                    if frag in key:
+                        issues.append(f"{filename}: dict-subscript access "
+                                      f"{key!r} contains forbidden fragment "
+                                      f"{frag!r} at line "
+                                      f"{getattr(node, 'lineno', '?')}")
+        elif isinstance(node, ast.Call):
+            func = node.func
+            if isinstance(func, ast.Attribute) and func.attr == "get":
+                if node.args and isinstance(node.args[0], ast.Constant) \
+                        and isinstance(node.args[0].value, str):
+                    key = node.args[0].value
+                    for frag in FORBIDDEN_NAME_FRAGMENTS:
+                        if frag in key:
+                            issues.append(f"{filename}: dict.get access "
+                                          f"{key!r} contains forbidden "
+                                          f"fragment {frag!r} at line "
+                                          f"{getattr(node, 'lineno', '?')}")
+        if isinstance(node, ast.Name):
+            if node.id in ("RandomDesEngine", "DeviceState",
+                           "EquipmentState", "ResourceState",
+                           "BayState", "TestAttemptState"):
+                issues.append(f"{filename}: reference to live DES "
+                              f"internal class {node.id} at line "
+                              f"{getattr(node, 'lineno', '?')}")
+    return issues
+
+
 def check_forbidden_access() -> dict[str, Any]:
-    """AST scan: no attribute access to hidden names, no raw-key material
-    references as attribute accesses, no engine class references."""
+    """AST scan (Attribute + Subscript + dict.get) of the h2 package: no
+    access to hidden names / raw-key material / live DES classes."""
     issues: list[str] = []
     for path in _h2_source_files():
         try:
@@ -159,27 +211,46 @@ def check_forbidden_access() -> dict[str, Any]:
         except SyntaxError as exc:
             issues.append(f"{path.name}: SyntaxError {exc}")
             continue
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Attribute):
-                attr = node.attr
-                for frag in FORBIDDEN_NAME_FRAGMENTS:
-                    if frag in attr:
-                        issues.append(f"{path.name}: attribute access "
-                                      f"{attr!r} contains forbidden "
-                                      f"fragment {frag!r} at line "
-                                      f"{getattr(node, 'lineno', '?')}")
-            if isinstance(node, ast.Name):
-                if node.id in ("RandomDesEngine", "DeviceState",
-                               "EquipmentState", "ResourceState",
-                               "BayState", "TestAttemptState"):
-                    issues.append(f"{path.name}: reference to live DES "
-                                  f"internal class {node.id} at line "
-                                  f"{getattr(node, 'lineno', '?')}")
+        issues.extend(_scan_forbidden(tree, path.name))
     return {
         "check": "B_FORBIDDEN_ACCESS",
         "status": "PASS" if not issues else "FAIL",
         "issues": issues,
         "files_scanned": [p.name for p in _h2_source_files()],
+    }
+
+
+def check_ast_negative_cases() -> dict[str, Any]:
+    """Prove the AST detector itself rejects forbidden code snippets
+    (NEG-A..D) and accepts a legal snippet (Attribute / Subscript /
+    dict.get variants).  The verdicts are computed from the detector's
+    ACTUAL output."""
+    cases = {
+        "NEG-A": ("x = rec[\"true_state\"]", "reject"),
+        "NEG-B": ("x = rec.get(\"u_key\")", "reject"),
+        "NEG-C": ("x = rec[\"lifetime_h\"]", "reject"),
+        "NEG-D": ("x = device.true_state", "reject"),
+        "NEG-E": ("x = rec.get(\"x_A\")", "reject"),
+        "LEGAL": ("x = rec[\"event_time\"]\ny = rec.get(\"resource_id\")\n"
+                  "z = rec[\"outcome\"]", "accept"),
+    }
+    results = {}
+    ok = True
+    for label, (code, expectation) in cases.items():
+        tree = ast.parse(code)
+        issues = _scan_forbidden(tree, f"<{label}>")
+        rejected = len(issues) > 0
+        if expectation == "reject":
+            passed = rejected
+        else:
+            passed = not rejected
+        ok = ok and passed
+        results[label] = {"expected": expectation, "rejected": rejected,
+                          "passed": passed, "issues": issues}
+    return {
+        "check": "B_AST_NEGATIVE_CASES",
+        "status": "PASS" if ok else "FAIL",
+        "cases": results,
     }
 
 
@@ -382,6 +453,67 @@ def check_negative_leaks() -> dict[str, Any]:
     }
 
 
+def check_replacement_history_semantics() -> dict[str, Any]:
+    """F1 semantic invariant (frozen '已完成更换/校准历史'): replacement
+    history contains ONLY replacement/calibration records whose calibration
+    has completed at or before the observation time t.  NOT a field-name
+    check: projects real logs and inspects the DTO's actual content."""
+    base = [
+        {"event_type": "TRUE_STATE_GENERATED", "event_time": "0",
+         "device_id": 1,
+         "true_state": {"A": False, "B": False, "C": False}},
+        {"event_type": "SHIFT_CHANGE", "event_time": "0", "shift_index": 0,
+         "shift_start": "0", "shift_end": "10", "on_duty_squad": 0,
+         "squad_id": 0},
+        {"event_type": "EQUIPMENT_REPLACEMENT_START", "event_time": "1",
+         "resource_id": "A", "kind": "preventive", "trigger": "preventive",
+         "old_generation": 1, "new_generation": 2, "age_before": "1",
+         "calibration_duration_hours": "1/2", "calibration_start": "1",
+         "calibration_end": "3/2", "u_key": "k_L_A_2", "u": "0.5"},
+    ]
+    # T18: ongoing replacement (no completion yet) at t=1.25
+    st_ongoing = obs.project_log_prefix(base, Fraction(5, 4), batch_size=2)
+    ongoing_excluded = len(st_ongoing.replacement_history) == 0
+    rsrc_a = next(r for r in st_ongoing.resources if r.resource == "A")
+    status_ok = rsrc_a.status == "calibration"
+    remaining_ok = rsrc_a.in_flight_remaining_h == Fraction(1, 4)
+    # T20: full log contains the future completion; observing at t=1.25
+    full = base + [{"event_type": "EQUIPMENT_CALIBRATION_COMPLETE",
+                    "event_time": "3/2", "resource_id": "A",
+                    "generation": 2, "calibration_start": "1",
+                    "calibration_end": "3/2"}]
+    st_future = obs.project_log_prefix(full, Fraction(5, 4), batch_size=2)
+    future_not_leaked = len(st_future.replacement_history) == 0
+    # T19: after completion (t=2) the record enters the history exactly once
+    st_done = obs.project_log_prefix(full, Fraction(2), batch_size=2)
+    done_in = [rh for rh in st_done.replacement_history
+               if rh.resource == "A" and rh.calibration_end == Fraction(3, 2)]
+    done_exactly_once = len(done_in) == 1
+    all_members_completed = all(
+        any(r.get("event_type") == "EQUIPMENT_CALIBRATION_COMPLETE"
+            and r.get("resource_id") == rh.resource
+            and Fraction(r["calibration_end"]) == rh.calibration_end
+            and Fraction(r["event_time"]) <= rh.calibration_end
+            for r in full)
+        for rh in st_done.replacement_history)
+    ok = (ongoing_excluded and status_ok and remaining_ok
+          and future_not_leaked and done_exactly_once
+          and all_members_completed)
+    return {
+        "check": "REPLACEMENT_HISTORY_SEMANTICS",
+        "status": "PASS" if ok else "FAIL",
+        "invariant": ("replacement_history contains ONLY completed "
+                      "replacement/calibration (calibration_end <= t with "
+                      "matching EQUIPMENT_CALIBRATION_COMPLETE)"),
+        "ongoing_replacement_excluded_at_1.25": ongoing_excluded,
+        "resource_status_at_1.25": rsrc_a.status,
+        "in_flight_remaining_at_1.25": str(rsrc_a.in_flight_remaining_h),
+        "future_completion_not_leaked_at_1.25": future_not_leaked,
+        "completed_record_enters_once_at_2": done_exactly_once,
+        "all_members_completed": all_members_completed,
+    }
+
+
 # ---------------------------------------------------------------------------
 # PosteriorState seam (P1): no posterior math, no fake numbers
 # ---------------------------------------------------------------------------
@@ -440,9 +572,11 @@ def run_all() -> dict[str, Any]:
     checks = [
         check_field_whitelist(),
         check_forbidden_access(),
+        check_ast_negative_cases(),
         check_import_isolation(),
         check_same_observable_history(),
         check_negative_leaks(),
+        check_replacement_history_semantics(),
         check_posterior_seam(),
     ]
     all_ok = all(c["status"] == "PASS" for c in checks)

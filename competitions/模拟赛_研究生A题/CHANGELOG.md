@@ -2,6 +2,24 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-16 / `STATE-2026-08-13-G2.4` / `Q3-H2-P1-E1 C23 防火墙语义闭环修复 = COMPLETED / AWAITING HUMAN GATE REVIEW`
+
+### 修改
+
+- **Q3-H2-P1-E1（C23 信息防火墙语义闭环修复；Human Gate narrow repair）完成**：Human Gate 独立审计 P1 = BLOCKED / NARROW REPAIR REQUIRED（主体设计不推翻），本包闭合 3 个闭环（F1/F2/F3）：
+  - **F1 — replacement_history 只含已完成更换/校准**：`observable_state_v1.py` 改为仅当存在匹配 `EQUIPMENT_CALIBRATION_COMPLETE` 且 `completion_time <= t` 时记录才进入 `replacement_history`（进行中 `replacement_start <= t < calibration_complete` 期间不得进入；未来完成不泄漏）；**删除 `ReplacementObs.completed` 字段**（已完成记录一律 completed，字段冗余；无 frozen authority 支持不保留）；当前状态继续由 `ResourceObs.status / in_flight_remaining_h / generation` 表达。
+  - **F2 — AST checker 覆盖 dict 访问**：`check_forbidden_access` 重构为可复用 `_scan_forbidden`，除 `ast.Attribute` 外新增 `ast.Subscript`（常量字符串 slice）与 `ast.Call *.get("KEY")` 的禁读字段检测（true_state / x_A..x_D / lifetime_h / u_key / is_right_censored / d_state 值等）；新增 **AST 负例检查 `B_AST_NEGATIVE_CASES`**（NEG-A `rec["true_state"]`、NEG-B `rec.get("u_key")`、NEG-C `rec["lifetime_h"]`、NEG-D `device.true_state` 必须拒绝；合法片段 `rec["event_time"]` / `rec.get("resource_id")` 必须通过）；privileged adapter 同样受扫（不读取禁读字段；`d_materialized` 仅由 `D_CREATED` 事件存在性构建，不读 `d_state` 值）。
+  - **F3 — C21/hash 验证真正 fail-closed**：runner 两阶段 evidence build（phase-1 在 git-ignored staging 目录探测真实 verifier 结果 → phase-2 以实际结果写最终 evidence；`C21a/C21b` 状态来自实际 `verify_hash_dag` / `verify_manifest_inventory_consistency`，非硬编码 PASS）；成功退出显式依赖 `hash_graph_acyclic==True`、`inventory mismatches==[]`、`manifest/inventory consistency==PASS`、`C21 consistency==PASS`；**已实证负路径**（hash 后篡改 artifact → verifier 报 `inventory mismatches: 1` → 不会输出 overall PASS）。
+  - **§8 修复**：`check_field_whitelist` frozen 检查按每个 DTO 类逐一验证（修复原缩进缺陷——旧代码只检查最后一个 cls）；新增 `frozen_per_class` 逐类报告与 all-DTO-frozen 测试。
+  - **§11 语义不变量**：新增 `REPLACEMENT_HISTORY_SEMANTICS` 检查（非仅字段名检查：投影真实日志，验证进行中记录不进入历史、未来完成不泄漏、完成后恰一次进入、全部成员已 completed）。
+- **测试**：`test_h2_p1_firewall_v1.py` **22/22 PASS**（原 16 + T18 ongoing replacement 不入历史 + T19 完成后恰一次进入 + T20 未来完成不泄漏 + AST 负例 + all-DTO-frozen）；checker 8 项检查全 PASS（A / B_FORBIDDEN_ACCESS / B_AST_NEGATIVE_CASES / C / D / E / REPLACEMENT_HISTORY_SEMANTICS / POSTERIOR_STATE_P1_SEAM）。
+- **回归（写入 evidence，真实 command/exit/test-count）**：key_schema 38、Density E2 checker 36、Q3 H1 formal 23、G3 random_des 44 —— 全部 exit 0；**未跑 formal 1400 worlds**。
+- **新证据根** `05_结果/H2/p1/requalification/run_20260816T045451170450Z_89984d8b/`：ACYCLIC hash DAG + manifest/inventory 一致性 + C21 = PASS（fail-closed；C21a/b 状态 = 实际 verification）；checks.json overall = PASS（verification_fail_closed 字段记录真实 verifier 结果）；含 replacement_history_semantic_report / regression_report（真实 command/exit/test-count）。
+- **原 P1 evidence `run_20260816T043411841146Z_3d4c6d46` = HISTORICAL_P1_EXECUTION_WITH_C23_FIREWALL_REVIEW_FINDINGS**（immutable，未修改）。
+- **状态**：**P1-E1 C23 firewall requalification = COMPLETED / AWAITING HUMAN GATE REVIEW**；**P1 FINAL = NOT YET HUMAN-GATE ACCEPTED**；C23 P1-applicable = EXECUTION PASS / AWAITING HUMAN GATE；C23 full end-to-end = **PENDING**；**P2 / P3 = NOT AUTHORIZED**；**C25 = NOT AUTHORIZED**；不提前授权 P2。
+- 范围审计：posterior / lifetime / H2 policy / rollout / tuning / holdout / C25 / Q4 = 全部 **NO**；Density accepted evidence / H1 engine / key_schema / D-01..D-25 / E2 checker runner 未修改；无新随机世界。
+- 状态同步：`CURRENT_STATE.md`（Gate 行、§6 禁止、§7 下一出口）。
+
 ## 2026-08-16 / `STATE-2026-08-13-G2.4` / `Q3-H2 DENSITY = FINAL PASS / ACCEPTED；P1 信息防火墙 = COMPLETED / AWAITING HUMAN GATE REVIEW`
 
 ### 修改

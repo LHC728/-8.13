@@ -155,7 +155,6 @@ class ReplacementObs:
     calibration_end: Fraction
     old_generation: int
     new_generation: int
-    completed: bool
 
 
 @dataclass(frozen=True)
@@ -165,6 +164,11 @@ class ObservableState:
     Exposes ONLY the frozen section-7 whitelist.  No engine/device/
     equipment/log references are retained; every value is an immutable
     primitive, Fraction, or tuple of frozen DTOs with deterministic order.
+    replacement_history contains ONLY already-completed replacement /
+    calibration records (frozen semantics '已完成更换/校准历史'); ongoing
+    replacements are expressed via ResourceObs.status / in_flight_remaining
+    / generation and are NOT in replacement_history until their
+    calibration completes (temporal causality, no future leakage).
     """
     time: Fraction
     active_shift: Optional[tuple[Fraction, Fraction]]
@@ -211,8 +215,7 @@ class ObservableState:
                  "calibration_start": str(rh.calibration_start),
                  "calibration_end": str(rh.calibration_end),
                  "old_generation": rh.old_generation,
-                 "new_generation": rh.new_generation,
-                 "completed": rh.completed} for rh in self.replacement_history],
+                 "new_generation": rh.new_generation} for rh in self.replacement_history],
         }
 
     def fingerprint(self) -> str:
@@ -514,6 +517,12 @@ def project_log_prefix(event_log: list[dict[str, Any]], t: Fraction,
                            status=bay_state.get(bid, "TESTING")))
 
     # -- completed replacement/calibration history (no u / u_key) --
+    # FROZEN semantics ('已完成更换/校准历史'): ONLY replacement/
+    # calibration records whose calibration has COMPLETED at or before t
+    # (a matching EQUIPMENT_CALIBRATION_COMPLETE with calibration_end <= t)
+    # enter the history.  Ongoing replacements are expressed by
+    # ResourceObs.status / in_flight_remaining_h / generation and NEVER
+    # appear here before completion (no future leakage).
     calib_done: set[tuple[str, Fraction]] = set()
     for r in pre:
         if r.get("event_type") == EV_CALIBRATION_COMPLETE:
@@ -522,13 +531,14 @@ def project_log_prefix(event_log: list[dict[str, Any]], t: Fraction,
     for rsrc in RESOURCES:
         for r in repl_records[rsrc]:
             ce = _frac(r["calibration_end"])
+            if (rsrc, ce) not in calib_done:
+                continue  # not yet completed at t -> NOT in completed history
             replacement_history.append(ReplacementObs(
                 resource=rsrc, kind=r.get("kind", ""), trigger=r.get("trigger", ""),
                 calibration_start=_frac(r["calibration_start"]),
                 calibration_end=ce,
                 old_generation=r.get("old_generation", 0),
-                new_generation=r.get("new_generation", 0),
-                completed=(rsrc, ce) in calib_done))
+                new_generation=r.get("new_generation", 0)))
     replacement_history.sort(key=lambda rh: (rh.resource, rh.calibration_start))
 
     return ObservableState(
