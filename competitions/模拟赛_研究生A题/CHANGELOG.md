@@ -17,7 +17,8 @@
 - **成本重新认证（SECOND）**：c_r 现含 per-m world_m 重建 + engine run（旧值不继承）；冻结网格 (4,8)/(8,6)/(8,8)、w_p≤90s、max M 再大 C_eval → 仍选 **(8,8)** → **冻结恢复 M\* = 8、C_eval\* = 8、W_cap\* = 4、P_cap\* = 4**（`cost_requalification_report.json`）。
 - **测试**：requal **145/145** + 回归 **169/169** PASS（合计 314；含 B1-OFFLINE / AGE-LEGAL / PENDING / WORLD-M / DPKEY-dp_diag / RELEASE-GUARD / INFLIGHT / PM-R2 requal）。
 - **Pro-Max 第二轮审查（fresh）**：**PASS_WITH_CAVEAT**，`authority_conflict=false`，A–H 八问全 YES；R1/R2 闭合、R3（P3-C 重跑）执行授权。
-- **阶段状态**：P3-C 重跑（修复后 ALL-eligible B-1 语义）= 待执行（新 root）；**cross-K transfer / h2_holdout / C25 保持 NOT AUTHORIZED**。
+- **P3-C 重跑（第二次重认证语义，新 root `run_20260816T170310179282Z_ea3354ba`）= COMPLETED → H2_NO_EFFECTIVE_DEVIATION → H2 = DELETE（冻结硬门；AUTOPILOT STOP）**：ALL-eligible B-1 样本 **n=100**（wait=50、pm=50、both=18；wait 候选 74、PM 候选 5396；dp_diag per batch）；**agreement_b = 1.0000（100/100）PASS**（CP95 [0.9638, 1.0] 仅披露）；**agreement_c = 1.0000（100/100）PASS**；C23 policy PASS；tests 20/20 + 回归 28/36/38/23/44/26 PASS；**deviation_count = 0 → H2_NO_EFFECTIVE_DEVIATION → H2 = DELETE**（2SE/0.95/样本/动作集未改）；证据 fail-closed probe/confirm/promote/final 验证 PASS；ledger 追加 `P3-C-...ea3354ba` wall=845.0s；**cross-K transfer / h2_holdout / C25 = NOT RUN，保持 NOT AUTHORIZED 直至 Human Gate final Q3 review**；结论：H2 在第二次重认证语义（ALL-eligible B-1、posterior world_m、AGE-LEGAL、PENDING、bay-occupancy 修复）下依然无有效偏离 → DELETE 建议成立 → STOP Human Gate。
+- **阶段状态**：P3-C 重跑（第二次重认证）= **已完成（H2_DELETE）**；**cross-K transfer / h2_holdout / C25 保持 NOT AUTHORIZED 直至 Human Gate final Q3 review**；Density / P1 / P2 / P3-A / P3-B / Q2 / G3 accepted 证据 = UNAFFECTED。
 
 ## 2026-08-16 / `Q3-H2-P3-C 决策语义重新认证`（第一轮，被第二次裁决撤销部分语义）
 
