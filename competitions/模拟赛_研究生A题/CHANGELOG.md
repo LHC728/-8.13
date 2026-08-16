@@ -2,6 +2,14 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-16 / `MATHEMATICAL_MODELING_ROUTER_V2.1.2` — **Human Gate ACCEPTED**
+
+### 修改
+
+- **Human Gate 验收落文（2026-08-16）**：Reviewer Verdict = **PASS**；Human Gate = **ACCEPTED**；Phase A = ACCEPTED（UNCHANGED，`7f670557…`）；Phase B = ACCEPTED；Ending commit = **`193d3722579a60307ad1969502d4e66d1a67e1c1`**；Status = **READY_FOR_GENERAL_MATHEMATICAL_MODELING_AUTOPILOT**。
+- `08_项目管理/模型路由/MATHEMATICAL_MODELING_ROUTER_V2.1.2.md` 状态更新为 **HUMAN_ACCEPTED**；`CURRENT_STATE.md` 同步记录该治理验收。
+- 该验收仅固化路由治理；不改变、不重启任何 Q3/H2/formal 建模工作（保持 STOP 状态）。
+
 ## 2026-08-16 / `MATHEMATICAL_MODELING_ROUTER_V2.1.2`（FINAL HARDENING；V2.1.1 路由门被取代）
 
 ### 修改

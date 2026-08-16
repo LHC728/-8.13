@@ -140,6 +140,8 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
 
 ## 5.1 Q3-H2 实施链（P0 → P2 → P3-A，Human Gate 逐包裁决）
 
+- **路由治理（独立于建模任务）**：**MATHEMATICAL_MODELING_ROUTER_V2.1.2 = HUMAN_ACCEPTED（2026-08-16；Reviewer Verdict PASS；Ending commit `193d3722579a60307ad1969502d4e66d1a67e1c1`；READY_FOR_GENERAL_MATHEMATICAL_MODELING_AUTOPILOT）**——通用数学建模路由权威（V2.1/V2.1.1 历史 superseded；Phase-A PRO-MAX ROUTING V1.0 ACCEPTED 不变）。该治理验收不改变任何建模阶段状态；Q3/H2 工作保持 STOP。
+
 - **P0（H2 key schema bootstrap）= VERIFIED FINAL PASS / ACCEPTED**（Human Gate；P0 关闭；`g3/key_schema_v1.py` 六命名空间 + `h2_future` reserved）。
 - **Q3-H2 Density = FINAL PASS / ACCEPTED**（D-14 A 7/7 + B 7/7；E1 时间因果重建 `a2669aa9`；E2 fragment-aware checker `0713f171`；Density 历史 `4a867e83` immutable）。
 - **Q3-H2-P1（信息防火墙 + C23 P1-applicable）= FINAL PASS / ACCEPTED**（Human Gate 2026-08-16；P1 `db2e894` + P1-E1 `3568010` + P1-E2 `08488e4`；ObservableState/PosteriorState 白名单接口；h2 包零 g3/des import）。
