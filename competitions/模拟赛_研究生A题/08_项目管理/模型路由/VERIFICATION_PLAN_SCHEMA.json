@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VERIFICATION_PLAN_SCHEMA",
+  "description": "MATHEMATICAL_MODELING_ROUTER_V2.1 verification plan (spec 32). The registry selects checks only; thresholds must come from authority (authority_thresholds), never from the registry.",
+  "type": "object",
+  "required": ["router_version", "task_id", "method_families", "risk_dimensions", "claim_under_review", "candidate_checks", "selected_checks", "why_selected", "authority_thresholds", "expected_artifacts"],
+  "properties": {
+    "router_version": {"const": "MMR_V2.1"},
+    "task_id": {"type": "string"},
+    "semantic_issue_id": {"type": ["string", "null"]},
+    "method_families": {"type": "array", "items": {"type": "string"}},
+    "risk_dimensions": {"type": "array", "items": {"type": "string"}},
+    "claim_under_review": {"type": "string"},
+    "candidate_checks": {"type": "array", "items": {"type": "string"}},
+    "selected_checks": {"type": "array", "items": {"type": "string"}},
+    "why_selected": {"type": "string"},
+    "estimated_cost": {"type": "string"},
+    "independence_level": {"type": "string"},
+    "requires_code_execution": {"type": "boolean"},
+    "requires_external_source": {"type": "boolean"},
+    "requires_pro_max": {"type": "boolean"},
+    "authority_thresholds": {"type": "object"},
+    "expected_artifacts": {"type": "array", "items": {"type": "string"}}
+  }
+}

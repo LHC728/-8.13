@@ -1,0 +1,9 @@
+{
+ "SAMPLING-LIVE-001": {
+  "commit_sha": "7f670557f8b6e7787386f10908608eea0327d20e",
+  "contract_hash": "contract-v1",
+  "issue_id": "SAMPLING-LIVE-001",
+  "verdict": "PASS_WITH_CAVEAT",
+  "verified": true
+ }
+}

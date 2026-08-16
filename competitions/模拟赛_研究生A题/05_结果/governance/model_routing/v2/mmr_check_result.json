@@ -1,0 +1,86 @@
+{
+ "checker": "MATHEMATICAL_MODELING_ROUTER_V2.1",
+ "overall": "PASS",
+ "checks": [
+  {
+   "check": "MMR-01",
+   "status": "PASS",
+   "detail": "exact smoke verified=True fidelity=PASS provider=deepseek-pro-max model=deepseek-v4-pro effort=max fresh=True delta=0 head_matches=True"
+  },
+  {
+   "check": "MMR-02",
+   "status": "PASS",
+   "detail": "replay result=PASS wire_artifact=wire_semantic_check.txt commit=7f670557f8b6e7787386f10908608eea0327d20e"
+  },
+  {
+   "check": "MMR-03",
+   "status": "PASS",
+   "detail": "RED without human gate -> HUMAN_GATE_REQUIRED (never formal PASS)"
+  },
+  {
+   "check": "MMR-04",
+   "status": "PASS",
+   "detail": "modeling choice -> YELLOW"
+  },
+  {
+   "check": "MMR-05",
+   "status": "PASS",
+   "detail": "uncertainty -> YELLOW"
+  },
+  {
+   "check": "MMR-06",
+   "status": "PASS",
+   "detail": "no allowlist class -> default YELLOW (cannot prove GREEN); GREEN only from allowlist"
+  },
+  {
+   "check": "MMR-07",
+   "status": "PASS",
+   "detail": "YELLOW without VERIFIED_PRO_MAX -> ROUTING_BLOCKED"
+  },
+  {
+   "check": "MMR-08",
+   "status": "PASS",
+   "detail": "gate never re-routes to Flash/Pro-high; stays BLOCKED"
+  },
+  {
+   "check": "MMR-09",
+   "status": "PASS",
+   "detail": "events: classified=10 reclassified=1 checkpoints seen=['R0', 'R1', 'R2', 'R3', 'R4'] demo_cards=True"
+  },
+  {
+   "check": "MMR-10",
+   "status": "PASS",
+   "detail": "Sentinel RISK_OMISSION on GREEN -> YELLOW (mandatory Pro-Max)"
+  },
+  {
+   "check": "MMR-11",
+   "status": "PASS",
+   "detail": "de-escalating extension rejected=True recorded=True"
+  },
+  {
+   "check": "MMR-12",
+   "status": "PASS",
+   "detail": "route with/without family metadata identical (YELLOW); families=['DISCRETE_EVENT_SIMULATION', 'MONTE_CARLO_STOCHASTIC'] are strategy metadata only"
+  },
+  {
+   "check": "MMR-13",
+   "status": "PASS",
+   "detail": "threshold-bearing check without authority threshold refused"
+  },
+  {
+   "check": "MMR-14",
+   "status": "PASS",
+   "detail": "GENERALIZATION_CHECK status=PASS tokens=12 matches={}"
+  },
+  {
+   "check": "MMR-15",
+   "status": "PASS",
+   "detail": "fresh=True deduped=True contract_changed=True live_issue_recorded_resolved=True"
+  },
+  {
+   "check": "MMR-16",
+   "status": "PASS",
+   "detail": "EXPLORATORY model choice -> YELLOW; FROZEN authority mutation -> RED"
+  }
+ ]
+}

@@ -1,0 +1,15 @@
+REVIEW_PACKET_VERSION: V1.0
+TASK_ID: LIVE-001
+RISK_LEVEL: L3
+ROLE: READ_ONLY_SEMANTIC_REVIEWER
+SEMANTIC_ISSUE_ID: SAMPLING-LIVE-001
+AUTHORITY_FILES: none (authority undefined for this question)
+QUESTION: A repeated-measurement dataset has multiple rows per subject. The bootstrap sampling unit is not defined by the project authority: should resampling draw rows (observations) or subjects (clusters)? Analyse the statistical semantics of each choice (standard error, inference validity, dependence structure), present the trade-off, and state precisely what must be decided before the analysis can proceed. Do not modify any file. Do not invoke another subagent.
+PERMITTED: read-only inspection, reasoning
+FORBIDDEN: file modification, delegation
+EXPECTED_OUTPUT:
+VERDICT: PASS | PASS_WITH_CAVEAT | BLOCKED | HUMAN_GATE_REQUIRED
+FINDINGS:
+AUTHORITY_CONFLICT:
+REQUIRED_ACTION:
+CONFIDENCE:

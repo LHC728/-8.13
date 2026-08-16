@@ -2,6 +2,25 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-16 / `MATHEMATICAL_MODELING_ROUTER_V2.1`（通用数学建模风险路由，Phase B，additive）
+
+### 修改
+
+- **Phase-A carry-forward closure**：
+  - **A1 committed evidence replay**：`check_model_routing_v1.py` 改为读取 committed artifact `wire_semantic_check.txt`（.log 名被 gitignore，不再引用）；从 committed state 重跑 → ROUTE-01..12 + FLASH_NON_REGRESSION 全 PASS；`phase_a_replay_result.json`（commit_sha / checker_path / evidence_root / wire_artifact_name / result / checks）。
+  - **A2 exact Pro-Max smoke**：固定 packet artifact `v2/phase_a_exact_smoke_packet.txt`（TASK_ID=PHASE_A_EXACT_SMOKE、ROLE=READ_ONLY_SMOKE_REVIEWER、双 mandatory clause）。两次 headless coordinator 尝试失败（空 prompt / coordinator 自答 packet，均丢弃）；改用 coordinator-free 通道：in-process 启动 runner-free profile（dsh-base only）+ `ctx.subagents.start('spawn', ...)` 携带 **tool-pro-max-review 实例的完全一致配置**（该 tool 的 execute() 即此路径）→ packet 逐字传输（fidelity=PASS by construction）。child `364c6002-...`：request/header `deepseek-pro-max`/`deepseek-v4-pro`/`reasoningEffort=max`（adapterDefaults），fresh spawn（仅 packet），只使用 read/glob（deny-list 生效），输出 `PRO_MAX_SMOKE_OK` + `HEAD=7f670557...` 与 dispatch 前记录一致，workspace delta=0；`phase_a_exact_smoke_result.json`。
+  - **A3 static ≠ runtime 已落文**：Phase-A ROUTE-08/09/10 仅证明 policy contract + dedicated-route fail-closed；任务层运行时强制由 Phase B 实现（Risk Card / deterministic route / gate / MMR checker）。
+- **Universal Risk Router（`04_代码/governance/model_routing_v2/`，stdlib-only）**：R1..R10 风险维度；Risk Card V2.1（schema 见 `08_项目管理/模型路由/ROUTING_RISK_CARD_SCHEMA.json`）；确定性路由引擎 `compute_model_route_v2_1`（RED=frozen/accepted authority mutation；语义风险→YELLOW；uncertainty/interpretation/ambiguity→YELLOW；engineering escalation S1-S7；GREEN 仅 16 项白名单；默认 YELLOW——无法证明 GREEN）；R0-R4 动态重分类；`route_gate_v2_1` fail-closed（YELLOW 无 VERIFIED_PRO_MAX → ROUTING_BLOCKED，禁止 fallback；RED 无 Human Gate → HUMAN_GATE_REQUIRED）；semantic issue dedup（contract hash + re-review 条件）。
+- **Route Sentinel V1**：CLASSIFICATION_AUDITOR_ONLY（Flash 低成本）；AGREE_*/RISK_OMISSION/ROUTE_TOO_LOW；分歧自动升级 YELLOW → mandatory Pro-Max，Flash 不得否决；触发 A-E。
+- **Method Family Registry V1.0**（16 族 multi-label，HYBRID_OTHER 兜底；family 不进入路由引擎——结构性隔离）+ **Verification Strategy Registry V1.0**（分族优先武器 + 11 项 Universal Baseline；`build_verification_plan` 对 threshold-bearing check 缺 authority 阈值即拒绝——注册表永不发明阈值）。
+- **Project Extension 层**：仅保持/升级风险；YELLOW→GREEN、RED→YELLOW 一律 REJECTED（`ExtensionRejected`）；**Generalization Guard**：Universal Core 8 个源文件扫描 12 个项目专属 token（`data/project_specific_tokens.json`），`GENERALIZATION_CHECK` = PASS（0 matches）；**MODEL_ROUTING_MISS_REGISTRY.json**（6 条抽象 pattern，UNIVERSAL scope）。
+- **测试**：跨域合成 T01–T26（26/26，含 T17 EXPLORATORY→YELLOW not RED、T18/T19 FROZEN/HUMAN_ACCEPTED→RED、T20 GREEN→YELLOW 重分类、T24/T25 Sentinel、T26 extension 拒绝）+ verification-family 测试 + 负例（YELLOW+Pro-Max 不可用→ROUTING_BLOCKED）+ dedup + generalization = **47/47 PASS**。
+- **§40 live integration（唯一一次真实 Pro-Max 集成）**：LIVE-001（bootstrap sampling unit row vs subject，authority 未定义）→ Risk Card `statistical_inference=true, multiple_plausible_interpretations=true` → YELLOW → 真实 dispatch → child `29c42845-...` header `deepseek-pro-max`/`deepseek-v4-pro`/`reasoningEffort=max`、fresh、只读工具（glob/grep/read，926 reasoning chunks）、VERDICT=BLOCKED（决策层冻结前不得继续——语义正确、非项目答案）；`v2/live_integration/`（routing_risk_card / verification_plan / dispatch / request_header / review / verification）。
+- **路由事件与指标**：`v2/routing_events.jsonl`（TASK_CLASSIFIED/TASK_RECLASSIFIED/SENTINEL_REVIEW/PRO_MAX_REQUIRED/PRO_MAX_DISPATCHED/PRO_MAX_VERIFIED/ROUTING_BLOCKED/HUMAN_GATE_REQUIRED 等 19 事件）；`v2/metrics.json`（10 tasks：2 GREEN / 7 YELLOW / 1 RED；1 sentinel review；1 GREEN→YELLOW upgrade；2 VERIFIED_PRO_MAX；1 dedup 避免；1 block；1 human-gate miss；不设占比目标）。
+- **Router checker `check_mathematical_modeling_router_v2_1.py`：MMR-01..16 = 16/16 PASS**（关键 Gate 全部来自真实 artifact/计算：exact smoke / replay / RED gate / YELLOW gate / allowlist / R0-R4 事件 / sentinel 升级 / extension 拒绝 / family 不影响 route / 阈值纪律 / generalization / dedup / authority-state）。
+- **文档**：`08_项目管理/模型路由/`（MATHEMATICAL_MODELING_ROUTER_V2.1.md、METHOD_FAMILY_REGISTRY_V1.0.md、VERIFICATION_STRATEGY_REGISTRY_V1.0.md、PROJECT_ROUTING_EXTENSION_SCHEMA.md、ROUTING_RISK_CARD_SCHEMA.json、VERIFICATION_PLAN_SCHEMA.json、MODEL_ROUTING_MISS_REGISTRY.json、ROUTE_SENTINEL_V1.md）；`AGENTS.md` 增加 V2.1 authority 短规则；Phase-A 文档未覆盖。
+- **约束**：Phase-A route/tool/config 零修改（只读调用）；Harness core 零修改；模型/数学/formal evidence/C25 零触碰；未重跑 Q3 正式模拟、未做 H2 tuning/transfer/holdout/C25/Q4。
+
 ## 2026-08-16 / `MODEL_ROUTING_PRO_MAX_V1.0`（Pro-Max 独立 reviewer 通道，additive）
 
 ### 修改

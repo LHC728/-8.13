@@ -1,0 +1,17 @@
+{
+  "purpose": "GENERALIZATION_CHECK token list (spec 34): project-specific frozen symbols that must NEVER appear in the Universal Core source. The Universal Core is generic; these tokens may only live in project extensions or the regression corpus.",
+  "project_specific_tokens": [
+    "H1",
+    "H2",
+    "C23",
+    "C25",
+    "U_X",
+    "U_D",
+    "U_Y",
+    "U_L",
+    "NO_PM_BEFORE_MANDATORY",
+    "tau_pm",
+    "F120",
+    "F240"
+  ]
+}

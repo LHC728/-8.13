@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ROUTING_RISK_CARD_SCHEMA",
+  "description": "MATHEMATICAL_MODELING_ROUTER_V2.1 risk card (spec 10). Every substantive task produces one card; risk_evidence must justify every flagged dimension.",
+  "type": "object",
+  "required": ["router_version", "task_id", "stage", "authority_state", "formal_scope", "risk", "risk_evidence", "computed_route", "route_reason"],
+  "properties": {
+    "router_version": {"const": "MMR_V2.1"},
+    "task_id": {"type": "string"},
+    "semantic_issue_id": {"type": ["string", "null"]},
+    "stage": {"enum": ["PROBLEM_UNDERSTANDING", "DATA_UNDERSTANDING", "EXPLORATORY_MODELING", "ASSUMPTION_DESIGN", "FORMULATION", "IMPLEMENTATION", "CALIBRATION", "VALIDATION", "FORMAL_EVALUATION", "RECOMMENDATION", "WRITING", "GOVERNANCE"]},
+    "authority_state": {"enum": ["EXPLORATORY", "PROPOSED", "FROZEN", "HUMAN_ACCEPTED"]},
+    "formal_scope": {"type": "boolean"},
+    "checkpoint": {"enum": ["R0", "R1", "R2", "R3", "R4"]},
+    "risk": {
+      "type": "object",
+      "properties": {
+        "problem_semantics": {"type": "boolean"},
+        "modeling_assumption": {"type": "boolean"},
+        "mathematical_formulation": {"type": "boolean"},
+        "data_semantics": {"type": "boolean"},
+        "statistical_inference": {"type": "boolean"},
+        "algorithmic_semantics": {"type": "boolean"},
+        "numerical_method": {"type": "boolean"},
+        "validation_interpretation": {"type": "boolean"},
+        "formal_result_impact": {"type": "boolean"},
+        "governance_authority": {"type": "boolean"}
+      }
+    },
+    "multiple_plausible_interpretations": {"type": "boolean"},
+    "authority_ambiguity": {"type": "boolean"},
+    "uncertainty_present": {"type": "boolean"},
+    "frozen_mechanical_execution": {"type": "boolean"},
+    "engineering_signals": {
+      "type": "object",
+      "properties": {
+        "new_complex_seam": {"type": "boolean"},
+        "repeat_failure_count": {"type": "integer", "minimum": 0},
+        "checker_disagreement": {"type": "boolean"},
+        "checker_independence_concern": {"type": "boolean"},
+        "claimed_coverage_not_exercised": {"type": "boolean"},
+        "unexpected_behavior_after_pass": {"type": "boolean"},
+        "formal_numeric_shift": {"type": "boolean"}
+      }
+    },
+    "green_allowlist_class": {"type": ["string", "null"]},
+    "risk_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["dimension", "evidence"],
+        "properties": {
+          "dimension": {"type": "string"},
+          "evidence": {"type": "string"}
+        }
+      }
+    },
+    "computed_route": {"enum": ["GREEN", "YELLOW", "RED", null]},
+    "route_reason": {"type": "array", "items": {"type": "string"}}
+  }
+}

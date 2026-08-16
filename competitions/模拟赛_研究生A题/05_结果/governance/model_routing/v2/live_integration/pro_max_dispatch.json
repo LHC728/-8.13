@@ -1,0 +1,8 @@
+{
+ "dispatch": "PRO_MAX_DISPATCH",
+ "task_id": "LIVE-001",
+ "semantic_issue_id": "SAMPLING-LIVE-001",
+ "channel": "ctx.subagents.start('spawn') with tool-pro-max-review configuration (coordinator-free)",
+ "child_run_id": "29c42845-acb1-4513-9b57-91f5f6d4f27d",
+ "stop_reason": "completed"
+}

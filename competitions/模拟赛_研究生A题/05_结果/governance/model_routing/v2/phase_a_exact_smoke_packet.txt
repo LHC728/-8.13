@@ -1,0 +1,16 @@
+REVIEW_PACKET_VERSION: V1.0
+TASK_ID: PHASE_A_EXACT_SMOKE
+RISK_LEVEL: L3
+ROLE: READ_ONLY_SMOKE_REVIEWER
+CURRENT_COMMIT: (determine it yourself by reading the repository)
+AUTHORITY_FILES: none
+RELEVANT_SOURCE: none
+RELEVANT_EVIDENCE: none
+INSTRUCTION:
+1. Read the current Git HEAD.
+2. Do not modify any file.
+3. Do not invoke another subagent.
+4. Final answer MUST be exactly two lines:
+PRO_MAX_SMOKE_OK
+HEAD=<40-char git sha>
+REPOSITORY: C:\Users\观后感h\Documents\了解ai是否会在中间计算出错，并思考解决方法\competitions\模拟赛_研究生A题

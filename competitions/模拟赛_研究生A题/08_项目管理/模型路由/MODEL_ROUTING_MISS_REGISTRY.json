@@ -1,0 +1,79 @@
+{
+  "registry": "MODEL_ROUTING_MISS_REGISTRY",
+  "version": "V1.0",
+  "note": "Routing-miss lessons. Only cross-contest failure patterns may be promoted to the Universal rule set (scope=UNIVERSAL); contest-specific experience stays PROJECT_SPECIFIC and may only feed a PROJECT_ROUTING_EXTENSION. Entries are abstract patterns, never contest answers (spec 35/36).",
+  "entries": [
+    {
+      "miss_id": "M-001",
+      "date": "2026-08-16",
+      "domain": "simulation",
+      "original_route": "GREEN",
+      "correct_route": "YELLOW",
+      "universal_risk_dimension": "algorithmic_semantics",
+      "failure_pattern": "same-timestamp event ordering assumed instead of defined",
+      "new_general_rule": "undefined simultaneous-event ordering is an algorithmic-semantics risk -> YELLOW",
+      "scope": "UNIVERSAL",
+      "status": "ACTIVE"
+    },
+    {
+      "miss_id": "M-002",
+      "date": "2026-08-16",
+      "domain": "statistics",
+      "original_route": "GREEN",
+      "correct_route": "YELLOW",
+      "universal_risk_dimension": "statistical_inference",
+      "failure_pattern": "sampling unit / split scheme assumed (row vs subject, random vs temporal)",
+      "new_general_rule": "any sampling-unit or train/test split choice not frozen by authority is a statistical-inference risk -> YELLOW",
+      "scope": "UNIVERSAL",
+      "status": "ACTIVE"
+    },
+    {
+      "miss_id": "M-003",
+      "date": "2026-08-16",
+      "domain": "probability",
+      "original_route": "YELLOW",
+      "correct_route": "YELLOW",
+      "universal_risk_dimension": "statistical_inference",
+      "failure_pattern": "prior draw used where a conditional posterior draw was required",
+      "new_general_rule": "prior-vs-conditional probability semantics: when the conditioning state exists, the draw must be conditional; any ambiguity is a statistical risk",
+      "scope": "UNIVERSAL",
+      "status": "ACTIVE"
+    },
+    {
+      "miss_id": "M-004",
+      "date": "2026-08-16",
+      "domain": "numerics",
+      "original_route": "YELLOW",
+      "correct_route": "YELLOW",
+      "universal_risk_dimension": "numerical_method",
+      "failure_pattern": "residual-vs-absolute time/age coordinate mismatch between two modules",
+      "new_general_rule": "coordinate-system mismatches across modules are a numerical-method risk; a unit/coordinate consistency check belongs in the verification plan",
+      "scope": "UNIVERSAL",
+      "status": "ACTIVE"
+    },
+    {
+      "miss_id": "M-005",
+      "date": "2026-08-16",
+      "domain": "verification",
+      "original_route": "GREEN",
+      "correct_route": "YELLOW",
+      "universal_risk_dimension": "validation_interpretation",
+      "failure_pattern": "claimed test coverage was not actually exercised by the executed checker",
+      "new_general_rule": "claimed coverage that is not exercised is a validation-interpretation risk (S5) -> YELLOW under formal scope",
+      "scope": "UNIVERSAL",
+      "status": "ACTIVE"
+    },
+    {
+      "miss_id": "M-006",
+      "date": "2026-08-16",
+      "domain": "simulation",
+      "original_route": "GREEN",
+      "correct_route": "YELLOW",
+      "universal_risk_dimension": "algorithmic_semantics",
+      "failure_pattern": "event/state identity ambiguity (which concrete in-flight entity an event refers to)",
+      "new_general_rule": "event/state identity ambiguity is an algorithmic-semantics risk -> YELLOW",
+      "scope": "UNIVERSAL",
+      "status": "ACTIVE"
+    }
+  ]
+}

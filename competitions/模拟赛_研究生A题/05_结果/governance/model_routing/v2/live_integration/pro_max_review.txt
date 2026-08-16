@@ -1,0 +1,61 @@
+Read-only verification is complete. I inspected the packet (`05_结果/governance/model_routing/v2/live_integration_packet.txt`), the authority files (`CURRENT_STATE.md`, `01_审计/问题契约.md`, `01_审计/检查注册表_V3.1.md`), and the project's routing governance (`MODEL_ROUTING_MISS_REGISTRY.json`, `test_cross_domain_v2_1.py`). No file was modified and no subagent was invoked, as required. The review follows.
+
+---
+
+VERDICT: BLOCKED
+
+FINDINGS:
+
+**1. What the two choices mean semantically.** For N subjects with mᵢ rows each (M = Σmᵢ rows total) and within-subject correlation ρ (ICC), the resampling unit is a statement about which objects are exchangeable — i.e., a model of the data-generating process (DGP), not an implementation detail. The actual DGP of repeated-measurements data is two-stage: subjects are the primary sampling units; rows are conditionally dependent within subjects.
+
+**2. Row-level (observation-level) resampling — semantics.**
+- Mechanism: M rows drawn i.i.d. with replacement from the M observed rows; subject labels kept but not respected as blocks; block sizes in each resample become multinomial noise.
+- Dependence structure: the bootstrap world's DGP is "rows are independent draws from a single row superpopulation". Within-subject dependence (exchangeable or serial/AR) is therefore *destroyed at the resampling boundary*: it survives only marginally in the empirical row distribution, not in the induced sampling variability.
+- Standard error: for the mean, bootstrap variance targets σ²_row/M (the i.i.d. variance). Under clustering the true variance is σ²_row/M × (1 + (m̄−1)ρ) (design effect DEFF). With ρ > 0 the row bootstrap underestimates the SE by ≈ √DEFF → CIs too narrow, p-values and Type I error anti-conservative, false precision.
+- Inference validity: valid only when rows are (essentially) independent, i.e., only when subject identity carries no dependence — which contradicts the repeated-measures design. Even the ρ=0 case is a modeling claim that would itself have to be frozen and defended, not assumed.
+- Secondary defect: it silently reweights subjects by their observed row counts, so subject-level statistics (e.g., mean of subject means) are biased toward high-mᵢ subjects.
+
+**3. Subject-level (cluster) resampling — semantics.**
+- Mechanism: N subjects drawn with replacement; each drawn subject's full row block kept intact; total rows vary per resample.
+- Dependence structure: preserves the actual two-stage DGP by construction — blocks are never split, so any within-subject covariance form (exchangeable, serial, heteroscedastic) is carried into every resample.
+- Standard error: reflects between-subject variability; the bootstrap SE of the size-weighted mean approximates the cluster-robust (sandwich) SE as N→∞; effective sample size is N, not M.
+- Inference validity: the correct level for inference about a population of subjects; consistent under cluster exchangeability for large N.
+- Caveats: (i) small N → coarse resample support (≈2^N distinct draws), percentile CIs unreliable → fallbacks: cluster-robust SE with CR2/CR3 small-sample corrections, wild cluster bootstrap, or cluster-respecting permutation tests; (ii) unbalanced mᵢ and row-level estimands need an explicit weighting rule; (iii) if rows are themselves a within-subject subsample, a two-stage bootstrap (resample subjects, then rows within subject) is the fuller mimicry; (iv) the number of clusters resampled (fixed N, or other) must be frozen.
+
+**4. Trade-off.**
+
+| Dimension | Row resampling | Subject (cluster) resampling |
+|---|---|---|
+| Exchangeability assumed | rows i.i.d. | subjects i.i.d., rows conditionally dependent |
+| Within-subject dependence | broken at resampling boundary | preserved by construction |
+| SE when ρ > 0 | underestimated ≈ √(1+(m̄−1)ρ) | consistent with cluster-robust SE |
+| Inference validity | invalid under clustering; anti-conservative | valid for large N; small-N corrections needed |
+| Effective sample size | M (illusory) | N (correct level) |
+| Estimand compatibility | row-level targets only | subject-level and (with weighting rules) row-level |
+| Implementation | no cluster IDs needed | needs cluster IDs + block/weight rules |
+
+**5. What must be decided before the analysis can proceed** (decision-layer items, none of which a reviewer or implementer may default):
+- **D1 — Estimand:** population of subjects vs population of observations; the corresponding statistic (mean of subject means vs size-weighted overall mean). The unit must follow the estimand, not vice versa.
+- **D2 — Resampling unit:** subject (cluster) vs row, formally frozen. Statistically, subject-level is the only choice consistent with the repeated-measures dependence unless D1 explicitly redefines the target as an independent-row superpopulation (an extraordinary ρ=0 claim requiring justification). If treatment varies at row level (e.g., crossover design), the experimental unit must additionally be checked — the generic rule cannot be assumed to transfer.
+- **D3 — Bootstrap mechanics:** cluster count per resample, block handling, unbalanced-mᵢ weighting, B, seed/namespace policy, CI type (percentile/BCa/t-based), and whether the bootstrap SE must be cross-checked against a cluster-robust analytic SE.
+- **D4 — Model alignment:** the chosen unit must be consistent with the primary model's dependence assumptions (mixed-effects / GEE with cluster-robust SE); no silent mismatch between model SE and bootstrap SE.
+- **D5 — Small-N policy:** threshold on N below which plain cluster bootstrap is disallowed (CR2/CR3, wild cluster bootstrap, or permutation instead).
+- **D6 — Governance landing:** D1–D5 frozen in the authority files (问题契约 / CURRENT_STATE / CHANGELOG, per the workspace change discipline) with decision-layer + team confirmation, before any implementation or result generation; thereafter bound to run config/manifest. Chat or review text is input evidence, not authority.
+
+AUTHORITY_CONFLICT:
+- **Gap, not contradiction — packet premise verified by read-only inspection.** No authority file defines a row-vs-subject sampling unit for a repeated-measurement dataset. The frozen resampling definitions that do exist apply to different data structures and do not transfer: Q2/Q3 formal packages freeze `resampling_unit: "一个完整 100-device 批次"` (batch-level paired bootstrap over DES batches), and `Q3_H2_BOOTSTRAP_SPEC_DRAFT.md` (FINAL_FREEZE_ACCEPTED) freezes H2 posterior/lifetime resampling — neither is a rows-per-subject longitudinal structure. Reusing them for this question would be an invalid analogy.
+- **The project's own routing governance independently classifies this exact situation as governed, not ignorable:** `MODEL_ROUTING_MISS_REGISTRY.json` M-002 (UNIVERSAL, ACTIVE): "sampling unit / split scheme assumed (row vs subject…)" → "any sampling-unit … choice not frozen by authority is a statistical-inference risk -> YELLOW"; router test `test_t07_bootstrap_row_vs_subject_yellow` asserts YELLOW for "sampling unit choice is not frozen". This review is that YELLOW fresh-D read-only review.
+- Workspace core rules triggered: 核心原则 3 (undefined rule → stop and report, no silent default), 核心原则 4 (决策任务 owns 实验设计), 变更纪律 (design decisions land in 问题契约/当前状态/变更日志 with 决策层与队伍确认), 运行前必须有冻结任务包.
+
+REQUIRED_ACTION:
+1. Hold all bootstrap implementation and any SE/CI/result generation for this repeated-measurement dataset.
+2. Escalate `SAMPLING-LIVE-001` to the decision layer with the D1–D6 decision list; decision layer freezes the choices into `01_审计/问题契约.md` (+ `CURRENT_STATE.md`/`CHANGELOG.md` per change discipline) with team confirmation.
+3. Decision aid offered to the decision layer (not a silent default): for repeated-measures data, subject-level (cluster) resampling is the only choice consistent with the dependence structure; row-level resampling is admissible only if D1/D2 explicitly freeze an independent-rows estimand and the ρ=0 justification is recorded. With small N subjects, D5 must force CR2/CR3 or wild cluster bootstrap instead of plain percentile intervals.
+4. After freezing: bind the unit to the run manifest/config and enforce D4 consistency between primary-model SE and bootstrap SE.
+5. Escalation condition: if the decision layer cannot resolve the choice, or classifies its impact on SE magnitude and inference validity (结论强度) as RED, escalate to Human Gate. Per the project's own M-002, the default path is YELLOW decision-layer freezing, not Human Gate.
+
+CONFIDENCE: HIGH
+
+---
+
+Review-execution note for the delegating agent: this review was performed in-session on the pro-max route (reasoning=max) with read-only workspace inspection only; zero file modifications, zero subagent spawns (delegation was forbidden by the packet). Runtime model identity cannot be mechanically self-verified from inside this session; the parent owns any `VERIFIED_PRO_MAX` routing-evidence bookkeeping per `MODEL_ROUTING_PRO_MAX_V1.0`.

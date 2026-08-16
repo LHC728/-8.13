@@ -1,0 +1,79 @@
+{
+ "report": "PHASE_A_REPLAY_RESULT",
+ "router_version": "MMR_V2.1",
+ "date": "2026-08-16T12:08:00.052767Z",
+ "commit_sha": "7f670557f8b6e7787386f10908608eea0327d20e",
+ "checker_path": "05_结果\\governance\\model_routing\\tools\\check_model_routing_v1.py",
+ "evidence_root": "05_结果\\governance\\model_routing",
+ "wire_artifact_name": "wire_semantic_check.txt",
+ "checker_exit_code": 0,
+ "result": "PASS",
+ "checks": [
+  {
+   "route": "ROUTE-01",
+   "status": "PASS",
+   "detail": "GREEN class (tests/formatting/evidence packaging/hash/path repair/simple imports/mechanical implementation under clear spec) is defined not to require Pro-Max (MODEL_ROUTING_PRO_MAX_V1.0 §14)"
+  },
+  {
+   "route": "ROUTE-02",
+   "status": "PASS",
+   "detail": "required=PRO_MAX actual=PRO_MAX"
+  },
+  {
+   "route": "ROUTE-03",
+   "status": "PASS",
+   "detail": "provider=deepseek-pro-max model=deepseek-v4-pro"
+  },
+  {
+   "route": "ROUTE-04",
+   "status": "PASS",
+   "detail": "reasoning_effort=max"
+  },
+  {
+   "route": "ROUTE-05",
+   "status": "PASS",
+   "detail": "tool=pro_max_review"
+  },
+  {
+   "route": "ROUTE-06",
+   "status": "PASS",
+   "detail": "fresh_spawn=True"
+  },
+  {
+   "route": "ROUTE-07",
+   "status": "PASS",
+   "detail": "verified=True delta=0"
+  },
+  {
+   "route": "ROUTE-08",
+   "status": "PASS",
+   "detail": "GREEN-class task classification is recorded per task in routing_decision.json; a GREEN task carries no Pro-Max requirement"
+  },
+  {
+   "route": "ROUTE-09",
+   "status": "PASS",
+   "detail": "L3/L4 without VERIFIED_PRO_MAX -> BLOCKED (no fallback to Flash or silent Pro/high); enforced by this checker + MODEL_ROUTING_PRO_MAX_V1.0"
+  },
+  {
+   "route": "ROUTE-10",
+   "status": "PASS",
+   "detail": "No fallback path exists in the tool instance: pro_max_review binds provider deepseek-pro-max statically; a failing route surfaces as an errored tool result, never a Flash/Pro-high rerun"
+  },
+  {
+   "route": "ROUTE-11",
+   "status": "PASS",
+   "detail": "workspace_delta=0 baseline=2 pre-existing untracked lines (governance evidence dir + design doc staging) recorded in workspace_before.txt"
+  },
+  {
+   "route": "ROUTE-12",
+   "status": "PASS",
+   "detail": "wire_semantic_check ALL PASS=True T1..T5=True/True/True/True/True"
+  },
+  {
+   "route": "FLASH_NON_REGRESSION",
+   "status": "PASS",
+   "detail": "new rows present: 2; pre-existing rows byte-stable"
+  }
+ ],
+ "note": "checker reads the committed artifact wire_semantic_check.txt (git-ignored .log name no longer referenced); no working-tree-only file is used to manufacture PASS."
+}

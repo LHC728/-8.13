@@ -81,7 +81,11 @@ def main(argv: list[str]) -> int:
         add("ROUTE-11", False, "missing routing_verification.json")
 
     # ---- ROUTE-12: wire serialization/dispatch max verified ----
-    wire_log = root / "wire_semantic_check.log"
+    # PHASE-B/A1: the committed evidence artifact is wire_semantic_check.txt
+    # (the .log name is git-ignored); the checker reads the actual committed
+    # artifact so a replay from the committed tree never fabricates a PASS
+    # from a working-tree-only file.
+    wire_log = root / "wire_semantic_check.txt"
     if wire_log.is_file():
         text = wire_log.read_text(encoding="utf-8")
         all_pass = "WIRE_SEMANTIC_CHECK: ALL PASS" in text
@@ -93,7 +97,7 @@ def main(argv: list[str]) -> int:
         add("ROUTE-12", all_pass and t1 and t2 and t3 and t4 and t5,
             f"wire_semantic_check ALL PASS={all_pass} T1..T5={t1}/{t2}/{t3}/{t4}/{t5}")
     else:
-        add("ROUTE-12", False, "missing wire_semantic_check.log")
+        add("ROUTE-12", False, "missing wire_semantic_check.txt")
 
     # ---- Flash non-regression: composition diff ----
     before = root / "composition_before.yml"

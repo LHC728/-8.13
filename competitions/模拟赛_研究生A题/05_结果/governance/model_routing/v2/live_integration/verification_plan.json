@@ -1,0 +1,46 @@
+{
+ "authority_thresholds": {},
+ "candidate_checks": [
+  "probability_sum_check",
+  "distribution_moments",
+  "sampling_unit_audit",
+  "denominator_audit",
+  "bootstrap_vs_analytic_comparison",
+  "monte_carlo_sanity",
+  "exact_small_domain_enumeration",
+  "monte_carlo_convergence",
+  "variance_audit",
+  "seed_reproducibility",
+  "random_stream_audit",
+  "paired_comparison",
+  "deterministic_toy_world"
+ ],
+ "claim_under_review": "bootstrap standard error depends on the sampling unit",
+ "estimated_cost": "low",
+ "expected_artifacts": [
+  "evidence/LIVE-001/sampling_unit_audit.json",
+  "evidence/LIVE-001/denominator_audit.json",
+  "evidence/LIVE-001/bootstrap_vs_analytic_comparison.json"
+ ],
+ "independence_level": "independent",
+ "method_families": [
+  "PROBABILITY_STATISTICS",
+  "MONTE_CARLO_STOCHASTIC"
+ ],
+ "requires_code_execution": true,
+ "requires_external_source": false,
+ "requires_pro_max": false,
+ "risk_dimensions": [
+  "statistical_inference",
+  "formal_result_impact"
+ ],
+ "router_version": "MMR_V2.1",
+ "selected_checks": [
+  "sampling_unit_audit",
+  "denominator_audit",
+  "bootstrap_vs_analytic_comparison"
+ ],
+ "semantic_issue_id": "SAMPLING-LIVE-001",
+ "task_id": "LIVE-001",
+ "why_selected": "highest error-detection value at lowest cost, matched to the flagged risk dimensions"
+}

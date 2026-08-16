@@ -1,0 +1,17 @@
+{
+ "verification": "PRO_MAX_VERIFICATION",
+ "task_id": "LIVE-001",
+ "risk_level": "L3",
+ "required_executor": "PRO_MAX",
+ "actual_executor": "PRO_MAX",
+ "tool_name": "pro_max_review",
+ "child_run_id": "29c42845-acb1-4513-9b57-91f5f6d4f27d",
+ "fresh_spawn": true,
+ "provider": "deepseek-pro-max",
+ "model": "deepseek-v4-pro",
+ "reasoning_effort": "max",
+ "verdict": "BLOCKED (decision-layer escalation; not a project answer)",
+ "workspace_delta": 0,
+ "verified": true,
+ "note": "runtime enforcement of a YELLOW route verified end-to-end"
+}

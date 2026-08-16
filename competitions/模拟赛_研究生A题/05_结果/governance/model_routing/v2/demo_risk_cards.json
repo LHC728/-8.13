@@ -1,0 +1,497 @@
+{
+ "task_id": "DEMO-SEQUENCE",
+ "cards": [
+  {
+   "task_id": "D2",
+   "semantic_issue_id": null,
+   "stage": "IMPLEMENTATION",
+   "authority_state": "FROZEN",
+   "formal_scope": true,
+   "risk": {
+    "problem_semantics": false,
+    "modeling_assumption": false,
+    "mathematical_formulation": false,
+    "data_semantics": false,
+    "statistical_inference": false,
+    "algorithmic_semantics": false,
+    "numerical_method": false,
+    "validation_interpretation": false,
+    "formal_result_impact": false,
+    "governance_authority": false
+   },
+   "multiple_plausible_interpretations": false,
+   "authority_ambiguity": false,
+   "uncertainty_present": false,
+   "frozen_mechanical_execution": true,
+   "engineering_signals": {
+    "new_complex_seam": false,
+    "repeat_failure_count": 0,
+    "checker_disagreement": false,
+    "checker_independence_concern": false,
+    "claimed_coverage_not_exercised": false,
+    "unexpected_behavior_after_pass": false,
+    "formal_numeric_shift": false
+   },
+   "green_allowlist_class": "TYPO_FIX",
+   "risk_evidence": [
+    {
+     "dimension": "none",
+     "evidence": "path typo fix under frozen spec"
+    }
+   ],
+   "computed_route": "GREEN",
+   "route_reason": [
+    "green allowlist class TYPO_FIX"
+   ],
+   "checkpoint": "R0",
+   "router_version": "MMR_V2.1",
+   "task_description": "fix a file path typo in a runner script",
+   "method_families": [
+    "HYBRID_OTHER"
+   ]
+  },
+  {
+   "task_id": "D2",
+   "semantic_issue_id": null,
+   "stage": "IMPLEMENTATION",
+   "authority_state": "FROZEN",
+   "formal_scope": true,
+   "risk": {
+    "data_semantics": true,
+    "problem_semantics": false,
+    "modeling_assumption": false,
+    "mathematical_formulation": false,
+    "statistical_inference": false,
+    "algorithmic_semantics": false,
+    "numerical_method": false,
+    "validation_interpretation": false,
+    "formal_result_impact": false,
+    "governance_authority": false
+   },
+   "multiple_plausible_interpretations": false,
+   "authority_ambiguity": false,
+   "uncertainty_present": false,
+   "frozen_mechanical_execution": false,
+   "engineering_signals": {
+    "new_complex_seam": false,
+    "repeat_failure_count": 0,
+    "checker_disagreement": false,
+    "checker_independence_concern": false,
+    "claimed_coverage_not_exercised": false,
+    "unexpected_behavior_after_pass": false,
+    "formal_numeric_shift": false
+   },
+   "green_allowlist_class": null,
+   "risk_evidence": [
+    {
+     "dimension": "data_semantics",
+     "evidence": "two fields carry different statistical units"
+    }
+   ],
+   "computed_route": "YELLOW",
+   "route_reason": [
+    "semantic risk present (data_semantics) and not frozen_mechanical_execution"
+   ],
+   "checkpoint": "R1",
+   "router_version": "MMR_V2.1"
+  },
+  {
+   "task_id": "D2",
+   "semantic_issue_id": null,
+   "stage": "FORMULATION",
+   "authority_state": "FROZEN",
+   "formal_scope": true,
+   "risk": {
+    "data_semantics": true,
+    "problem_semantics": false,
+    "modeling_assumption": false,
+    "mathematical_formulation": false,
+    "statistical_inference": false,
+    "algorithmic_semantics": false,
+    "numerical_method": false,
+    "validation_interpretation": false,
+    "formal_result_impact": false,
+    "governance_authority": false
+   },
+   "multiple_plausible_interpretations": false,
+   "authority_ambiguity": false,
+   "uncertainty_present": false,
+   "frozen_mechanical_execution": false,
+   "engineering_signals": {
+    "new_complex_seam": false,
+    "repeat_failure_count": 0,
+    "checker_disagreement": false,
+    "checker_independence_concern": false,
+    "claimed_coverage_not_exercised": false,
+    "unexpected_behavior_after_pass": false,
+    "formal_numeric_shift": false
+   },
+   "green_allowlist_class": null,
+   "risk_evidence": [
+    {
+     "dimension": "data_semantics",
+     "evidence": "unit semantics must be decided before the patch"
+    }
+   ],
+   "computed_route": "YELLOW",
+   "route_reason": [
+    "semantic risk present (data_semantics) and not frozen_mechanical_execution"
+   ],
+   "checkpoint": "R2",
+   "router_version": "MMR_V2.1",
+   "task_description": "semantic-affecting patch preparation",
+   "method_families": [
+    "HYBRID_OTHER"
+   ]
+  },
+  {
+   "task_id": "D2",
+   "semantic_issue_id": null,
+   "stage": "VALIDATION",
+   "authority_state": "FROZEN",
+   "formal_scope": true,
+   "risk": {
+    "data_semantics": true,
+    "problem_semantics": false,
+    "modeling_assumption": false,
+    "mathematical_formulation": false,
+    "statistical_inference": false,
+    "algorithmic_semantics": false,
+    "numerical_method": false,
+    "validation_interpretation": false,
+    "formal_result_impact": false,
+    "governance_authority": false
+   },
+   "multiple_plausible_interpretations": false,
+   "authority_ambiguity": false,
+   "uncertainty_present": false,
+   "frozen_mechanical_execution": false,
+   "engineering_signals": {
+    "new_complex_seam": false,
+    "repeat_failure_count": 0,
+    "checker_disagreement": false,
+    "checker_independence_concern": false,
+    "claimed_coverage_not_exercised": false,
+    "unexpected_behavior_after_pass": false,
+    "formal_numeric_shift": false
+   },
+   "green_allowlist_class": null,
+   "risk_evidence": [
+    {
+     "dimension": "data_semantics",
+     "evidence": "post-patch verification pending"
+    }
+   ],
+   "computed_route": "YELLOW",
+   "route_reason": [
+    "semantic risk present (data_semantics) and not frozen_mechanical_execution"
+   ],
+   "checkpoint": "R3",
+   "router_version": "MMR_V2.1",
+   "task_description": "post-patch verification",
+   "method_families": [
+    "HYBRID_OTHER"
+   ]
+  },
+  {
+   "task_id": "D2",
+   "semantic_issue_id": null,
+   "stage": "FORMAL_EVALUATION",
+   "authority_state": "FROZEN",
+   "formal_scope": true,
+   "risk": {
+    "data_semantics": true,
+    "problem_semantics": false,
+    "modeling_assumption": false,
+    "mathematical_formulation": false,
+    "statistical_inference": false,
+    "algorithmic_semantics": false,
+    "numerical_method": false,
+    "validation_interpretation": false,
+    "formal_result_impact": false,
+    "governance_authority": false
+   },
+   "multiple_plausible_interpretations": false,
+   "authority_ambiguity": false,
+   "uncertainty_present": false,
+   "frozen_mechanical_execution": false,
+   "engineering_signals": {
+    "new_complex_seam": false,
+    "repeat_failure_count": 0,
+    "checker_disagreement": false,
+    "checker_independence_concern": false,
+    "claimed_coverage_not_exercised": false,
+    "unexpected_behavior_after_pass": false,
+    "formal_numeric_shift": false
+   },
+   "green_allowlist_class": null,
+   "risk_evidence": [
+    {
+     "dimension": "data_semantics",
+     "evidence": "gate decision pending"
+    }
+   ],
+   "computed_route": "YELLOW",
+   "route_reason": [
+    "semantic risk present (data_semantics) and not frozen_mechanical_execution"
+   ],
+   "checkpoint": "R4",
+   "router_version": "MMR_V2.1",
+   "task_description": "gate decision",
+   "method_families": [
+    "HYBRID_OTHER"
+   ]
+  },
+  {
+   "task_id": "D3",
+   "semantic_issue_id": null,
+   "stage": "FORMAL_EVALUATION",
+   "authority_state": "FROZEN",
+   "formal_scope": true,
+   "risk": {
+    "problem_semantics": false,
+    "modeling_assumption": false,
+    "mathematical_formulation": false,
+    "data_semantics": false,
+    "statistical_inference": false,
+    "algorithmic_semantics": false,
+    "numerical_method": false,
+    "validation_interpretation": false,
+    "formal_result_impact": false,
+    "governance_authority": false
+   },
+   "multiple_plausible_interpretations": false,
+   "authority_ambiguity": false,
+   "uncertainty_present": false,
+   "frozen_mechanical_execution": true,
+   "engineering_signals": {
+    "new_complex_seam": false,
+    "repeat_failure_count": 0,
+    "checker_disagreement": false,
+    "checker_independence_concern": false,
+    "claimed_coverage_not_exercised": false,
+    "unexpected_behavior_after_pass": false,
+    "formal_numeric_shift": false
+   },
+   "green_allowlist_class": "MECHANICAL_SOLVER_EXECUTION_UNDER_FROZEN_CONFIG",
+   "risk_evidence": [],
+   "computed_route": "GREEN",
+   "route_reason": [
+    "green allowlist class MECHANICAL_SOLVER_EXECUTION_UNDER_FROZEN_CONFIG"
+   ],
+   "checkpoint": "R4",
+   "router_version": "MMR_V2.1",
+   "task_description": "run the frozen solver configuration",
+   "method_families": [
+    "NUMERICAL_COMPUTATION"
+   ]
+  },
+  {
+   "task_id": "D4",
+   "semantic_issue_id": null,
+   "stage": "FORMAL_EVALUATION",
+   "authority_state": "HUMAN_ACCEPTED",
+   "formal_scope": true,
+   "risk": {
+    "statistical_inference": true,
+    "governance_authority": true,
+    "problem_semantics": false,
+    "modeling_assumption": false,
+    "mathematical_formulation": false,
+    "data_semantics": false,
+    "algorithmic_semantics": false,
+    "numerical_method": false,
+    "validation_interpretation": false,
+    "formal_result_impact": false
+   },
+   "multiple_plausible_interpretations": false,
+   "authority_ambiguity": false,
+   "uncertainty_present": false,
+   "frozen_mechanical_execution": false,
+   "engineering_signals": {
+    "new_complex_seam": false,
+    "repeat_failure_count": 0,
+    "checker_disagreement": false,
+    "checker_independence_concern": false,
+    "claimed_coverage_not_exercised": false,
+    "unexpected_behavior_after_pass": false,
+    "formal_numeric_shift": false
+   },
+   "green_allowlist_class": null,
+   "risk_evidence": [
+    {
+     "dimension": "statistical_inference",
+     "evidence": "significance threshold change"
+    },
+    {
+     "dimension": "governance_authority",
+     "evidence": "accepted authority mutation"
+    }
+   ],
+   "computed_route": "RED",
+   "route_reason": [
+    "R10 governance_authority with authority_state=HUMAN_ACCEPTED -> mutation of frozen/accepted authority"
+   ],
+   "checkpoint": "R2",
+   "router_version": "MMR_V2.1",
+   "task_description": "change the accepted significance threshold",
+   "method_families": [
+    "PROBABILITY_STATISTICS"
+   ]
+  },
+  {
+   "task_id": "D5",
+   "semantic_issue_id": null,
+   "stage": "EXPLORATORY_MODELING",
+   "authority_state": "EXPLORATORY",
+   "formal_scope": true,
+   "risk": {
+    "modeling_assumption": true,
+    "problem_semantics": false,
+    "mathematical_formulation": false,
+    "data_semantics": false,
+    "statistical_inference": false,
+    "algorithmic_semantics": false,
+    "numerical_method": false,
+    "validation_interpretation": false,
+    "formal_result_impact": false,
+    "governance_authority": false
+   },
+   "multiple_plausible_interpretations": true,
+   "authority_ambiguity": false,
+   "uncertainty_present": false,
+   "frozen_mechanical_execution": false,
+   "engineering_signals": {
+    "new_complex_seam": false,
+    "repeat_failure_count": 0,
+    "checker_disagreement": false,
+    "checker_independence_concern": false,
+    "claimed_coverage_not_exercised": false,
+    "unexpected_behavior_after_pass": false,
+    "formal_numeric_shift": false
+   },
+   "green_allowlist_class": null,
+   "risk_evidence": [
+    {
+     "dimension": "modeling_assumption",
+     "evidence": "two plausible models"
+    }
+   ],
+   "computed_route": "YELLOW",
+   "route_reason": [
+    "semantic risk present (modeling_assumption) and not frozen_mechanical_execution"
+   ],
+   "checkpoint": "R0",
+   "router_version": "MMR_V2.1",
+   "task_description": "unknown hybrid approach with two plausible models",
+   "method_families": [
+    "HYBRID_OTHER"
+   ]
+  },
+  {
+   "task_id": "N1",
+   "semantic_issue_id": null,
+   "stage": "FORMAL_EVALUATION",
+   "authority_state": "PROPOSED",
+   "formal_scope": true,
+   "risk": {
+    "statistical_inference": true,
+    "problem_semantics": false,
+    "modeling_assumption": false,
+    "mathematical_formulation": false,
+    "data_semantics": false,
+    "algorithmic_semantics": false,
+    "numerical_method": false,
+    "validation_interpretation": false,
+    "formal_result_impact": false,
+    "governance_authority": false
+   },
+   "multiple_plausible_interpretations": false,
+   "authority_ambiguity": false,
+   "uncertainty_present": false,
+   "frozen_mechanical_execution": false,
+   "engineering_signals": {
+    "new_complex_seam": false,
+    "repeat_failure_count": 0,
+    "checker_disagreement": false,
+    "checker_independence_concern": false,
+    "claimed_coverage_not_exercised": false,
+    "unexpected_behavior_after_pass": false,
+    "formal_numeric_shift": false
+   },
+   "green_allowlist_class": null,
+   "risk_evidence": [
+    {
+     "dimension": "statistical_inference",
+     "evidence": "sampling semantics"
+    }
+   ],
+   "computed_route": "YELLOW",
+   "route_reason": [
+    "semantic risk present (statistical_inference) and not frozen_mechanical_execution"
+   ],
+   "checkpoint": "R4",
+   "router_version": "MMR_V2.1",
+   "task_description": "bootstrap sampling unit choice",
+   "method_families": [
+    "PROBABILITY_STATISTICS",
+    "MONTE_CARLO_STOCHASTIC"
+   ]
+  },
+  {
+   "task_id": "LIVE-001",
+   "semantic_issue_id": "SAMPLING-LIVE-001",
+   "stage": "FORMAL_EVALUATION",
+   "authority_state": "PROPOSED",
+   "formal_scope": true,
+   "risk": {
+    "statistical_inference": true,
+    "problem_semantics": false,
+    "modeling_assumption": false,
+    "mathematical_formulation": false,
+    "data_semantics": false,
+    "algorithmic_semantics": false,
+    "numerical_method": false,
+    "validation_interpretation": false,
+    "formal_result_impact": false,
+    "governance_authority": false
+   },
+   "multiple_plausible_interpretations": true,
+   "authority_ambiguity": false,
+   "uncertainty_present": false,
+   "frozen_mechanical_execution": false,
+   "engineering_signals": {
+    "new_complex_seam": false,
+    "repeat_failure_count": 0,
+    "checker_disagreement": false,
+    "checker_independence_concern": false,
+    "claimed_coverage_not_exercised": false,
+    "unexpected_behavior_after_pass": false,
+    "formal_numeric_shift": false
+   },
+   "green_allowlist_class": null,
+   "risk_evidence": [
+    {
+     "dimension": "statistical_inference",
+     "evidence": "bootstrap sampling unit (row vs subject) undefined by authority"
+    },
+    {
+     "dimension": "formal_result_impact",
+     "evidence": "sampling unit changes the standard error"
+    }
+   ],
+   "computed_route": "YELLOW",
+   "route_reason": [
+    "semantic risk present (statistical_inference) and not frozen_mechanical_execution"
+   ],
+   "checkpoint": "R4",
+   "router_version": "MMR_V2.1",
+   "task_description": "repeated-measurement data: bootstrap sampling unit row vs subject; authority undefined",
+   "method_families": [
+    "PROBABILITY_STATISTICS",
+    "MONTE_CARLO_STOCHASTIC"
+   ]
+  }
+ ],
+ "commit_sha": "7f670557f8b6e7787386f10908608eea0327d20e"
+}

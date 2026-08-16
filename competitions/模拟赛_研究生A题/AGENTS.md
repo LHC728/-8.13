@@ -68,6 +68,10 @@
 
 - **L3/YELLOW 与 L4 semantic review 必须走 `pro_max_review` 且 `VERIFIED_PRO_MAX`**（fresh spawn + `deepseek-pro-max`/`deepseek-v4-pro` + reasoning=max + workspace delta=0）；无 VERIFIED_PRO_MAX 不得 PASS formal task；Pro-Max 失败禁止 fallback 到 Flash/Pro-high（ROUTING_BLOCKED → STOP）。触发清单、packet 模板与 ROUTE-01..12 见 `08_项目管理/MODEL_ROUTING_PRO_MAX_V1.0.md`；路由证据根 `05_结果/governance/model_routing/`。
 
+## 通用数学建模路由（`MATHEMATICAL_MODELING_ROUTER_V2.1`）
+
+- **`MATHEMATICAL_MODELING_ROUTER_V2.1` 是通用数学建模路由权威（Phase B）**：GREEN 仅限机械白名单；建模/数学/统计/算法不确定（YELLOW）必须 `VERIFIED_PRO_MAX`；修改 FROZEN 或 HUMAN_ACCEPTED authority（RED）必须 Human Gate。Formal GREEN 在 Gate 前需要 Route Sentinel 接受。方法族决定验证策略、不决定决策权威。项目扩展只能升级、禁止降级。详见 `08_项目管理/模型路由/MATHEMATICAL_MODELING_ROUTER_V2.1.md`。
+
 ## 自动驾驶治理（`AUTOPILOT-PLAN-V1.1-FINAL`，Pilot #1）
 
 - 当前自动推进治理依据：`08_项目管理/全流程自动推进计划_AUTOPILOT-PLAN-V1.1.md`。

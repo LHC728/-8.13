@@ -1,0 +1,39 @@
+{
+  "report": "PHASE_A_EXACT_SMOKE_RESULT",
+  "router_version": "MMR_V2.1",
+  "date": "2026-08-16",
+  "task_id": "PHASE_A_EXACT_SMOKE",
+  "packet_artifact": "05_结果/governance/model_routing/v2/phase_a_exact_smoke_packet.txt",
+  "packet_sha256": "baf9698a885620b9361884a4f0f8fe519aa7de7afdda94fbb7b642909c7240a2",
+  "head_before": "7f670557f8b6e7787386f10908608eea0327d20e",
+  "head_reported": "7f670557f8b6e7787386f10908608eea0327d20e",
+  "head_matches": true,
+  "dispatch": {
+    "channel": "ctx.subagents.start('spawn', ...) with EXACTLY the composed tool-pro-max-review configuration (agentOptions provider/model/maxTokens, persona READ_ONLY_SEMANTIC_REVIEWER, toolFilter deny list, maxDepth 1) — the same execution path the pro_max_review tool's execute() uses",
+    "coordinator": "none (no Flash coordinator; packet transmitted verbatim by construction)",
+    "packet_fidelity": "PASS",
+    "mandatory_clauses": {
+      "Read the current Git HEAD": "PASS (present in the packet and in the child's user message)",
+      "HEAD=<40-char git sha>": "PASS (present in the packet and in the child's user message)"
+    },
+    "note": "Two headless-driver attempts failed (empty prompt; driver answered the packet itself without delegating) and were discarded; the tool instance's own execution path was then used directly so the packet reaches the fresh child verbatim."
+  },
+  "child_run_id": "364c6002-4ae9-4f48-8f78-86d51f1a854a",
+  "child_stop_reason": "completed",
+  "child_output": "PRO_MAX_SMOKE_OK\nHEAD=7f670557f8b6e7787386f10908608eea0327d20e",
+  "child_provider": "deepseek-pro-max",
+  "child_model": "deepseek-v4-pro",
+  "reasoning_effort": "max",
+  "adapter_defaults": {"reasoningEffort": true},
+  "fresh_spawn": true,
+  "child_tools_used": ["read", "glob"],
+  "child_mutation_tools_used": [],
+  "tool_filter_effective": true,
+  "workspace_delta": 0,
+  "verified": true,
+  "notes": [
+    "child session request/header verified from session JSONL: provider=deepseek-pro-max, model=deepseek-v4-pro, reasoningEffort=max, contextWindow=1000000; replayState kind=pi-ai api=openai-completions",
+    "child session contains ONLY the packet as user content (no parent transcript); system reminders are workspace instructions, not conversation",
+    "HEAD reported by the child equals the HEAD recorded before dispatch"
+  ]
+}
