@@ -61,11 +61,16 @@ FORMAL_TASK_PACKAGE_FILE = frm.TASK_PACKAGE_FILE
 FORMAL_TASK_PACKAGE_SHA = frm.TASK_PACKAGE_SNAPSHOT_SHA
 REGISTRY_VERSION = "CR-V3.1"
 
-# frozen random streams for generator validation (SPEC section 6.1 / P2 13)
+# frozen random streams for generator validation (SPEC section 6.1 / P2-E1)
+# P2-E1 F1: replicate_id MUST be in {0,1,2,3,4} ONLY; N=5000/2000 are
+# sample counts, NOT replicate ids (mapping: replicate = sample_idx % 5;
+# synthetic entity/generation slot = 100001 + idx*1000 + sample_idx//5).
 NS = ks.NAMESPACE_H2_TUNING          # "h2_tuning"
 SEED = 6
-POST_REPLICATES = tuple(range(5000))  # posterior smoke N=5000
-LIFE_REPLICATES = tuple(range(2000))  # lifetime smoke N=2000
+VALID_REPLICATES = (0, 1, 2, 3, 4)
+POST_SAMPLES = tuple(range(5000))   # posterior smoke N=5000 per pattern
+LIFE_SAMPLES = tuple(range(2000))   # lifetime smoke N=2000 per config
+ENTITY_BASE = 100001                # validation-only synthetic slot base
 
 SCOPE_AUDIT = {
     "density_accepted_evidence_modified": "NO",
@@ -81,9 +86,14 @@ SCOPE_AUDIT = {
     "new_random_worlds": "NO",
     "random_streams": {
         "namespace": NS, "master_seed": SEED,
-        "posterior_smoke_replicates": [0, 4999],
-        "lifetime_smoke_replicates": [0, 1999],
+        "replicate_ids": [0, 1, 2, 3, 4],
+        "posterior_smoke": "8 patterns x N=5000 (replicate=sample_idx%5, "
+                           "synthetic entity=100001+pat*1000+sample_idx//5)",
+        "lifetime_smoke": "32 configs x N=2000 (replicate=sample_idx%5, "
+                          "synthetic generation=100001+sample_idx//5)",
         "streams": ["U_X_post", "U_D_post", "U_L_post"],
+        "h2_holdout_used": False, "q3_formal_used": False,
+        "u_y_post_used": False,
     },
     "c25": "NO", "q4": "NO",
 }
@@ -101,10 +111,12 @@ REPORT_MAPPING: dict[str, str] = {
     "POSTERIOR_D_COROLLARY": "posterior_d_corollary_report.json",
     "POSTERIOR_SAME_OBSERVABLE_HISTORY": "posterior_same_observable_report.json",
     "POSTERIOR_STOCHASTIC_SMOKE": "posterior_smoke_report.json",
+    "POSTERIOR_RANDOM_DOMAIN": "posterior_random_domain_report.json",
     "LIFETIME_PRIMARY_DETERMINISTIC": "lifetime_deterministic_report.json",
     "LIFETIME_AGE0_DEGENERATE": "lifetime_age0_degenerate_report.json",
     "LIFETIME_240_BOUNDARY": "lifetime_240_boundary_report.json",
     "LIFETIME_STOCHASTIC_SMOKE": "lifetime_smoke_report.json",
+    "LIFETIME_RANDOM_DOMAIN": "lifetime_random_domain_report.json",
     "C23_P2": "c23_p2_report.json",
     "EVIDENCE_SEMANTIC_MAPPING": "evidence_semantic_mapping_report.json",
 }
@@ -118,8 +130,11 @@ REPORT_MAPPING: dict[str, str] = {
 def posterior_smoke() -> dict[str, Any]:
     """Frozen section-8 secondary smoke: 8 representative patterns x
     N=5000 stratified draws; 32 marginal z statistics; accept
-    #(|z|>3.5) <= 1."""
-    N = len(POST_REPLICATES)
+    #(|z|>3.5) <= 1.  P2-E1 F1: replicate_id = sample_idx % 5 (in
+    {0..4}); validation-only synthetic entity_id =
+    100001 + pattern_idx*1000 + sample_idx//5 (5 replicates x 1000 entity
+    slots = 5000 samples)."""
+    N = len(POST_SAMPLES)
     pats = []
     for oa in ((), ("N",), ("A",), ("A", "N"), ("A", "A")):
         pats.append(("A-only", oa, (), (), ()))
@@ -127,6 +142,8 @@ def posterior_smoke() -> dict[str, Any]:
         pats.append(("E-layer", ("N",), ("N",), ("N",), oe))
     rows = []
     z_list: list[float] = []
+    used_reps: set[int] = set()
+    used_entities: set[int] = set()
     for pat_idx, (label, oa, ob, oc, oe) in enumerate(pats):
         abc_post = pg.abc_posterior_8(
             {"A": oa, "B": ob, "C": oc}, oe)
@@ -140,16 +157,16 @@ def posterior_smoke() -> dict[str, Any]:
         pi = {"A": pi_abc["A"], "B": pi_abc["B"], "C": pi_abc["C"],
               "D": pi_d}
         counts = {"A": 0, "B": 0, "C": 0, "D": 0}
-        for rep in POST_REPLICATES:
-            dev = pat_idx + 1  # canonical keys require entity_id >= 1
-            ua = ks.u_x_post(NS, rep, dev, "A", SEED)
-            ub = ks.u_x_post(NS, rep, dev, "B", SEED)
-            uc = ks.u_x_post(NS, rep, dev, "C", SEED)
+        for sample_idx in POST_SAMPLES:
+            rep = sample_idx % 5
+            entity = ENTITY_BASE + pat_idx * 1000 + sample_idx // 5
+            used_reps.add(rep)
+            used_entities.add(entity)
+            ua = ks.u_x_post(NS, rep, entity, "A", SEED)
             abc = pg.sample_abc(abc_post, ua)  # one U_X_post for ABC draw
             # NOTE: the stratified ABC draw uses a single U_X_post for the
-            # ABC posterior; subsystems A/B/C are drawn jointly from the
-            # 8-state posterior (frozen: one draw from the ABC posterior).
-            u_d = ks.u_d_post(NS, rep, dev, SEED)
+            # ABC posterior (frozen: one draw from the ABC posterior).
+            u_d = ks.u_d_post(NS, rep, entity, SEED)
             xd = pg.sample_d(oe, abc, u_d)
             counts["A"] += abc[0]
             counts["B"] += abc[1]
@@ -173,6 +190,8 @@ def posterior_smoke() -> dict[str, Any]:
         "n_abs_z_gt_3.5": n_extreme,
         "acceptance": "#(|z|>3.5) <= 1",
         "n_per_pattern": N,
+        "replicate_ids_used": sorted(used_reps),
+        "synthetic_entities_used": len(used_entities),
         "rows": rows,
     }
 
@@ -208,11 +227,17 @@ def lifetime_smoke() -> dict[str, Any]:
     """Frozen section-9 secondary smoke: 4 resources x 8 ages = 32 configs
     x N=2000; 24h left-closed-right-open buckets on [0, 240-a) plus the
     survive-to-240 right-censored bucket; Pearson chi-square (E<5 buckets
-    merged into the next bucket); accept #(p<0.001) <= 1."""
-    N = len(LIFE_REPLICATES)
+    merged into the next bucket); accept #(p<0.001) <= 1.
+    P2-E1 F1: replicate_id = sample_idx % 5 (in {0..4}); validation-only
+    synthetic generation = 100001 + sample_idx//5 (5 replicates x 400
+    generation slots = 2000 samples); age does not enter the random key;
+    different ages share the same U sequence (CRN-style smoke)."""
+    N = len(LIFE_SAMPLES)
     ages = (0, 30, 60, 90, 120, 150, 180, 210)
     rows = []
     p_list: list[float] = []
+    used_reps: set[int] = set()
+    used_generations: set[int] = set()
     for resource in fp.RESOURCES:
         f120 = fp.F120[resource]
         f240 = fp.F240[resource]
@@ -233,17 +258,14 @@ def lifetime_smoke() -> dict[str, Any]:
             p_cens = Fraction(1) - pm  # survive to 240
             buckets.append({"lo": horizon, "hi": None, "p": p_cens})
             expected = [float(b["p"]) * N for b in buckets]
-            # merge buckets with expected < 5 into the next bucket
-            merged_exp: list[float] = []
-            for e in expected:
-                if merged_exp and merged_exp[-1] < 5:
-                    merged_exp[-1] += e
-                else:
-                    merged_exp.append(e)
             # count observed draws per original bucket
             obs_counts = [0] * len(buckets)
-            for rep in LIFE_REPLICATES:
-                v = ks.u_l_post(NS, rep, resource, 2, SEED)
+            for sample_idx in LIFE_SAMPLES:
+                rep = sample_idx % 5
+                gen = ENTITY_BASE + sample_idx // 5
+                used_reps.add(rep)
+                used_generations.add(gen)
+                v = ks.u_l_post(NS, rep, resource, gen, SEED)
                 tau, cens = lg.conditional_residual(v, age, f120, f240)
                 if cens:
                     obs_counts[-1] += 1
@@ -295,7 +317,51 @@ def lifetime_smoke() -> dict[str, Any]:
         "n_p_lt_0.001": n_sig,
         "acceptance": "#(p<0.001) <= 1",
         "n_per_config": N,
+        "replicate_ids_used": sorted(used_reps),
+        "synthetic_generations_used": len(used_generations),
         "rows": rows,
+    }
+
+
+def posterior_random_domain(posterior_result: dict[str, Any]) -> dict[str, Any]:
+    """P2-E1 F1 hard check (section 8): every replicate id actually used by
+    the posterior smoke is in {0..4}; N per pattern is exactly 5000."""
+    reps = posterior_result.get("replicate_ids_used", [])
+    n = posterior_result.get("n_per_pattern", 0)
+    ok = (set(reps) == set(VALID_REPLICATES)
+          and all(r in VALID_REPLICATES for r in reps)
+          and n == len(POST_SAMPLES) == 5000)
+    return {
+        "check": "POSTERIOR_RANDOM_DOMAIN",
+        "status": "PASS" if ok else "FAIL",
+        "replicate_ids_used": reps,
+        "min": min(reps) if reps else None,
+        "max": max(reps) if reps else None,
+        "unique": sorted(set(reps)),
+        "n_per_pattern": n,
+        "valid_replicates": list(VALID_REPLICATES),
+        "out_of_scope_replicates": sorted(set(reps) - set(VALID_REPLICATES)),
+    }
+
+
+def lifetime_random_domain(lifetime_result: dict[str, Any]) -> dict[str, Any]:
+    """P2-E1 F1 hard check (section 8): every replicate id actually used by
+    the lifetime smoke is in {0..4}; N per config is exactly 2000."""
+    reps = lifetime_result.get("replicate_ids_used", [])
+    n = lifetime_result.get("n_per_config", 0)
+    ok = (set(reps) == set(VALID_REPLICATES)
+          and all(r in VALID_REPLICATES for r in reps)
+          and n == len(LIFE_SAMPLES) == 2000)
+    return {
+        "check": "LIFETIME_RANDOM_DOMAIN",
+        "status": "PASS" if ok else "FAIL",
+        "replicate_ids_used": reps,
+        "min": min(reps) if reps else None,
+        "max": max(reps) if reps else None,
+        "unique": sorted(set(reps)),
+        "n_per_config": n,
+        "valid_replicates": list(VALID_REPLICATES),
+        "out_of_scope_replicates": sorted(set(reps) - set(VALID_REPLICATES)),
     }
 
 
@@ -461,6 +527,11 @@ def _build_evidence(out_dir: Path, run_id: str, checks: dict[str, Any],
             _dump_json(out_dir / fname, check)
     mapping_result = evidence_mapping_check(out_dir)
     _dump_json(out_dir / "evidence_semantic_mapping_report.json", mapping_result)
+    # dev budget ledger snapshot (F2): current append-only ledger state
+    ledger_path = BASE_DIR / "05_结果" / "H2" / "dev_budget_ledger.json"
+    if ledger_path.is_file():
+        _dump_json(out_dir / "dev_budget_ledger_snapshot.json",
+                   json.loads(ledger_path.read_text(encoding="utf-8")))
 
     hashes = {
         "task_package_snapshot": _sha256_file(out_dir / "task_package_snapshot.yaml"),
@@ -530,6 +601,10 @@ def _build_evidence(out_dir: Path, run_id: str, checks: dict[str, Any],
                 c["status"] for c in checks["checks"]
                 if c["check"] == "POSTERIOR_STOCHASTIC_SMOKE"),
              "count": f"n_|z|>3.5={next(c['n_abs_z_gt_3.5'] for c in checks['checks'] if c['check'] == 'POSTERIOR_STOCHASTIC_SMOKE')}"},
+            {"check_id": "POSTERIOR_RANDOM_DOMAIN", "status": next(
+                c["status"] for c in checks["checks"]
+                if c["check"] == "POSTERIOR_RANDOM_DOMAIN"),
+             "count": f"reps={next(c['replicate_ids_used'] for c in checks['checks'] if c['check'] == 'POSTERIOR_RANDOM_DOMAIN')}"},
             {"check_id": "LIFETIME_PRIMARY_DETERMINISTIC", "status": next(
                 c["status"] for c in checks["checks"]
                 if c["check"] == "LIFETIME_PRIMARY_DETERMINISTIC")},
@@ -537,6 +612,10 @@ def _build_evidence(out_dir: Path, run_id: str, checks: dict[str, Any],
                 c["status"] for c in checks["checks"]
                 if c["check"] == "LIFETIME_STOCHASTIC_SMOKE"),
              "count": f"n_p_lt_0.001={next(c['n_p_lt_0.001'] for c in checks['checks'] if c['check'] == 'LIFETIME_STOCHASTIC_SMOKE')}"},
+            {"check_id": "LIFETIME_RANDOM_DOMAIN", "status": next(
+                c["status"] for c in checks["checks"]
+                if c["check"] == "LIFETIME_RANDOM_DOMAIN"),
+             "count": f"reps={next(c['replicate_ids_used'] for c in checks['checks'] if c['check'] == 'LIFETIME_RANDOM_DOMAIN')}"},
             {"check_id": "C23_P2", "status": next(
                 c["status"] for c in checks["checks"]
                 if c["check"] == "C23_P2")},
@@ -575,8 +654,18 @@ def _build_evidence(out_dir: Path, run_id: str, checks: dict[str, Any],
             "ACYCLIC DAG (RULE A): run_manifest does not hash "
             "file_hashes.sha256; file_hashes covers all artifacts incl. "
             "run_manifest and task_package_snapshot, never itself."),
-        "random_world": {"consumption": "NONE (generator validation on "
-                         "h2_tuning U_X_post/U_D_post/U_L_post only)"},
+        "random_domain": {
+            "namespace": NS,
+            "master_seed": SEED,
+            "replicate_ids": [0, 1, 2, 3, 4],
+            "purpose": "P2 generator validation only",
+            "posterior_N_per_pattern": 5000,
+            "lifetime_N_per_config": 2000,
+            "h2_holdout_used": False,
+            "q3_formal_used": False,
+            "U_Y_post_used": False,
+            "new_random_keys_outside_frozen_p2_domain": "NO",
+        },
         "p1": "FINAL PASS / ACCEPTED (08488e4)",
         "p2": {"posterior": "implemented (SPEC 8)",
                "conditional_lifetime": "implemented (SPEC 9)",
@@ -629,23 +718,27 @@ def _promote(staging: Path, final: Path) -> dict[str, Any]:
 
 
 def main(argv: Optional[list[str]] = None) -> int:
-    output_root = BASE_DIR / "05_结果" / "H2" / "p2"
+    output_root = BASE_DIR / "05_结果" / "H2" / "p2" / "requalification"
     run_id = _new_run_id()
     final_dir = output_root / f"run_{run_id}"
     staging_dir = BASE_DIR / ".." / "tmp" / f"p2_staging_{run_id}"
     print(f"[p2] run_id={run_id}")
     t0 = time.perf_counter()
+    post_smoke = posterior_smoke()
+    life_smoke = lifetime_smoke()
     checks = {
         "overall": "PASS",
         "checks": [
             pchk.check_deterministic(),
             pchk.check_d_corollary(),
             pchk.check_same_observable(),
-            posterior_smoke(),
+            post_smoke,
+            posterior_random_domain(post_smoke),
             lchk.check_deterministic(),
             lchk.check_age0_degenerate(),
             lchk.check_240_boundary(),
-            lifetime_smoke(),
+            life_smoke,
+            lifetime_random_domain(life_smoke),
             c23_p2_check(),
         ]}
     checks["overall"] = ("PASS" if all(c["status"] == "PASS"
@@ -653,6 +746,35 @@ def main(argv: Optional[list[str]] = None) -> int:
     test_report = _run_suite("test_h2_p2_v1.py")
     regressions = [_run_suite(p) for p in REGRESSION_PATTERNS]
     wall_total = time.perf_counter() - t0
+    # ---- dev budget ledger (F2): append this run's entry; snapshot ----
+    ledger_path = BASE_DIR / "05_结果" / "H2" / "dev_budget_ledger.json"
+    ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+    entry_ids = {e.get("entry_id") for e in ledger["entries"]}
+    e1_entry_id = f"P2-E1-{run_id}"
+    if e1_entry_id not in entry_ids:
+        ledger["entries"].append({
+            "entry_id": e1_entry_id,
+            "task": "Q3-H2-P2-E1 random-domain / budget requalification",
+            "run_id": run_id,
+            "wall_clock_s": round(wall_total, 4),
+            "status": "COMPLETED / AWAITING HUMAN GATE FINAL P2 REVIEW",
+            "category": "section 8/9 generator validation (requalified "
+                        "random domain)",
+            "namespace": "h2_tuning",
+            "note": "replicate_ids restricted to {0..4}; synthetic "
+                    "entity/generation slots for N=5000/2000",
+            "date": "2026-08-16"})
+    ledger["cumulative_wall_clock_s"] = round(
+        sum(e["wall_clock_s"] for e in ledger["entries"]), 4)
+    ledger["cumulative_wall_clock_h"] = round(
+        ledger["cumulative_wall_clock_s"] / 3600.0, 6)
+    ledger["soft_budget_reached"] = (
+        ledger["cumulative_wall_clock_h"] >= ledger["soft_budget_h"])
+    ledger["hard_budget_reached"] = (
+        ledger["cumulative_wall_clock_h"] >= ledger["hard_budget_h"])
+    ledger_path.write_text(json.dumps(ledger, ensure_ascii=False,
+                                      sort_keys=True, indent=1) + "\n",
+                           encoding="utf-8", newline="\n")
     print(f"[p2] checker overall={checks['overall']} tests={test_report['tests_run']} "
           f"regressions={[r['tests_run'] for r in regressions]}")
     for c in checks["checks"]:

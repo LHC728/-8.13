@@ -2,6 +2,26 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-16 / `STATE-2026-08-13-G2.4` / `Q3-H2-P2-E1 h2_tuning 随机域隔离 + 开发预算账本 = COMPLETED / AWAITING HUMAN GATE FINAL P2 REVIEW`
+
+### 修改
+
+- **Q3-H2-P2-E1（h2_tuning 随机域隔离 + 开发预算账本闭环；Human Gate narrow governance requalification）完成**：P2 数学核心（后验/条件寿命）已由 Human Gate **VERIFIED PASS，本包未重写**；只修两个治理问题（F1/F2）。
+- **F1 — stochastic smoke replicate 范围修正**：`run_h2_p2_v1.py` 的 smoke 不再使用 replicate_id 0..4999 / 0..1999；**所有 stochastic validation key 的 replicate_id 严格 ∈ {0,1,2,3,4}**：
+  - 后验 N=5000 = 每模式 sample count：`replicate_id = sample_idx % 5`；validation-only synthetic `entity_id = 100001 + pattern_idx*1000 + floor(sample_idx/5)`（5 合法 replicate × 1000 synthetic entity slots = 5000）；synthetic id 仅用于 generator diagnostic，非真实批次 device ID，不进入 P3 rollout key 语义。
+  - 寿命 N=2000 = 每配置 sample count：`replicate_id = sample_idx % 5`；validation-only synthetic `generation = 100001 + floor(sample_idx/5)`（5 合法 replicate × 400 generation slots = 2000）；resource 仍 A/B/C/E、age 不进随机键、不同 age 共享同 U 序列（CRN-style）。
+  - **随机域硬检查**：新增 `POSTERIOR_RANDOM_DOMAIN` / `LIFETIME_RANDOM_DOMAIN`（实际使用 replicate：min=0、max=4、unique=[0,1,2,3,4]；任何 rep>4 FAIL；N 不减少：5000/2000）；两项全 PASS。
+- **F2 — dev budget ledger**：新建 `05_结果/H2/dev_budget_ledger.json`（append-only governance record，冻结 §3）：第一条历史 entry = Q3-H2-P2 原生成器验证（run `20260816T052713579034Z_3fc5e200`、wall_clock 6.69s、status=SUPERSEDED_FOR_RANDOM_SCOPE_REQUALIFICATION、note=原 smoke 用越界 replicate、PRIMARY 数学仍有效）；第二条 = P2-E1（wall_clock 6.53s）；累计 13.22s（0.0037h）；soft 4h / hard 8h 均未达；未知历史墙钟标记 UNAVAILABLE 不猜测；证据内含 `dev_budget_ledger_snapshot.json`。
+- **PRIMARY deterministic 重确认（回归，不改变数学）**：posterior 157 可达模式 / 1512 状态 / max_abs_error=0；lifetime 320 点 / max_abs_error_h=0——全 PASS（数学核心未改）。
+- **新 smoke（冻结映射，只跑一次）**：后验 8 模式 × N=5000 → 32 z，`#(|z|>3.5)=0 ≤1` PASS；寿命 32 配置 × N=2000 → Pearson χ²，`#(p<0.001)=0 ≤1` PASS；未换映射/换 seed/增 N。
+- **Manifest 措辞**：随机使用改为准确 `random_domain` 字段（namespace=h2_tuning、master_seed=6、replicate_ids=[0,1,2,3,4]、purpose=P2 generator validation only、N 5000/2000、h2_holdout/q3_formal/U_Y_post 均 false、new random keys outside frozen P2 domain = NO）；不再写 consumption=NONE。
+- **回归**：P1 防火墙 28 + Density E2 36 + key_schema 38 + Q3 H1 23 + G3 44 全 PASS；`test_h2_p2_v1.py` 25/25 PASS；C23 P2 PASS。
+- **新证据根** `05_结果/H2/p2/requalification/run_20260816T054219773348Z_14a587d7/`：ACYCLIC hash DAG + manifest/inventory 一致性 + semantic evidence mapping + C21 = PASS（fail-closed；verified staging 字节一致 promote + promote 后只读复验）；checks.json overall = PASS（12 项全 PASS）。
+- **原 P2 evidence `run_20260816T052713579034Z_3fc5e200` = HISTORICAL_P2_EXECUTION_WITH_H2_TUNING_REPLICATE_SCOPE_VIOLATION**（immutable，未修改；PRIMARY 数学证据有效，SECONDARY smoke 不作最终资格证据）。
+- **状态**：**P2-E1 random-domain / budget requalification = COMPLETED / AWAITING HUMAN GATE FINAL P2 REVIEW**；**P2 FINAL = NOT YET HUMAN-GATE ACCEPTED**；**P3 = NOT AUTHORIZED**；**C23 full end-to-end = PENDING**；**C25 = NOT AUTHORIZED**；不自行启动 P3。
+- 范围审计：P3 / action set / decision-point injection / rollout / rollout_seed / WAIT/PM policy / M / C_eval / quota / stability / transfer / C25 = 全部 **NO**；数学核心（posterior_generator / lifetime_generator / frozen_params / PRIMARY oracle）未改；ObservableState / replacement_history / raw-u 防火墙 / Density / H1 / DES engine / key_schema / D-01..D-25 未改；未使用 h2_holdout / q3_formal。
+- 状态同步：`CURRENT_STATE.md`（Gate 行、§6 禁止、§7 下一出口）。
+
 ## 2026-08-16 / `STATE-2026-08-13-G2.4` / `Q3-H2-P2 后验缺陷状态 + 条件剩余寿命生成器 = COMPLETED / AWAITING HUMAN GATE REVIEW`
 
 ### 修改

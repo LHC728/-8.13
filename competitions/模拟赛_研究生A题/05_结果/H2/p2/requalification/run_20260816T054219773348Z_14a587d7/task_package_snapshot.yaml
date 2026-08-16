@@ -1,0 +1,9 @@
+# Q3-H2-P2 task-package snapshot
+package_ref: Q3-H2-P2
+authority: Q3_H2_BOOTSTRAP_SPEC_DRAFT.md FINAL_FREEZE_ACCEPTED sections 6.1/7/8/9 + Q3-H2-P2 Human Gate authorization
+bootstrap_spec_snapshot: bootstrap_spec_snapshot.md
+bootstrap_spec_sha256: c370aa38cc58c83462b4f280f10628d08ca9cef9d5c04297a2db2ffebbf6eb62
+formal_task_package_sha256: a0864c8728603ef85c12eff91500c78909f70d74738cb42765212d0c035b4472
+p1: FINAL PASS / ACCEPTED (08488e4)
+random_streams: namespace=h2_tuning seed=6; U_X_post/U_D_post/U_L_post only
+evidence_rule: ACYCLIC hash DAG (RULE A)

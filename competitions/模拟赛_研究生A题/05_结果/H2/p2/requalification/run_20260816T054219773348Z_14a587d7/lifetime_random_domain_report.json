@@ -1,0 +1,1 @@
+{"check":"LIFETIME_RANDOM_DOMAIN","max":4,"min":0,"n_per_config":2000,"out_of_scope_replicates":[],"replicate_ids_used":[0,1,2,3,4],"status":"PASS","unique":[0,1,2,3,4],"valid_replicates":[0,1,2,3,4]}
