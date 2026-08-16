@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 """MATHEMATICAL_MODELING_ROUTER_V2.1 — routing checker MMR-01..16 (spec 37).
 
+HISTORICAL / SUPERSEDED_FOR_ROUTING_GATE by V2.1.1 (repair): the V2.1 PASS
+claim and this checker's PASS claim are invalidated by INVALIDATION_REPORT_
+V2.1.1 (VERIFIED_PRO_MAX was conflated with semantic approval; the runtime
+Sentinel gate was missing).  The file is retained for traceability; the
+current routing gate checker is check_mathematical_modeling_router_v2_1_1.py
+(R-01..R-22).  Gate calls in this file use the V2.1.1 engine API.
+
 A REAL checker: every gate is computed from actual artifacts or from the
 router's deterministic behaviour — never hard-coded PASS statements.
 
@@ -97,7 +104,8 @@ def main(argv: list[str]) -> int:
         add("MMR-02", False, "missing phase_a_replay_result.json")
 
     # ---- MMR-03: RED frozen mutation cannot formal-pass ------------------
-    g = route_gate_v2_1(RED, verified_pro_max=True, human_gate_done=False)
+    # (V2.1.1 API: human gate is a verdict, not a bool)
+    g = route_gate_v2_1(RED, human_gate_verdict="PENDING")
     add("MMR-03", g["status"] != GATE_PASS
         and g["status"] == HUMAN_GATE_REQUIRED,
         f"RED without human gate -> {g['status']} (never formal PASS)")
@@ -122,7 +130,8 @@ def main(argv: list[str]) -> int:
         "GREEN only from allowlist")
 
     # ---- MMR-07: YELLOW requires VERIFIED_PRO_MAX ------------------------
-    g = route_gate_v2_1(YELLOW, verified_pro_max=False)
+    # (V2.1.1 API: identity verification is the identity dimension)
+    g = route_gate_v2_1(YELLOW, review_identity_verified=False)
     add("MMR-07", g["status"] == ROUTING_BLOCKED,
         f"YELLOW without VERIFIED_PRO_MAX -> {g['status']}")
 
@@ -175,7 +184,7 @@ def main(argv: list[str]) -> int:
                risk_evidence=[{"dimension": "algorithmic_semantics",
                                "evidence": "ordering"}])
     r1 = compute_model_route_v2_1(c1).route
-    fams = classify_method_families("simulation with monte carlo sampling")
+    fams = classify_method_families("离散事件仿真模拟排队系统")
     r2 = compute_model_route_v2_1(c1).route  # families never enter the engine
     add("MMR-12", r1 == r2 and len(fams) >= 2,
         f"route with/without family metadata identical ({r1}); "
@@ -202,23 +211,25 @@ def main(argv: list[str]) -> int:
     core = Path(__file__).resolve().parent  # the model_routing_v2 package dir
     gc = generalization_check(str(core))
     add("MMR-14", gc["status"] == "PASS" and gc["matches"] == {},
-        f"GENERALIZATION_CHECK status={gc['status']} tokens="
+        f"PROJECT_TOKEN_LEAK_GUARD status={gc['status']} tokens="
         f"{gc['token_count']} matches={gc['matches']}")
 
     # ---- MMR-15: semantic issue dedup behaves correctly ------------------
-    # deterministic in-memory sequence (no dependency on stored state) PLUS
-    # the persisted store artifact must record the LIVE-001 issue as resolved.
+    # (V2.1.1 store schema: identity verification is NOT resolution)
     store = SemanticIssueStore()
     fresh = store.needs_pro_max("MMR-DEMO-001", "h1")
-    store.record("MMR-DEMO-001", "h1", "PASS", verified=True)
+    store.record("MMR-DEMO-001", "h1", "PASS", "RESOLVED",
+                 review_identity_verified=True, required_actions_closed=True)
     deduped = not store.needs_pro_max("MMR-DEMO-001", "h1")
     contract_changed = store.needs_pro_max("MMR-DEMO-001", "h2")
     persisted = SemanticIssueStore(str(v2 / "semantic_issues.json"))
-    live_resolved = (persisted.snapshot().get("SAMPLING-LIVE-001") or {}
-                     ).get("verified") is True
-    add("MMR-15", fresh and deduped and contract_changed and live_resolved,
+    live_rec = persisted.snapshot().get("SAMPLING-LIVE-001") or {}
+    live_blocked_open = (live_rec.get("semantic_status") == "BLOCKED"
+                         and persisted.needs_pro_max("SAMPLING-LIVE-001",
+                                                     "contract-v1") is True)
+    add("MMR-15", fresh and deduped and contract_changed and live_blocked_open,
         f"fresh={fresh} deduped={deduped} contract_changed={contract_changed} "
-        f"live_issue_recorded_resolved={live_resolved}")
+        f"live_issue_blocked_open={live_blocked_open}")
 
     # ---- MMR-16: RED depends on authority state correctly -----------------
     c_expl = _card(risk={"modeling_assumption": True},

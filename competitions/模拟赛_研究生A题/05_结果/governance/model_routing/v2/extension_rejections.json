@@ -1,16 +1,7 @@
 {
  "rejections": [
   {
-   "extension": {
-    "extension_version": "1.0",
-    "project_id": "demo",
-    "term_risks": {
-     "some_term": {
-      "risks": [],
-      "route_cap": "GREEN"
-     }
-    }
-   },
+   "extension": "demo de-escalation attempt",
    "reason": "term 'some_term': route_cap would de-escalate; extensions may only keep or escalate risk"
   }
  ]

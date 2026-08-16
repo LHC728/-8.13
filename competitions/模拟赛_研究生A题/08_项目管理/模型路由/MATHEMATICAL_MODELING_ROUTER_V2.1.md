@@ -1,5 +1,9 @@
 # MATHEMATICAL_MODELING_ROUTER_V2.1 — 通用数学建模风险路由（设计文档）
 
+> **SUPERSEDED_FOR_ROUTING_GATE by MATHEMATICAL_MODELING_ROUTER_V2.1.1**（2026-08-16 Human Gate repair）。
+> 本文档为 V2.1 历史实现记录，保留用于追溯；路由门语义以 `MATHEMATICAL_MODELING_ROUTER_V2.1.1.md` 为准。
+> 失效声明：`05_结果/governance/model_routing/v2_1_1/INVALIDATION_REPORT_V2.1.1.md`。
+
 > 状态：IMPLEMENTED（Phase B；additive，构建于已接受的 Phase-A PRO-MAX ROUTING V1.0 之上）
 > 日期：2026-08-16
 > Phase-A accepted commit：`7f670557f8b6e7787386f10908608eea0327d20e`

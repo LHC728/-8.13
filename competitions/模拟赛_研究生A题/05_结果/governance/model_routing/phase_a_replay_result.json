@@ -1,8 +1,8 @@
 {
  "report": "PHASE_A_REPLAY_RESULT",
  "router_version": "MMR_V2.1",
- "date": "2026-08-16T12:08:00.052767Z",
- "commit_sha": "7f670557f8b6e7787386f10908608eea0327d20e",
+ "date": "2026-08-16T12:41:20.645771Z",
+ "commit_sha": "0e8f6612b0274a8e53717f36af23e40701bbc583",
  "checker_path": "05_结果\\governance\\model_routing\\tools\\check_model_routing_v1.py",
  "evidence_root": "05_结果\\governance\\model_routing",
  "wire_artifact_name": "wire_semantic_check.txt",

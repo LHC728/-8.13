@@ -1,9 +1,11 @@
 {
  "SAMPLING-LIVE-001": {
-  "commit_sha": "7f670557f8b6e7787386f10908608eea0327d20e",
+  "commit_sha": "0e8f6612b0274a8e53717f36af23e40701bbc583",
   "contract_hash": "contract-v1",
   "issue_id": "SAMPLING-LIVE-001",
-  "verdict": "PASS_WITH_CAVEAT",
-  "verified": true
+  "required_actions_closed": false,
+  "review_identity_verified": true,
+  "review_verdict": "BLOCKED",
+  "semantic_status": "BLOCKED"
  }
 }

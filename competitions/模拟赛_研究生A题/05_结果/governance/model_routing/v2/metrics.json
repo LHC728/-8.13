@@ -8,10 +8,10 @@
  "green_to_yellow_upgrades": 1,
  "verified_pro_max_calls": 2,
  "pro_max_dispatched": 2,
- "deduplicated_max_calls_avoided": 1,
- "routing_blocks": 1,
+ "deduplicated_max_calls_avoided": 0,
+ "routing_blocks": 3,
  "human_gate_routing_misses": 1,
  "no_targets_set": true,
- "commit_sha": "7f670557f8b6e7787386f10908608eea0327d20e",
- "basis": "demo sequence D1-D5/N1 + live integration LIVE-001 recorded in routing_events.jsonl; no targets set"
+ "commit_sha": "0e8f6612b0274a8e53717f36af23e40701bbc583",
+ "basis": "V2.1.1 semantics: demo sequence D1-D5/N1 + LIVE-001 (verdict BLOCKED) + PHASE_A_EXACT_SMOKE + LIVE-002 (BLOCKED not dedup-resolved) + D3 live Flash Sentinel AGREE_GREEN; no targets set"
 }

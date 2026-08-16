@@ -13,7 +13,7 @@ import json
 from dataclasses import dataclass, field, asdict
 from typing import Any, Optional
 
-ROUTER_VERSION = "MMR_V2.1"
+ROUTER_VERSION = "MMR_V2.1.1"
 
 # --- authority states (spec 6) -------------------------------------------------
 AUTHORITY_STATES = ("EXPLORATORY", "PROPOSED", "FROZEN", "HUMAN_ACCEPTED")
@@ -81,6 +81,7 @@ class RiskCard:
     frozen_mechanical_execution: bool = False
     engineering_signals: EngineeringSignals = field(default_factory=EngineeringSignals)
     green_allowlist_class: Optional[str] = None
+    authority_refs: list[str] = field(default_factory=list)
     risk_evidence: list[dict[str, str]] = field(default_factory=list)
     computed_route: Optional[str] = None
     route_reason: list[str] = field(default_factory=list)
@@ -121,17 +122,88 @@ def risk_card_from_dict(data: dict[str, Any]) -> RiskCard:
     payload["engineering_signals"] = EngineeringSignals(
         **{k: es.get(k, False if k != "repeat_failure_count" else 0)
            for k in ENGINEERING_SIGNALS})
+    payload.setdefault("authority_refs", [])
     return RiskCard(**payload)
 
 
-def validate_card(card: RiskCard) -> list[str]:
-    """Card-level integrity: risk_evidence must justify every flagged field."""
-    problems: list[str] = []
+ROUTING_INVALID = "ROUTING_INVALID"
+
+# GREEN classes whose meaning depends on a frozen/accepted authority (spec 14):
+# they require authority_refs to be identifiable.
+_AUTHORITY_DEPENDENT_GREEN = (
+    "MECHANICAL_DATA_TRANSFORM_UNDER_FROZEN_EXACT_RULE",
+    "MECHANICAL_FORMULA_IMPLEMENTATION_UNDER_FROZEN_EXACT_FORMULA",
+    "MECHANICAL_SOLVER_EXECUTION_UNDER_FROZEN_CONFIG",
+    "PLOT_FROM_FROZEN_DATA_AND_SPEC",
+    "REPRODUCE_ACCEPTED_RESULT_WITHOUT_METHOD_CHANGE",
+)
+
+
+class RiskCardInvalid(ValueError):
+    """Fail-closed rejection of a malformed risk card (ROUTING_INVALID)."""
+
+
+def validate_card_fail_closed(card: RiskCard) -> None:
+    """Mandatory fail-closed validation (V2.1.1, spec 12/13/14).
+
+    Raises RiskCardInvalid on ANY malformed card: a malformed card yields
+    ROUTING_INVALID and can never formal-PASS.  Rejected at minimum:
+
+    * risk dimension true without risk_evidence for that dimension;
+    * risk_evidence naming a dimension that is false (unless informational);
+    * unknown risk dimensions / invalid authority state / invalid stage;
+    * GREEN allowlist class without mechanical evidence and, for
+      authority-dependent classes, without identifiable authority_refs;
+    * contradictory mechanical/semantic fields (a frozen mechanical task
+      must have its semantic risk fields FALSE — see spec 13).
+    """
+    for dim in card.risk:
+        if dim not in RISK_DIMENSIONS:
+            raise RiskCardInvalid(f"unknown risk dimension {dim!r}")
     for dim in card.risk_true():
         if not any(e.get("dimension") == dim for e in card.risk_evidence):
-            problems.append(f"risk dimension {dim} flagged without risk_evidence")
+            raise RiskCardInvalid(
+                f"risk dimension {dim} is true without risk_evidence")
+    for e in card.risk_evidence:
+        dim = e.get("dimension")
+        if dim is None:
+            continue
+        if dim not in RISK_DIMENSIONS:
+            raise RiskCardInvalid(
+                f"risk_evidence references unknown dimension {dim!r}")
+        if e.get("informational"):
+            continue
+        if not card.risk.get(dim):
+            raise RiskCardInvalid(
+                f"risk_evidence references {dim} while the flag is false "
+                "(mark informational=True to reference a non-flagged dimension)")
+    if card.green_allowlist_class is not None:
+        if not card.frozen_mechanical_execution:
+            raise RiskCardInvalid(
+                "green_allowlist_class requires frozen_mechanical_execution")
+        if card.green_allowlist_class in _AUTHORITY_DEPENDENT_GREEN \
+                and not card.authority_refs:
+            raise RiskCardInvalid(
+                f"green_allowlist_class {card.green_allowlist_class} requires "
+                "authority_refs (frozen/accepted authority must be identifiable)")
+    # spec 13: risk fields represent UNRESOLVED CURRENT RISK; a genuinely
+    # frozen mechanical task has risk fields false.  Flagging a semantic risk
+    # while claiming frozen mechanical execution is contradictory.
+    if card.frozen_mechanical_execution and card.risk_true():
+        raise RiskCardInvalid(
+            "frozen_mechanical_execution=true with flagged semantic risk is "
+            "contradictory: risk fields represent unresolved current risk")
+
+
+def validate_card(card: RiskCard) -> list[str]:
+    """Soft integrity report (informational only).  Routing NEVER uses this
+    for a gate: fail-closed validation is mandatory before route computation
+    (see validate_card_fail_closed)."""
+    problems: list[str] = []
+    try:
+        validate_card_fail_closed(card)
+    except RiskCardInvalid as exc:
+        problems.append(str(exc))
     if card.green_allowlist_class is not None and not card.frozen_mechanical_execution:
-        # an allowlisted mechanical class should normally declare frozen
-        # mechanical execution; not fatal, but recorded
         problems.append("green_allowlist_class without frozen_mechanical_execution")
     return problems

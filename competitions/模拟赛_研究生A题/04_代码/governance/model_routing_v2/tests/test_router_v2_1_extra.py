@@ -1,6 +1,6 @@
-"""MATHEMATICAL_MODELING_ROUTER_V2.1 — verification-family tests (spec 39),
-negative runtime test (spec 41), dedup (spec 20/21), and generalization
-(spec 34).  Deterministic; no network.
+"""MATHEMATICAL_MODELING_ROUTER_V2.1.1 — verification-family tests (spec 39),
+negative runtime tests (spec 41 as repaired), dedup repair (spec 6), and the
+project-token leak guard (spec 18).  Deterministic; no network.
 """
 from __future__ import annotations
 
@@ -16,14 +16,15 @@ for _entry in (str(BASE), str(BASE / "governance")):
 from governance.model_routing_v2.verification_strategies import (  # noqa: E402
     strategy_checks, build_verification_plan, UNIVERSAL_BASELINE)
 from governance.model_routing_v2.route_engine import (  # noqa: E402
-    route_gate_v2_1, SemanticIssueStore, YELLOW, GREEN, RED,
+    route_gate_v2_1_1, SemanticIssueStore, YELLOW, GREEN, RED,
     ROUTING_BLOCKED, HUMAN_GATE_REQUIRED, GATE_PASS)
 from governance.model_routing_v2.method_families import (  # noqa: E402
-    classify_method_families, FAMILIES)
+    classify_method_families, FAMILIES, DISCRETE_EVENT_SIMULATION)
 from governance.model_routing_v2.generalization import (  # noqa: E402
     generalization_check, validate_miss_registry)
-from governance.model_routing_v2.risk_card import RiskCard, EngineeringSignals  # noqa: E402
-from governance.model_routing_v2.route_engine import compute_model_route_v2_1  # noqa: E402
+from governance.model_routing_v2.risk_card import RiskCard  # noqa: E402
+from governance.model_routing_v2.route_engine import (  # noqa: E402
+    compute_model_route_v2_1_1)
 
 
 class TestVerificationFamilies(unittest.TestCase):
@@ -32,7 +33,7 @@ class TestVerificationFamilies(unittest.TestCase):
         self.assertEqual(checks[0], "constraint_feasibility")
         self.assertIn("objective_recomputation", checks)
         self.assertIn("small_instance_brute_force", checks)
-        self.assertNotIn("deterministic_toy_world", checks)  # not DES replay
+        self.assertNotIn("deterministic_toy_world", checks)
 
     def test_physics_prefers_units_conservation_convergence(self):
         checks = strategy_checks(["PHYSICS_MECHANISM", "ODE_PDE_DYNAMICAL_SYSTEM"])
@@ -48,7 +49,7 @@ class TestVerificationFamilies(unittest.TestCase):
         self.assertIn("baseline_model", checks)
 
     def test_simulation_prefers_toy_world_and_invariants(self):
-        checks = strategy_checks(["DISCRETE_EVENT_SIMULATION"])
+        checks = strategy_checks([DISCRETE_EVENT_SIMULATION])
         self.assertEqual(checks[0], "deterministic_toy_world")
         self.assertIn("state_invariant", checks)
         self.assertIn("event_invariant", checks)
@@ -63,21 +64,19 @@ class TestVerificationFamilies(unittest.TestCase):
         checks = strategy_checks(["HYBRID_OTHER"])
         self.assertEqual(tuple(checks), UNIVERSAL_BASELINE)
 
-    def test_multi_label_and_family_does_not_change_route(self):
-        fams = classify_method_families(
-            "simulate a queue with monte carlo sampling")
-        self.assertTrue("DISCRETE_EVENT_SIMULATION" in fams
-                        and "MONTE_CARLO_STOCHASTIC" in fams)
-        # same card, with and without family metadata -> identical route
+    def test_family_never_changes_route(self):
+        # families are strategy metadata; the route engine never consumes them
         base = dict(task_id="X", stage="FORMULATION",
                     authority_state="EXPLORATORY", formal_scope=True,
                     risk={"algorithmic_semantics": True},
                     risk_evidence=[{"dimension": "algorithmic_semantics",
                                     "evidence": "ordering"}])
         c1 = RiskCard(**base)
-        c2 = RiskCard(**{**base, "risk_evidence": base["risk_evidence"]})
-        self.assertEqual(compute_model_route_v2_1(c1).route,
-                         compute_model_route_v2_1(c2).route)
+        fams = classify_method_families("离散事件仿真模拟排队系统")
+        self.assertIn(DISCRETE_EVENT_SIMULATION, fams)
+        c2 = RiskCard(**base)
+        self.assertEqual(compute_model_route_v2_1_1(c1).route,
+                         compute_model_route_v2_1_1(c2).route)
 
     def test_registry_never_invents_thresholds(self):
         with self.assertRaises(ValueError):
@@ -104,36 +103,48 @@ class TestVerificationFamilies(unittest.TestCase):
 
 
 class TestNegativeRuntime(unittest.TestCase):
-    """spec 41: YELLOW + Pro-Max unavailable -> ROUTING_BLOCKED, no fallback,
-    no formal PASS."""
+    """spec 41 (repaired): YELLOW without a verified, outcome-clear review ->
+    ROUTING_BLOCKED; no fallback; no formal PASS."""
 
-    def test_yellow_without_verified_pro_max_blocked(self):
-        g = route_gate_v2_1(YELLOW, verified_pro_max=False)
+    def test_yellow_identity_unverified_blocked(self):
+        g = route_gate_v2_1_1(YELLOW, review_identity_verified=False)
         self.assertEqual(g["status"], ROUTING_BLOCKED)
-        self.assertNotEqual(g["status"], GATE_PASS)
-        self.assertEqual(g["route"], YELLOW)  # no silent re-route
+        self.assertEqual(g["route"], YELLOW)
 
-    def test_yellow_with_verified_pro_max_passes(self):
-        g = route_gate_v2_1(YELLOW, verified_pro_max=True)
-        self.assertEqual(g["status"], GATE_PASS)
+    def test_yellow_verdict_blocked_blocked(self):
+        g = route_gate_v2_1_1(YELLOW, review_identity_verified=True,
+                              review_verdict="BLOCKED")
+        self.assertEqual(g["status"], ROUTING_BLOCKED)
 
-    def test_red_without_human_gate_blocked(self):
-        g = route_gate_v2_1(RED, verified_pro_max=True, human_gate_done=False)
+    def test_yellow_pass_with_open_actions_blocked(self):
+        g = route_gate_v2_1_1(YELLOW, review_identity_verified=True,
+                              review_verdict="PASS",
+                              required_actions_closed=False)
+        self.assertEqual(g["status"], ROUTING_BLOCKED)
+
+    def test_red_without_acceptance_blocked(self):
+        g = route_gate_v2_1_1(RED, human_gate_verdict="PENDING")
         self.assertEqual(g["status"], HUMAN_GATE_REQUIRED)
-        self.assertNotEqual(g["status"], GATE_PASS)
+        g2 = route_gate_v2_1_1(RED, human_gate_verdict="REJECTED")
+        self.assertEqual(g2["status"], ROUTING_BLOCKED)
 
-    def test_red_with_human_gate_passes(self):
-        g = route_gate_v2_1(RED, human_gate_done=True)
+    def test_red_accepted_passes(self):
+        g = route_gate_v2_1_1(RED, human_gate_verdict="ACCEPTED")
         self.assertEqual(g["status"], GATE_PASS)
 
-    def test_green_passes(self):
-        g = route_gate_v2_1(GREEN)
+    def test_green_outside_r4_passes_without_sentinel(self):
+        g = route_gate_v2_1_1(GREEN, checkpoint="R0")
         self.assertEqual(g["status"], GATE_PASS)
 
+    def test_formal_green_at_r4_requires_sentinel(self):
+        g = route_gate_v2_1_1(GREEN, checkpoint="R4", formal_scope=True,
+                              sentinel_required=True)
+        self.assertEqual(g["status"], ROUTING_BLOCKED)
 
-class TestSemanticIssueDedup(unittest.TestCase):
-    """spec 20/21: resolved issues do not re-invoke Pro-Max; contract changes
-    and re-review conditions do."""
+
+class TestSemanticIssueDedupRepair(unittest.TestCase):
+    """spec 6: identity verification is NOT resolution; BLOCKED never
+    resolves; HUMAN_GATE_REQUIRED never resolves without acceptance."""
 
     def setUp(self):
         self.store = SemanticIssueStore()
@@ -141,37 +152,67 @@ class TestSemanticIssueDedup(unittest.TestCase):
     def test_first_time_needs_review(self):
         self.assertTrue(self.store.needs_pro_max("ASSUMPTION-001", "hash-a"))
 
-    def test_resolved_issue_deduped(self):
+    def test_resolved_pass_closed_deduped(self):
         self.store.record("ASSUMPTION-001", "hash-a", "PASS",
-                          verified=True, commit_sha="abc")
+                          "RESOLVED", review_identity_verified=True,
+                          required_actions_closed=True, commit_sha="abc")
         self.assertFalse(self.store.needs_pro_max("ASSUMPTION-001", "hash-a"))
+
+    def test_identity_verified_alone_is_not_resolution(self):
+        # identity verified but status OPEN -> still needs review
+        self.store.record("ASSUMPTION-001", "hash-a", "PASS",
+                          "OPEN", review_identity_verified=True,
+                          required_actions_closed=True, commit_sha="abc")
+        self.assertTrue(self.store.needs_pro_max("ASSUMPTION-001", "hash-a"))
+
+    def test_blocked_never_resolves_via_identity(self):
+        self.store.record("ASSUMPTION-001", "hash-a", "BLOCKED",
+                          "BLOCKED", review_identity_verified=True,
+                          required_actions_closed=False, commit_sha="abc")
+        self.assertTrue(self.store.needs_pro_max("ASSUMPTION-001", "hash-a"))
+
+    def test_record_blocked_as_resolved_rejected(self):
+        with self.assertRaises(ValueError):
+            self.store.record("ASSUMPTION-001", "hash-a", "BLOCKED",
+                              "RESOLVED", review_identity_verified=True,
+                              required_actions_closed=False)
+
+    def test_human_pending_never_resolves(self):
+        self.store.record("ASSUMPTION-001", "hash-a", "HUMAN_GATE_REQUIRED",
+                          "HUMAN_PENDING", review_identity_verified=True,
+                          required_actions_closed=False, commit_sha="abc")
+        self.assertTrue(self.store.needs_pro_max("ASSUMPTION-001", "hash-a"))
+
+    def test_caveat_open_stays_open(self):
+        self.store.record("ASSUMPTION-001", "hash-a", "PASS_WITH_CAVEAT",
+                          "OPEN", review_identity_verified=True,
+                          required_actions_closed=False, commit_sha="abc")
+        self.assertTrue(self.store.needs_pro_max("ASSUMPTION-001", "hash-a"))
 
     def test_contract_change_reopens(self):
         self.store.record("ASSUMPTION-001", "hash-a", "PASS",
-                          verified=True, commit_sha="abc")
+                          "RESOLVED", review_identity_verified=True,
+                          required_actions_closed=True, commit_sha="abc")
         self.assertTrue(self.store.needs_pro_max("ASSUMPTION-001", "hash-b"))
-
-    def test_unverified_never_dedupes(self):
-        self.store.record("ASSUMPTION-001", "hash-a", "PASS",
-                          verified=False, commit_sha="abc")
-        self.assertTrue(self.store.needs_pro_max("ASSUMPTION-001", "hash-a"))
 
     def test_rereview_conditions(self):
         self.store.record("ASSUMPTION-001", "hash-a", "PASS",
-                          verified=True, commit_sha="abc")
+                          "RESOLVED", review_identity_verified=True,
+                          required_actions_closed=True, commit_sha="abc")
         self.assertFalse(self.store.rereview_required("ASSUMPTION-001", {}))
         self.assertTrue(self.store.rereview_required(
             "ASSUMPTION-001", {"new_counterexample": True}))
 
 
-class TestGeneralization(unittest.TestCase):
-    """spec 34: Universal Core must contain zero project-specific tokens."""
+class TestProjectTokenLeakGuard(unittest.TestCase):
+    """spec 18: the guard proves only known-token non-leakage."""
 
     def test_core_clean(self):
         core = Path(__file__).resolve().parents[1]
         res = generalization_check(str(core))
         self.assertEqual(res["status"], "PASS", res)
         self.assertEqual(res["matches"], {})
+        self.assertEqual(res["check"], "PROJECT_TOKEN_LEAK_GUARD")
 
     def test_miss_registry_validation(self):
         good = {"entries": [

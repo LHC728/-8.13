@@ -2,6 +2,25 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-16 / `MATHEMATICAL_MODELING_ROUTER_V2.1.1`（Phase B REPAIR；V2.1 路由门被取代）
+
+### 修改
+
+- **Human Gate 评审（V2.1 STATUS=BLOCKED）五项修复**：
+  - **P0-1 identity/outcome 分离**：`review_identity_verified`（fresh/provider/model/effort/delta）与 `review_verdict`（PASS/PASS_WITH_CAVEAT/BLOCKED/HUMAN_GATE_REQUIRED）+ `required_actions_closed`/`authority_conflict` 分开；**VERIFIED_PRO_MAX 绝不等于语义 PASS**。`route_gate_v2_1_1` outcome-aware：BLOCKED→BLOCKED、PASS+actions closed→PASS、PASS_WITH_CAVEAT+closed→PASS（caveat 保留记录）、HUMAN_GATE_REQUIRED→HUMAN_GATE_REQUIRED、缺失/未知 verdict→BLOCKED。
+  - **P0-2 runtime Sentinel Gate**：formal GREEN @ R4 必须 `sentinel_required=true` + 实际低成本 Flash/E2 Sentinel（identity verified）+ `AGREE_GREEN`，缺失/畸形→ROUTING_BLOCKED；`sentinel_upgrade` 永不降级矩阵（GREEN+AGREE_YELLOW→YELLOW、+AGREE_RED→RED、RISK_OMISSION/ROUTE_TOO_LOW→YELLOW minimum；YELLOW/RED 不动摇）。**真实 Flash Sentinel 已执行**：SENTINEL-LIVE-001（child `5562219f-…`，deepseek-official/deepseek-v4-flash，只读工具，AGREE_GREEN，identity 实测，packet `v2_1_1/sentinel_live_packet.txt`，sha 73349418…）→ formal GREEN gate PASS（`v2_1_1/sentinel_live_result.json`）。
+  - **P1-1 双语方法族分类**：16 族中英模式（解析解/概率统计/优化/运筹/图网络/DES/蒙特卡洛/ODE-PDE/物理/多指标/空间GIS/数值计算…）；**§16 DES 细化**：generic simulation/simulate/仿真 不再自动归 DES（需离散事件证据）。
+  - **P1-2 Risk Card fail-closed + 移除 frozen-mechanical 全局旁路**：`validate_card_fail_closed` 在路由计算前强制（畸形→`ROUTING_INVALID`/RiskCardInvalid，永不 formal PASS）；拒绝 risk true 无 evidence、evidence 引用 false 维度（除非 informational）、未知维度、非法 state/stage、GREEN 类缺 mechanical evidence、FROZEN/ACCEPTED 依赖类缺 `authority_refs`、机械/语义矛盾；任一语义 risk true → YELLOW（无旁路）。
+  - **P1-3 治理优先级显式化**：AGENTS.md 增加 V2.1.1 权威 + 优先级（MMR 管分类；PRO_MAX_V1.0 管 HOW；AUTOPILOT-V1.1 管阶段/预算/停机/产物纪律，其旧风险措辞不覆盖 MMR）；Human Gate 最终权威。
+- **§5 LIVE-001 证据修复（无新 Pro-Max 调用）**：已提交评审原文 VERDICT: BLOCKED 保留；`semantic_issues.json` 修正为 `review_verdict=BLOCKED / semantic_status=BLOCKED / identity verified=true / actions closed=false`；LIVE-002 "已解决" dedup 事件替换为 "BLOCKED not dedup-resolved"（repeated Pro-Max required）；`live_integration/routing_verification.json` 增加 review_verdict/semantic_status 字段。
+- **§6 dedup 修复**：`SemanticIssueStore` 新增 semantic_status（OPEN/RESOLVED/BLOCKED/HUMAN_PENDING）；仅 identity verified ∧ 可接受终态 ∧ actions closed ∧ contract 未变才 dedup；BLOCKED/HUMAN_PENDING 永不被身份验证解决；存储层拒绝 BLOCKED/HUMAN_GATE_REQUIRED 记为 RESOLVED。
+- **§18 命名与表述**：`GENERALIZATION_CHECK` → **`PROJECT_TOKEN_LEAK_GUARD`**（零匹配只证明已知 token 未泄漏；泛化证据 = 跨域测试 + 中英测试 + 验证族测试）。
+- **检查器**：新增 `check_mathematical_modeling_router_v2_1_1.py` **R-01..R-22 = 22/22 PASS**（从 artifact/计算得出）；V2.1 检查器 MMR-01..16 标记 SUPERSEDED_FOR_ROUTING_GATE 并在新引擎语义下可运行（16/16）。
+- **测试**：原 T01..T26 保留 + 中英分类（§17 12 项）+ DES 细化 + Sentinel 门负例 + Risk Card fail-closed + outcome-aware 门 + Human Gate 矩阵 + dedup 修复 = **96/96 PASS**。
+- **事件/metrics 重生成**：`v2/routing_events.jsonl`（21 事件；LIVE-001 BLOCKED、LIVE-002 not-dedup、D3 Sentinel AGREE_GREEN）；`v2/metrics.json`（10 tasks：2 GREEN/7 YELLOW/1 RED；3 blocks；1 sentinel review；dedup avoided=0——如实）。
+- **文档**：`08_项目管理/模型路由/MATHEMATICAL_MODELING_ROUTER_V2.1.1.md`（修复版权威）；`MATHEMATICAL_MODELING_ROUTER_V2.1.md` 标记 **SUPERSEDED_FOR_ROUTING_GATE**；`05_结果/governance/model_routing/v2_1_1/INVALIDATION_REPORT_V2.1.1.md`（失效 V2.1 PASS / MMR PASS / 旧 dedup 证据；不失效 Phase-A、Q3/H1/H2 证据）。
+- **约束**：Phase-A route/tool/config 零修改；Harness core 零修改；formal 建模代码/结果零修改；未做 Q3/H2 正式执行；仅一次新的低成本 live 调用（Flash Sentinel，非 Pro-Max）。
+
 ## 2026-08-16 / `MATHEMATICAL_MODELING_ROUTER_V2.1`（通用数学建模风险路由，Phase B，additive）
 
 ### 修改

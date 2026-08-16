@@ -13,5 +13,10 @@
  "verdict": "BLOCKED (decision-layer escalation; not a project answer)",
  "workspace_delta": 0,
  "verified": true,
- "note": "runtime enforcement of a YELLOW route verified end-to-end"
+ "note": "V2.1.1 repair: VERIFIED_PRO_MAX proves only review identity; the actual committed review says VERDICT: BLOCKED. A BLOCKED issue is OPEN/BLOCKED/DECISION_REQUIRED, never RESOLVED.",
+ "review_identity_verified": true,
+ "review_verdict": "BLOCKED",
+ "required_actions_closed": false,
+ "authority_conflict": false,
+ "semantic_status": "BLOCKED"
 }

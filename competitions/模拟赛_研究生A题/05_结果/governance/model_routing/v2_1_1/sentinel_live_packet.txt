@@ -1,0 +1,19 @@
+SENTINEL_PACKET_VERSION: V1
+ROLE: CLASSIFICATION_AUDITOR_ONLY
+TASK_ID: SENTINEL-LIVE-001
+TASK_DESCRIPTION: Run an already frozen deterministic solver with no modeling/semantic choices.
+RISK_CARD:
+  formal_scope: true
+  route: GREEN
+  checkpoint: R4
+  green_allowlist_class: MECHANICAL_SOLVER_EXECUTION_UNDER_FROZEN_CONFIG
+  frozen_mechanical_execution: true
+  authority_refs:
+    - "authority: frozen solver specification v1"
+  risk: {}
+DIFF_SUMMARY: none - pure execution of the frozen solver configuration; no modeling or semantic choices made
+AUTHORITY_REFERENCES:
+  - "authority: frozen solver specification v1"
+DIAGNOSIS: mechanical execution under frozen configuration
+INSTRUCTIONS:
+Audit ONLY whether the risk classification omits risk dimensions or routes too low. Do NOT adjudicate the mathematics. Do not modify files. Do not invoke another subagent. Reply with exactly one line: SENTINEL_VERDICT: AGREE_GREEN|AGREE_YELLOW|AGREE_RED|RISK_OMISSION|ROUTE_TOO_LOW, then missing_risk_dimensions: [...] and reason: ...

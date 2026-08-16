@@ -1,0 +1,116 @@
+{
+ "checker": "MATHEMATICAL_MODELING_ROUTER_V2.1.1",
+ "overall": "PASS",
+ "checks": [
+  {
+   "check": "R-01",
+   "status": "PASS",
+   "detail": "identity verified + verdict BLOCKED -> ROUTING_BLOCKED"
+  },
+  {
+   "check": "R-02",
+   "status": "PASS",
+   "detail": "closed=PASS open=ROUTING_BLOCKED"
+  },
+  {
+   "check": "R-03",
+   "status": "PASS",
+   "detail": "caveat open=ROUTING_BLOCKED closed=PASS caveat_recorded=True"
+  },
+  {
+   "check": "R-04",
+   "status": "PASS",
+   "detail": "semantic_status=BLOCKED verdict=BLOCKED needs_pro_max=True"
+  },
+  {
+   "check": "R-05",
+   "status": "PASS",
+   "detail": "PENDING -> HUMAN_GATE_REQUIRED"
+  },
+  {
+   "check": "R-06",
+   "status": "PASS",
+   "detail": "REJECTED -> ROUTING_BLOCKED"
+  },
+  {
+   "check": "R-07",
+   "status": "PASS",
+   "detail": "ACCEPTED -> PASS"
+  },
+  {
+   "check": "R-08",
+   "status": "PASS",
+   "detail": "formal GREEN without Sentinel -> ROUTING_BLOCKED"
+  },
+  {
+   "check": "R-09",
+   "status": "PASS",
+   "detail": "formal GREEN with actual Sentinel AGREE_GREEN -> PASS (live artifact ok=True)"
+  },
+  {
+   "check": "R-10",
+   "status": "PASS",
+   "detail": "GREEN+AGREE_YELLOW -> YELLOW"
+  },
+  {
+   "check": "R-11",
+   "status": "PASS",
+   "detail": "GREEN+AGREE_RED -> RED"
+  },
+  {
+   "check": "R-12",
+   "status": "PASS",
+   "detail": "parse rejected=True gate=ROUTING_BLOCKED"
+  },
+  {
+   "check": "R-13",
+   "status": "PASS",
+   "detail": "risk-flag-without-evidence card -> RiskCardInvalid (ROUTING_INVALID)"
+  },
+  {
+   "check": "R-14",
+   "status": "PASS",
+   "detail": "frozen_mechanical_execution + flagged semantic risk is rejected (no global bypass)"
+  },
+  {
+   "check": "R-15",
+   "status": "PASS",
+   "detail": "evidence referencing a false dimension is rejected (fail-closed)"
+  },
+  {
+   "check": "R-16",
+   "status": "PASS",
+   "detail": "Chinese optimization classification"
+  },
+  {
+   "check": "R-17",
+   "status": "PASS",
+   "detail": "Chinese statistics classification"
+  },
+  {
+   "check": "R-18",
+   "status": "PASS",
+   "detail": "Chinese physics/ODE classification"
+  },
+  {
+   "check": "R-19",
+   "status": "PASS",
+   "detail": "Chinese DES classification"
+  },
+  {
+   "check": "R-20",
+   "status": "PASS",
+   "detail": "Chinese MCDM classification"
+  },
+  {
+   "check": "R-21",
+   "status": "PASS",
+   "detail": "generic EN simulation not DES=True; generic CN simulation not DES=True"
+  },
+  {
+   "check": "R-22",
+   "status": "PASS",
+   "detail": "AGENTS.md declares MMR V2.1.1 as the universal modeling routing authority with explicit precedence"
+  }
+ ]
+}

@@ -1,12 +1,14 @@
-"""MATHEMATICAL_MODELING_ROUTER_V2.1 — generalization guard (spec 34) and
-routing miss registry (spec 35).
+"""MATHEMATICAL_MODELING_ROUTER_V2.1.1 — project-token leak guard (spec 34 as
+repaired by §18) and routing miss registry (spec 35).
 
-GENERALIZATION_CHECK: the Universal Core source must contain zero
-project-specific tokens (read from data/project_specific_tokens.json).
-Only project-level patterns may live in the miss registry; cross-contest
-patterns qualify for the universal rule set.
+PROJECT_TOKEN_LEAK_GUARD (renamed from GENERALIZATION_CHECK for accuracy):
+zero token matches proves ONLY that the KNOWN current-project tokens did not
+leak into the Universal Core source.  It does NOT by itself prove cross-domain
+or cross-language generalization — generalization evidence must additionally
+include the cross-domain tests (spec 38), the Chinese/English method-family
+tests (spec 17), and the verification-family tests (spec 39).
 
-This module is part of the UNIVERSAL CORE (generalization guard scans it).
+This module is part of the UNIVERSAL CORE (the guard scans it).
 Python 3.12, standard library only.
 """
 from __future__ import annotations
@@ -43,10 +45,14 @@ def load_project_tokens(path: Path = _TOKEN_FILE) -> list[str]:
 
 def generalization_check(core_dir: str, token_file: str | None = None
                          ) -> dict[str, Any]:
-    """Scan Universal Core source for project-specific tokens.
+    """PROJECT_TOKEN_LEAK_GUARD: scan Universal Core source for KNOWN
+    project-specific tokens (whole-word match, fail-closed).
 
-    Tokens are matched as whole words so a token cannot hide inside a longer
-    identifier.  Returns PASS/FAIL with per-file matches (fail-closed)."""
+    Zero matches proves only that the known current-project tokens did not
+    leak into the Universal Core source.  It does NOT by itself prove
+    cross-domain or cross-language generalization — that evidence comes from
+    the cross-domain tests, the Chinese/English method-family tests, and the
+    verification-family tests (see the V2.1.1 authority doc §18)."""
     root = Path(core_dir)
     tokens = load_project_tokens(Path(token_file) if token_file else _TOKEN_FILE)
     matches: dict[str, list[str]] = {}
@@ -63,7 +69,7 @@ def generalization_check(core_dir: str, token_file: str | None = None
         if hits:
             matches[name] = hits
     ok = not matches
-    return {"check": "GENERALIZATION_CHECK", "status": "PASS" if ok else "FAIL",
+    return {"check": "PROJECT_TOKEN_LEAK_GUARD", "status": "PASS" if ok else "FAIL",
             "scanned_files": list(UNIVERSAL_CORE_FILES),
             "token_count": len(tokens),
             "matches": matches}

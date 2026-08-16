@@ -1,0 +1,52 @@
+{
+ "report": "SENTINEL_LIVE_RESULT",
+ "router_version": "MMR_V2.1.1",
+ "date": "2026-08-16",
+ "task_id": "SENTINEL-LIVE-001",
+ "synthetic_task": "Run an already frozen deterministic solver with no modeling/semantic choices",
+ "risk_card": {
+  "formal_scope": true,
+  "route": "GREEN",
+  "checkpoint": "R4",
+  "green_allowlist_class": "MECHANICAL_SOLVER_EXECUTION_UNDER_FROZEN_CONFIG",
+  "frozen_mechanical_execution": true,
+  "authority_refs": [
+   "authority: frozen solver specification v1"
+  ],
+  "risk": {}
+ },
+ "sentinel_role": "CLASSIFICATION_AUDITOR_ONLY",
+ "execution": {
+  "channel": "ctx.subagents.start('spawn') with a fresh low-cost Flash/E2 child (toolFilter deny mutation tools; maxDepth 1; read-only)",
+  "fresh_spawn": true,
+  "child_run_id": "5562219f-fe17-43f9-a45a-fd505022e0b0",
+  "stop_reason": "completed",
+  "provider": "deepseek-official",
+  "model": "deepseek-v4-flash",
+  "context_window": 1000000,
+  "child_tools_used": [
+   "read",
+   "grep",
+   "glob"
+  ],
+  "child_mutation_tools_used": [],
+  "workspace_delta": 0,
+  "packet_artifact": "05_结果/governance/model_routing/v2_1_1/sentinel_live_packet.txt",
+  "packet_sha256": "73349418b3b2eb13803d351a60f7920dbb6c114403908533fa28ce5e7a79862d",
+  "identity_verified": true
+ },
+ "sentinel_verdict": "AGREE_GREEN",
+ "missing_risk_dimensions": [],
+ "gate": {
+  "check": "formal GREEN at R4 runtime Sentinel Gate",
+  "sentinel_required": true,
+  "sentinel_identity_verified": true,
+  "sentinel_verdict": "AGREE_GREEN",
+  "status": "PASS"
+ },
+ "notes": [
+  "No Pro-Max call was made: the Sentinel uses the low-cost Flash/E2 infrastructure (spec 8/10).",
+  "Runtime Sentinel enforcement is demonstrated by the actual child run + request header + verdict, not by a synthetic parser test.",
+  "reasoningEffort=high on the Flash route is the low-cost default; the Sentinel is deliberately NOT reasoning=max."
+ ]
+}
