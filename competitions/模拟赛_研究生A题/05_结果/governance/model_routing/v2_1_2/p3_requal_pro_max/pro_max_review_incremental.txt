@@ -1,0 +1,17 @@
+PRO_MAX_REVIEW (INCREMENTAL follow-up) - Q3-H2-P3-C offline-rebuild release-guard fix
+Route: deepseek-pro-max / deepseek-v4-pro / reasoning=max / fresh spawn / read-only / workspace delta=0
+Date: 2026-08-16
+
+VERDICT: PASS_WITH_CAVEAT
+authority_conflict: false
+required_actions: [R1 (state sync: first rerun runaway trip + OFFLINE-REBUILD defect + release-guard fix + new counts + verdict), R2 (negative evidence of the failed first rerun attempt + cost-requalification timing note), R3 (optional E-path fixture)]
+required_actions_closed: false at review time; R1/R2/R3 closed by this evidence batch (see routing_verification.json).
+
+Conclusions:
+- The fix is minimal and correct: only the offline-rebuild re-release path is closed (A/B/C release requires PENDING; E-1 release requires PENDING); fresh-batch and retest paths are byte-identical by construction; the in-flight rebuild loop and the calibration FIX are untouched.
+- All frozen items verified intact: action definitions, 2SE/0.95 gates, B-1 sample rules, rollout_seed/CRN protocol, M/C_eval grid and quota caps, C25/C23 authority.
+- RELEASE-GUARD-01 genuinely discriminates pre/post fix; tests_report.json records 128 requal + 169 regression with all visible suites green.
+- The earlier PASS_WITH_CAVEAT conclusions (A-D closed, cost freeze (8,8) restored, evidence truthful) remain valid on the final code.
+- Cost timing note: the cost requalification (13:58Z) predates the release-guard fix (14:56Z); the fix is cost-monotone (only suppresses duplicate re-releases) and the worst measured w_p (7.08 s) has >12x headroom under the 90 s budget, so the (8,8) freeze stands without re-measurement (recorded in the rerun evidence).
+
+Gate reading: per MMR V2.1.2 the P3-C rerun may proceed once R1/R2 close (R3 optional, closed too).

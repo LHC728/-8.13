@@ -11,14 +11,25 @@
     "read_only": true
   },
   "workspace_delta": 0,
-  "review_verdict": "PASS_WITH_CAVEAT",
-  "authority_conflict": false,
+  "reviews": [
+    {
+      "review": "PRIMARY (decision-semantics repair A-D)",
+      "review_verdict": "PASS_WITH_CAVEAT",
+      "authority_conflict": false
+    },
+    {
+      "review": "INCREMENTAL (offline-rebuild release-guard fix)",
+      "review_verdict": "PASS_WITH_CAVEAT",
+      "authority_conflict": false
+    }
+  ],
   "required_actions_closed": true,
   "required_actions": [
-    "R1 CURRENT_STATE.md + CHANGELOG.md sync (invalidation + requalification record) - CLOSED in this evidence batch",
-    "R2 rerun evidence records the operative B-1 population reading (quota-evaluated sample, per-batch evaluated dp) - CLOSED with the P3-C rerun evidence root"
+    "R1 CURRENT_STATE.md + CHANGELOG.md sync (invalidation + requalification + rerun-attempt runaway + release-guard fix) - CLOSED in this evidence batch",
+    "R2 failed first rerun attempt negative evidence retained + cost-requalification timing note - CLOSED (failed_rerun_negative_evidence.txt)",
+    "R3 optional E-path release-guard fixture - CLOSED (RELEASE-GUARD-03)"
   ],
-  "gate_reading": "PASS_WITH_CAVEAT + required_actions_closed=true + authority_conflict=false -> P3-C rerun AUTHORIZED on the repaired semantics",
+  "gate_reading": "PASS_WITH_CAVEAT (both reviews) + required_actions_closed=true + authority_conflict=false -> P3-C rerun AUTHORIZED on the final repaired code",
   "evidence_files": [
     "pro_max_request_header.json",
     "pro_max_dispatch.json",

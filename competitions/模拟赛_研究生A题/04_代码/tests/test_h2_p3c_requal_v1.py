@@ -556,6 +556,46 @@ class TestReleaseGuardRebuild(unittest.TestCase):
         self.assertLess(out.t_end, Fraction(240) * 2)
         self.assertEqual(out.devices_passed + out.devices_exited, BATCH)
 
+    def test_release_guard_03_e_path_no_rerelease(self):
+        # E-path mirror of RELEASE-GUARD-01: dev1 A/B/C PASSED, E att1
+        # completed ABNORMAL, E att2 queued -> rebuild must keep ONLY att2
+        log = _log(
+            _start(1, "A", 1, "0", "2"),
+            _complete(1, "A", 1, "0", "2"),
+            {"event_type": "OBSERVATION_MATERIALIZED", "event_time": "2",
+             "device_id": 1, "process": "A", "effective_attempt_no": 1,
+             "resource_id": "A", "outcome": "PASS"},
+            _start(1, "B", 1, "2", "4"),
+            _complete(1, "B", 1, "2", "4"),
+            {"event_type": "OBSERVATION_MATERIALIZED", "event_time": "4",
+             "device_id": 1, "process": "B", "effective_attempt_no": 1,
+             "resource_id": "B", "outcome": "PASS"},
+            _start(1, "C", 1, "4", "13/2"),
+            _complete(1, "C", 1, "4", "13/2"),
+            {"event_type": "OBSERVATION_MATERIALIZED", "event_time": "13/2",
+             "device_id": 1, "process": "C", "effective_attempt_no": 1,
+             "resource_id": "C", "outcome": "PASS"},
+            _start(1, "E", 1, "7", "10"),
+            _complete(1, "E", 1, "7", "10"),
+            {"event_type": "OBSERVATION_MATERIALIZED", "event_time": "10",
+             "device_id": 1, "process": "E", "effective_attempt_no": 1,
+             "resource_id": "E", "outcome": "ABNORMAL"},
+            _release(1, "E", 2, "10"),
+            _release(2, "B", 1, "12"),
+        )
+        st, post, world, prov, cfg, pre_log = _toy_context(
+            log, Fraction(10), rep=1)
+        eng = re1.RolloutEngine(st, post, world, prov, cfg,
+                                first_action=re1.A_H1_NOOP,
+                                log_prefix=pre_log)
+        eng._release_tasks()
+        e_entries = [e for e in eng.queues["E"]
+                     if eng.tasks[e.task_id].device_id == 1]
+        self.assertEqual(len(e_entries), 1,
+                         "the tested E att1 must NOT be re-released")
+        self.assertEqual(eng.tasks[e_entries[0].task_id].effective_attempt_no,
+                         2)
+
 
 class TestSampleTopUp(unittest.TestCase):
     """SAMPLE-01..03: frozen B-1 top-up arithmetic."""

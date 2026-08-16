@@ -1,0 +1,48 @@
+NEGATIVE EVIDENCE — first P3-C rerun attempt (fail-closed runaway trip)
+=======================================================================
+
+run_id (first attempt): 20260816T141252994705Z_b9766950
+trigger: python 04_代码/scripts/run_h2_p3c_stability_v1.py (repaired semantics)
+outcome: RuntimeError runaway: 1000001 closures without termination at
+now=7999941 (fail-closed MAX_CLOSURES guard), during evaluate_sample,
+first sample point evaluation (batch 0).
+
+Diagnosis:
+- sample n=79 (wait=39, pm=40, both=5) built on the repaired
+  quota-evaluated B-1 semantics; the failure point was
+  t=174, resource=E, kind=dispatch, head=(37,'E',2),
+  legal=[START_HEAD, PM_WITH_HEAD] (PM class).
+- Root cause: OFFLINE-REBUILD release defect in RolloutEngine.
+  _release_tasks re-released attempt-1 tasks that were ALREADY TESTED in
+  the observable history: in an offline rebuild the completed attempt-1
+  tasks are NOT in self.tasks (only queued tasks are rebuilt), so the
+  `tid in self.tasks` guard could not see them. The re-released attempt
+  sat at the FCFS head forever (its device later PASSED/EXITED ->
+  illegal), starving every later head of that resource -> calendar empty
+  -> WAKE_UP shift-boundary loop -> runaway.
+- Concrete chain (dev37 E att2 ABNORMAL at 177 -> EXITED): a re-released
+  E att1 keyed at 174 out-sorted the real queued E att2 and blocked E.
+
+Fix (commit be55a3d):
+- rollout_engine_v1._release_tasks: A/B/C release requires process state
+  PENDING (skip PASSED / IN_PROGRESS / AWAITING_RETEST); E-attempt-1
+  release requires E state PENDING. Fresh-batch and retest paths
+  unchanged (process states are PENDING on fresh devices).
+- Regression tests: RELEASE-GUARD-01/02 (+03 E-path mirror),
+  INFLIGHT-01/03 in tests/test_h2_p3c_requal_v1.py.
+
+Verification:
+- debug_point3 (the failing sample point, both candidates): both
+  rollouts now terminate (t_end=459, 95 passed + 5 exited = 100 devices).
+- Full battery: 128 requal + 169 regression tests PASS
+  (05_结果/H2/requalification/2026-08-16_decision_semantics/tests_report.json).
+
+Timing note (supplementary Pro-Max review R2):
+- cost requalification ran at 13:58Z BEFORE this fix (14:56Z tests).
+  The fix is cost-monotone (only suppresses duplicate re-releases, never
+  adds work) and the measured worst w_p (7.08 s) has >12x headroom under
+  the 90 s budget, so the (8,8) freeze stands without re-measurement;
+  the rerun evidence records this note.
+
+This artifact is retained per the project negative-evidence discipline;
+the final rerun evidence root references it.
