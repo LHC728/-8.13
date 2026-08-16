@@ -470,6 +470,93 @@ class TestQuotaDP(unittest.TestCase):
                 self.assertEqual(p["age_h"], rsrc.age_h)
 
 
+class TestInFlightTestingRebuild(unittest.TestCase):
+    """INFLIGHT-01..03 (P3-C rerun fix): a rebuild from a decision-boundary
+    state with an in-flight TESTING resource must bind the fragment (task
+    + attempt + scheduled outcome event, mirror of the calibration FIX);
+    otherwise the calendar empties and run() runaway-guards."""
+
+    def _engine_at_t1(self):
+        # t=1: resource A testing (fragment dev1-A [0,2]), resource B idle
+        # with FCFS head (1,B,1)
+        log = _log(_start(1, "A", 1, "0", "2"), _release(1, "B", 1, "1"))
+        st, post, world, prov, cfg, pre_log = _toy_context(log, Fraction(1))
+        rsrc_a = next(r for r in st.resources if r.resource == "A")
+        self.assertEqual(rsrc_a.status, "testing")
+        self.assertGreater(rsrc_a.in_flight_remaining_h, 0)
+        eng = re1.RolloutEngine(st, post, world, prov, cfg,
+                                first_action=re1.A_H1_NOOP,
+                                log_prefix=pre_log)
+        return eng
+
+    def test_inflight_01_fragment_rebuilt_and_completes(self):
+        eng = self._engine_at_t1()
+        out = eng.run()  # must terminate (no runaway)
+        self.assertGreater(out.t_end, 0)
+        self.assertLess(out.t_end, Fraction(240) * 2)
+        comps = _find(out.events, "ACTIVITY_COMPLETE", process="A",
+                      device_id=1)
+        self.assertEqual(len(comps), 1,
+                         "the rebuilt in-flight fragment must complete")
+
+    def test_inflight_03_queue_resumes_after_completion(self):
+        eng = self._engine_at_t1()
+        out = eng.run()
+        # resource B is idle: the H1 baseline serves the B head at the
+        # decision time (parallel to the in-flight A fragment)
+        b_starts = _find(out.events, "ACTIVITY_START", process="B",
+                         device_id=1)
+        self.assertGreaterEqual(len(b_starts), 1)
+        self.assertEqual(b_starts[0]["event_time"], "1")
+
+
+class TestReleaseGuardRebuild(unittest.TestCase):
+    """RELEASE-GUARD-01..02 (P3-C rerun fix): an offline rebuild must not
+    re-release an attempt that was ALREADY TESTED (completed tasks are not
+    in the rebuilt self.tasks, so the tid guard alone cannot see them); a
+    re-released attempt would sit at the FCFS head forever and starve the
+    queue (runaway)."""
+
+    def _abnormal_retest_log(self):
+        # dev1: A att1 completed ABNORMAL at 2; A att2 queued at 2
+        return _log(
+            _start(1, "A", 1, "0", "2"),
+            _complete(1, "A", 1, "0", "2"),
+            {"event_type": "OBSERVATION_MATERIALIZED", "event_time": "2",
+             "device_id": 1, "process": "A", "effective_attempt_no": 1,
+             "resource_id": "A", "outcome": "ABNORMAL"},
+            _release(1, "A", 2, "2"),
+            _release(2, "B", 1, "3"),
+        )
+
+    def test_release_guard_01_no_rerelease_of_tested_attempt(self):
+        log = self._abnormal_retest_log()
+        st, post, world, prov, cfg, pre_log = _toy_context(
+            log, Fraction(2), rep=1)
+        eng = re1.RolloutEngine(st, post, world, prov, cfg,
+                                first_action=re1.A_H1_NOOP,
+                                log_prefix=pre_log)
+        eng._release_tasks()
+        a_entries = [e for e in eng.queues["A"]
+                     if eng.tasks[e.task_id].device_id == 1]
+        self.assertEqual(len(a_entries), 1,
+                         "the tested A att1 must NOT be re-released")
+        self.assertEqual(eng.tasks[a_entries[0].task_id].effective_attempt_no,
+                         2)
+
+    def test_release_guard_02_rebuild_terminates(self):
+        log = self._abnormal_retest_log()
+        st, post, world, prov, cfg, pre_log = _toy_context(
+            log, Fraction(2), rep=1)
+        eng = re1.RolloutEngine(st, post, world, prov, cfg,
+                                first_action=re1.A_H1_NOOP,
+                                log_prefix=pre_log)
+        out = eng.run()  # must terminate (no runaway)
+        self.assertGreater(out.t_end, 0)
+        self.assertLess(out.t_end, Fraction(240) * 2)
+        self.assertEqual(out.devices_passed + out.devices_exited, BATCH)
+
+
 class TestSampleTopUp(unittest.TestCase):
     """SAMPLE-01..03: frozen B-1 top-up arithmetic."""
 

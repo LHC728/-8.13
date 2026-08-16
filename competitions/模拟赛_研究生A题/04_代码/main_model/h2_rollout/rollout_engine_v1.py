@@ -1115,9 +1115,15 @@ class RolloutEngine:
         for device_id in sorted(self._pending_creations):
             dev = self.devices[device_id]
             for proc in ("A", "B", "C"):
-                if dev.process_state[proc].status in ("PASSED",
-                                                      "IN_PROGRESS"):
-                    continue  # already passed / already in flight
+                if dev.process_state[proc].status in ("PASSED", "IN_PROGRESS",
+                                                      "AWAITING_RETEST"):
+                    # already passed / already in flight / awaiting retest
+                    # (FIX: in an OFFLINE REBUILD the completed attempt-1
+                    # tasks are NOT in self.tasks, so the tid guard below
+                    # cannot see them -- the process-state guard prevents
+                    # re-releasing a tested attempt that would block the
+                    # FCFS queue head forever)
+                    continue
                 dev.process_state[proc].status = "IN_PROGRESS"
                 self._release_task(device_id, proc, 1, dev.entry_time)
         self._pending_creations.clear()
@@ -1132,7 +1138,11 @@ class RolloutEngine:
             dev = self.devices[device_id]
             if dev.terminal_state != "PENDING":
                 continue
-            if dev.process_state["E"].status == "PASSED":
+            if dev.process_state["E"].status in ("PASSED", "IN_PROGRESS",
+                                                 "AWAITING_RETEST"):
+                # FIX: never re-release an E attempt that was already
+                # tested (offline rebuild: the completed attempt is not in
+                # self.tasks, so the tid guard alone cannot see it)
                 continue
             e_tid = self._task_id(device_id, "E", 1)
             if e_tid in self.tasks:
