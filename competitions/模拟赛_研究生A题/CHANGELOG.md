@@ -2,6 +2,20 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-17 / `HG-Q4-NUMERIC-01`（Q4 numeric FINAL PASS / ACCEPTED + interpretation repair）
+
+### 修改
+
+- **Human Gate 裁决 HG-Q4-NUMERIC-01（accepted HEAD `8096d80`）落地**：**Q4 NUMERIC RESULTS = FINAL PASS / ACCEPTED**（Q4 FORMAL FACTOR RANK = ACCEPTED；Q4 INTERACTION NUMERICS = ACCEPTED）；**NO NEW SIMULATION / NO Q4_EVALUATION RERUN / NO Q3 CHANGE（H1、K\*=K12 UNCHANGED）；G7 = NOT AUTHORIZED YET**。
+- **interaction 解释修正（关键；数值未改）**：删除「turnover 0.5h 后 E ±10% 边际都大幅萎缩 / E_P10 惩罚被中和」错误表述；冻结解释 = **方向非对称**：`cond_E_M10_given_F2 ≈ −3.57 h`（STRONG DIMINISHING BENEFIT）、`cond_E_P10_given_F2 ≈ +91.33 h`（STRONG AMPLIFICATION OF PENALTY）；机械验证 `I_minus = cond_M10 − standalone_M10 = +30.50 h`、`I_plus = cond_P10 − standalone_P10 = +73.17 h`（exact Fraction 算术 PASS）。
+- **管理建议修正**（`MANAGEMENT_RECOMMENDATION_DRAFT.md`）：R1 改「若现实中运出/运入充分重叠…具体工程方案需评估」（不把工程方案写成题面事实）；R2 增加条件边际 −3.57 h；**新增 INTERACTION WARNING：fast-turnover 下 E 工序时长 +10% → 相对 fast-turnover 状态 +91.33 h，快周转对 E 工序恶化更敏感，须避免 E 能力退化**（MODEL-INTERNAL）。
+- **F3 措辞（HG 批准）**：三个预注册阈值 {150,180,210} h 均未观察到缩短总完成时间的证据（tau150 不明确；tau180/210 小幅延长）；**不得推广为所有 preventive replacement 策略必然无效**；Q3 正式策略 H1、K\*=K12 UNCHANGED。
+- **F5 措辞（HG 批准窄表述）**：仅「分段线性 vs 常风险率」两种语义比较下差异很小、未观察到明确影响；**不宣称对所有可能寿命分布普遍鲁棒**（无 equivalence margin，不做等价声明）。
+- **factor-rank 呈现**：表头用「rank by |standardized effect|」，方向符号另列；e 因子显示名 = operator-error environment（测手差错环境 e），避免与工序 E 混淆。
+- **paper-facing 包**：`05_结果/Q4/final_handoff/`（Q4_FINAL_NUMERIC_RESULT.md / Q4_FINAL_FACTOR_TABLE.md / Q4_FINAL_INTERACTION_TABLE.md / Q4_FINAL_MECHANISM_NARRATIVE.md / Q4_FINAL_MANAGEMENT_RECOMMENDATIONS.md / Q4_FINAL_PROVENANCE.json / Q4_FINAL_SCOPE_AUDIT.json）＝ **NUMERIC_ACCEPTED / SEMANTIC_REVIEW_PENDING（NOT READY_FOR_PAPER）**。
+- **CURRENT_STATE 同步**：state version → `STATE-2026-08-17-Q4-NUMERIC-ACCEPTED`；Q4 paper interpretation = REPAIRED / WAITING FINAL SEMANTIC REVIEW；**FINAL STATUS = Q4_NUMERIC_ACCEPTED_WAITING_FINAL_SEMANTIC_REVIEW**；下一阶段 = Q4 FINAL PAPER SEMANTIC REVIEW（低价时段 ONE fresh Pro-Max；本阶段 Pro-Max calls = 0）→ Human Gate → G7 PAPER FREEZE。
+- **mechanical checker**（`tmp/repair_checker_hg_q4_numeric.py`）：numeric exact-equal accepted / 无模拟重跑 / T_by_rep·ledger_by_rep·registry·results 未改 / 条件边际与 I 算术正确 / F3 scope guard / F5 无普遍鲁棒声明 / 无全局因果 / 无 T=sum(ledger) / Q3·H1·K12·H2 无变化——ALL PASS。
+
 ## 2026-08-17 / `Q4 PHASE 1B + FORMAL EVALUATION + TOP-2 INTERACTION`（Human Gate 一体化授权执行包）
 
 ### 修改

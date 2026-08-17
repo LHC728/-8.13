@@ -1,0 +1,85 @@
+{
+ "package": "Q4_FINAL_PROVENANCE",
+ "status": "NUMERIC_ACCEPTED",
+ "semantic_review": "SEMANTIC_REVIEW_PENDING",
+ "ready_for_paper": false,
+ "human_gate": {
+  "id": "HG-Q4-NUMERIC-01",
+  "verdict": "Q4 NUMERIC RESULTS = FINAL PASS / ACCEPTED; FORMAL FACTOR RANK = ACCEPTED; INTERACTION NUMERICS = ACCEPTED",
+  "accepted_head": "8096d80"
+ },
+ "accepted_evaluation_root": "05_结果/Q4/evaluation/20260817T065336055564Z_b46f9219/",
+ "accepted_files": [
+  "05_结果/Q4/evaluation/20260817T065336055564Z_b46f9219/Q4_EVALUATION_RESULTS.json",
+  "05_结果/Q4/evaluation/20260817T065336055564Z_b46f9219/Q4_EVALUATION_REPORT.md",
+  "05_结果/Q4/evaluation/20260817T065336055564Z_b46f9219/T_by_rep.json",
+  "05_结果/Q4/evaluation/20260817T065336055564Z_b46f9219/ledger_by_rep.json",
+  "05_结果/Q4/evaluation/Q4_EVALUATION_REGISTRY.json"
+ ],
+ "formal_design": {
+  "namespace": "q4_evaluation",
+  "master_seed": 7,
+  "R_final": 128,
+  "replicate_ids": "100..227",
+  "two_stage_expansion": {
+   "stage1_R": 64,
+   "stage1_max_half_width_h": 2.0930,
+   "target_half_width_h": 2.0,
+   "triggered": true,
+   "final_max_half_width_h_lt": 2.0,
+   "rule": "uniform expansion of ALL scenarios to R=128; NO factor-specific optional stopping"
+  },
+  "baseline_config_hash_q4": "0c1172f7c57bd39bef09612cefee056dc6d2d31b5d22f8b23a6f397beadcc8dd",
+  "screening_baseline_hash": "618d24ab3d823f97651524c6e0e4074553de280afab898fa0feca4abc43da275",
+  "q3_evidence_binding": [
+   "05_结果/Q3/formal/run_20260815T133840057668Z_7ee48fc0",
+   "05_结果/Q3/formal/reissue_20260815T150613626910Z_f4da8f9d"
+  ]
+ },
+ "f1_k": {
+  "role": "REUSED_ACCEPTED_FORMAL_EVIDENCE",
+  "scope": "seven K + frozen H1 policy set; K12 strong winner within scope",
+  "note": "NOT re-run; NOT mixed into any Q4 CI"
+ },
+ "key_numbers": {
+  "F2_dT_h": "-16357056701513088058783/221360928884514619392",
+  "F4_E_M10_dT_h": "-75411539817269246226233/2213609288845146193920",
+  "F4_E_P10_dT_h": "40208040350723795914951/2213609288845146193920",
+  "INT_M10_dT_h": "-42865403668341537175469/553402322211286548480",
+  "INT_P10_dT_h": "38604902998567975194823/2213609288845146193920",
+  "cond_E_M10_given_F2_h": "-3945523829117634057023/1106804644422573096960",
+  "cond_E_P10_given_F2_h": "202175470013698855782653/2213609288845146193920",
+  "I_minus_h": "67520492159033978112187/2213609288845146193920",
+  "I_plus_h": "80983714831487529933851/1106804644422573096960"
+ },
+ "conditional_margins_approx": {
+  "cond_E_M10_given_F2": -3.5648,
+  "cond_E_P10_given_F2": 91.3330,
+  "I_minus_approx": 30.5024,
+  "I_plus_approx": 73.1689
+ },
+ "verification": {
+  "numeric_tables_equal_accepted": true,
+  "no_new_simulation": true,
+  "no_evaluation_rerun": true,
+  "no_T_by_rep_modification": true,
+  "no_ledger_by_rep_modification": true,
+  "no_registry_modification": true,
+  "interaction_conditional_margins_correct": true,
+  "I_minus_arithmetic_correct": true,
+  "I_plus_arithmetic_correct": true,
+  "f3_scope_guard_present": true,
+  "f5_universal_robustness_claim_absent": true,
+  "no_global_causal_claim": true,
+  "no_T_sum_ledger": true,
+  "q3_unchanged": true,
+  "h1_k12_unchanged": true,
+  "h2_unchanged": true
+ },
+ "model_routing": {
+  "pro_max_calls_this_package": 0,
+  "final_semantic_review": "NOT RUN (low-price window, fresh Pro-Max, after Human Gate)",
+  "tools": "Flash / deterministic scripts only"
+ },
+ "generated_at": "2026-08-17"
+}

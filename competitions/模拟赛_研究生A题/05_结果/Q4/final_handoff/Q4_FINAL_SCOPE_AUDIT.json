@@ -1,0 +1,40 @@
+{
+ "package": "Q4_FINAL_SCOPE_AUDIT",
+ "status": "NUMERIC_ACCEPTED / SEMANTIC_REVIEW_PENDING",
+ "ready_for_paper": false,
+ "human_gate": "HG-Q4-NUMERIC-01",
+ "accepted_head": "8096d80",
+ "in_scope_this_repair": [
+  "land HG-Q4-NUMERIC-01 numeric acceptance (state records)",
+  "interaction interpretation repair (asymmetric conditional margins)",
+  "management recommendation repair (R1 implementation wording, R2 conditional margin, interaction warning)",
+  "F3 / F5 wording repair (HG-approved narrow statements + scope guards)",
+  "factor-rank presentation (rank by |standardized effect|; direction separate; e display name)",
+  "mechanism narrative repair (conditional margins + mechanical I_minus/I_plus verification)",
+  "paper-facing Q4 package creation (05_结果/Q4/final_handoff/)",
+  "CURRENT_STATE / CHANGELOG sync"
+ ],
+ "explicitly_out_of_scope": [
+  "NO new simulation",
+  "NO Q4_EVALUATION rerun",
+  "NO modification of accepted numerics (Q4_EVALUATION_RESULTS.json / T_by_rep.json / ledger_by_rep.json / Q4_EVALUATION_REGISTRY.json)",
+  "NO Q3 change (H1 / NO_PM_BEFORE_MANDATORY / K*=K12 UNCHANGED)",
+  "NO H2 change",
+  "NO G7 final paper freeze (NOT AUTHORIZED)",
+  "NO Pro-Max call in this package (high-price window; final semantic review deferred to low-price window)"
+ ],
+ "interpretation_repair_summary": {
+  "old_incorrect": "E +-10% marginal effects both shrink / E_P10 penalty neutralized under fast turnover",
+  "new_frozen": "direction-asymmetric non-additive interaction: fast turnover sharply reduces the extra benefit of further shortening E (-3.57 h) but sharply amplifies the penalty of E lengthening (+91.33 h); joint measures must not be combined additively",
+  "numbers_unchanged": true
+ },
+ "semantic_guards": {
+  "f3_scope": "covers {150,180,210} h thresholds only; not generalizable to all preventive replacement strategies; Q3 strategy unchanged",
+  "f5_scope": "comparison of piecewise-linear vs constant-hazard only; no universal robustness claim; no equivalence claim without preregistered margin",
+  "e_display_name": "operator-error environment (e) / 测手差错环境 e; machine/process ID E unchanged",
+  "q_semantics": "Q-A = calibration-input uncertainty (not a management lever); Q-B = incoming defect pressure (upstream quality risk, not 'tune q to cut T'); e = measurement-error environment (alpha/beta not independent controls)",
+  "causality": "all conclusions MODEL-INTERNAL; no real-world causal theorem",
+  "ledger": "mechanism ledger is NOT an additive decomposition of T"
+ },
+ "next_stage": "Q4 FINAL PAPER SEMANTIC REVIEW (fresh Pro-Max, low-price window) -> HUMAN GATE -> G7 PAPER FREEZE"
+}
