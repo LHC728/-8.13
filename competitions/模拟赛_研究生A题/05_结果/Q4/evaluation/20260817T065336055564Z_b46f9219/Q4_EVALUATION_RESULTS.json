@@ -1,0 +1,1460 @@
+{
+ "R_final": 128,
+ "checks": {
+  "authorized_core_hashes": {
+   "g3/key_schema_v1.py": {
+    "matches_phase_1a": true,
+    "sha256": "4fd6ad1085b7d5111b96f4cccf2dee0792fe032982fdf6583ccb18de3cb85a83"
+   },
+   "g3/random_des_v1.py": {
+    "matches_phase_1a": true,
+    "sha256": "801d6352af076e6f2e82c319c128d228eb9eb0703522675afe35ca187ee89928"
+   },
+   "status": "PASS"
+  },
+  "crn": {
+   "master_seed": 7,
+   "namespace": "q4_evaluation",
+   "note": "baseline and every scenario share namespace/seed/rep -> same keyed U_X/U_D/U_Y/U_L; all changes are same-U transforms",
+   "replicate_ids": [
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    138,
+    139,
+    140,
+    141,
+    142,
+    143,
+    144,
+    145,
+    146,
+    147,
+    148,
+    149,
+    150,
+    151,
+    152,
+    153,
+    154,
+    155,
+    156,
+    157,
+    158,
+    159,
+    160,
+    161,
+    162,
+    163,
+    164,
+    165,
+    166,
+    167,
+    168,
+    169,
+    170,
+    171,
+    172,
+    173,
+    174,
+    175,
+    176,
+    177,
+    178,
+    179,
+    180,
+    181,
+    182,
+    183,
+    184,
+    185,
+    186,
+    187,
+    188,
+    189,
+    190,
+    191,
+    192,
+    193,
+    194,
+    195,
+    196,
+    197,
+    198,
+    199,
+    200,
+    201,
+    202,
+    203,
+    204,
+    205,
+    206,
+    207,
+    208,
+    209,
+    210,
+    211,
+    212,
+    213,
+    214,
+    215,
+    216,
+    217,
+    218,
+    219,
+    220,
+    221,
+    222,
+    223,
+    224,
+    225,
+    226,
+    227
+   ],
+   "status": "PASS"
+  },
+  "domain_isolation": {
+   "disjoint": true,
+   "evaluation": "100..227",
+   "phase_1a": "0..19",
+   "phase_1b": "20..39",
+   "status": "PASS"
+  },
+  "only_one_factor_diff": {
+   "status": "PASS"
+  },
+  "screening_firewall": {
+   "q4_screening_keys_consumed": 0,
+   "q4_screening_result_files": 0,
+   "q4_screening_runs": 0,
+   "status": "PASS"
+  }
+ },
+ "factor_ranking": [
+  {
+   "abs_factor_score": 10.74188798979996,
+   "factor_id": "F2",
+   "factor_score": -10.74188798979996,
+   "max_scenario": "F2_TURNOVER_05",
+   "max_scenario_CI": [
+    -75.09660769819244,
+    -72.68969572888314
+   ],
+   "max_scenario_mean_Delta_T_h": "-16357056701513088058783/221360928884514619392",
+   "n_scenarios": 1
+  },
+  {
+   "abs_factor_score": 6.131700005941834,
+   "factor_id": "F4-E",
+   "factor_score": -6.131700005941834,
+   "max_scenario": "F4_E_M10",
+   "max_scenario_CI": [
+    -35.03922313052346,
+    -33.0952396197769
+   ],
+   "max_scenario_mean_Delta_T_h": "-75411539817269246226233/2213609288845146193920",
+   "n_scenarios": 2
+  },
+  {
+   "abs_factor_score": 2.788076738015369,
+   "factor_id": "F4-A",
+   "factor_score": 2.788076738015369,
+   "max_scenario": "F4_A_P10",
+   "max_scenario_CI": [
+    14.115967415040348,
+    16.006074106939305
+   ],
+   "max_scenario_mean_Delta_T_h": "2222614363734444994005/147573952589676412928",
+   "n_scenarios": 2
+  },
+  {
+   "abs_factor_score": 2.1917498792310184,
+   "factor_id": "F4-C",
+   "factor_score": 2.1917498792310184,
+   "max_scenario": "F4_C_P10",
+   "max_scenario_CI": [
+    12.440392512562777,
+    14.598669987437223
+   ],
+   "max_scenario_mean_Delta_T_h": "3461/256",
+   "n_scenarios": 2
+  },
+  {
+   "abs_factor_score": 0.7394606415427655,
+   "factor_id": "Q-B",
+   "factor_score": 0.7394606415427655,
+   "max_scenario": "QB_HIGH",
+   "max_scenario_CI": [
+    2.68556467982991,
+    4.35011854789007
+   ],
+   "max_scenario_mean_Delta_T_h": "389356343656323731063/110680464442257309696",
+   "n_scenarios": 2
+  },
+  {
+   "abs_factor_score": 0.5176152471572744,
+   "factor_id": "E",
+   "factor_score": -0.5176152471572744,
+   "max_scenario": "E_LOW",
+   "max_scenario_CI": [
+    -3.5609325880983187,
+    -1.7618896098889252
+   ],
+   "max_scenario_mean_Delta_T_h": "-392754955344523336305/147573952589676412928",
+   "n_scenarios": 2
+  },
+  {
+   "abs_factor_score": 0.34915575929950937,
+   "factor_id": "F4-B",
+   "factor_score": 0.34915575929950937,
+   "max_scenario": "F4_B_P10",
+   "max_scenario_CI": [
+    0.3901887509581819,
+    1.173873749041818
+   ],
+   "max_scenario_mean_Delta_T_h": "1001/1280",
+   "n_scenarios": 2
+  },
+  {
+   "abs_factor_score": 0.29109744811983423,
+   "factor_id": "Q-A",
+   "factor_score": 0.29109744811983423,
+   "max_scenario": "QA_HIGH",
+   "max_scenario_CI": [
+    0.631794555843868,
+    2.5350270170805542
+   ],
+   "max_scenario_mean_Delta_T_h": "350505282497034893921/221360928884514619392",
+   "n_scenarios": 2
+  },
+  {
+   "abs_factor_score": 0.25756157415412645,
+   "factor_id": "F3",
+   "factor_score": 0.25756157415412645,
+   "max_scenario": "F3_TAU210",
+   "max_scenario_CI": [
+    0.21073289078976087,
+    1.103241858909875
+   ],
+   "max_scenario_mean_Delta_T_h": "290862671124309017435/442721857769029238784",
+   "n_scenarios": 3
+  },
+  {
+   "abs_factor_score": 0.02512779588604189,
+   "factor_id": "F5",
+   "factor_score": -0.02512779588604189,
+   "max_scenario": "F5_CONSTANT_HAZARD",
+   "max_scenario_CI": [
+    -0.1583975950705822,
+    0.11861066142749255
+   ],
+   "max_scenario_mean_Delta_T_h": "-2935757529566958647/147573952589676412928",
+   "n_scenarios": 1
+  }
+ ],
+ "interaction": {
+  "I_minus": {
+   "CI_high": 31.55452072700523,
+   "CI_low": 29.450366178090693,
+   "SD_h": 6.013689486998392,
+   "SE_h": 0.5315400770258516,
+   "half_width_h": 1.0520772744572682,
+   "mean_Delta_T_h": "67520492159033978112187/2213609288845146193920",
+   "n": 128,
+   "sign_consistency": "ALL_POS",
+   "standardized_effect": 5.072168012414725
+  },
+  "I_plus": {
+   "CI_high": 74.54073111979295,
+   "CI_low": 71.79713480728262,
+   "SD_h": 7.841218844700486,
+   "SE_h": 0.6930723772319324,
+   "half_width_h": 1.3717981562551638,
+   "mean_Delta_T_h": "80983714831487529933851/1106804644422573096960",
+   "n": 128,
+   "sign_consistency": "ALL_POS",
+   "standardized_effect": 9.331321368869746
+  },
+  "interpretation": "CI contains 0 -> '未观察到明确 interaction'; excludes 0 -> '模型内非加性交互' (never real causality)",
+  "note": "replicate-level paired contrasts on q4_evaluation reps; same 2.0 h half-width rule applies."
+ },
+ "management_recommendations": [
+  {
+   "95_CI": [
+    -75.09660769819244,
+    -72.68969572888314
+   ],
+   "applicable_conditions": "within the frozen H1/NO_PM/K12 model world; model-internal sensitivity, NOT a real-world causal claim",
+   "effect_rank": 1,
+   "factor_id": "F2",
+   "half_width_h": 1.2035,
+   "implementation_cost_constraints": "see scenario level; e.g. turnover 0.5h overlap requires two-bay logistics; duration changes are process/capacity decisions",
+   "in_model_benefit": "completion-time decrease (Delta T < 0)",
+   "mean_Delta_T_h": "-16357056701513088058783/221360928884514619392",
+   "scenario_id": "F2_TURNOVER_05",
+   "status": "DRAFT_FOR_HUMAN_GATE"
+  },
+  {
+   "95_CI": [
+    -35.03922313052346,
+    -33.0952396197769
+   ],
+   "applicable_conditions": "within the frozen H1/NO_PM/K12 model world; model-internal sensitivity, NOT a real-world causal claim",
+   "effect_rank": 2,
+   "factor_id": "F4-E",
+   "half_width_h": 0.972,
+   "implementation_cost_constraints": "see scenario level; e.g. turnover 0.5h overlap requires two-bay logistics; duration changes are process/capacity decisions",
+   "in_model_benefit": "completion-time decrease (Delta T < 0)",
+   "mean_Delta_T_h": "-75411539817269246226233/2213609288845146193920",
+   "scenario_id": "F4_E_M10",
+   "status": "DRAFT_FOR_HUMAN_GATE"
+  },
+  {
+   "95_CI": [
+    14.115967415040348,
+    16.006074106939305
+   ],
+   "applicable_conditions": "within the frozen H1/NO_PM/K12 model world; model-internal sensitivity, NOT a real-world causal claim",
+   "effect_rank": 3,
+   "factor_id": "F4-A",
+   "half_width_h": 0.9451,
+   "implementation_cost_constraints": "see scenario level",
+   "in_model_benefit": "completion-time increase (Delta T > 0)",
+   "mean_Delta_T_h": "2222614363734444994005/147573952589676412928",
+   "scenario_id": "F4_A_P10",
+   "status": "DRAFT_FOR_HUMAN_GATE"
+  },
+  {
+   "95_CI": [
+    12.440392512562777,
+    14.598669987437223
+   ],
+   "applicable_conditions": "within the frozen H1/NO_PM/K12 model world; model-internal sensitivity, NOT a real-world causal claim",
+   "effect_rank": 4,
+   "factor_id": "F4-C",
+   "half_width_h": 1.0791,
+   "implementation_cost_constraints": "see scenario level",
+   "in_model_benefit": "completion-time increase (Delta T > 0)",
+   "mean_Delta_T_h": "3461/256",
+   "scenario_id": "F4_C_P10",
+   "status": "DRAFT_FOR_HUMAN_GATE"
+  },
+  {
+   "95_CI": [
+    2.68556467982991,
+    4.35011854789007
+   ],
+   "applicable_conditions": "within the frozen H1/NO_PM/K12 model world; model-internal sensitivity, NOT a real-world causal claim",
+   "effect_rank": 5,
+   "factor_id": "Q-B",
+   "half_width_h": 0.8323,
+   "implementation_cost_constraints": "model/parameter inputs; not a management lever",
+   "in_model_benefit": "completion-time increase (Delta T > 0)",
+   "mean_Delta_T_h": "389356343656323731063/110680464442257309696",
+   "scenario_id": "QB_HIGH",
+   "status": "DRAFT_FOR_HUMAN_GATE"
+  },
+  {
+   "95_CI": [
+    -3.5609325880983187,
+    -1.7618896098889252
+   ],
+   "applicable_conditions": "within the frozen H1/NO_PM/K12 model world; model-internal sensitivity, NOT a real-world causal claim",
+   "effect_rank": 6,
+   "factor_id": "E",
+   "half_width_h": 0.8995,
+   "implementation_cost_constraints": "model/parameter inputs; not a management lever",
+   "in_model_benefit": "completion-time decrease (Delta T < 0)",
+   "mean_Delta_T_h": "-392754955344523336305/147573952589676412928",
+   "scenario_id": "E_LOW",
+   "status": "DRAFT_FOR_HUMAN_GATE"
+  },
+  {
+   "95_CI": [
+    0.3901887509581819,
+    1.173873749041818
+   ],
+   "applicable_conditions": "within the frozen H1/NO_PM/K12 model world; model-internal sensitivity, NOT a real-world causal claim",
+   "effect_rank": 7,
+   "factor_id": "F4-B",
+   "half_width_h": 0.3918,
+   "implementation_cost_constraints": "see scenario level",
+   "in_model_benefit": "completion-time increase (Delta T > 0)",
+   "mean_Delta_T_h": "1001/1280",
+   "scenario_id": "F4_B_P10",
+   "status": "DRAFT_FOR_HUMAN_GATE"
+  },
+  {
+   "95_CI": [
+    0.631794555843868,
+    2.5350270170805542
+   ],
+   "applicable_conditions": "within the frozen H1/NO_PM/K12 model world; model-internal sensitivity, NOT a real-world causal claim",
+   "effect_rank": 8,
+   "factor_id": "Q-A",
+   "half_width_h": 0.9516,
+   "implementation_cost_constraints": "model/parameter inputs; not a management lever",
+   "in_model_benefit": "completion-time increase (Delta T > 0)",
+   "mean_Delta_T_h": "350505282497034893921/221360928884514619392",
+   "scenario_id": "QA_HIGH",
+   "status": "DRAFT_FOR_HUMAN_GATE"
+  },
+  {
+   "95_CI": [
+    0.21073289078976087,
+    1.103241858909875
+   ],
+   "applicable_conditions": "within the frozen H1/NO_PM/K12 model world; model-internal sensitivity, NOT a real-world causal claim",
+   "effect_rank": 9,
+   "factor_id": "F3",
+   "half_width_h": 0.4463,
+   "implementation_cost_constraints": "model/parameter inputs; not a management lever",
+   "in_model_benefit": "completion-time increase (Delta T > 0)",
+   "mean_Delta_T_h": "290862671124309017435/442721857769029238784",
+   "scenario_id": "F3_TAU210",
+   "status": "DRAFT_FOR_HUMAN_GATE"
+  },
+  {
+   "95_CI": [
+    -0.1583975950705822,
+    0.11861066142749255
+   ],
+   "applicable_conditions": "within the frozen H1/NO_PM/K12 model world; model-internal sensitivity, NOT a real-world causal claim",
+   "effect_rank": 10,
+   "factor_id": "F5",
+   "half_width_h": 0.1385,
+   "implementation_cost_constraints": "model/parameter inputs; not a management lever",
+   "in_model_benefit": "completion-time decrease (Delta T < 0)",
+   "mean_Delta_T_h": "-2935757529566958647/147573952589676412928",
+   "scenario_id": "F5_CONSTANT_HAZARD",
+   "status": "DRAFT_FOR_HUMAN_GATE"
+  }
+ ],
+ "master_seed": 7,
+ "max_half_width_h_stage1": 2.09297591448481,
+ "mechanism_ledgers": {
+  "E_HIGH": {
+   "calibration_time": {
+    "A": "129/2",
+    "B": "5/3",
+    "C": "43",
+    "E": "268/3"
+   },
+   "effective_test_time": {
+    "A": "31995",
+    "B": "25600",
+    "C": "63995/2",
+    "E": "38097"
+   },
+   "failure_wasted_fragment_time": {
+    "A": "14291542439823111705/1152921504606846976",
+    "B": "18086482947761441533/4611686018427387904",
+    "C": "44958831624698767755/4611686018427387904",
+    "E": "6231788537168579323/576460752303423488"
+   },
+   "n_reps": 128,
+   "off_shift_time": "49092",
+   "retest_time": {
+    "A": "780",
+    "B": "838",
+    "C": "585",
+    "E": "2469"
+   },
+   "shift_boundary_wasted_fragment_time": {
+    "A": "0",
+    "B": "0",
+    "C": "0",
+    "E": "0"
+   },
+   "terminal_cancelled_fragment_time": {
+    "A": "10",
+    "B": "126551130246018001/4611686018427387904",
+    "C": "3001714520633229695/576460752303423488",
+    "E": "27303052262193752543/2305843009213693952"
+   },
+   "turnover_occupancy_time": "12544"
+  },
+  "E_LOW": {
+   "calibration_time": {
+    "A": "129/2",
+    "B": "5/3",
+    "C": "43",
+    "E": "266/3"
+   },
+   "effective_test_time": {
+    "A": "63955/2",
+    "B": "25600",
+    "C": "63965/2",
+    "E": "37572"
+   },
+   "failure_wasted_fragment_time": {
+    "A": "14291542439823111705/1152921504606846976",
+    "B": "8151970654914777053/2305843009213693952",
+    "C": "23695799431727818831/2305843009213693952",
+    "E": "6231788537168579323/576460752303423488"
+   },
+   "n_reps": 128,
+   "off_shift_time": "48648",
+   "retest_time": {
+    "A": "775",
+    "B": "886",
+    "C": "575",
+    "E": "2019"
+   },
+   "shift_boundary_wasted_fragment_time": {
+    "A": "0",
+    "B": "0",
+    "C": "0",
+    "E": "0"
+   },
+   "terminal_cancelled_fragment_time": {
+    "A": "65/2",
+    "B": "477273192044476357/1152921504606846976",
+    "C": "70003652119796540645/4611686018427387904",
+    "E": "24039062261891046981/2305843009213693952"
+   },
+   "turnover_occupancy_time": "12544"
+  },
+  "F2_TURNOVER_05": {
+   "calibration_time": {
+    "A": "129/2",
+    "B": "5/3",
+    "C": "43",
+    "E": "268/3"
+   },
+   "effective_test_time": {
+    "A": "31995",
+    "B": "25600",
+    "C": "32000",
+    "E": "37881"
+   },
+   "failure_wasted_fragment_time": {
+    "A": "14291542439823111705/1152921504606846976",
+    "B": "18086482947761441533/4611686018427387904",
+    "C": "44854568504353658585/4611686018427387904",
+    "E": "14731846455727075893/1152921504606846976"
+   },
+   "n_reps": 128,
+   "off_shift_time": "23124",
+   "retest_time": {
+    "A": "775",
+    "B": "880",
+    "C": "565",
+    "E": "2292"
+   },
+   "shift_boundary_wasted_fragment_time": {
+    "A": "0",
+    "B": "0",
+    "C": "0",
+    "E": "0"
+   },
+   "terminal_cancelled_fragment_time": {
+    "A": "15",
+    "B": "126551130246018001/4611686018427387904",
+    "C": "6294382119671238485/2305843009213693952",
+    "E": "22766513499413918049/2305843009213693952"
+   },
+   "turnover_occupancy_time": "6272"
+  },
+  "F4_E_M10": {
+   "calibration_time": {
+    "A": "129/2",
+    "B": "5/3",
+    "C": "43",
+    "E": "260/3"
+   },
+   "effective_test_time": {
+    "A": "31970",
+    "B": "25600",
+    "C": "31970",
+    "E": "340929/10"
+   },
+   "failure_wasted_fragment_time": {
+    "A": "14291542439823111705/1152921504606846976",
+    "B": "15629558986657075753/4611686018427387904",
+    "C": "47160411513567352537/4611686018427387904",
+    "E": "3041486909867167421/1152921504606846976"
+   },
+   "n_reps": 128,
+   "off_shift_time": "46596",
+   "retest_time": {
+    "A": "775",
+    "B": "880",
+    "C": "565",
+    "E": "10314/5"
+   },
+   "shift_boundary_wasted_fragment_time": {
+    "A": "0",
+    "B": "0",
+    "C": "0",
+    "E": "0"
+   },
+   "terminal_cancelled_fragment_time": {
+    "A": "35",
+    "B": "2583475091350383781/4611686018427387904",
+    "C": "75469672396082057045/2305843009213693952",
+    "E": "119742195700973444567/11529215046068469760"
+   },
+   "turnover_occupancy_time": "12544"
+  },
+  "F4_E_P10": {
+   "calibration_time": {
+    "A": "129/2",
+    "B": "5/3",
+    "C": "43",
+    "E": "274/3"
+   },
+   "effective_test_time": {
+    "A": "63995/2",
+    "B": "25600",
+    "C": "32000",
+    "E": "416691/10"
+   },
+   "failure_wasted_fragment_time": {
+    "A": "14291542439823111705/1152921504606846976",
+    "B": "9106517039003729767/2305843009213693952",
+    "C": "45914117697627665795/4611686018427387904",
+    "E": "143945316087386484903/5764607523034234880"
+   },
+   "n_reps": 128,
+   "off_shift_time": "53364",
+   "retest_time": {
+    "A": "775",
+    "B": "880",
+    "C": "565",
+    "E": "12606/5"
+   },
+   "shift_boundary_wasted_fragment_time": {
+    "A": "0",
+    "B": "0",
+    "C": "0",
+    "E": "0"
+   },
+   "terminal_cancelled_fragment_time": {
+    "A": "15/2",
+    "B": "0",
+    "C": "0",
+    "E": "51222003868034698401/11529215046068469760"
+   },
+   "turnover_occupancy_time": "12544"
+  },
+  "INT_F2_05_E_M10": {
+   "calibration_time": {
+    "A": "129/2",
+    "B": "5/3",
+    "C": "43",
+    "E": "260/3"
+   },
+   "effective_test_time": {
+    "A": "31995",
+    "B": "25600",
+    "C": "32000",
+    "E": "340929/10"
+   },
+   "failure_wasted_fragment_time": {
+    "A": "14291542439823111705/1152921504606846976",
+    "B": "15629558986657075753/4611686018427387904",
+    "C": "44854568504353658585/4611686018427387904",
+    "E": "1731002074064490967/288230376151711744"
+   },
+   "n_reps": 128,
+   "off_shift_time": "41076",
+   "retest_time": {
+    "A": "775",
+    "B": "880",
+    "C": "565",
+    "E": "10314/5"
+   },
+   "shift_boundary_wasted_fragment_time": {
+    "A": "0",
+    "B": "0",
+    "C": "0",
+    "E": "0"
+   },
+   "terminal_cancelled_fragment_time": {
+    "A": "15",
+    "B": "2583475091350383781/4611686018427387904",
+    "C": "6294382119671238485/2305843009213693952",
+    "E": "80916981837065480097/11529215046068469760"
+   },
+   "turnover_occupancy_time": "6272"
+  },
+  "INT_F2_05_E_P10": {
+   "calibration_time": {
+    "A": "129/2",
+    "B": "5/3",
+    "C": "43",
+    "E": "274/3"
+   },
+   "effective_test_time": {
+    "A": "63995/2",
+    "B": "25600",
+    "C": "32000",
+    "E": "416691/10"
+   },
+   "failure_wasted_fragment_time": {
+    "A": "14291542439823111705/1152921504606846976",
+    "B": "9106517039003729767/2305843009213693952",
+    "C": "45914117697627665795/4611686018427387904",
+    "E": "143945316087386484903/5764607523034234880"
+   },
+   "n_reps": 128,
+   "off_shift_time": "53268",
+   "retest_time": {
+    "A": "775",
+    "B": "880",
+    "C": "565",
+    "E": "12606/5"
+   },
+   "shift_boundary_wasted_fragment_time": {
+    "A": "0",
+    "B": "0",
+    "C": "0",
+    "E": "0"
+   },
+   "terminal_cancelled_fragment_time": {
+    "A": "15/2",
+    "B": "0",
+    "C": "0",
+    "E": "51222003868034698401/11529215046068469760"
+   },
+   "turnover_occupancy_time": "6272"
+  },
+  "Q4_BASELINE": {
+   "calibration_time": {
+    "A": "129/2",
+    "B": "5/3",
+    "C": "43",
+    "E": "268/3"
+   },
+   "effective_test_time": {
+    "A": "31990",
+    "B": "25600",
+    "C": "63985/2",
+    "E": "37881"
+   },
+   "failure_wasted_fragment_time": {
+    "A": "14291542439823111705/1152921504606846976",
+    "B": "8151970654914777053/2305843009213693952",
+    "C": "35631196467498882777/4611686018427387904",
+    "E": "6231788537168579323/576460752303423488"
+   },
+   "n_reps": 128,
+   "off_shift_time": "48768",
+   "retest_time": {
+    "A": "775",
+    "B": "880",
+    "C": "565",
+    "E": "2292"
+   },
+   "shift_boundary_wasted_fragment_time": {
+    "A": "0",
+    "B": "0",
+    "C": "0",
+    "E": "0"
+   },
+   "terminal_cancelled_fragment_time": {
+    "A": "20",
+    "B": "477273192044476357/1152921504606846976",
+    "C": "17823597165739708245/2305843009213693952",
+    "E": "27303052262193752543/2305843009213693952"
+   },
+   "turnover_occupancy_time": "12544"
+  },
+  "QA_HIGH": {
+   "calibration_time": {
+    "A": "129/2",
+    "B": "5/3",
+    "C": "43",
+    "E": "266/3"
+   },
+   "effective_test_time": {
+    "A": "63945/2",
+    "B": "25600",
+    "C": "31985",
+    "E": "37464"
+   },
+   "failure_wasted_fragment_time": {
+    "A": "5883701141526721015/576460752303423488",
+    "B": "8151970654914777053/2305843009213693952",
+    "C": "9088823797634873923/1152921504606846976",
+    "E": "6231788537168579323/576460752303423488"
+   },
+   "n_reps": 128,
+   "off_shift_time": "49020",
+   "retest_time": {
+    "A": "1905/2",
+    "B": "1056",
+    "C": "710",
+    "E": "2472"
+   },
+   "shift_boundary_wasted_fragment_time": {
+    "A": "0",
+    "B": "0",
+    "C": "0",
+    "E": "0"
+   },
+   "terminal_cancelled_fragment_time": {
+    "A": "48641000341043548715/1152921504606846976",
+    "B": "477273192044476357/1152921504606846976",
+    "C": "104098385884849622135/4611686018427387904",
+    "E": "22766513499413918049/2305843009213693952"
+   },
+   "turnover_occupancy_time": "12544"
+  },
+  "QA_LOW": {
+   "calibration_time": {
+    "A": "129/2",
+    "B": "5/3",
+    "C": "43",
+    "E": "266/3"
+   },
+   "effective_test_time": {
+    "A": "63995/2",
+    "B": "25600",
+    "C": "32000",
+    "E": "38223"
+   },
+   "failure_wasted_fragment_time": {
+    "A": "14291542439823111705/1152921504606846976",
+    "B": "9106517039003729767/2305843009213693952",
+    "C": "22542877927120971855/2305843009213693952",
+    "E": "6231788537168579323/576460752303423488"
+   },
+   "n_reps": 128,
+   "off_shift_time": "48768",
+   "retest_time": {
+    "A": "1265/2",
+    "B": "706",
+    "C": "465",
+    "E": "2094"
+   },
+   "shift_boundary_wasted_fragment_time": {
+    "A": "0",
+    "B": "0",
+    "C": "0",
+    "E": "0"
+   },
+   "terminal_cancelled_fragment_time": {
+    "A": "5/2",
+    "B": "0",
+    "C": "828361843385722085/4611686018427387904",
+    "E": "22766513499413918049/2305843009213693952"
+   },
+   "turnover_occupancy_time": "12544"
+  },
+  "QB_HIGH": {
+   "calibration_time": {
+    "A": "129/2",
+    "B": "5/3",
+    "C": "43",
+    "E": "266/3"
+   },
+   "effective_test_time": {
+    "A": "63985/2",
+    "B": "25600",
+    "C": "31995",
+    "E": "37776"
+   },
+   "failure_wasted_fragment_time": {
+    "A": "14291542439823111705/1152921504606846976",
+    "B": "8151970654914777053/2305843009213693952",
+    "C": "17931191908693583951/2305843009213693952",
+    "E": "6231788537168579323/576460752303423488"
+   },
+   "n_reps": 128,
+   "off_shift_time": "49356",
+   "retest_time": {
+    "A": "1705/2",
+    "B": "934",
+    "C": "635",
+    "E": "2685"
+   },
+   "shift_boundary_wasted_fragment_time": {
+    "A": "0",
+    "B": "0",
+    "C": "0",
+    "E": "0"
+   },
+   "terminal_cancelled_fragment_time": {
+    "A": "35/2",
+    "B": "477273192044476357/1152921504606846976",
+    "C": "46945222027659601125/4611686018427387904",
+    "E": "22766513499413918049/2305843009213693952"
+   },
+   "turnover_occupancy_time": "12544"
+  },
+  "QB_LOW": {
+   "calibration_time": {
+    "A": "129/2",
+    "B": "5/3",
+    "C": "43",
+    "E": "266/3"
+   },
+   "effective_test_time": {
+    "A": "63985/2",
+    "B": "25600",
+    "C": "31995",
+    "E": "37983"
+   },
+   "failure_wasted_fragment_time": {
+    "A": "14291542439823111705/1152921504606846976",
+    "B": "8151970654914777053/2305843009213693952",
+    "C": "45809854577282556625/4611686018427387904",
+    "E": "26608138637322861187/2305843009213693952"
+   },
+   "n_reps": 128,
+   "off_shift_time": "48672",
+   "retest_time": {
+    "A": "715",
+    "B": "838",
+    "C": "515",
+    "E": "1953"
+   },
+   "shift_boundary_wasted_fragment_time": {
+    "A": "0",
+    "B": "0",
+    "C": "0",
+    "E": "0"
+   },
+   "terminal_cancelled_fragment_time": {
+    "A": "15",
+    "B": "477273192044476357/1152921504606846976",
+    "C": "11581346606241024345/2305843009213693952",
+    "E": "10542764505382687077/1152921504606846976"
+   },
+   "turnover_occupancy_time": "12544"
+  }
+ },
+ "namespace": "q4_evaluation",
+ "note": "Q4_EVALUATION is the ONLY final-inference CI source. F1 = REUSED_ACCEPTED_FORMAL_EVIDENCE (separate). F3 = COUNTERFACTUAL_ONLY. F5 = MODEL_SEMANTIC_ONLY.",
+ "registry": "05_结果/Q4/evaluation/Q4_EVALUATION_REGISTRY.json",
+ "replicate_ids": [
+  100,
+  101,
+  102,
+  103,
+  104,
+  105,
+  106,
+  107,
+  108,
+  109,
+  110,
+  111,
+  112,
+  113,
+  114,
+  115,
+  116,
+  117,
+  118,
+  119,
+  120,
+  121,
+  122,
+  123,
+  124,
+  125,
+  126,
+  127,
+  128,
+  129,
+  130,
+  131,
+  132,
+  133,
+  134,
+  135,
+  136,
+  137,
+  138,
+  139,
+  140,
+  141,
+  142,
+  143,
+  144,
+  145,
+  146,
+  147,
+  148,
+  149,
+  150,
+  151,
+  152,
+  153,
+  154,
+  155,
+  156,
+  157,
+  158,
+  159,
+  160,
+  161,
+  162,
+  163,
+  164,
+  165,
+  166,
+  167,
+  168,
+  169,
+  170,
+  171,
+  172,
+  173,
+  174,
+  175,
+  176,
+  177,
+  178,
+  179,
+  180,
+  181,
+  182,
+  183,
+  184,
+  185,
+  186,
+  187,
+  188,
+  189,
+  190,
+  191,
+  192,
+  193,
+  194,
+  195,
+  196,
+  197,
+  198,
+  199,
+  200,
+  201,
+  202,
+  203,
+  204,
+  205,
+  206,
+  207,
+  208,
+  209,
+  210,
+  211,
+  212,
+  213,
+  214,
+  215,
+  216,
+  217,
+  218,
+  219,
+  220,
+  221,
+  222,
+  223,
+  224,
+  225,
+  226,
+  227
+ ],
+ "run_id": "20260817T065336055564Z_b46f9219",
+ "scenario_stats": {
+  "E_HIGH": {
+   "CI_high": 3.1163152860881738,
+   "CI_low": 1.277879412666695,
+   "SD_h": 5.254263518912508,
+   "SE_h": 0.46441567054551575,
+   "authority": "-",
+   "factor_id": "E",
+   "half_width_h": 0.9192179367107394,
+   "level": "e_scale=6/5",
+   "mean_Delta_T_h": "121587877526973459203/55340232221128654848",
+   "n": 128,
+   "scenario_id": "E_HIGH",
+   "sign_consistency": "MIXED",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": 0.41815514990237385,
+   "status": "FINAL_INFERENCE"
+  },
+  "E_LOW": {
+   "CI_high": -1.7618896098889252,
+   "CI_low": -3.5609325880983187,
+   "SD_h": 5.14167832885527,
+   "SE_h": 0.45446445162668453,
+   "authority": "-",
+   "factor_id": "E",
+   "half_width_h": 0.8995214891046968,
+   "level": "e_scale=4/5",
+   "mean_Delta_T_h": "-392754955344523336305/147573952589676412928",
+   "n": 128,
+   "scenario_id": "E_LOW",
+   "sign_consistency": "MIXED",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": -0.5176152471572744,
+   "status": "FINAL_INFERENCE"
+  },
+  "F2_TURNOVER_05": {
+   "CI_high": -72.68969572888314,
+   "CI_low": -75.09660769819244,
+   "SD_h": 6.878972465892736,
+   "SE_h": 0.6080210097785375,
+   "authority": "-",
+   "factor_id": "F2",
+   "half_width_h": 1.2034559846546593,
+   "level": "turnover=0.5h_overlap",
+   "mean_Delta_T_h": "-16357056701513088058783/221360928884514619392",
+   "n": 128,
+   "scenario_id": "F2_TURNOVER_05",
+   "sign_consistency": "ALL_NEG",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": -10.74188798979996,
+   "status": "FINAL_INFERENCE"
+  },
+  "F3_TAU150": {
+   "CI_high": 0.7066061140241817,
+   "CI_low": -0.10617303099121245,
+   "SD_h": 2.3229288942449937,
+   "SE_h": 0.20531984666685044,
+   "authority": "COUNTERFACTUAL_ONLY",
+   "factor_id": "F3",
+   "half_width_h": 0.4063895725076971,
+   "level": "tau_PM=150",
+   "mean_Delta_T_h": "44304141664390327241/147573952589676412928",
+   "n": 128,
+   "scenario_id": "F3_TAU150",
+   "sign_consistency": "MIXED",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": 0.1292405214211527,
+   "status": "FINAL_INFERENCE"
+  },
+  "F3_TAU180": {
+   "CI_high": 1.0746645220697575,
+   "CI_low": 0.0986852276298783,
+   "SD_h": 2.789356145692319,
+   "SE_h": 0.24654658072042623,
+   "authority": "COUNTERFACTUAL_ONLY",
+   "factor_id": "F3",
+   "half_width_h": 0.48798964721993965,
+   "level": "tau_PM=180",
+   "mean_Delta_T_h": "259733790499924149083/442721857769029238784",
+   "n": 128,
+   "scenario_id": "F3_TAU180",
+   "sign_consistency": "MIXED",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": 0.210326270367388,
+   "status": "FINAL_INFERENCE"
+  },
+  "F3_TAU210": {
+   "CI_high": 1.103241858909875,
+   "CI_low": 0.21073289078976087,
+   "SD_h": 2.5507973268429884,
+   "SE_h": 0.2254607609053994,
+   "authority": "COUNTERFACTUAL_ONLY",
+   "factor_id": "F3",
+   "half_width_h": 0.4462544840600571,
+   "level": "tau_PM=210",
+   "mean_Delta_T_h": "290862671124309017435/442721857769029238784",
+   "n": 128,
+   "scenario_id": "F3_TAU210",
+   "sign_consistency": "MIXED",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": 0.25756157415412645,
+   "status": "FINAL_INFERENCE"
+  },
+  "F4_A_M10": {
+   "CI_high": -0.16442688371672098,
+   "CI_low": -0.5963440943036238,
+   "SD_h": 1.2344226282713164,
+   "SE_h": 0.10910857641259607,
+   "authority": "-",
+   "factor_id": "F4-A",
+   "half_width_h": 0.2159586052934514,
+   "level": "duration_A=-10%",
+   "mean_Delta_T_h": "-56134990120988054059/147573952589676412928",
+   "n": 128,
+   "scenario_id": "F4_A_M10",
+   "sign_consistency": "MIXED",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": -0.308148506272008,
+   "status": "FINAL_INFERENCE"
+  },
+  "F4_A_P10": {
+   "CI_high": 16.006074106939305,
+   "CI_low": 14.115967415040348,
+   "SD_h": 5.401939105776078,
+   "SE_h": 0.4774684716563824,
+   "authority": "-",
+   "factor_id": "F4-A",
+   "half_width_h": 0.9450533459494778,
+   "level": "duration_A=+10%",
+   "mean_Delta_T_h": "2222614363734444994005/147573952589676412928",
+   "n": 128,
+   "scenario_id": "F4_A_P10",
+   "sign_consistency": "ALL_POS",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": 2.788076738015369,
+   "status": "FINAL_INFERENCE"
+  },
+  "F4_B_M10": {
+   "CI_high": 0.11658335173169893,
+   "CI_low": -0.05564585173169892,
+   "SD_h": 0.4922323556300762,
+   "SE_h": 0.04350760457318189,
+   "authority": "-",
+   "factor_id": "F4-B",
+   "half_width_h": 0.08611460173169892,
+   "level": "duration_B=-10%",
+   "mean_Delta_T_h": "39/1280",
+   "n": 128,
+   "scenario_id": "F4_B_M10",
+   "sign_consistency": "MIXED",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": 0.06189912071301944,
+   "status": "FINAL_INFERENCE"
+  },
+  "F4_B_P10": {
+   "CI_high": 1.173873749041818,
+   "CI_low": 0.3901887509581819,
+   "SD_h": 2.2397776040382182,
+   "SE_h": 0.19797024152064774,
+   "authority": "-",
+   "factor_id": "F4-B",
+   "half_width_h": 0.39184249904181806,
+   "level": "duration_B=+10%",
+   "mean_Delta_T_h": "1001/1280",
+   "n": 128,
+   "scenario_id": "F4_B_P10",
+   "sign_consistency": "MIXED",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": 0.34915575929950937,
+   "status": "FINAL_INFERENCE"
+  },
+  "F4_C_M10": {
+   "CI_high": -0.04666630121761342,
+   "CI_low": -0.5314586987823866,
+   "SD_h": 1.3855403093446605,
+   "SE_h": 0.12246561854311452,
+   "authority": "-",
+   "factor_id": "F4-C",
+   "half_width_h": 0.24239619878238658,
+   "level": "duration_C=-10%",
+   "mean_Delta_T_h": "-37/128",
+   "n": 128,
+   "scenario_id": "F4_C_M10",
+   "sign_consistency": "MIXED",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": -0.20862799735990514,
+   "status": "FINAL_INFERENCE"
+  },
+  "F4_C_P10": {
+   "CI_high": 14.598669987437223,
+   "CI_low": 12.440392512562777,
+   "SD_h": 6.168373215443436,
+   "SE_h": 0.5452123161911903,
+   "authority": "-",
+   "factor_id": "F4-C",
+   "half_width_h": 1.079138737437223,
+   "level": "duration_C=+10%",
+   "mean_Delta_T_h": "3461/256",
+   "n": 128,
+   "scenario_id": "F4_C_P10",
+   "sign_consistency": "MIXED",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": 2.1917498792310184,
+   "status": "FINAL_INFERENCE"
+  },
+  "F4_E_M10": {
+   "CI_high": -33.0952396197769,
+   "CI_low": -35.03922313052346,
+   "SD_h": 5.555919458247766,
+   "SE_h": 0.49107854058166056,
+   "authority": "-",
+   "factor_id": "F4-E",
+   "half_width_h": 0.9719917553732808,
+   "level": "duration_E=-10%",
+   "mean_Delta_T_h": "-75411539817269246226233/2213609288845146193920",
+   "n": 128,
+   "scenario_id": "F4_E_M10",
+   "sign_consistency": "ALL_NEG",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": -6.131700005941834,
+   "status": "FINAL_INFERENCE"
+  },
+  "F4_E_P10": {
+   "CI_high": 19.22274943166412,
+   "CI_low": 17.105287818035514,
+   "SD_h": 6.051721177786078,
+   "SE_h": 0.534901635332847,
+   "authority": "-",
+   "factor_id": "F4-E",
+   "half_width_h": 1.058730806814304,
+   "level": "duration_E=+10%",
+   "mean_Delta_T_h": "40208040350723795914951/2213609288845146193920",
+   "n": 128,
+   "scenario_id": "F4_E_P10",
+   "sign_consistency": "ALL_POS",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": 3.001463235207215,
+   "status": "FINAL_INFERENCE"
+  },
+  "F5_CONSTANT_HAZARD": {
+   "CI_high": 0.11861066142749255,
+   "CI_low": -0.1583975950705822,
+   "SD_h": 0.7916916752971301,
+   "SE_h": 0.06997631902644237,
+   "authority": "MODEL_SEMANTIC_ONLY",
+   "factor_id": "F5",
+   "half_width_h": 0.13850412824903738,
+   "level": "constant-hazard CDF",
+   "mean_Delta_T_h": "-2935757529566958647/147573952589676412928",
+   "n": 128,
+   "scenario_id": "F5_CONSTANT_HAZARD",
+   "sign_consistency": "MIXED",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": -0.02512779588604189,
+   "status": "FINAL_INFERENCE"
+  },
+  "INT_F2_05_E_M10": {
+   "CI_high": -76.2587668890063,
+   "CI_low": -78.65711238327373,
+   "SD_h": 6.854489415953929,
+   "SE_h": 0.6058569934490551,
+   "authority": "INTERACTION_CELL",
+   "factor_id": "INT-F2xF4-E",
+   "half_width_h": 1.1991727471337148,
+   "level": "F2 0.5h x E -10%",
+   "mean_Delta_T_h": "-42865403668341537175469/553402322211286548480",
+   "n": 128,
+   "scenario_id": "INT_F2_05_E_M10",
+   "sign_consistency": "ALL_NEG",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": -11.300322304948851,
+   "status": "FINAL_INFERENCE"
+  },
+  "INT_F2_05_E_P10": {
+   "CI_high": 18.490400947931207,
+   "CI_low": 16.38919880176843,
+   "SD_h": 6.005251497783772,
+   "SE_h": 0.530794257101697,
+   "authority": "INTERACTION_CELL",
+   "factor_id": "INT-F2xF4-E",
+   "half_width_h": 1.050601073081389,
+   "level": "F2 0.5h x E +10%",
+   "mean_Delta_T_h": "38604902998567975194823/2213609288845146193920",
+   "n": 128,
+   "scenario_id": "INT_F2_05_E_P10",
+   "sign_consistency": "ALL_POS",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": 2.904091507455757,
+   "status": "FINAL_INFERENCE"
+  },
+  "QA_HIGH": {
+   "CI_high": 2.5350270170805542,
+   "CI_low": 0.631794555843868,
+   "SD_h": 5.439452653018032,
+   "SE_h": 0.4807842321115258,
+   "authority": "-",
+   "factor_id": "Q-A",
+   "half_width_h": 0.9516162306183431,
+   "level": "q_scale=6/5",
+   "mean_Delta_T_h": "350505282497034893921/221360928884514619392",
+   "n": 128,
+   "scenario_id": "QA_HIGH",
+   "sign_consistency": "MIXED",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": 0.29109744811983423,
+   "status": "FINAL_INFERENCE"
+  },
+  "QA_LOW": {
+   "CI_high": -0.22971888672980068,
+   "CI_low": -2.159431363570563,
+   "SD_h": 5.515132736278045,
+   "SE_h": 0.48747346962076554,
+   "authority": "-",
+   "factor_id": "Q-A",
+   "half_width_h": 0.9648562384203813,
+   "level": "q_scale=4/5",
+   "mean_Delta_T_h": "-528864518651159182501/442721857769029238784",
+   "n": 128,
+   "scenario_id": "QA_LOW",
+   "sign_consistency": "MIXED",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": -0.2165995239411691,
+   "status": "FINAL_INFERENCE"
+  },
+  "QB_HIGH": {
+   "CI_high": 4.35011854789007,
+   "CI_low": 2.68556467982991,
+   "SD_h": 4.757307443058201,
+   "SE_h": 0.4204905441469611,
+   "authority": "-",
+   "factor_id": "Q-B",
+   "half_width_h": 0.8322769340300801,
+   "level": "q_scale=6/5",
+   "mean_Delta_T_h": "389356343656323731063/110680464442257309696",
+   "n": 128,
+   "scenario_id": "QB_HIGH",
+   "sign_consistency": "MIXED",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": 0.7394606415427655,
+   "status": "FINAL_INFERENCE"
+  },
+  "QB_LOW": {
+   "CI_high": -1.6974801770934578,
+   "CI_low": -3.03413574998212,
+   "SD_h": 3.820171655435204,
+   "SE_h": 0.337658660356859,
+   "authority": "-",
+   "factor_id": "Q-B",
+   "half_width_h": 0.668327786444331,
+   "level": "q_scale=4/5",
+   "mean_Delta_T_h": "-523697448371106825631/221360928884514619392",
+   "n": 128,
+   "scenario_id": "QB_LOW",
+   "sign_consistency": "MIXED",
+   "source": "Q4_EVALUATION",
+   "standardized_effect": -0.6192936278587905,
+   "status": "FINAL_INFERENCE"
+  }
+ },
+ "target_half_width_h": 2.0,
+ "two_stage_expansion": true,
+ "wallclock_s": 0.1
+}

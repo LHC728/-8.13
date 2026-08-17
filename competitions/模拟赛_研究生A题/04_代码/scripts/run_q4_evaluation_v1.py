@@ -416,7 +416,39 @@ def config_field_diff(db: dict, ds: dict) -> list[str]:
     return changed
 
 
+def _persist_sim(T: dict[str, list[Fraction]], ledgers: dict[str, list[dict]],
+                 out: Path) -> None:
+    """Persist raw per-replicate T and ledgers (crash-safe evidence)."""
+    (out / "T_by_rep.json").write_text(
+        json.dumps({sid: [str(v) for v in vals] for sid, vals in T.items()},
+                   ensure_ascii=False, sort_keys=True, indent=1) + "\n",
+        encoding="utf-8", newline="\n")
+    (out / "ledger_by_rep.json").write_text(
+        json.dumps(ledgers, ensure_ascii=False, sort_keys=True, indent=1) + "\n",
+        encoding="utf-8", newline="\n")
+
+
+def _load_sim(out: Path) -> tuple[dict[str, list[Fraction]], dict[str, list[dict]]]:
+    T: dict[str, list[Fraction]] = {}
+    tj = json.loads((out / "T_by_rep.json").read_text(encoding="utf-8"))
+    for sid, vals in tj.items():
+        T[sid] = [Fraction(v) for v in vals]
+    ledgers: dict[str, list[dict]] = {}
+    lj = json.loads((out / "ledger_by_rep.json").read_text(encoding="utf-8"))
+    for sid, lgs in lj.items():
+        ledgers[sid] = list(lgs)
+    return T, ledgers
+
+
 def main() -> int:
+    args = [a for a in sys.argv[1:]]
+    resume_run_id: Optional[str] = None
+    if args and args[0] == "--resume":
+        if len(args) != 2:
+            print("[q4eval] FATAL: --resume requires <run_id>")
+            return 2
+        resume_run_id = args[1]
+
     t0 = time.perf_counter()
     if not REGISTRY_PATH.exists():
         print("[q4eval] FATAL: registry missing (freeze first):", REGISTRY_PATH)
@@ -442,49 +474,81 @@ def main() -> int:
         return 2
 
     out_root = BASE_DIR / "05_结果" / "Q4" / "evaluation"
-    run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ") + "_" + \
-        hashlib.sha256(str(time.time()).encode()).hexdigest()[:8]
-    out = out_root / run_id
-    out.mkdir(parents=True, exist_ok=True)
+    if resume_run_id is not None:
+        out = out_root / resume_run_id
+        if not out.is_dir():
+            print("[q4eval] FATAL: resume run dir not found:", out)
+            return 2
+        print("[q4eval] RESUME mode:", out)
+        T, ledgers = _load_sim(out)
+        # rebuild reps from the persisted T length
+        n = len(T["Q4_BASELINE"])
+        if n == len(REPS_64):
+            reps = list(REPS_64)
+        elif n == len(REPS_64) + len(REPS_128_EXTRA):
+            reps = list(REPS_64) + list(REPS_128_EXTRA)
+        else:
+            print(f"[q4eval] FATAL: unexpected T length {n} in resume data")
+            return 2
+        stats, interaction = _compute_stats(T, reps, defs,
+                                            t_q=(T_EVAL_64 if n == len(REPS_64)
+                                                 else T_EVAL_128))
+        expanded = n > len(REPS_64)
+        if n == len(REPS_64) + len(REPS_128_EXTRA):
+            # recover the exact stage-1 max half-width from the first 64 reps
+            T64 = {sid: T[sid][:len(REPS_64)] for sid in T}
+            st64, _ = _compute_stats(T64, REPS_64, defs, t_q=T_EVAL_64)
+            max_hw = _max_half_width(st64, _)
+        else:
+            max_hw = _max_half_width(stats, interaction)
+        run_id = resume_run_id
+    else:
+        run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ") + "_" + \
+            hashlib.sha256(str(time.time()).encode()).hexdigest()[:8]
+        out = out_root / run_id
+        out.mkdir(parents=True, exist_ok=True)
 
-    # ---- stage 1: R=64 (rep 100..163) ----
-    reps = list(REPS_64)
-    T: dict[str, list[Fraction]] = {sc["id"]: [] for sc in defs}
-    ledgers: dict[str, list[dict]] = {sc["id"]: [] for sc in defs}
-    for sc in defs:
-        sid = sc["id"]
-        keep_ledger = sid in KEY_LEDGER
-        for rep in reps:
-            cfg = build_cfg(rep, sc)
-            res = run_one(cfg, q_scale=sc["q_scale"],
-                          constant_hazard=(sc["run_kind"] == "constant_hazard"))
-            T[sid].append(Fraction(res.metrics["T"]))
-            if keep_ledger:
-                ledgers[sid].append(extract_ledger(res.event_log))
-        print(f"[q4eval] R={len(reps)} {sid}: done")
-
-    expanded = False
-    stats, interaction = _compute_stats(T, reps, defs, t_q=T_EVAL_64)
-    max_hw = _max_half_width(stats, interaction)
-    print(f"[q4eval] stage1 R=64 max half-width = {max_hw:.4f} h "
-          f"(target {TARGET_HALF_WIDTH})")
-    if max_hw > TARGET_HALF_WIDTH:
-        print("[q4eval] EXPANSION TRIGGERED: all scenarios -> R=128 "
-              "(append rep 164..227)")
+        # ---- stage 1: R=64 (rep 100..163) ----
+        reps = list(REPS_64)
+        T: dict[str, list[Fraction]] = {sc["id"]: [] for sc in defs}
+        ledgers: dict[str, list[dict]] = {sc["id"]: [] for sc in defs}
         for sc in defs:
             sid = sc["id"]
             keep_ledger = sid in KEY_LEDGER
-            for rep in REPS_128_EXTRA:
+            for rep in reps:
                 cfg = build_cfg(rep, sc)
                 res = run_one(cfg, q_scale=sc["q_scale"],
                               constant_hazard=(sc["run_kind"] == "constant_hazard"))
                 T[sid].append(Fraction(res.metrics["T"]))
                 if keep_ledger:
                     ledgers[sid].append(extract_ledger(res.event_log))
-            print(f"[q4eval] R=128 {sid}: done")
-        reps = reps + list(REPS_128_EXTRA)
-        expanded = True
-        stats, interaction = _compute_stats(T, reps, defs, t_q=T_EVAL_128)
+            print(f"[q4eval] R={len(reps)} {sid}: done")
+
+        expanded = False
+        stats, interaction = _compute_stats(T, reps, defs, t_q=T_EVAL_64)
+        max_hw = _max_half_width(stats, interaction)
+        print(f"[q4eval] stage1 R=64 max half-width = {max_hw:.4f} h "
+              f"(target {TARGET_HALF_WIDTH})")
+        if max_hw > TARGET_HALF_WIDTH:
+            print("[q4eval] EXPANSION TRIGGERED: all scenarios -> R=128 "
+                  "(append rep 164..227)")
+            for sc in defs:
+                sid = sc["id"]
+                keep_ledger = sid in KEY_LEDGER
+                for rep in REPS_128_EXTRA:
+                    cfg = build_cfg(rep, sc)
+                    res = run_one(cfg, q_scale=sc["q_scale"],
+                                  constant_hazard=(sc["run_kind"] == "constant_hazard"))
+                    T[sid].append(Fraction(res.metrics["T"]))
+                    if keep_ledger:
+                        ledgers[sid].append(extract_ledger(res.event_log))
+                print(f"[q4eval] R=128 {sid}: done")
+            reps = reps + list(REPS_128_EXTRA)
+            expanded = True
+            stats, interaction = _compute_stats(T, reps, defs, t_q=T_EVAL_128)
+
+        # ---- persist raw simulation data (crash-safe evidence; resume-friendly) ----
+        _persist_sim(T, ledgers, out)
 
     # ---- factor rank (main scenarios only) ----
     rank = _factor_rank(stats, defs)
@@ -635,7 +699,8 @@ def _recommendations(rank: list[dict], stats: dict,
     writes model sensitivity as a real-world causal theorem."""
     rec = []
     pos = {r["factor_id"]: i + 1 for i, r in enumerate(rank)}
-    for fid, row in rank:
+    for row in rank:
+        fid = row["factor_id"]
         sid = row["max_scenario"]
         st = stats[sid]
         rec.append({
@@ -645,9 +710,9 @@ def _recommendations(rank: list[dict], stats: dict,
             "95_CI": [st["CI_low"], st["CI_high"]],
             "half_width_h": round(st["half_width_h"], 4),
             "in_model_benefit": ("completion-time decrease (Delta T < 0)" if
-                                 float(st["mean_Delta_T_h"]) < 0 else
+                                 float(Fraction(st["mean_Delta_T_h"])) < 0 else
                                  ("completion-time increase (Delta T > 0)" if
-                                  float(st["mean_Delta_T_h"]) > 0 else "no shift")),
+                                  float(Fraction(st["mean_Delta_T_h"])) > 0 else "no shift")),
             "implementation_cost_constraints": ("see scenario level; e.g. turnover "
                                                 "0.5h overlap requires two-bay "
                                                 "logistics; duration changes are "
