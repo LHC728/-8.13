@@ -1,0 +1,32 @@
+{
+ "question": "Q1",
+ "authority_map": {
+  "Q1_formal_numeric_authority": {
+   "path": "05_结果/G2/run_20260814T130947069958Z_4bb92eda/",
+   "role": "immutable accepted Q1/G2 formal evidence (run_manifest overall_status=PASS)",
+   "notes": "current provenance-clean accepted authority; historical G2 runs are NOT current Q1 authority"
+  },
+  "Q1_navigation_entry": {
+   "path": "05_结果/Q1/README.md",
+   "role": "newcomer-facing explanation of why Q1 lives under G2"
+  },
+  "Q1_paper_facing_derived_summary": {
+   "path": "05_结果/Q1/final_handoff/Q1_FINAL_RESULT.md",
+   "role": "mechanically derived summary of the accepted run; NOT a new calculation"
+  },
+  "Q1_provenance": {
+   "path": "05_结果/Q1/final_handoff/Q1_FINAL_PROVENANCE.json",
+   "role": "provenance of the derived handoff + pointers to accepted source files"
+  },
+  "historical_G2_runs": {
+   "role": "HISTORICAL / DEBUG / SUPERSEDED",
+   "rule": "classify by each run's own manifest / current authority documentation; never promote as current Q1 authority"
+  }
+ },
+ "conflict_rule": "ACCEPTED_G2_RUN_OVERRIDES_DERIVED_Q1_HANDOFF",
+ "original_run_relocated": false,
+ "original_run_duplicated": false,
+ "original_run_modified": false,
+ "new_calculation_performed": false,
+ "new_simulation_performed": false
+}

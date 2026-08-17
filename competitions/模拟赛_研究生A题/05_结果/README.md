@@ -37,3 +37,21 @@
 - 只有适用硬门全部通过、失败样本已处理且 manifest 完整的结果，才能进入 `06_论文/数字来源表.md`；
 - `figures/` 中的每张正式图必须记录来源 `run_id`、数据文件和作图脚本；
 - 删除或覆盖任何运行目录前必须由队伍明确授权。
+
+## 4. 结果组织（按题目号导航）
+
+```text
+05_结果/
+├─ G2/   # 历史 Gate 证据；内含 Q1（第一问）不可变 accepted run
+├─ G3/   # 公共随机 DES / H1 开发证据
+├─ H2/   # H2 challenger 证据
+├─ Q1/   # Q1 导航 + 派生 final handoff（数字权威仍在 G2）
+├─ Q2/
+├─ Q3/
+├─ Q4/
+└─ governance/
+```
+
+- **Q1 的原始不可变正式证据仍在 `05_结果/G2/run_20260814T130947069958Z_4bb92eda/`**（G2-02 = 第一问「概率与质量解析链」，按开发 Gate 组织时期完成）。
+- `Q1/` 目录（`README.md` / `final_handoff/` / `final_closure/`）只用于**按题号一致导航**，**不是新的正式运行**；其数值全部机械派生自 G2 accepted run，不重新计算。
+- 导航/摘要与原始 evidence 冲突时，以原始 accepted run 为准（见 `05_结果/Q1/final_closure/Q1_FINAL_AUTHORITY_MAP.json`）。

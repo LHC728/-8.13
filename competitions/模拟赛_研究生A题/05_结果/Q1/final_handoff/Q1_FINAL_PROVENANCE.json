@@ -1,0 +1,35 @@
+{
+ "question": "Q1",
+ "status": "ACCEPTED",
+ "handoff_type": "DERIVED_NAVIGATION_HANDOFF",
+ "authoritative_original_run": {
+  "run_id": "20260814T130947069958Z_4bb92eda",
+  "path": "05_结果/G2/run_20260814T130947069958Z_4bb92eda/",
+  "overall_status": "PASS",
+  "run_manifest_sha256": "3bd4ffd8f90dfbddb0f661675f2d236c68e7dc9ba2e0460db4ea1460df548990"
+ },
+ "main_semantic": "single_test_unconditional_v1",
+ "alternative_semantic": "standard_chain_v1",
+ "parameters_sha256": "0461da2e0de09090673192d9eb0fde6fe5e70b1d22ef61fe13cdb878c449f07e",
+ "source_files": [
+  "05_结果/G2/run_20260814T130947069958Z_4bb92eda/run_manifest.json",
+  "05_结果/G2/run_20260814T130947069958Z_4bb92eda/single_test_unconditional_v1/response.json",
+  "05_结果/G2/run_20260814T130947069958Z_4bb92eda/single_test_unconditional_v1/check_report.json",
+  "05_结果/G2/run_20260814T130947069958Z_4bb92eda/standard_chain_v1/response.json",
+  "05_结果/G2/run_20260814T130947069958Z_4bb92eda/standard_chain_v1/check_report.json"
+ ],
+ "checker_status": {
+  "single_test_unconditional_v1": "PASS (checker_status=PASS; route_table_verdict=PASS; 90 items)",
+  "standard_chain_v1": "PASS (checker_status=PASS; route_table_verdict=PASS; 90 items)"
+ },
+ "source_file_sha256": {
+  "single_response": "eea9c750555da7ce5ae88795cf538e22c23f69eb1b36e78e5ebfd29e762fb0b9",
+  "single_check_report": "a76bac74f2b1e02efad662761e303fb89e438b3b468be7101c30a12d22a8692c"
+ },
+ "original_evidence_moved": false,
+ "original_evidence_modified": false,
+ "new_calculation_performed": false,
+ "new_simulation_performed": false,
+ "semantic_change": false,
+ "authority_rule": "If this derived handoff conflicts with the immutable accepted G2 run, the accepted G2 run controls."
+}
