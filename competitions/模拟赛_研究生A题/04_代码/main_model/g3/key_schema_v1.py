@@ -53,8 +53,10 @@ formal H2 namespaces (h2_tuning / h2_holdout / h2_rollout) and four H2 post
 streams (U_X_post / U_D_post / U_Y_post / U_L_post) are added additively.
 The frozen legacy constants, serializer field order, hashing and Fraction
 mapping are untouched. Namespace consumption is gated by an explicit
-firewall: legacy physical helpers consume only the six experiment
-namespaces; H2 post helpers consume only the three H2 namespaces;
+firewall: legacy physical helpers consume the legacy six experiment
+namespaces plus the Human-Gate-authorized additive Q4 namespaces
+(q4_screening / q4_evaluation, HG-Q4-NS-01); H2 post helpers consume only
+the three H2 namespaces;
 h2_future stays a reserved-only historical placeholder. rollout_seed(dp,m)
 and rollout substream derivation are NOT implemented here (later rollout
 layer; P0 lays namespace + post-stream infrastructure only).
@@ -438,8 +440,9 @@ def u_x(namespace, rep, device, subsystem, seed) -> Fraction:
 
     Consumed once per device entry for each true-state subsystem; the
     subsystem is explicit so A/B/C slots are distinct. Never merged with the
-    U_D slot (U_D is a dedicated stream). Legacy physical stream: only the
-    six frozen experiment namespaces are consumable (firewall).
+    U_D slot (U_D is a dedicated stream). Legacy physical stream: the legacy
+    six frozen experiment namespaces plus the additive Q4 namespaces are
+    consumable (firewall).
     """
     _require_legacy_namespace(namespace)
     if subsystem not in SUBSYSTEMS:
@@ -455,8 +458,8 @@ def u_d(namespace, rep, device, seed) -> Fraction:
 
     Dedicated stream; consume only at a legal D materialization (A/B/C all
     PASS while the device is still pending). Never merged into the A/B/C
-    slots of U_X. Legacy physical stream: only the six frozen experiment
-    namespaces are consumable (firewall).
+    slots of U_X. Legacy physical stream: the legacy six frozen experiment
+    namespaces plus the additive Q4 namespaces are consumable (firewall).
     """
     _require_legacy_namespace(namespace)
     key = canonical_key(namespace, rep, device, None, None, seed)
@@ -471,7 +474,8 @@ def u_y(namespace, rep, device, process, attempt, seed) -> Fraction:
     cancellation, shift deferral and never-started tasks consume no U (the
     caller enforces this). ``process`` must be one of {A, B, C, E} and
     ``attempt`` a positive effective attempt number. Legacy physical stream:
-    only the six frozen experiment namespaces are consumable (firewall).
+    only the legacy six frozen experiment namespaces plus the additive Q4
+    namespaces are consumable (firewall).
     """
     _require_legacy_namespace(namespace)
     if process not in PROCESSES:
@@ -489,7 +493,8 @@ def u_l(namespace, rep, resource, generation, seed) -> Fraction:
     Exactly one U_L per (resource, generation): the pair fully determines the
     key, so repeated draws with the same pair reuse the same U. ``resource``
     must be one of {A, B, C, E}; ``generation`` a positive generation number.
-    Legacy physical stream: only the six frozen experiment namespaces are
+    Legacy physical stream: the legacy six frozen experiment namespaces
+    plus the additive Q4 namespaces are consumable (firewall).
     consumable (firewall).
     """
     _require_legacy_namespace(namespace)

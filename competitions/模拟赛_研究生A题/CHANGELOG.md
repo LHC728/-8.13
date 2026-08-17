@@ -2,6 +2,18 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-17 / `HG-Q4-NS-01 + Q4 PHASE 1A`（Q4 additive random-domain extension；namespace blocker RESOLVED BY OPTION A）
+
+### 修改
+
+- **Human Gate 裁决 HG-Q4-NS-01（OPTION A / ACCEPTED）**：新增 additive Q4 物理命名空间 `q4_screening` / `q4_evaluation`（`NAMESPACE_Q4_SCREENING` / `NAMESPACE_Q4_EVALUATION` / `Q4_NAMESPACES` / `PHYSICAL_EXPERIMENT_NAMESPACES = NAMESPACES + Q4_NAMESPACES`）；**legacy NAMESPACES / ALL_NAMESPACES / H2_NAMESPACES byte-identical，旧 canonical keys 100% 不变**；serializer 域与 physical helper allowlist additive 扩展；**H2 post helpers 仍只接受 H2 域（Q4 拒绝）**；`RandomDesConfig` namespace 校验改为接受 PHYSICAL_EXPERIMENT_NAMESPACES（fail-closed，H2 仍排除出 physical DES）。
+- **测试 NS-01..09**（`tests/test_q4_namespace_extension_v1.py`）：legacy byte identity / q4 接受 / screening↔evaluation↔q3 域分离 / H2 防火墙 / arbitrary 拒绝 / config 通过+fail-closed / legacy 回归。**回归 182/182 PASS**（G3 random_des、Q3 H1、H2 P1 firewall、H2 density、key_schema、Q4 NS）。
+- **BACKWARD-COMPATIBLE ADDITIVE EXTENSION**：G3/Q2/Q3 accepted runs 无需 invalidation（旧 canonical keys 未变）；extension 记录见 `01_审计/INVALIDATION_REPORT_Q4_NAMESPACE_EXTENSION.md`（changed_semantics=NO、schema_additive=YES）。
+- **Q4_SCREENING_REGISTRY.json（PRE-DATA / IMMUTABLE_FOR_PHASE_1A）**：namespace=q4_screening、master_seed=7、replicate 0..19（R=20）、13 scenarios + baseline（F2 turnover 0.5h / F3 tau 150·180·210 / F4 A·B·C·E ±10% / F5 constant-hazard）、factor levels 冻结。
+- **Pro-Max pre-screening review（fresh，1 次）**：**PASS_WITH_CAVEAT**；BACKWARD_COMPATIBLE=true、OLD_KEYS_IDENTICAL=true、Q4_DOMAIN_ISOLATION=PASS、H2_FIREWALL=PASS、NEW_AUTHORITY_CONFLICT=false、NEW_SUBSTANTIVE_BLOCKER=false；R1–R7 全机械项（登记/证据/hash 验证/docstring/映射确认/防火墙）→ Harness 闭合 → **SCREENING_EXECUTION_RECOMMENDATION = AUTHORIZED**。
+- **CURRENT_STATE §6 同步**：Q4_SCREENING_ONLY = AUTHORIZED（Phase 1A）；Q4_EVALUATION / Top-2 / final inference / final recommendation = NOT AUTHORIZED；Q3 = FINAL / IMMUTABLE。
+- 旧 blocker 文件 `SUBSTANTIVE_BLOCKER_NAMESPACE.md` = **RESOLVED_BY_HG_Q4_NS_01_OPTION_A**（保留为历史证据）。
+
 ## 2026-08-17 / `Q4 PHASE 1A — SUBSTANTIVE BLOCKER`（namespace 冻结冲突 → STOP HUMAN_GATE_REQUIRED）
 
 ### 修改

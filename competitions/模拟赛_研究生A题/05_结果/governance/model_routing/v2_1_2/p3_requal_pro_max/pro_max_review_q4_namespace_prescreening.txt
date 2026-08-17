@@ -1,0 +1,22 @@
+PRO_MAX_REVIEW (Q4 namespace extension + pre-screening) - deepseek-pro-max / deepseek-v4-pro / reasoning=max / fresh / read-only / workspace delta=0
+Date: 2026-08-17
+
+VERDICT: PASS_WITH_CAVEAT
+BACKWARD_COMPATIBLE: true
+OLD_KEYS_IDENTICAL: true
+Q4_DOMAIN_ISOLATION: PASS
+H2_FIREWALL: PASS
+NEW_AUTHORITY_CONFLICT: false
+NEW_SUBSTANTIVE_BLOCKER: false
+SCREENING_EXECUTION_RECOMMENDATION: AUTHORIZED (condition: governance/test-evidence records closed before evidence promotion; R4 first mechanical step)
+
+Required actions (all mechanical; closed by Harness):
+R1: CHANGELOG/CURRENT_STATE registration of HG-Q4-NS-01 + blocker file marked RESOLVED_BY_HG_Q4_NS_01_OPTION_A - CLOSED
+R2: INVALIDATION/extension record (01_审计/INVALIDATION_REPORT_Q4_NAMESPACE_EXTENSION.md; changed_semantics=NO, schema_additive=YES, legacy byte-identical, no G3/Q2/Q3 invalidation) - CLOSED
+R3: test evidence for NS-01..09 + legacy regression (182/182 PASS) - CLOSED
+R4: config-hash verification + baseline_hashes.json (first mechanical step of the run) - CLOSED WITH THE RUN
+R5: stale docstrings in key_schema_v1 / random_des_v1 fixed; Q4 constants exported - CLOSED
+R6: F2 mapping to frozen literal '0.5h_overlap' confirmed; F5 same keyed U_L via sensitivity_constant_hazard_inverse_cdf - CLOSED WITH THE RUN
+R7: Q4_EVALUATION remains unconsumed - CLOSED WITH THE FIREWALL CHECK
+
+Checklist A-L: A backward-compatible YES (legacy six byte-identical; NS-01 asserts literals + independent U recompute); B additive-only YES (sole random_des site = from_dict namespace validation); C firewall PASS (Q4 in physical only; u_*_post reject Q4); D isolation PASS (namespace in canonical key -> screening/evaluation/q3 keys+U differ; NS-04/05); E historical validity YES (no G3/Q2/Q3 invalidation); F baseline H1/K12/NO_PM_BEFORE_MANDATORY TRUE; G factor semantics frozen TRUE; H F3 COUNTERFACTUAL_ONLY TRUE; I CRN TRUE (same q4_screening/seed/rep, parameter-transform only); J evaluation firewall TRUE (registered, zero consumption); K R=20 screening-only TRUE; L no new substantive blocker.
