@@ -1,0 +1,471 @@
+{
+ "R_screen_1b": 20,
+ "authority": "HG-Q4-NS-01 + Human Gate 一体化授权包 (Q4 Phase 1B + FORMAL EVALUATION + TOP-2 interaction)",
+ "baseline": {
+  "K": "12",
+  "config_hash": "618d24ab3d823f97651524c6e0e4074553de280afab898fa0feca4abc43da275",
+  "failure_semantics": "piecewise-linear CDF",
+  "kernel_source": "single_kernel() (run_q3_h1_formal_v1)",
+  "observation_kernel": "single_test_unconditional_v1 (P060; Q3 Tier1 main)",
+  "phase_1a_baseline_hash": "618d24ab3d823f97651524c6e0e4074553de280afab898fa0feca4abc43da275",
+  "policy": "NO_PM_BEFORE_MANDATORY",
+  "q3_evidence_binding": [
+   "05_结果/Q3/formal/run_20260815T133840057668Z_7ee48fc0",
+   "05_结果/Q3/formal/reissue_20260815T150613626910Z_f4da8f9d"
+  ],
+  "turnover": "1h_literal"
+ },
+ "domain_isolation": {
+  "disjoint": true,
+  "evaluation_rep": "100..163 (expansion 164..227)",
+  "note": "screening (0..39) and evaluation (100..163+) NEVER overlap; Q4_EVALUATION is the only final-inference CI source; no pooling.",
+  "phase_1a_rep": "0..19",
+  "phase_1b_rep": "20..39"
+ },
+ "e_semantics": {
+  "e_base": {
+   "A": "3/100",
+   "B": "1/25",
+   "C": "1/50",
+   "E": "1/50"
+  },
+  "factor_E": "E-ERROR_ENVIRONMENT: e_A/B/C/E scaled together; kernels recalibrated at baseline q; e<=2min(q,1-q) NEVER clipped; level selected ONLY by deterministic feasibility ladder.",
+  "ladder": [
+   "+20%",
+   "+10%",
+   "+5%",
+   "-20%",
+   "-10%",
+   "-5%"
+  ],
+  "ladder_feasibility": [
+   {
+    "all_feasible": true,
+    "details": {
+     "A": {
+      "e_scaled": "9/250",
+      "feasible": true,
+      "limit": "1/20"
+     },
+     "B": {
+      "e_scaled": "6/125",
+      "feasible": true,
+      "limit": "3/50"
+     },
+     "C": {
+      "e_scaled": "3/125",
+      "feasible": true,
+      "limit": "1/25"
+     },
+     "E": {
+      "e_scaled": "3/125",
+      "feasible": true,
+      "limit": "31296956203696449/250000000000000000"
+     }
+    },
+    "ladder_step": "+20%"
+   },
+   {
+    "all_feasible": true,
+    "details": {
+     "A": {
+      "e_scaled": "33/1000",
+      "feasible": true,
+      "limit": "1/20"
+     },
+     "B": {
+      "e_scaled": "11/250",
+      "feasible": true,
+      "limit": "3/50"
+     },
+     "C": {
+      "e_scaled": "11/500",
+      "feasible": true,
+      "limit": "1/25"
+     },
+     "E": {
+      "e_scaled": "11/500",
+      "feasible": true,
+      "limit": "31296956203696449/250000000000000000"
+     }
+    },
+    "ladder_step": "+10%"
+   },
+   {
+    "all_feasible": true,
+    "details": {
+     "A": {
+      "e_scaled": "63/2000",
+      "feasible": true,
+      "limit": "1/20"
+     },
+     "B": {
+      "e_scaled": "21/500",
+      "feasible": true,
+      "limit": "3/50"
+     },
+     "C": {
+      "e_scaled": "21/1000",
+      "feasible": true,
+      "limit": "1/25"
+     },
+     "E": {
+      "e_scaled": "21/1000",
+      "feasible": true,
+      "limit": "31296956203696449/250000000000000000"
+     }
+    },
+    "ladder_step": "+5%"
+   },
+   {
+    "all_feasible": true,
+    "details": {
+     "A": {
+      "e_scaled": "3/125",
+      "feasible": true,
+      "limit": "1/20"
+     },
+     "B": {
+      "e_scaled": "4/125",
+      "feasible": true,
+      "limit": "3/50"
+     },
+     "C": {
+      "e_scaled": "2/125",
+      "feasible": true,
+      "limit": "1/25"
+     },
+     "E": {
+      "e_scaled": "2/125",
+      "feasible": true,
+      "limit": "31296956203696449/250000000000000000"
+     }
+    },
+    "ladder_step": "-20%"
+   },
+   {
+    "all_feasible": true,
+    "details": {
+     "A": {
+      "e_scaled": "27/1000",
+      "feasible": true,
+      "limit": "1/20"
+     },
+     "B": {
+      "e_scaled": "9/250",
+      "feasible": true,
+      "limit": "3/50"
+     },
+     "C": {
+      "e_scaled": "9/500",
+      "feasible": true,
+      "limit": "1/25"
+     },
+     "E": {
+      "e_scaled": "9/500",
+      "feasible": true,
+      "limit": "31296956203696449/250000000000000000"
+     }
+    },
+    "ladder_step": "-10%"
+   },
+   {
+    "all_feasible": true,
+    "details": {
+     "A": {
+      "e_scaled": "57/2000",
+      "feasible": true,
+      "limit": "1/20"
+     },
+     "B": {
+      "e_scaled": "19/500",
+      "feasible": true,
+      "limit": "3/50"
+     },
+     "C": {
+      "e_scaled": "19/1000",
+      "feasible": true,
+      "limit": "1/25"
+     },
+     "E": {
+      "e_scaled": "19/1000",
+      "feasible": true,
+      "limit": "31296956203696449/250000000000000000"
+     }
+    },
+    "ladder_step": "-5%"
+   }
+  ],
+  "selected_levels": {
+   "E_HIGH": "6/5",
+   "E_LOW": "4/5"
+  }
+ },
+ "freeze_timestamp": "2026-08-17T06:35:18.856290+00:00",
+ "frozen_flags": {
+  "HUMAN_GATE_AUTHORIZED": true,
+  "IMMUTABLE_FOR_PHASE_1B": true,
+  "PRE_DATA": true,
+  "Q4_EVALUATION": "NOT AUTHORIZED / UNTOUCHED",
+  "SCREENING_SPEC_FROZEN": true,
+  "TOP2_INTERACTION": "NOT AUTHORIZED"
+ },
+ "immutable": true,
+ "logical_domain": "Q4_SCREENING",
+ "master_seed": 7,
+ "namespace": "q4_screening",
+ "q_semantics": {
+  "factor_Q-A": "CALIBRATION_INPUT: q_A/B/C/D scaled by s; A/B/C kernels recalibrated via frozen P060 closed form (alpha=e/(2(1-q)), beta=e/(2q)) at e=baseline; q_E propagated via frozen Q1 closed-form route; E kernel recalibrated at q_E'.",
+  "factor_Q-B": "INCOMING_DEFECT_PRESSURE: same scale on the engine true problem rates ONLY (same-U threshold transform); observation kernel frozen at baseline.",
+  "q_base": {
+   "A": "1/40",
+   "B": "3/100",
+   "C": "1/50",
+   "D": "1/1000",
+   "E_propagated_baseline": "31296956203696449/500000000000000000"
+  },
+  "scale_levels": [
+   "4/5",
+   "6/5"
+  ]
+ },
+ "registry": "Q4_PHASE1B_REGISTRY",
+ "replicate_ids": [
+  20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  37,
+  38,
+  39
+ ],
+ "scenario": "q3_two_shift",
+ "scenarios": [
+  {
+   "authorized_changed_fields": [],
+   "config_hash": "618d24ab3d823f97651524c6e0e4074553de280afab898fa0feca4abc43da275",
+   "factor_id": "BASELINE",
+   "kernel_kind": "baseline",
+   "level": "-",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "q_scale": null,
+   "scenario_id": "Q4_BASELINE"
+  },
+  {
+   "authorized_changed_fields": [
+    "observation_kernel"
+   ],
+   "config_hash": "700535df7ba0d0c12a5eebb5fc91623c2bc7b3e2c368584c899af56704d5e41c",
+   "factor_id": "Q-A",
+   "kernel_kind": "qa",
+   "level": "q_scale=4/5",
+   "observation_kernel": {
+    "A": {
+     "alpha": "3/196",
+     "beta": "3/4"
+    },
+    "B": {
+     "alpha": "5/244",
+     "beta": "5/6"
+    },
+    "C": {
+     "alpha": "5/492",
+     "beta": "5/8"
+    },
+    "E": {
+     "alpha": "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000/944338565452836515087283180771720258377918599456492773901803884116774621873331382496926596830415050280610733142324754817728831578911992665795166284108450645688407149967643808418196607306173942841289907",
+     "beta": "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000/55661434547163484912716819228279741622081400543507226098196115883225378126668617503073403169584949719389266857675245182271168421088007334204833715891549354311592850032356191581803392693826057158710093"
+    }
+   },
+   "q_E_propagated": "55661434547163484912716819228279741622081400543507226098196115883225378126668617503073403169584949719389266857675245182271168421088007334204833715891549354311592850032356191581803392693826057158710093/1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "q_scale": "4/5",
+   "scenario_id": "QA_LOW"
+  },
+  {
+   "authorized_changed_fields": [
+    "observation_kernel"
+   ],
+   "config_hash": "8be1c68f18721f04f87025e5c1f6db8e51f511624cb68ce6abbd996c52743be6",
+   "factor_id": "Q-A",
+   "kernel_kind": "qa",
+   "level": "q_scale=6/5",
+   "observation_kernel": {
+    "A": {
+     "alpha": "3/194",
+     "beta": "1/2"
+    },
+    "B": {
+     "alpha": "5/241",
+     "beta": "5/9"
+    },
+    "C": {
+     "alpha": "5/488",
+     "beta": "5/12"
+    },
+    "E": {
+     "alpha": "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000/932607125650610727247708825513521209373896610339274363028413203839859014759428367156925227328640411046631576423746024649874525618273817311669156182924349444260717276213652381379082633773249010687606861",
+     "beta": "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000/67392874349389272752291174486478790626103389660725636971586796160140985240571632843074772671359588953368423576253975350125474381726182688330843817075650555739282723786347618620917366226750989312393139"
+    }
+   },
+   "q_E_propagated": "67392874349389272752291174486478790626103389660725636971586796160140985240571632843074772671359588953368423576253975350125474381726182688330843817075650555739282723786347618620917366226750989312393139/1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "q_scale": "6/5",
+   "scenario_id": "QA_HIGH"
+  },
+  {
+   "authorized_changed_fields": [],
+   "config_hash": "8639b6d24399e916576d439e1a4998517afc9b786a3cd6bc0f218487b0d1d86a",
+   "factor_id": "Q-B",
+   "kernel_kind": "baseline",
+   "level": "q_scale=4/5",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "q_scale": "4/5",
+   "scenario_id": "QB_LOW"
+  },
+  {
+   "authorized_changed_fields": [],
+   "config_hash": "63fd5da8d3406ed10379666fc89190eca2811bab43dc9eaf47eac4067bc84a4f",
+   "factor_id": "Q-B",
+   "kernel_kind": "baseline",
+   "level": "q_scale=6/5",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "q_scale": "6/5",
+   "scenario_id": "QB_HIGH"
+  },
+  {
+   "authorized_changed_fields": [
+    "observation_kernel"
+   ],
+   "config_hash": "405fd53952c0d4af1e9d6eee9bc7e755c37c0c87437edb403c7c7e28b5297fdd",
+   "factor_id": "E",
+   "kernel_kind": "e",
+   "level": "e_scale=4/5",
+   "observation_kernel": {
+    "A": {
+     "alpha": "4/325",
+     "beta": "12/25"
+    },
+    "B": {
+     "alpha": "8/485",
+     "beta": "8/15"
+    },
+    "C": {
+     "alpha": "2/245",
+     "beta": "2/5"
+    },
+    "E": {
+     "alpha": "4000000000000000/468703043796303551",
+     "beta": "4000000000000000/31296956203696449"
+    }
+   },
+   "q_scale": null,
+   "scenario_id": "E_LOW"
+  },
+  {
+   "authorized_changed_fields": [
+    "observation_kernel"
+   ],
+   "config_hash": "0f8897e411fc4a2592e0065c8e6fdf489b40eb33b9e4a6df604cc8a77dd0a1b5",
+   "factor_id": "E",
+   "kernel_kind": "e",
+   "level": "e_scale=6/5",
+   "observation_kernel": {
+    "A": {
+     "alpha": "6/325",
+     "beta": "18/25"
+    },
+    "B": {
+     "alpha": "12/485",
+     "beta": "4/5"
+    },
+    "C": {
+     "alpha": "3/245",
+     "beta": "3/5"
+    },
+    "E": {
+     "alpha": "6000000000000000/468703043796303551",
+     "beta": "2000000000000000/10432318734565483"
+    }
+   },
+   "q_scale": null,
+   "scenario_id": "E_HIGH"
+  }
+ ],
+ "statistics": {
+  "delta_T_r": "T(scenario,r) - T(baseline,r), same namespace/seed/rep",
+  "design": "CRN paired DeltaT per replicate",
+  "reported": [
+   "mean DeltaT",
+   "SE",
+   "95% screening CI (t_{0.975,19}=2.093)",
+   "standardized effect",
+   "sign consistency"
+  ],
+  "status": "SCREENING_ONLY_NON_FINAL",
+  "unit": "batch replicate (100 devices); 100 devices are NOT replicates"
+ },
+ "status": "PRE_DATA"
+}

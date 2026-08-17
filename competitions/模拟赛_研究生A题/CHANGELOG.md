@@ -2,6 +2,14 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-17 / `Q4 PHASE 1B + FORMAL EVALUATION + TOP-2 INTERACTION`（Human Gate 一体化授权执行包）
+
+### 修改
+
+- **CURRENT_STATE 状态同步**：Q4 PHASE 1A = FINAL PASS / ACCEPTED（evidence `05_结果/Q4/screening/phase_1a/20260817T060454057035Z_c516bd6c/`）；Q4 = AUTHORIZED_FOR_PHASE_1B_AND_FORMAL_EVALUATION（Human Gate 一体化授权包：Phase 1B q/e screening + Q4 FORMAL EVALUATION + Top-2 interaction（F2×F4-E））；**本包 Pro-Max calls = 0**。
+- **F3 措辞红线落文（Human Gate 纠正）**：Phase 1A F3 screening 结论只可写「未观察到明确改善；点估计为正但 CI 跨 0；正式结论待独立 Q4_EVALUATION」，禁止「PM 干预无益 / 已证明不能改善 / 提前更换一定更差」；修正 addendum 见 phase_1a evidence 目录。
+- （后续本包各步骤——Phase 1B registry/run、合并 factor rank、Q4_EVALUATION registry/run、interaction contrasts、mechanism explanation、management recommendation、checkers、evidence package、报告——将随执行追加条目。）
+
 ## 2026-08-17 / `HG-Q4-NS-01 + Q4 PHASE 1A`（Q4 additive random-domain extension；namespace blocker RESOLVED BY OPTION A）
 
 ### 修改
