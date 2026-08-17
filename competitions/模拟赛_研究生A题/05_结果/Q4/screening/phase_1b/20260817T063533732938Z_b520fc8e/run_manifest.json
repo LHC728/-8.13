@@ -1,0 +1,8 @@
+{
+ "run_id": "20260817T063533732938Z_b520fc8e",
+ "task": "Q4 Phase 1B q/e screening (q4_screening rep 20..39)",
+ "authority": "Human Gate 一体化授权包 (Phase 1B + FORMAL + Top-2)",
+ "registry": "Q4_PHASE1B_REGISTRY.json",
+ "status": "SCREENING_ONLY_NON_FINAL",
+ "wallclock_s": 83.56
+}

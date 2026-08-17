@@ -1,0 +1,365 @@
+{
+ "factor_ranking": [
+  {
+   "abs_factor_score": 9.583503,
+   "factor_id": "F2",
+   "factor_score": -9.583503,
+   "max_scenario": "F2_TURNOVER_05",
+   "max_scenario_CI": [
+    -79.029707,
+    -71.670293
+   ],
+   "max_scenario_mean_Delta_T_h": "-1507/20",
+   "meta": "turnover 1.0h -> 0.5h complete overlap (level-1 controllable)",
+   "n_scenarios": 1,
+   "scenario_rows": [
+    {
+     "CI": [
+      -79.029707,
+      -71.670293
+     ],
+     "mean_Delta_T_h": "-1507/20",
+     "scenario_id": "F2_TURNOVER_05",
+     "sign_consistency": "ALL_NEG",
+     "source": "Q4_SCREENING",
+     "standardized_effect": -9.583503
+    }
+   ]
+  },
+  {
+   "abs_factor_score": 5.372474,
+   "factor_id": "F4-E",
+   "factor_score": -5.372474,
+   "max_scenario": "F4_E_M10",
+   "max_scenario_CI": [
+    -38.576183,
+    -32.393817
+   ],
+   "max_scenario_mean_Delta_T_h": "-7097/200",
+   "meta": "duration_E +-10%",
+   "n_scenarios": 2,
+   "scenario_rows": [
+    {
+     "CI": [
+      -38.576183,
+      -32.393817
+     ],
+     "mean_Delta_T_h": "-7097/200",
+     "scenario_id": "F4_E_M10",
+     "sign_consistency": "ALL_NEG",
+     "source": "Q4_SCREENING",
+     "standardized_effect": -5.372474
+    },
+    {
+     "CI": [
+      14.708331,
+      21.231954
+     ],
+     "mean_Delta_T_h": "6215449104249006633007/345876451382054092800",
+     "scenario_id": "F4_E_P10",
+     "sign_consistency": "ALL_POS",
+     "source": "Q4_SCREENING",
+     "standardized_effect": 2.57838
+    }
+   ]
+  },
+  {
+   "abs_factor_score": 3.597366,
+   "factor_id": "F4-C",
+   "factor_score": 3.597366,
+   "max_scenario": "F4_C_P10",
+   "max_scenario_CI": [
+    13.831446,
+    17.968554
+   ],
+   "max_scenario_mean_Delta_T_h": "159/10",
+   "meta": "duration_C +-10%",
+   "n_scenarios": 2,
+   "scenario_rows": [
+    {
+     "CI": [
+      13.831446,
+      17.968554
+     ],
+     "mean_Delta_T_h": "159/10",
+     "scenario_id": "F4_C_P10",
+     "sign_consistency": "ALL_POS",
+     "source": "Q4_SCREENING",
+     "standardized_effect": 3.597366
+    },
+    {
+     "CI": [
+      -1.492797,
+      0.492797
+     ],
+     "mean_Delta_T_h": "-1/2",
+     "scenario_id": "F4_C_M10",
+     "sign_consistency": "MIXED",
+     "source": "Q4_SCREENING",
+     "standardized_effect": -0.235702
+    }
+   ]
+  },
+  {
+   "abs_factor_score": 2.248368,
+   "factor_id": "F4-A",
+   "factor_score": 2.248368,
+   "max_scenario": "F4_A_P10",
+   "max_scenario_CI": [
+    10.808684,
+    16.491316
+   ],
+   "max_scenario_mean_Delta_T_h": "273/20",
+   "meta": "duration_A +-10%",
+   "n_scenarios": 2,
+   "scenario_rows": [
+    {
+     "CI": [
+      10.808684,
+      16.491316
+     ],
+     "mean_Delta_T_h": "273/20",
+     "scenario_id": "F4_A_P10",
+     "sign_consistency": "ALL_POS",
+     "source": "Q4_SCREENING",
+     "standardized_effect": 2.248368
+    },
+    {
+     "CI": [
+      -1.209024,
+      0.259024
+     ],
+     "mean_Delta_T_h": "-19/40",
+     "scenario_id": "F4_A_M10",
+     "sign_consistency": "MIXED",
+     "source": "Q4_SCREENING",
+     "standardized_effect": -0.302857
+    }
+   ]
+  },
+  {
+   "abs_factor_score": 0.668779,
+   "factor_id": "Q-B",
+   "factor_score": -0.668779,
+   "max_scenario": "QB_LOW",
+   "max_scenario_CI": [
+    -7.734073,
+    -1.365927
+   ],
+   "max_scenario_mean_Delta_T_h": "-91/20",
+   "meta": "q = incoming defect pressure (scale 0.8/1.2; kernel frozen baseline)",
+   "n_scenarios": 2,
+   "scenario_rows": [
+    {
+     "CI": [
+      -7.734073,
+      -1.365927
+     ],
+     "mean_Delta_T_h": "-91/20",
+     "scenario_id": "QB_LOW",
+     "sign_consistency": "MIXED",
+     "source": "Q4_SCREENING_PHASE_1B",
+     "standardized_effect": -0.668779
+    },
+    {
+     "CI": [
+      0.838958,
+      6.961042
+     ],
+     "mean_Delta_T_h": "39/10",
+     "scenario_id": "QB_HIGH",
+     "sign_consistency": "MIXED",
+     "source": "Q4_SCREENING_PHASE_1B",
+     "standardized_effect": 0.596279
+    }
+   ]
+  },
+  {
+   "abs_factor_score": 0.576667,
+   "factor_id": "Q-A",
+   "factor_score": -0.576667,
+   "max_scenario": "QA_LOW",
+   "max_scenario_CI": [
+    -7.155722,
+    -0.744278
+   ],
+   "max_scenario_mean_Delta_T_h": "-79/20",
+   "meta": "q = calibration input (scale 0.8/1.2; kernels recalibrated; e baseline)",
+   "n_scenarios": 2,
+   "scenario_rows": [
+    {
+     "CI": [
+      -7.155722,
+      -0.744278
+     ],
+     "mean_Delta_T_h": "-79/20",
+     "scenario_id": "QA_LOW",
+     "sign_consistency": "MIXED",
+     "source": "Q4_SCREENING_PHASE_1B",
+     "standardized_effect": -0.576667
+    },
+    {
+     "CI": [
+      -2.932675,
+      4.182675
+     ],
+     "mean_Delta_T_h": "5/8",
+     "scenario_id": "QA_HIGH",
+     "sign_consistency": "MIXED",
+     "source": "Q4_SCREENING_PHASE_1B",
+     "standardized_effect": 0.082218
+    }
+   ]
+  },
+  {
+   "abs_factor_score": 0.412344,
+   "factor_id": "F3",
+   "factor_score": 0.412344,
+   "max_scenario": "F3_TAU150",
+   "max_scenario_CI": [
+    -0.18562,
+    2.93562
+   ],
+   "max_scenario_mean_Delta_T_h": "11/8",
+   "meta": "preventive replacement threshold (COUNTERFACTUAL_ONLY per HG-Q4-F3-01)",
+   "n_scenarios": 3,
+   "scenario_rows": [
+    {
+     "CI": [
+      -0.18562,
+      2.93562
+     ],
+     "mean_Delta_T_h": "11/8",
+     "scenario_id": "F3_TAU150",
+     "sign_consistency": "MIXED",
+     "source": "Q4_SCREENING",
+     "standardized_effect": 0.412344
+    },
+    {
+     "CI": [
+      -0.447422,
+      1.897422
+     ],
+     "mean_Delta_T_h": "29/40",
+     "scenario_id": "F3_TAU180",
+     "sign_consistency": "MIXED",
+     "source": "Q4_SCREENING",
+     "standardized_effect": 0.289407
+    },
+    {
+     "CI": [
+      -0.387267,
+      1.347552
+     ],
+     "mean_Delta_T_h": "33213993915376109987/69175290276410818560",
+     "scenario_id": "F3_TAU210",
+     "sign_consistency": "MIXED",
+     "source": "Q4_SCREENING",
+     "standardized_effect": 0.25906
+    }
+   ]
+  },
+  {
+   "abs_factor_score": 0.286521,
+   "factor_id": "E",
+   "factor_score": -0.286521,
+   "max_scenario": "E_LOW",
+   "max_scenario_CI": [
+    -3.357612,
+    0.807612
+   ],
+   "max_scenario_mean_Delta_T_h": "-51/40",
+   "meta": "e = error environment (e_A/B/C/E scale 0.8/1.2; kernels recalibrated)",
+   "n_scenarios": 2,
+   "scenario_rows": [
+    {
+     "CI": [
+      -3.357612,
+      0.807612
+     ],
+     "mean_Delta_T_h": "-51/40",
+     "scenario_id": "E_LOW",
+     "sign_consistency": "MIXED",
+     "source": "Q4_SCREENING_PHASE_1B",
+     "standardized_effect": -0.286521
+    },
+    {
+     "CI": [
+      -1.422242,
+      3.222242
+     ],
+     "mean_Delta_T_h": "9/10",
+     "scenario_id": "E_HIGH",
+     "sign_consistency": "MIXED",
+     "source": "Q4_SCREENING_PHASE_1B",
+     "standardized_effect": 0.18138
+    }
+   ]
+  },
+  {
+   "abs_factor_score": 0.223607,
+   "factor_id": "F4-B",
+   "factor_score": -0.223607,
+   "max_scenario": "F4_B_M10",
+   "max_scenario_CI": [
+    -0.06186,
+    0.02186
+   ],
+   "max_scenario_mean_Delta_T_h": "-1/50",
+   "meta": "duration_B +-10%",
+   "n_scenarios": 2,
+   "scenario_rows": [
+    {
+     "CI": [
+      -0.06186,
+      0.02186
+     ],
+     "mean_Delta_T_h": "-1/50",
+     "scenario_id": "F4_B_M10",
+     "sign_consistency": "MIXED",
+     "source": "Q4_SCREENING",
+     "standardized_effect": -0.223607
+    },
+    {
+     "CI": [
+      -0.02186,
+      0.06186
+     ],
+     "mean_Delta_T_h": "1/50",
+     "scenario_id": "F4_B_P10",
+     "sign_consistency": "MIXED",
+     "source": "Q4_SCREENING",
+     "standardized_effect": 0.223607
+    }
+   ]
+  },
+  {
+   "abs_factor_score": 0.223607,
+   "factor_id": "F5",
+   "factor_score": 0.223607,
+   "max_scenario": "F5_CONSTANT_HAZARD",
+   "max_scenario_CI": [
+    -0.6558,
+    1.8558
+   ],
+   "max_scenario_mean_Delta_T_h": "3/5",
+   "meta": "failure semantics constant-hazard (MODEL_SEMANTIC_ONLY)",
+   "n_scenarios": 1,
+   "scenario_rows": [
+    {
+     "CI": [
+      -0.6558,
+      1.8558
+     ],
+     "mean_Delta_T_h": "3/5",
+     "scenario_id": "F5_CONSTANT_HAZARD",
+     "sign_consistency": "MIXED",
+     "source": "Q4_SCREENING",
+     "standardized_effect": 0.223607
+    }
+   ]
+  }
+ ],
+ "rule": "factor_score = max |standardized_effect| per factor (frozen Q4 spec §8); screening domains Phase 1A (rep 0..19) + Phase 1B (rep 20..39) are separate paired experiments; NOT pooled; NOT final inference",
+ "status": "SCREENING_ONLY_NON_FINAL"
+}

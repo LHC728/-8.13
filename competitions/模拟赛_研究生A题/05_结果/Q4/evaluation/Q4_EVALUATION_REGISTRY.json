@@ -1,0 +1,797 @@
+{
+ "authority": "Human Gate 一体化授权包 (Q4 Phase 1B + FORMAL EVALUATION + TOP-2 interaction)",
+ "baseline": {
+  "K": "12",
+  "config_hash": "0c1172f7c57bd39bef09612cefee056dc6d2d31b5d22f8b23a6f397beadcc8dd",
+  "failure_semantics": "piecewise-linear CDF",
+  "observation_kernel": "single_test_unconditional_v1 (P060; Q3 Tier1 main)",
+  "policy": "NO_PM_BEFORE_MANDATORY",
+  "q3_evidence_binding": [
+   "05_结果/Q3/formal/run_20260815T133840057668Z_7ee48fc0",
+   "05_结果/Q3/formal/reissue_20260815T150613626910Z_f4da8f9d"
+  ],
+  "screening_baseline_hash": "618d24ab3d823f97651524c6e0e4074553de280afab898fa0feca4abc43da275",
+  "turnover": "1h_literal"
+ },
+ "domain_isolation": {
+  "disjoint": true,
+  "evaluation_rep": "100..163 (expansion 164..227)",
+  "no_pooling": "screening data NEVER enters final CI; Q4_EVALUATION is the only final-inference source",
+  "phase_1a_rep": "0..19",
+  "phase_1b_rep": "20..39"
+ },
+ "factor_rank_rule": "factor_score = max |standardized_effect| per factor over MAIN scenarios only (interaction cells are a separate 2x3 design); F1 excluded (reuse). 数学影响排序 与 管理实施优先级 严格分开。",
+ "factors": {
+  "E": "E-ERROR_ENVIRONMENT e scale 0.8/1.2 (kernels recalibrated)",
+  "F1": "REUSED_ACCEPTED_FORMAL_EVIDENCE (Q3 accepted seven-K; K12 strong winner within the seven-K + frozen H1 policy set; NOT re-run; NOT mixed into Q4 CIs)",
+  "F2": "turnover 0.5h complete overlap",
+  "F3": "tau_PM in {150,180,210} (COUNTERFACTUAL_ONLY per HG-Q4-F3-01)",
+  "F4-A/B/C/E": "duration -10% / +10% one process at a time",
+  "F5": "constant-hazard failure semantics (MODEL_SEMANTIC_ONLY)",
+  "Q-A": "CALIBRATION_INPUT scale 0.8/1.2 (kernels recalibrated; e baseline)",
+  "Q-B": "INCOMING_DEFECT_PRESSURE scale 0.8/1.2 (kernel frozen baseline)"
+ },
+ "freeze_timestamp": "2026-08-17T06:38:47.869717+00:00",
+ "frozen_flags": {
+  "HUMAN_GATE_AUTHORIZED": true,
+  "IMMUTABLE_FOR_FORMAL_EVALUATION": true,
+  "PRE_DATA": true,
+  "Q4_SCREENING": "ALREADY CONSUMED (Phase 1A 0..19 + Phase 1B 20..39); NOT reused here",
+  "TOP2_INTERACTION": "AUTHORIZED (F2 x F4-E)"
+ },
+ "immutable": true,
+ "interaction": {
+  "cells_in_evaluation": [
+   "INT_F2_05_E_M10",
+   "INT_F2_05_E_P10"
+  ],
+  "contrasts": {
+   "I_minus_r": "T(INT_M10) - T(F2) - T(E_M10) + T(base)  per rep",
+   "I_plus_r": "T(INT_P10) - T(F2) - T(E_P10) + T(base)  per rep"
+  },
+  "design": "F2 x F4-E (2x3): baseline/baseline, 0.5h/baseline, baseline/E-10%, baseline/E+10%, 0.5h/E-10% (INT_F2_05_E_M10), 0.5h/E+10% (INT_F2_05_E_P10)",
+  "half_width_rule_applies": true,
+  "interpretation": "95% CI contains 0 -> '未观察到明确 interaction'; excludes 0 -> '模型内非加性交互' (never real causality)."
+ },
+ "logical_domain": "Q4_EVALUATION",
+ "master_seed": 7,
+ "namespace": "q4_evaluation",
+ "registry": "Q4_EVALUATION_REGISTRY",
+ "sample_size": {
+  "R_expanded": 128,
+  "R_initial": 64,
+  "basis": "Phase 1A F2 paired SD ~= 7.8625 h -> R = (t*sd/w)^2 = (2.0*7.8625/2.0)^2 ~= 61.8 -> 64",
+  "replicate_ids_expansion_append": [
+   164,
+   165,
+   166,
+   167,
+   168,
+   169,
+   170,
+   171,
+   172,
+   173,
+   174,
+   175,
+   176,
+   177,
+   178,
+   179,
+   180,
+   181,
+   182,
+   183,
+   184,
+   185,
+   186,
+   187,
+   188,
+   189,
+   190,
+   191,
+   192,
+   193,
+   194,
+   195,
+   196,
+   197,
+   198,
+   199,
+   200,
+   201,
+   202,
+   203,
+   204,
+   205,
+   206,
+   207,
+   208,
+   209,
+   210,
+   211,
+   212,
+   213,
+   214,
+   215,
+   216,
+   217,
+   218,
+   219,
+   220,
+   221,
+   222,
+   223,
+   224,
+   225,
+   226,
+   227
+  ],
+  "replicate_ids_initial": [
+   100,
+   101,
+   102,
+   103,
+   104,
+   105,
+   106,
+   107,
+   108,
+   109,
+   110,
+   111,
+   112,
+   113,
+   114,
+   115,
+   116,
+   117,
+   118,
+   119,
+   120,
+   121,
+   122,
+   123,
+   124,
+   125,
+   126,
+   127,
+   128,
+   129,
+   130,
+   131,
+   132,
+   133,
+   134,
+   135,
+   136,
+   137,
+   138,
+   139,
+   140,
+   141,
+   142,
+   143,
+   144,
+   145,
+   146,
+   147,
+   148,
+   149,
+   150,
+   151,
+   152,
+   153,
+   154,
+   155,
+   156,
+   157,
+   158,
+   159,
+   160,
+   161,
+   162,
+   163
+  ],
+  "t_quantiles": {
+   "df_127_R128": 1.9793,
+   "df_63_R64": 1.9983
+  },
+  "target_95_CI_half_width_h": 2.0,
+  "two_stage_rule": "after R=64, if ANY main-scenario or interaction CI half-width > 2.0 h -> ALL scenarios uniformly expand to R=128 (append rep 164..227); NO factor-specific optional stopping."
+ },
+ "scenario": "q3_two_shift",
+ "scenarios": [
+  {
+   "authorized_changed_fields": [],
+   "config_hash": "0c1172f7c57bd39bef09612cefee056dc6d2d31b5d22f8b23a6f397beadcc8dd",
+   "factor_id": "BASELINE",
+   "level": "-",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "scenario_id": "Q4_BASELINE"
+  },
+  {
+   "authorized_changed_fields": [
+    "turnover_profile"
+   ],
+   "config_hash": "37e9b75a570a461677492180fedd022cfe1ab0b5b04e02c08cb9f2c7eccf4f57",
+   "factor_id": "F2",
+   "level": "turnover=0.5h_overlap",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "scenario_id": "F2_TURNOVER_05"
+  },
+  {
+   "authorized_changed_fields": [
+    "tau_pm"
+   ],
+   "config_hash": "9c9ad9ec2f557b655a643908550ec7d49746bb87063ec95b5a31ea09fd0b07b7",
+   "factor_id": "F3",
+   "level": "tau_PM=150",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "scenario_id": "F3_TAU150"
+  },
+  {
+   "authorized_changed_fields": [
+    "tau_pm"
+   ],
+   "config_hash": "47d335591b5ed52f8e6aa1f574a2aed415ae9bf88955e7360ff517d8ae648421",
+   "factor_id": "F3",
+   "level": "tau_PM=180",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "scenario_id": "F3_TAU180"
+  },
+  {
+   "authorized_changed_fields": [
+    "tau_pm"
+   ],
+   "config_hash": "d3df34d8c727a273035805d67be9cd585cc3f8a91ce6e7531733ad1e6de3fbb3",
+   "factor_id": "F3",
+   "level": "tau_PM=210",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "scenario_id": "F3_TAU210"
+  },
+  {
+   "authorized_changed_fields": [
+    "durations.A"
+   ],
+   "config_hash": "a9e8bb5f65f3db4ff0c405b2cc37043a9106c1f41d1a0b7129e16b4e985b3dc1",
+   "factor_id": "F4-A",
+   "level": "duration_A=-10%",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "scenario_id": "F4_A_M10"
+  },
+  {
+   "authorized_changed_fields": [
+    "durations.A"
+   ],
+   "config_hash": "91126def1dad19c4854a125298c8ce1718e27d3118cf120decd1a94c93010c1e",
+   "factor_id": "F4-A",
+   "level": "duration_A=+10%",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "scenario_id": "F4_A_P10"
+  },
+  {
+   "authorized_changed_fields": [
+    "durations.B"
+   ],
+   "config_hash": "80b4a0b8dffba237b0cd029cf9dd465ef61310f85624632ed3371442343ec73d",
+   "factor_id": "F4-B",
+   "level": "duration_B=-10%",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "scenario_id": "F4_B_M10"
+  },
+  {
+   "authorized_changed_fields": [
+    "durations.B"
+   ],
+   "config_hash": "556db8ebdf373628c344e50470742e290fad5e143940928d6134966bf21ef060",
+   "factor_id": "F4-B",
+   "level": "duration_B=+10%",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "scenario_id": "F4_B_P10"
+  },
+  {
+   "authorized_changed_fields": [
+    "durations.C"
+   ],
+   "config_hash": "6a0fa2dbef4df8d588df3d3a7ed208c8ba0cdcfa4341c0eaa05453dede6d5ae1",
+   "factor_id": "F4-C",
+   "level": "duration_C=-10%",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "scenario_id": "F4_C_M10"
+  },
+  {
+   "authorized_changed_fields": [
+    "durations.C"
+   ],
+   "config_hash": "d454fe1e8b3e8e2c98cf56a8c97b57598bd2a5cc5af63114ac4063786d0efc83",
+   "factor_id": "F4-C",
+   "level": "duration_C=+10%",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "scenario_id": "F4_C_P10"
+  },
+  {
+   "authorized_changed_fields": [
+    "durations.E"
+   ],
+   "config_hash": "bf4a4e830432056e039118f90312682a47179741483dd9955f2a7a3b0f459bc2",
+   "factor_id": "F4-E",
+   "level": "duration_E=-10%",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "scenario_id": "F4_E_M10"
+  },
+  {
+   "authorized_changed_fields": [
+    "durations.E"
+   ],
+   "config_hash": "11d78dd9ab9ce1d578769479b71499a8fc7f44b7795ae2193cafe30f9de6d0f9",
+   "factor_id": "F4-E",
+   "level": "duration_E=+10%",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "scenario_id": "F4_E_P10"
+  },
+  {
+   "authorized_changed_fields": [
+    "failure_semantic"
+   ],
+   "config_hash": "8dbc25ce18f106817fe84fef8928726a138728c7bc23d3014f769dc61273c79e",
+   "factor_id": "F5",
+   "level": "constant-hazard CDF",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "scenario_id": "F5_CONSTANT_HAZARD"
+  },
+  {
+   "authorized_changed_fields": [
+    "observation_kernel"
+   ],
+   "config_hash": "527f260c1f24e45676781ba80eed622d15ce990db7ac9fe32500931a4d40fb29",
+   "factor_id": "Q-A",
+   "level": "q_scale=4/5",
+   "observation_kernel": {
+    "A": {
+     "alpha": "3/196",
+     "beta": "3/4"
+    },
+    "B": {
+     "alpha": "5/244",
+     "beta": "5/6"
+    },
+    "C": {
+     "alpha": "5/492",
+     "beta": "5/8"
+    },
+    "E": {
+     "alpha": "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000/944338565452836515087283180771720258377918599456492773901803884116774621873331382496926596830415050280610733142324754817728831578911992665795166284108450645688407149967643808418196607306173942841289907",
+     "beta": "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000/55661434547163484912716819228279741622081400543507226098196115883225378126668617503073403169584949719389266857675245182271168421088007334204833715891549354311592850032356191581803392693826057158710093"
+    }
+   },
+   "scenario_id": "QA_LOW"
+  },
+  {
+   "authorized_changed_fields": [
+    "observation_kernel"
+   ],
+   "config_hash": "81a177f1bcbef25a41844b862cfb434599e6efd27de3dd655aa10e9a4a5777ee",
+   "factor_id": "Q-A",
+   "level": "q_scale=6/5",
+   "observation_kernel": {
+    "A": {
+     "alpha": "3/194",
+     "beta": "1/2"
+    },
+    "B": {
+     "alpha": "5/241",
+     "beta": "5/9"
+    },
+    "C": {
+     "alpha": "5/488",
+     "beta": "5/12"
+    },
+    "E": {
+     "alpha": "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000/932607125650610727247708825513521209373896610339274363028413203839859014759428367156925227328640411046631576423746024649874525618273817311669156182924349444260717276213652381379082633773249010687606861",
+     "beta": "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000/67392874349389272752291174486478790626103389660725636971586796160140985240571632843074772671359588953368423576253975350125474381726182688330843817075650555739282723786347618620917366226750989312393139"
+    }
+   },
+   "scenario_id": "QA_HIGH"
+  },
+  {
+   "authorized_changed_fields": [],
+   "config_hash": "badae798dff375ef0bfdb3517a6b4af7dc6ee0e11c07362bbec3f84e2cb4e734",
+   "factor_id": "Q-B",
+   "level": "q_scale=4/5",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "scenario_id": "QB_LOW"
+  },
+  {
+   "authorized_changed_fields": [],
+   "config_hash": "7464794ff02e3c91db7f8519d68170472f0a04d6cca70ff9cf7d263fe37dcefa",
+   "factor_id": "Q-B",
+   "level": "q_scale=6/5",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "scenario_id": "QB_HIGH"
+  },
+  {
+   "authorized_changed_fields": [
+    "observation_kernel"
+   ],
+   "config_hash": "0f2ec9d97f1cec586e058e5d29d429069a00a0014854986f55f27edc9c9e77c8",
+   "factor_id": "E",
+   "level": "e_scale=4/5",
+   "observation_kernel": {
+    "A": {
+     "alpha": "4/325",
+     "beta": "12/25"
+    },
+    "B": {
+     "alpha": "8/485",
+     "beta": "8/15"
+    },
+    "C": {
+     "alpha": "2/245",
+     "beta": "2/5"
+    },
+    "E": {
+     "alpha": "4000000000000000/468703043796303551",
+     "beta": "4000000000000000/31296956203696449"
+    }
+   },
+   "scenario_id": "E_LOW"
+  },
+  {
+   "authorized_changed_fields": [
+    "observation_kernel"
+   ],
+   "config_hash": "d6721d34a22f6e1cd78b994be01192b302d768108f8538bff41c4380511e9659",
+   "factor_id": "E",
+   "level": "e_scale=6/5",
+   "observation_kernel": {
+    "A": {
+     "alpha": "6/325",
+     "beta": "18/25"
+    },
+    "B": {
+     "alpha": "12/485",
+     "beta": "4/5"
+    },
+    "C": {
+     "alpha": "3/245",
+     "beta": "3/5"
+    },
+    "E": {
+     "alpha": "6000000000000000/468703043796303551",
+     "beta": "2000000000000000/10432318734565483"
+    }
+   },
+   "scenario_id": "E_HIGH"
+  },
+  {
+   "authorized_changed_fields": [
+    "turnover_profile",
+    "durations.E"
+   ],
+   "config_hash": "ffdc839f1bcd5b64d8013057a36e897eb75285ed0a077866acadc4d159ade3b0",
+   "factor_id": "INT-F2xF4-E",
+   "level": "F2 0.5h x E -10%",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "scenario_id": "INT_F2_05_E_M10"
+  },
+  {
+   "authorized_changed_fields": [
+    "turnover_profile",
+    "durations.E"
+   ],
+   "config_hash": "4c1efc0626cd5b4b5210bd2b774c11d33125849bc1608492ea51f70589934c03",
+   "factor_id": "INT-F2xF4-E",
+   "level": "F2 0.5h x E +10%",
+   "observation_kernel": {
+    "A": {
+     "alpha": "1/65",
+     "beta": "3/5"
+    },
+    "B": {
+     "alpha": "2/97",
+     "beta": "2/3"
+    },
+    "C": {
+     "alpha": "1/98",
+     "beta": "1/2"
+    },
+    "E": {
+     "alpha": "5000000000000000/468703043796303551",
+     "beta": "5000000000000000/31296956203696449"
+    }
+   },
+   "scenario_id": "INT_F2_05_E_P10"
+  }
+ ],
+ "status": "PRE_DATA"
+}
