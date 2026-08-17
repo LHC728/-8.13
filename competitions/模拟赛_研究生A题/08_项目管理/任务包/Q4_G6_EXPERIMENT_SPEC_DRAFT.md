@@ -1,9 +1,10 @@
 # Q4 / G6 EXPERIMENT SPEC DRAFT（实验设计与预注册草稿）
 
-> 状态：**DRAFT / PREREGISTRATION（F3 经 HG-Q4-F3-01 授权为假设性反事实敏感性；authority_conflict = RESOLVED_BY_HUMAN_GATE）**。本轮只设计、预注册，不正式跑大规模情景。
-> 权威：问题契约 §5；项目计划 G6；Q3 FINAL CLOSURE（`05_结果/Q3/final_closure/`）；HG-Q4-H2-NA-01（`08_项目管理/任务包/Q4_H2_NA_01_ADDENDUM.md`）。
-> 本轮授权：Q4 = **AUTHORIZED_FOR_DESIGN_AND_PREREGISTRATION_ONLY**（不得执行正式 Q4；不得消耗 Q4_EVALUATION random domain）。
-> 正式执行须：本 spec 经 Pro-Max 设计审查（required actions 闭合）+ Human Gate 批准后另行授权。
+> 状态：**SCREENING_SPEC_FROZEN（PRE-DATA；HUMAN_GATE_AUTHORIZED，Phase 1A）**——本轮只做 Q4_SCREENING（R=20，rep 0..19）；Q4_EVALUATION / Top-2 interaction / final factor inference / final management recommendation = NOT AUTHORIZED。
+> 冻结记录：freeze commit = `62ebe5f`（+ 后续治理提交）；freeze timestamp = 2026-08-17；baseline hash / scenario registry hash 见 `05_结果/Q4/screening/phase_1a/<run_id>/Q4_SCREENING_REGISTRY.json` 与 baseline_hashes.json。
+> **冻结后不得根据 screening 结果修改因素 levels、replicates 或 factor definitions。**
+> 权威：问题契约 §5；项目计划 G6；Q3 FINAL CLOSURE；HG-Q4-H2-NA-01；HG-Q4-F3-01（F3 = AUTHORIZED_AS_HYPOTHETICAL_COUNTERFACTUAL_SENSITIVITY，RA1 = OPTION B / ACCEPTED）。
+> 本轮授权：Q4_SCREENING_ONLY = AUTHORIZED；Q4_FORMAL_EVALUATION = NOT AUTHORIZED；TOP2_INTERACTION = NOT AUTHORIZED；正式执行须 Q4 spec Human Gate 后另行授权（本包为 Human Gate 一体化授权包，Pro-Max pre-screening PASS 后即进入 Phase 1A）。
 
 ## 1. 基准情景（baseline）
 

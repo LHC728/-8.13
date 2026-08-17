@@ -2,6 +2,16 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-17 / `Q4 PHASE 1A — SUBSTANTIVE BLOCKER`（namespace 冻结冲突 → STOP HUMAN_GATE_REQUIRED）
+
+### 修改
+
+- **Blocker**：HG 指定的 `Q4_SCREENING` 命名空间不被冻结 key_schema 接受（六命名空间 + H2 reserved；`Q4_SCREENING` 被拒）——key_schema 属 accepted DES core / P0 冻结项，修改需 Human Gate 授权。
+- **未执行任何 Q4_SCREENING simulation**；Q4_EVALUATION / Top-2 interaction UNTOUCHED。
+- 已完成：repo startup check（HEAD==62ebe5f==upstream）、CURRENT_STATE Gate 同步（Q4_SCREENING_ONLY AUTHORIZED）、Q4_G6_EXPERIMENT_SPEC_DRAFT.md 冻结标记（SCREENING_SPEC_FROZEN / PRE-DATA / HUMAN_GATE_AUTHORIZED）、scenario adapter 可行性确认（F2 turnover_profile / F3 tau_pm / F4 durations 均经 default_config 参数实现，不改 core；F5 用冻结 constant-hazard sensitivity 构造）。
+- 待 Human Gate 裁决命名空间方案：A. 授权 key_schema_v1 扩展 Q4_SCREENING/Q4_EVALUATION 域；B. 授权 Q4 复用现有冻结域（如 q3_formal + 新 master_seed）；C. 其他。
+- 裁决后恢复：冻结 Q4_SCREENING_REGISTRY → 1 次 fresh Pro-Max pre-screening review → PASS 后执行 Phase 1A。
+
 ## 2026-08-17 / `HG-Q4-F3-01`（Q4 F3 authority 裁决：RA1 = OPTION B / ACCEPTED）
 
 ### 修改
