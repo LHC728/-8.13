@@ -1,0 +1,265 @@
+{
+ "K_h": "12",
+ "R_screen": 20,
+ "authority": "HG-Q4-NS-01 (additive Q4 random-domain extension, OPTION A / ACCEPTED)",
+ "baseline": {
+  "K": "12",
+  "config_hash": "618d24ab3d823f97651524c6e0e4074553de280afab898fa0feca4abc43da275",
+  "durations": {
+   "A": "5/2",
+   "B": "2",
+   "C": "5/2",
+   "E": "3"
+  },
+  "failure_semantics": "piecewise-linear CDF",
+  "observation_kernel": "single_test_unconditional_v1 (Q3 Tier1 main)",
+  "policy": "NO_PM_BEFORE_MANDATORY",
+  "q3_evidence_binding": [
+   "05_结果/Q3/formal/run_20260815T133840057668Z_7ee48fc0",
+   "05_结果/Q3/formal/reissue_20260815T150613626910Z_f4da8f9d"
+  ],
+  "replacement_semantics": "accepted mandatory replacement (a+d>240 / exact-240)",
+  "scenario_id": "Q4_BASELINE",
+  "strategy": "H1",
+  "turnover": "1h_literal"
+ },
+ "factor_ids": [
+  "F1",
+  "F2",
+  "F3",
+  "F4-A",
+  "F4-B",
+  "F4-C",
+  "F4-E",
+  "F5"
+ ],
+ "factor_levels": {
+  "F1": "REUSED_ACCEPTED_Q3_EVIDENCE (seven K; K12 strong winner, scope-limited)",
+  "F2": "1.0h baseline vs 0.5h complete-overlap alternative",
+  "F3": "tau_PM in {150h, 180h, 210h} (early/middle/late coarse grid; COUNTERFACTUAL_ONLY per HG-Q4-F3-01)",
+  "F4-A/B/C/E": "duration -10% / +10% (one process at a time)",
+  "F5": "piecewise-linear CDF vs constant-hazard (MODEL_SEMANTIC_ONLY, same keyed U_L)"
+ },
+ "freeze_commit": "62ebe5f",
+ "freeze_timestamp": "2026-08-17T05:55:03.928552Z",
+ "frozen_flags": {
+  "HUMAN_GATE_AUTHORIZED": true,
+  "IMMUTABLE_FOR_PHASE_1A": true,
+  "PRE_DATA": true,
+  "Q4_EVALUATION": "NOT AUTHORIZED / UNTOUCHED",
+  "SCREENING_SPEC_FROZEN": true,
+  "TOP2_INTERACTION": "NOT AUTHORIZED"
+ },
+ "logical_domain": "Q4_SCREENING",
+ "master_seed": 7,
+ "namespace": "q4_screening",
+ "note": "20 replicates are SCREENING / DEVELOPMENTAL DIAGNOSTIC ONLY; NOT final inference. No replicate/seed/level change after data is read.",
+ "replicate_ids": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19
+ ],
+ "scenario": "q3_two_shift",
+ "scenarios": [
+  {
+   "K_h": "12",
+   "authorized_changed_fields": [
+    "turnover_profile"
+   ],
+   "config_hash": "bb15bb6453f9a5f83d30200df0d9a0059691c0cb564d2f09a8448f8a5bec94cb",
+   "factor_id": "F2",
+   "kernel": "single_test_unconditional_v1",
+   "level": "0.5h_complete_overlap",
+   "master_seed": 7,
+   "namespace": "q4_screening",
+   "policy": "NO_PM_BEFORE_MANDATORY",
+   "scenario_id": "F2_TURNOVER_05"
+  },
+  {
+   "K_h": "12",
+   "authorized_changed_fields": [
+    "tau_pm"
+   ],
+   "config_hash": "fb339f40aaad318ceffea03f237858c992ab4e3892b62f7ee7aa13896c4d35fd",
+   "factor_id": "F3",
+   "kernel": "single_test_unconditional_v1",
+   "level": "tau_PM=150h",
+   "master_seed": 7,
+   "namespace": "q4_screening",
+   "policy": "NO_PM_BEFORE_MANDATORY",
+   "scenario_id": "F3_TAU150"
+  },
+  {
+   "K_h": "12",
+   "authorized_changed_fields": [
+    "tau_pm"
+   ],
+   "config_hash": "5445d1e48c7b3fe587f6994b41848e688bbae1ae9a9a17f1806cd0ecd487747c",
+   "factor_id": "F3",
+   "kernel": "single_test_unconditional_v1",
+   "level": "tau_PM=180h",
+   "master_seed": 7,
+   "namespace": "q4_screening",
+   "policy": "NO_PM_BEFORE_MANDATORY",
+   "scenario_id": "F3_TAU180"
+  },
+  {
+   "K_h": "12",
+   "authorized_changed_fields": [
+    "tau_pm"
+   ],
+   "config_hash": "67b9f459b82cc1597d1635a1652086f44fbb9fd4178360e4be9fde12b87b5f44",
+   "factor_id": "F3",
+   "kernel": "single_test_unconditional_v1",
+   "level": "tau_PM=210h",
+   "master_seed": 7,
+   "namespace": "q4_screening",
+   "policy": "NO_PM_BEFORE_MANDATORY",
+   "scenario_id": "F3_TAU210"
+  },
+  {
+   "K_h": "12",
+   "authorized_changed_fields": [
+    "durations.A"
+   ],
+   "config_hash": "58dfac3883e120cd5e3a89a24cbf6f3bd0423164aab68cf5588e39420f79e96d",
+   "factor_id": "F4-A",
+   "kernel": "single_test_unconditional_v1",
+   "level": "duration_A=-10%",
+   "master_seed": 7,
+   "namespace": "q4_screening",
+   "policy": "NO_PM_BEFORE_MANDATORY",
+   "scenario_id": "F4_A_M10"
+  },
+  {
+   "K_h": "12",
+   "authorized_changed_fields": [
+    "durations.A"
+   ],
+   "config_hash": "c2e30580cfe37945f5d05addf936e7075642437cd096960240abd8a6b74dc03a",
+   "factor_id": "F4-A",
+   "kernel": "single_test_unconditional_v1",
+   "level": "duration_A=+10%",
+   "master_seed": 7,
+   "namespace": "q4_screening",
+   "policy": "NO_PM_BEFORE_MANDATORY",
+   "scenario_id": "F4_A_P10"
+  },
+  {
+   "K_h": "12",
+   "authorized_changed_fields": [
+    "durations.B"
+   ],
+   "config_hash": "9118c78fe68e3954f50955bfdd986d8f7e3b1326b5d1bf25cbcd41623ac0f6bc",
+   "factor_id": "F4-B",
+   "kernel": "single_test_unconditional_v1",
+   "level": "duration_B=-10%",
+   "master_seed": 7,
+   "namespace": "q4_screening",
+   "policy": "NO_PM_BEFORE_MANDATORY",
+   "scenario_id": "F4_B_M10"
+  },
+  {
+   "K_h": "12",
+   "authorized_changed_fields": [
+    "durations.B"
+   ],
+   "config_hash": "e8f9506b58c4160abef013590c36405f650650d48381e7033657b8bc5f0f41f8",
+   "factor_id": "F4-B",
+   "kernel": "single_test_unconditional_v1",
+   "level": "duration_B=+10%",
+   "master_seed": 7,
+   "namespace": "q4_screening",
+   "policy": "NO_PM_BEFORE_MANDATORY",
+   "scenario_id": "F4_B_P10"
+  },
+  {
+   "K_h": "12",
+   "authorized_changed_fields": [
+    "durations.C"
+   ],
+   "config_hash": "b4c26e3000f01dd3d8508f7a7cb20f72ac053d8154bc59cdfc00f1f819753780",
+   "factor_id": "F4-C",
+   "kernel": "single_test_unconditional_v1",
+   "level": "duration_C=-10%",
+   "master_seed": 7,
+   "namespace": "q4_screening",
+   "policy": "NO_PM_BEFORE_MANDATORY",
+   "scenario_id": "F4_C_M10"
+  },
+  {
+   "K_h": "12",
+   "authorized_changed_fields": [
+    "durations.C"
+   ],
+   "config_hash": "a757c47c30487a56952c0d437afe1a54d10dd4e233b184786aaa180aaa0c1807",
+   "factor_id": "F4-C",
+   "kernel": "single_test_unconditional_v1",
+   "level": "duration_C=+10%",
+   "master_seed": 7,
+   "namespace": "q4_screening",
+   "policy": "NO_PM_BEFORE_MANDATORY",
+   "scenario_id": "F4_C_P10"
+  },
+  {
+   "K_h": "12",
+   "authorized_changed_fields": [
+    "durations.E"
+   ],
+   "config_hash": "49eacfe46bbb105b73bd18622ac3e91f5ae4872a7942bf3e8578fc61fae38980",
+   "factor_id": "F4-E",
+   "kernel": "single_test_unconditional_v1",
+   "level": "duration_E=-10%",
+   "master_seed": 7,
+   "namespace": "q4_screening",
+   "policy": "NO_PM_BEFORE_MANDATORY",
+   "scenario_id": "F4_E_M10"
+  },
+  {
+   "K_h": "12",
+   "authorized_changed_fields": [
+    "durations.E"
+   ],
+   "config_hash": "d42486aecbbdc60f007d920e1e2c8eb093ab097d7c138adefdbe98d29c6d9f11",
+   "factor_id": "F4-E",
+   "kernel": "single_test_unconditional_v1",
+   "level": "duration_E=+10%",
+   "master_seed": 7,
+   "namespace": "q4_screening",
+   "policy": "NO_PM_BEFORE_MANDATORY",
+   "scenario_id": "F4_E_P10"
+  },
+  {
+   "K_h": "12",
+   "authorized_changed_fields": [
+    "failure_semantic"
+   ],
+   "config_hash": "6f081f756e02bdb33bf8ac100f0ff9d15f8fa38063884fb9c31128744d71190b",
+   "factor_id": "F5",
+   "kernel": "single_test_unconditional_v1",
+   "level": "constant-hazard CDF",
+   "master_seed": 7,
+   "namespace": "q4_screening",
+   "policy": "NO_PM_BEFORE_MANDATORY",
+   "scenario_id": "F5_CONSTANT_HAZARD"
+  }
+ ],
+ "shifts_per_day": 2
+}

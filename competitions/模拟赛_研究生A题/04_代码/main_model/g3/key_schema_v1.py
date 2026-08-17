@@ -136,11 +136,37 @@ H2_NAMESPACES: tuple[str, ...] = (
 # renaming, no fifth stream, no merging).
 H2_POST_STREAMS: tuple[str, ...] = ("U_X_post", "U_D_post", "U_Y_post", "U_L_post")
 
+# ---------------------------------------------------------------------------
+# Q4 additive random-domain extension (HG-Q4-NS-01, 2026-08-17 OPTION A /
+# ACCEPTED). Purely additive: the frozen legacy constants above (NAMESPACES /
+# ALL_NAMESPACES / H2_RESERVED_NAMESPACE) and the P0 H2 constants stay
+# byte-identical, so every legacy canonical key is unchanged. The two Q4
+# logical domains map to two independent physical namespaces; both share the
+# same master_seed with Q2/Q3-style real-state / observation / equipment
+# lifetime physical DES streams, and the namespace is part of the canonical
+# key so q4_screening and q4_evaluation are physically separated.
+# ---------------------------------------------------------------------------
+
+NAMESPACE_Q4_SCREENING: str = "q4_screening"
+NAMESPACE_Q4_EVALUATION: str = "q4_evaluation"
+Q4_NAMESPACES: tuple[str, ...] = (
+    NAMESPACE_Q4_SCREENING,
+    NAMESPACE_Q4_EVALUATION,
+)
+
+# Physical experiment namespace universe = legacy six frozen namespaces +
+# Human-Gate-authorized additive Q4 namespaces (additive; legacy six remain
+# frozen and unchanged).
+PHYSICAL_EXPERIMENT_NAMESPACES: tuple[str, ...] = NAMESPACES + Q4_NAMESPACES
+
 # Serializer-visible universe = frozen public constants + formal H2
-# namespaces. canonical_key serializes any registered namespace; consumption
-# is gated per family by the stream helpers (namespace firewall). Private:
-# not exported, public legacy constants stay untouched.
-_SERIALIZABLE_NAMESPACES: tuple[str, ...] = ALL_NAMESPACES + H2_NAMESPACES
+# namespaces + additive Q4 namespaces. canonical_key serializes any
+# registered namespace; consumption is gated per family by the stream
+# helpers (namespace firewall). Private: not exported, public legacy
+# constants stay untouched.
+_SERIALIZABLE_NAMESPACES: tuple[str, ...] = (
+    ALL_NAMESPACES + H2_NAMESPACES + Q4_NAMESPACES
+)
 
 # U_X true-state subsystems (frozen: subsystem explicitly A/B/C). E has no
 # independent true-state draw; its distribution is derived from A/B/C/D.
@@ -192,6 +218,10 @@ __all__ = [
     "NAMESPACE_H2_ROLLOUT",
     "H2_NAMESPACES",
     "H2_POST_STREAMS",
+    "NAMESPACE_Q4_SCREENING",
+    "NAMESPACE_Q4_EVALUATION",
+    "Q4_NAMESPACES",
+    "PHYSICAL_EXPERIMENT_NAMESPACES",
     "SUBSYSTEMS",
     "PROCESSES",
     "FORBIDDEN_PHYSICAL_KEY_FIELDS",
@@ -301,11 +331,13 @@ def canonical_key(
                       | process_or_subsystem | attempt_or_generation
 
     ``namespace`` must be one of the registered namespaces: the six frozen
-    experiment namespaces, the H2 reserved placeholder ``h2_future``, or the
-    three formal H2 namespaces (``h2_tuning``/``h2_holdout``/``h2_rollout``).
+    experiment namespaces, the H2 reserved placeholder ``h2_future``, the
+    three formal H2 namespaces (``h2_tuning``/``h2_holdout``/``h2_rollout``),
+    or the Human-Gate-authorized additive Q4 namespaces (``q4_screening`` /
+    ``q4_evaluation``).
     Serialization accepts any registered namespace (pure serializer);
     consumption is gated per family by the stream helpers (namespace
-    firewall: legacy physical helpers only consume the six experiment
+    firewall: legacy physical helpers consume the legacy six + additive Q4
     namespaces; H2 post helpers only consume the three H2 namespaces).
     ``master_seed``/``replicate_id`` are non-negative ints;
     ``entity_id`` is a str or a positive int; ``process_or_subsystem`` is a
@@ -361,19 +393,22 @@ def uniform_from_key(canonical_key: str) -> Fraction:
 
 
 def _require_legacy_namespace(namespace) -> None:
-    """Namespace firewall (P0): legacy physical stream helpers (``u_x`` /
-    ``u_d`` / ``u_y`` / ``u_l``) may only consume the six frozen experiment
-    namespaces.
+    """Namespace firewall (P0 + HG-Q4-NS-01): legacy physical stream helpers
+    (``u_x`` / ``u_d`` / ``u_y`` / ``u_l``) may consume the six frozen
+    experiment namespaces plus the Human-Gate-authorized additive Q4
+    namespaces (``q4_screening`` / ``q4_evaluation``).
 
     The formal H2 namespaces (``h2_tuning``/``h2_holdout``/``h2_rollout``)
     are reserved for the H2 post streams, and ``h2_future`` remains a
     reserved-only placeholder; legacy physical helpers must never consume
     them (in particular legacy helper + ``h2_rollout`` is always rejected).
     """
-    if namespace not in NAMESPACES:
+    if namespace not in PHYSICAL_EXPERIMENT_NAMESPACES:
         raise ValueError(
-            "legacy physical stream may only be consumed under the six frozen "
-            f"experiment namespaces {', '.join(NAMESPACES)}; H2 namespaces "
+            "legacy physical stream may only be consumed under the legacy "
+            f"six frozen experiment namespaces {', '.join(NAMESPACES)} plus "
+            f"the Human-Gate-authorized additive Q4 namespaces "
+            f"{', '.join(Q4_NAMESPACES)}; H2 namespaces "
             f"{', '.join(H2_NAMESPACES)} are reserved for H2 post streams, and "
             f"the placeholder {H2_RESERVED_NAMESPACE!r} is reserved only"
         )

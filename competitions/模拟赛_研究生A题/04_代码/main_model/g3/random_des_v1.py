@@ -590,10 +590,12 @@ class RandomDesConfig:
             )
 
         namespace = raw.get("namespace")
-        if namespace not in ks.NAMESPACES:
+        if namespace not in ks.PHYSICAL_EXPERIMENT_NAMESPACES:
             raise RandomDesConfigError(
-                f"config.namespace must be one of the six frozen namespaces "
-                f"{ks.NAMESPACES}, got {namespace!r} (H2 is reserved only)"
+                f"config.namespace must be one of the legacy six frozen "
+                f"namespaces {ks.NAMESPACES} plus the Human-Gate-authorized "
+                f"additive Q4 namespaces {ks.Q4_NAMESPACES}, got {namespace!r} "
+                f"(H2 namespaces are reserved for H2 post streams only)"
             )
         master_seed = raw.get("master_seed")
         replicate_id = raw.get("replicate_id")
