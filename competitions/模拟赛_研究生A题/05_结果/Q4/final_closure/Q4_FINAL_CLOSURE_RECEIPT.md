@@ -4,7 +4,7 @@
 - q4_status: **FINAL CLOSED / IMMUTABLE / READY_FOR_PAPER**
 - g7_status: **AUTHORIZED_FOR_PAPER_FREEZE**
 - sealed_head_before_closure: `a94bcd0`
-- final_closure_commit: PENDING_FILL_AFTER_COMMIT
+- final_closure_commit: 96f50e9fdfcdd3d6e0a1cc0698bba2f0ca283323
 - formal_numeric_root: `05_结果/Q4/evaluation/20260817T065336055564Z_b46f9219/`
 - paper_facing_root: `05_结果/Q4/final_handoff/`（7/7）
 - formal_design: q4_evaluation / seed 7 / R=128 / rep 100..227（two-stage 2.0930→2.0→R=128）

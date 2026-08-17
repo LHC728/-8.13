@@ -5,7 +5,7 @@
  "paper_status": "READY_FOR_PAPER",
  "g7_status": "AUTHORIZED_FOR_PAPER_FREEZE",
  "sealed_head_before_closure": "a94bcd08fc0f0eb50a1c8cf11962b48bee0729f5",
- "final_closure_commit": "PENDING_FILL_AFTER_COMMIT",
+ "final_closure_commit": "96f50e9fdfcdd3d6e0a1cc0698bba2f0ca283323",
  "formal_numeric_root": "05_结果/Q4/evaluation/20260817T065336055564Z_b46f9219/",
  "paper_facing_root": "05_结果/Q4/final_handoff/",
  "formal_design": {
