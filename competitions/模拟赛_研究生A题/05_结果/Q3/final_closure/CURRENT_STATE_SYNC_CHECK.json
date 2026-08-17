@@ -1,0 +1,40 @@
+{
+ "check": "CURRENT_STATE_SYNC_CHECK",
+ "current_prohibitions": [
+  "- **H2 冻结禁令（FROZEN_HISTORICAL_CHALLENGER）**：禁止重开 H2 / H2'、禁止重新调 H2、禁止修改 H2 action set / 2SE / M* / C_eval* / B-1 / seed/salt；禁止增加 tuning sample、重跑 P3-C、运行 H2 cross-K / holdout / C25、为论文效果制造 deviation；除非未来 Human Gate 明确重新授权。",
+  "- **Q3 策略冻结**：禁止重新调 H1、禁止修改已接受 H1 formal 与 Q3 K recommendation（k\\*=K12，scope = 七个 K + 冻结 H1 policy set）；除非未来 Human Gate 明确重新授权。",
+  "- **论文措辞禁令**：禁止「K=12 全局最优」「K=12 理论上支配所有 K」「K 越大一定越优」；禁止「H2 失败/无效/算法错误」「复杂模型一定不如简单模型」；禁止把 agreement=1 解释为「H2 优于 H1」；禁止把 0/100 泛化为「H2 在所有状态下等于 H1」；禁止把 cross-K / h2_holdout / C25 写成 PASS 或 FAILED（= NOT_APPLICABLE_AFTER_H2_DELETE，historically NOT RUN）。",
+  "- 不重开 D-01..D-25、不修改冻结的 `Q3_H2_BOOTSTRAP_SPEC_DRAFT.md` 规范条款（如需 → STOP 回 Human Gate）。",
+  "- 不改 G3/Q2/Q3 accepted 核心（random_des_v1/key_schema_v1/寿命再生/C06/C17/冻结观测语义/Q2-FORMAL-SPEC/Q3 H1 formal 与 K recommendation）；若需改 → STOP 回 Human Gate。",
+  "- 不修改已签字口径与 accepted 证据（含全部 H2 evidence roots，immutable）；若实现暴露新歧义，回到变更控制而不是自行决定。",
+  "- 不手录数字为权威；手稿数值必须机械可追溯至 accepted formal 证据。",
+  "- 不把 tuning/诊断值（机会密度、M 校准、稳定性样本、跨 K transfer 诊断）当论文正式数字。",
+  "- 不把失败 run `daead4cf` 或 G3 调优/holdout 数据（含 tau_pm=198 候选的调优 mean T）当作 Q2 论文数字来源；论文数字只来自 accepted run `2d1466ba`。",
+  "- 不宣称 tau_pm=198 最优（= FORMALLY_NOT_SELECTED_FOR_Q2_PRIMARY）；不把 C3（不可区分）转为 tau198 优越证据；不因 H2 结果重开 Q2 或宣称 Q2 H1 次优。",
+  "- 不宣称 NO_PM 超越冻结模型/候选集范围的普适最优或一般工业管理定理。",
+  "- 不把旧 C24 `waiting_opportunity_count` 当作 H2 战略等待密度（= forced-wait 仪表）；未来任何 H2 复用作修正定义（strategic STRICT/BOUNDARY/NONSTRICT + optional PM 与 mandatory 分离）。",
+  "- **Q4 授权限定**：Q4 = AUTHORIZED_FOR_DESIGN_AND_PREREGISTRATION_ONLY——只允许实验设计与预注册；**未过 Q4 spec Human Gate 前禁止正式 sensitivity runs**；**禁止消耗正式 Q4_EVALUATION random domain**（Q4_SCREENING 亦须预注册后按额度使用）；不自动进入 Q4 正式执行（等待 Human Gate）。",
+  "- 不重跑 Q1/Q2、不重跑已接受 H1 formal、不删除 H2 负结果或旧 invalidated roots。"
+ ],
+ "generated_at": "2026-08-17T05:09:42.686003Z",
+ "id": "CURRENT_STATE_SYNC_CHECK",
+ "next_stage": "G2/G3/Q2 H1 FORMAL 均已 PASS/ACCEPTED；**Q3/H2 BOOTSTRAP = FINAL PASS / ACCEPTED（D-01..D-25 冻结；冻结权威规格 = `08_项目管理/任务包/Q3_H2_BOOTSTRAP_SPEC_DRAFT.md`）**；**P0（H2 key schema bootstrap）= VERIFIED FINAL PASS / ACCEPTED（已关闭）**；C24 = PASS；**Q3-H2 Density = FINAL PASS / ACCEPTED（D-14 A 7/7 + B 7/7；E1 `a2669aa9` + E2 `0713f171`）**；**Q3-H2-P1（信息防火墙 + C23 P1-applicable）= FINAL PASS / ACCEPTED（`08488e4`）**；**P2 + P2-E1 = FINAL PASS / ACCEPTED（`31f13f9` + `a5d2faf`）**；**Q3-H2-P3-A + P3-A-E1 = FINAL PASS / ACCEPT",
+ "note": "history-marked lines retain old wording; CURRENT sections (top gate / section 6 / section 7) are free of stale current-state phrases; Q4 = AUTHORIZED_FOR_DESIGN_AND_PREREGISTRATION_ONLY (not Q4 FORMAL AUTHORIZED)",
+ "stale_phrase_violations": [],
+ "stale_phrases_checked": [
+  "H2 NOT IMPLEMENTED",
+  "H2 实现仍 NOT YET AUTHORIZED",
+  "ADMITTED_FOR_DESIGN_ONLY",
+  "Q3 = ACTIVE",
+  "Q3 ACTIVE",
+  "无已批准 final Q3 K 推荐",
+  "无 K 推荐",
+  "P3-A 为下一阶段",
+  "下一阶段 P3-A",
+  "Q4 当前禁止",
+  "Q4 = NOT STARTED",
+  "不启动 Q4"
+ ],
+ "status": "PASS",
+ "top_gate": "> 当前 Gate：**Q3 FINAL MODEL SELECTION CLOSED（Whole G2 = PASS / ACCEPTED；G3 = PASS / ACCEPTED；Q2 = FINAL PASS / ACCEPTED（`2d1466ba`）；Q3 正式主策略 = H1；Q3 推荐 K = K12（12 h），仅限七个 K + 冻结 H1 policy set（NO_PM_BEFORE_MANDATORY），非全局最优、不宣称弱支配；Q3-H2 = FINAL DELETE / ACCEPTED AS CHALLENGER RESULT（evidence `7b490ce6`；H2 = FROZEN_HISTORICAL_CHALLENGER；H2' = NOT PLANNED；cross-K / h2_holdout / C25 = NOT_APPLICABLE_AFTER_H2_DELETE、historically NOT RUN）；Q3 FINAL STATUS = READY_FOR_PAPER）**；**Q4 = AUTHORIZED_FOR_DESIGN_AND_PREREGISTRATION_ONLY**（不得写 Q4 FORMAL AUTHORIZED；正式 Q4 执行须 Q4 spec Human Gate 后另行授权）。历史链：G2 = PA"
+}

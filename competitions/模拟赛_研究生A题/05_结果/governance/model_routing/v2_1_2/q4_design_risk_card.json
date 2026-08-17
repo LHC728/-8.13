@@ -1,0 +1,79 @@
+{
+  "router_version": "MMR_V2.1.2",
+  "report": "ROUTING_RISK_CARD",
+  "task_id": "Q4-G6-EXPERIMENT-DESIGN-PREREGISTRATION",
+  "semantic_issue_id": "Q4-DESIGN-001",
+  "stage": "DESIGN_PREREGISTRATION",
+  "authority_state": "HUMAN_ACCEPTED",
+  "formal_scope": true,
+  "checkpoint": "R0",
+  "task_description": "Q4/G6 experiment design and preregistration only (Q4 = AUTHORIZED_FOR_DESIGN_AND_PREREGISTRATION_ONLY): mechanism time ledger, level-1 factors (K / turnover / preventive-replacement-threshold / A-B-C-E duration / failure semantics; H2 = NOT_APPLICABLE_AFTER_H2_DELETE), secondary q/e semantic propagation, CRN paired Delta T statistics, screening/evaluation domain isolation, factor ranking, top-2 interaction, management recommendations. NO formal Q4 execution in this package.",
+  "risk": {
+    "problem_semantics": false,
+    "modeling_assumption": false,
+    "mathematical_formulation": false,
+    "data_semantics": false,
+    "statistical_inference": true,
+    "algorithmic_semantics": false,
+    "numerical_method": false,
+    "validation_interpretation": true,
+    "formal_result_impact": true,
+    "governance_authority": false
+  },
+  "multiple_plausible_interpretations": false,
+  "authority_ambiguity": false,
+  "uncertainty_present": false,
+  "frozen_mechanical_execution": false,
+  "engineering_signals": {
+    "new_complex_seam": false,
+    "repeat_failure_count": 0,
+    "checker_disagreement": false,
+    "checker_independence_concern": false,
+    "claimed_coverage_not_exercised": false,
+    "unexpected_behavior_after_pass": false,
+    "formal_numeric_shift": false
+  },
+  "green_allowlist_class": null,
+  "authority_refs": [
+    "01_审计/问题契约.md §5 (Q4 factors / ledger / method boundary)",
+    "08_项目管理/项目计划.md G6 (Q4 sensitivity)",
+    "08_项目管理/任务包/Q4_H2_NA_01_ADDENDUM.md (HG-Q4-H2-NA-01: H2 factor NOT_APPLICABLE_AFTER_H2_DELETE)",
+    "08_项目管理/任务包/Q4_G6_EXPERIMENT_SPEC_DRAFT.md (this draft)",
+    "05_结果/Q3/final_closure/Q3_FINAL_RESULT.md (H1 + K12 baseline)"
+  ],
+  "authority_receipts": [
+    {"ref": "01_审计/问题契约.md", "authority_state": "HUMAN_ACCEPTED"},
+    {"ref": "05_结果/Q3/final_closure/Q3_FINAL_RESULT.md", "authority_state": "HUMAN_ACCEPTED"}
+  ],
+  "risk_evidence": [
+    {"dimension": "statistical_inference",
+     "evidence": "paired Delta T / SE / 95% CI under CRN; replicate unit = batch (NOT 100 devices as replicates); screening vs evaluation domain isolation; R determination from pilot variance per preregistered CI half-width"},
+    {"dimension": "validation_interpretation",
+     "evidence": "q two semantics (Q-A recalibration vs Q-B future inflow) strictly separated; e requires recalibration; q/e/alpha/beta not independent; factor ranking separates mathematical effect from management priority; model-internal sensitivity not presented as real-world causality; K12 scope-limited"},
+    {"dimension": "formal_result_impact",
+     "evidence": "Q4 baseline mechanically binds Q3 H1 + K12 (no re-selection); F3 (preventive threshold) must stay within the accepted H1 policy family or route HUMAN_GATE_REQUIRED; Q4_EVALUATION domain untouched until formal authorization"}
+  ],
+  "computed_route": "YELLOW",
+  "route_reason": [
+    "semantic risk present (statistical_inference, validation_interpretation, formal_result_impact) -> YELLOW",
+    "governance_authority=false: design/preregistration only, no frozen model item modified; H2 factor closure per HG-Q4-H2-NA-01",
+    "fresh Pro-Max design review required before Human Gate decides formal Q4 execution"
+  ],
+  "design_review": {
+    "pro_max_verdict": "BLOCKED",
+    "authority_conflict": true,
+    "date": "2026-08-17",
+    "reason": "F3 preventive-replacement-threshold cannot be defined inside the frozen NO_PM_BEFORE_MANDATORY H1 policy family (any tau<240 is PM-before-mandatory, i.e. a policy outside the Q3 frozen candidate set whose k* scope is limited to that set); the draft's unresolved F3 + historical contract §5 PM entry trigger authority_conflict=true -> HUMAN_GATE_REQUIRED (MMR V2.1.2: PASS/CAVEAT with conflict never passes)",
+    "required_actions": [
+      "RA1 (HUMAN_GATE): adjudicate F3 — (a) drop F3 from Q4 level-1 factors via frozen addendum amending contract §5 (mirror HG-Q4-H2-NA-01), or (b) authorize strictly as hypothetical counterfactual sensitivity with frozen wording (formal strategy stays H1/NO_PM_BEFORE_MANDATORY; results model-internal what-if; excluded from k* recommendation scope; no 'PM beats H1' claims). No Q4 execution touching F3 before resolution.",
+      "RA2 (closed in spec): screening data absolutely excluded from final effect/CI estimation; final CI evidence exclusively from Q4_EVALUATION replicates.",
+      "RA3 (closed in spec): freeze a Q4_SCREENING replicate-ID registry + manifest before any screening run (mechanical non-overlap verification)."
+    ],
+    "required_actions_closed": false
+  },
+  "notes": [
+    "MMR V2.1.2 YELLOW -> fresh Pro-Max (deepseek-pro-max / deepseek-v4-pro / reasoning=max / read-only) review of the Q4 design; reviewer answers A-L; all required actions must close before Human Gate authorizes formal Q4 execution.",
+    "If the reviewer finds the preventive-replacement-threshold factor requires changing the formal H1 policy family -> authority_conflict=true -> HUMAN_GATE_REQUIRED.",
+    "Q4 formal execution NOT authorized by this card; Q4_EVALUATION random domain remains untouched."
+  ]
+}

@@ -1,0 +1,27 @@
+PRO_MAX_REVIEW (Q4/G6 experiment design preregistration) - deepseek-pro-max / deepseek-v4-pro / reasoning=max / fresh / read-only / workspace delta=0
+Date: 2026-08-17
+
+VERDICT: BLOCKED
+authority_conflict: true
+required_actions_closed: false
+
+Checklist A-L:
+A. baseline strictly bound to Q3 H1 + K12 (no strategy re-selection): YES
+B. mechanism ledger non-additive (no parallel-hours sum as T): YES
+C. K factor reuses accepted evidence (no wasteful reruns): YES
+D. turnover definition faithful to 1h/0.5h frozen semantics: YES
+E. preventive-replacement-threshold (F3) conflicts with frozen NO_PM_BEFORE_MANDATORY policy family: YES (risk) -> authority_conflict=true -> HUMAN_GATE_REQUIRED
+F. two q semantics strictly separated (Q-A recalibration vs Q-B future inflow): YES
+G. e changes require recalibration: YES
+H. q/e/alpha/beta not wrongly independent: YES
+I. screening/evaluation isolated (non-overlapping IDs; no screening data in final CI; no H2 tuning/holdout/Q3 formal worlds as Q4 evaluation data): YES (with wording hardening -> RA2 closed)
+J. paired CRN / batch-replicate unit / 95% CI correct: YES
+K. factor ranking separated from management priority: YES
+L. H2 = NOT_APPLICABLE_AFTER_H2_DELETE, not reactivated: YES
+
+Required actions:
+- RA1 (HUMAN_GATE): adjudicate F3 — drop via frozen addendum (mirror HG-Q4-H2-NA-01) OR authorize strictly as hypothetical counterfactual sensitivity with frozen wording (H1/NO_PM_BEFORE_MANDATORY stays formal; model-internal what-if; excluded from k* scope; no 'PM beats H1'). No Q4 execution touching F3 before resolution. -> OPEN (Human Gate)
+- RA2: absolute exclusion of screening data from final effect/CI estimation (wording hardened in spec §6) -> CLOSED
+- RA3: pre-register + freeze Q4_SCREENING replicate-ID registry + manifest before any screening run -> CLOSED in spec
+
+Gate reading: MMR V2.1.2 authority_conflict=true -> HUMAN_GATE_REQUIRED; PASS/CAVEAT with conflict never passes. Q4 formal execution NOT authorized; Q4_EVALUATION domain untouched.

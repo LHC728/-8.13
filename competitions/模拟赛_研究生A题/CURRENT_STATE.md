@@ -1,8 +1,8 @@
 # CURRENT_STATE
 
 > 最后更新：2026-08-17
-> 状态版本：`STATE-2026-08-17-Q3-FINAL`
-> 当前 Gate：**Q3 FINAL MODEL SELECTION CLOSED（H1 = 正式主策略；k\*=K12 范围限定；H2 = FINAL DELETE / ACCEPTED AS CHALLENGER RESULT；Q3 FINAL STATUS = READY_FOR_PAPER）**；Q4 = NOT STARTED（状态修复后待授权）。历史链：G2 = PASS / ACCEPTED；G3 = PASS / ACCEPTED（C17 REQUALIFIED_AFTER_C10_C12_CHECKER_FIXES）；Q2 H1 FORMAL = PASS / ACCEPTED（accepted run `2d1466ba`；Q2 主情景选中 H1 政策 = NO_PM_BEFORE_MANDATORY）；Q3/H2 BOOTSTRAP = FINAL PASS / ACCEPTED（D-01..D-25 冻结；冻结权威规格 `08_项目管理/任务包/Q3_H2_BOOTSTRAP_SPEC_DRAFT.md` = FINAL_FREEZE_ACCEPTED + ADDENDUM DP_DIAG_01）；P0 = VERIFIED FINAL PASS / ACCEPTED（已关闭）；Q3 H1 FORMAL = FINAL PASS / ACCEPTED（accepted physical run `run_20260815T133840057668Z_7ee48fc0`；accepted final provenance reissue `05_结果/Q3/formal/reissue_20260815T150613626910Z_f4da8f9d`；Tier 1/2 预注册报告 k\*=K12 strong、co-best=[]——**措辞限于「七个 K + 冻结 H1 政策集内」，非全局最优、非 K12 弱支配、非 final Q3 overall recommendation**）；Q3-H2 Density = FINAL PASS / ACCEPTED（D-14 A 7/7 + B 7/7；E1 `a2669aa9` + E2 `0713f171`）；Q3-H2-P1/P2/P3-A/P3-B（含 E1 各轮）= FINAL PASS / ACCEPTED（`08488e4` / `31f13f9`+`a5d2faf` / `b285131`+`fcf07f6` / `841bafc`→`10a6491`→`c271a62`）；**Q3-H2 = FINAL DELETE / ACCEPTED（Human Gate 2026-08-17；accepted evidence `05_结果/H2/tuning/stability/run_20260816T175317829317Z_7b490ce6`：n=100、agreement_b=1.0000、agreement_c=1.0000、deviation_count=0 → H2_NO_EFFECTIVE_DEVIATION；governance closure `a56a2cd`；H2 = FROZEN_HISTORICAL_CHALLENGER；H2' = NOT PLANNED；cross-K / h2_holdout / C25 = NOT_APPLICABLE_AFTER_H2_DELETE（historically NOT RUN，非 PASS 非 FAILED））**；C23/C25 按 H2 DELETE 不再需要（historically PENDING → NOT_APPLICABLE_AFTER_H2_DELETE）；**Q3 论文包 = ACCEPTED（`05_结果/Q3/final_closure/`：Q3_FINAL_RESULT / Q3_H1_H2_COMPARISON / Q3_H1_H2_PAPER_TABLE / Q3_H1_H2_PAPER_NARRATIVE + provenance/scope audit；fresh Pro-Max 论文语义审查 PASS_WITH_CAVEAT、authority_conflict=false、actions closed）**。
+> 状态版本：`STATE-2026-08-17-Q3-FINAL-Q4-BOOTSTRAP`
+> 当前 Gate：**Q3 FINAL MODEL SELECTION CLOSED（Whole G2 = PASS / ACCEPTED；G3 = PASS / ACCEPTED；Q2 = FINAL PASS / ACCEPTED（`2d1466ba`）；Q3 正式主策略 = H1；Q3 推荐 K = K12（12 h），仅限七个 K + 冻结 H1 policy set（NO_PM_BEFORE_MANDATORY），非全局最优、不宣称弱支配；Q3-H2 = FINAL DELETE / ACCEPTED AS CHALLENGER RESULT（evidence `7b490ce6`；H2 = FROZEN_HISTORICAL_CHALLENGER；H2' = NOT PLANNED；cross-K / h2_holdout / C25 = NOT_APPLICABLE_AFTER_H2_DELETE、historically NOT RUN）；Q3 FINAL STATUS = READY_FOR_PAPER）**；**Q4 = AUTHORIZED_FOR_DESIGN_AND_PREREGISTRATION_ONLY**（不得写 Q4 FORMAL AUTHORIZED；正式 Q4 执行须 Q4 spec Human Gate 后另行授权）。历史链：G2 = PASS / ACCEPTED；G3 = PASS / ACCEPTED（C17 REQUALIFIED_AFTER_C10_C12_CHECKER_FIXES）；Q2 H1 FORMAL = PASS / ACCEPTED（accepted run `2d1466ba`；Q2 主情景选中 H1 政策 = NO_PM_BEFORE_MANDATORY）；Q3/H2 BOOTSTRAP = FINAL PASS / ACCEPTED（D-01..D-25 冻结；冻结权威规格 `08_项目管理/任务包/Q3_H2_BOOTSTRAP_SPEC_DRAFT.md` = FINAL_FREEZE_ACCEPTED + ADDENDUM DP_DIAG_01）；P0 = VERIFIED FINAL PASS / ACCEPTED（已关闭）；Q3 H1 FORMAL = FINAL PASS / ACCEPTED（accepted physical run `run_20260815T133840057668Z_7ee48fc0`；accepted final provenance reissue `05_结果/Q3/formal/reissue_20260815T150613626910Z_f4da8f9d`；Tier 1/2 预注册报告 k\*=K12 strong、co-best=[]——**措辞限于「七个 K + 冻结 H1 政策集内」，非全局最优、非 K12 弱支配、非 final Q3 overall recommendation**）；Q3-H2 Density = FINAL PASS / ACCEPTED（D-14 A 7/7 + B 7/7；E1 `a2669aa9` + E2 `0713f171`）；Q3-H2-P1/P2/P3-A/P3-B（含 E1 各轮）= FINAL PASS / ACCEPTED（`08488e4` / `31f13f9`+`a5d2faf` / `b285131`+`fcf07f6` / `841bafc`→`10a6491`→`c271a62`）；**Q3-H2 = FINAL DELETE / ACCEPTED（Human Gate 2026-08-17；accepted evidence `05_结果/H2/tuning/stability/run_20260816T175317829317Z_7b490ce6`：n=100、agreement_b=1.0000、agreement_c=1.0000、deviation_count=0 → H2_NO_EFFECTIVE_DEVIATION；governance closure `a56a2cd`；H2 = FROZEN_HISTORICAL_CHALLENGER；H2' = NOT PLANNED；cross-K / h2_holdout / C25 = NOT_APPLICABLE_AFTER_H2_DELETE（historically NOT RUN，非 PASS 非 FAILED））**；C23/C25 按 H2 DELETE 不再需要（historically PENDING → NOT_APPLICABLE_AFTER_H2_DELETE）；**Q3 论文包 = ACCEPTED（`05_结果/Q3/final_closure/`：Q3_FINAL_RESULT / Q3_H1_H2_COMPARISON / Q3_H1_H2_PAPER_TABLE / Q3_H1_H2_PAPER_NARRATIVE + provenance/scope audit；fresh Pro-Max 论文语义审查 PASS_WITH_CAVEAT、authority_conflict=false、actions closed）**。
 > 当前检查注册表：[`CR-V3.1`](01_审计/检查注册表_V3.1.md)
 
 ## 1. 新对话只需先读
@@ -95,7 +95,7 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
   - **S9 evidence package = run `fc3fe3e6`**（INDEX_OK；accepted = tuning `01b7c7e7` + holdout `020bc637`；7 个失败/被替代 run 保留不可变并标注 superseded）。
   - **G3 Macro L3 = PASS / HIGH**（qualifying reviewer `G3_MACRO_L3_REVIEWER`，session `b0f56d04-90aa-4ed8-a4bd-b5b7847f9a8c`，runtime 机械验证 deepseek-official/deepseek-v4-pro/high；freshness/read_only VERIFIED；302 G3 tests OK）。报告见 `01_审计/MACRO_REPORT_G3_L3.md`。**G3 Macro Gate = PASSED（Human Gate 2026-08-15 接受）；PILOT #2 COMPLETED AT MACRO STOP；无条件停机**。
   - **G3 accepted 范围（CR-V3.1）**：C06（G3 full layer）= PASS；C07（统计烟测/诊断层）= PASS（保留诊断解释）；C13/C14 = PASS；C15（G3 接口/重置层）= PASS（Q3 七 K 正式实验 = NOT STARTED）；C16（G3 实验分离层）= PASS；C17（G3 full replay 层）= PASS；C18 = PASS；C26（H1 政策/调优设计与冻结候选）= PASS；C24（仪表/数据收集能力）= PASS。**不声明 C23 PASS、C25 PASS、H2 准入 PASS；H2 仍未实现且未授权**。
-  - 状态（Q2 激活前）：H1/Q2 formal evaluation = NOT STARTED；H2 = NOT STARTED / NOT AUTHORIZED；Q3 FORMAL = NOT STARTED；Q4 = NOT STARTED。→ **Q2 H1 FORMAL 已由 Human Gate 2026-08-15 授权激活（见下 Q2 段）**。
+  - （历史状态快照，Q2 激活前）：H1/Q2 formal evaluation = NOT STARTED；H2 = NOT STARTED / NOT AUTHORIZED；Q3 FORMAL = NOT STARTED；Q4 = NOT STARTED。→ **Q2 H1 FORMAL 已由 Human Gate 2026-08-15 授权激活（见下 Q2 段）**。
   - 预算：软墙钟 4h / 硬墙钟 8h（Pilot #2 已到达 Macro Stop，不再消耗）。
   - 禁止：发布/冻结 Q2 正式数字（T/S/PL/PW/YXB/管理建议）、写论文、实现 H2、枚举 K、推荐 K。
 
@@ -117,7 +117,7 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
   - **Q2 论文数字 = AVAILABLE / AUTHORITATIVE FROM ACCEPTED FORMAL RUN `2d1466ba`**（formal_comparison_table.json + rare_event_report.json 等；禁手录、禁失败 run、禁调优/holdout 值替代）。
   - 禁止：改 G3/Q2 accepted 核心（需改 → STOP 回 Human Gate）、实现 H2、枚举 K、推荐 K、启动 Q3/Q4、写论文。
 
-- **`H2 ADMISSION`（opportunity evidence audit）= ADMITTED_FOR_DESIGN_ONLY**（Human Gate 2026-08-15；非 H2 FINAL ACCEPTANCE；H2 实现 NOT YET AUTHORIZED）：
+- **（历史，Q3/H2 早期阶段）`H2 ADMISSION`（opportunity evidence audit）= ADMITTED_FOR_DESIGN_ONLY**（Human Gate 2026-08-15；非 H2 FINAL ACCEPTANCE；H2 实现 NOT YET AUTHORIZED；**当前状态 = Q3-H2 FINAL DELETE / ACCEPTED，见顶部**）：
   - **H2 admission opportunity evidence = PASS**（reviewer `H2_ADMISSION_EVIDENCE_L3_REVIEWER` v2，session `2cea14f5-4d6b-491d-b845-795b47cfccc2`，runtime 机械验证 deepseek-official/deepseek-v4-pro/high，PASS/HIGH/evidence_integrity=HIGH；advisory：density=MODERATE、recommendation=ADMIT_FOR_DESIGN；v1 FAIL 历史保留）。
   - **机会密度统计（仅 density，非性能声明）**：NO_PM（G3 tuning 20 批）legal dispatch ≈413.1/批、**strategic wait strict ≈11.4/批（~2.8%）**、**optional PM feasible ≈168.8/批（~41%）**、both ≈4.5/批、**meaningful H2 choice fraction ≈0.429**、零机会批次比例 0%（strategic/PM/meaningful 均 0%）。holdout 全 100 批上下文一致。
   - **旧 C24 `waiting_opportunity_count` 审计结论**：其测量的是 **forced wait / 当前非法性**（head 不能合法启动），**不是 H2 战略等待密度**；与离线 strategic wait 相比约**高一个数量级**（150/批 vs 11.4/批），**不得复用为 H2 strategic-wait 计数**。未来 H2 admission/validation 必须使用修正定义（strategic wait 分 STRICT/BOUNDARY/NONSTRICT；optional PM 与 mandatory 分离）。
@@ -155,10 +155,11 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
 
 ## 6. 当前禁止
 
-- **H2 冻结禁令（FROZEN_HISTORICAL_CHALLENGER）**：禁止修改 H2 action set / 2SE / M* / C_eval* / B-1 / seed/salt；禁止增加 tuning sample、重跑 P3-C、设计 H2'、运行 cross-K transfer、运行 h2_holdout、运行 C25、为论文效果制造 deviation；除非未来 Human Gate 明确重新授权。
+- **H2 冻结禁令（FROZEN_HISTORICAL_CHALLENGER）**：禁止重开 H2 / H2'、禁止重新调 H2、禁止修改 H2 action set / 2SE / M* / C_eval* / B-1 / seed/salt；禁止增加 tuning sample、重跑 P3-C、运行 H2 cross-K / holdout / C25、为论文效果制造 deviation；除非未来 Human Gate 明确重新授权。
+- **Q3 策略冻结**：禁止重新调 H1、禁止修改已接受 H1 formal 与 Q3 K recommendation（k\*=K12，scope = 七个 K + 冻结 H1 policy set）；除非未来 Human Gate 明确重新授权。
 - **论文措辞禁令**：禁止「K=12 全局最优」「K=12 理论上支配所有 K」「K 越大一定越优」；禁止「H2 失败/无效/算法错误」「复杂模型一定不如简单模型」；禁止把 agreement=1 解释为「H2 优于 H1」；禁止把 0/100 泛化为「H2 在所有状态下等于 H1」；禁止把 cross-K / h2_holdout / C25 写成 PASS 或 FAILED（= NOT_APPLICABLE_AFTER_H2_DELETE，historically NOT RUN）。
 - 不重开 D-01..D-25、不修改冻结的 `Q3_H2_BOOTSTRAP_SPEC_DRAFT.md` 规范条款（如需 → STOP 回 Human Gate）。
-- 不改 G3/Q2 accepted 核心（random_des_v1/key_schema_v1/寿命再生/C06/C17/冻结观测语义/Q2-FORMAL-SPEC）；若需改 → STOP 回 Human Gate。
+- 不改 G3/Q2/Q3 accepted 核心（random_des_v1/key_schema_v1/寿命再生/C06/C17/冻结观测语义/Q2-FORMAL-SPEC/Q3 H1 formal 与 K recommendation）；若需改 → STOP 回 Human Gate。
 - 不修改已签字口径与 accepted 证据（含全部 H2 evidence roots，immutable）；若实现暴露新歧义，回到变更控制而不是自行决定。
 - 不手录数字为权威；手稿数值必须机械可追溯至 accepted formal 证据。
 - 不把 tuning/诊断值（机会密度、M 校准、稳定性样本、跨 K transfer 诊断）当论文正式数字。
@@ -166,7 +167,7 @@ G2 的唯一目标是证明最小数学核和最小事件引擎算对，而不�
 - 不宣称 tau_pm=198 最优（= FORMALLY_NOT_SELECTED_FOR_Q2_PRIMARY）；不把 C3（不可区分）转为 tau198 优越证据；不因 H2 结果重开 Q2 或宣称 Q2 H1 次优。
 - 不宣称 NO_PM 超越冻结模型/候选集范围的普适最优或一般工业管理定理。
 - 不把旧 C24 `waiting_opportunity_count` 当作 H2 战略等待密度（= forced-wait 仪表）；未来任何 H2 复用作修正定义（strategic STRICT/BOUNDARY/NONSTRICT + optional PM 与 mandatory 分离）。
-- **不自动进入 Q4**；Q4 = NOT STARTED（READY TO AUTHORIZE after state repair；等待 Human Gate）。
+- **Q4 授权限定**：Q4 = AUTHORIZED_FOR_DESIGN_AND_PREREGISTRATION_ONLY——只允许实验设计与预注册；**未过 Q4 spec Human Gate 前禁止正式 sensitivity runs**；**禁止消耗正式 Q4_EVALUATION random domain**（Q4_SCREENING 亦须预注册后按额度使用）；不自动进入 Q4 正式执行（等待 Human Gate）。
 - 不重跑 Q1/Q2、不重跑已接受 H1 formal、不删除 H2 负结果或旧 invalidated roots。
 
 ## 7. 下一出口

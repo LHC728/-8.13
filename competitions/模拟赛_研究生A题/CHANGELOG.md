@@ -2,6 +2,18 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-17 / `Q3 STATE FINAL REPAIR + Q4/G6 BOOTSTRAP`（设计预注册；Q4 = AUTHORIZED_FOR_DESIGN_AND_PREREGISTRATION_ONLY）
+
+### 修改
+
+- **CURRENT_STATE 顶部最终修复**：状态版本 `STATE-2026-08-17-Q3-FINAL-Q4-BOOTSTRAP`；顶部当前 Gate = Q3 FINAL MODEL SELECTION CLOSED（G2/G3/Q2/Q3 逐项状态；H1 正式主策略；K12 范围限定；H2 FINAL DELETE / ACCEPTED AS CHALLENGER RESULT；cross-K/holdout/C25 = NOT_APPLICABLE_AFTER_H2_DELETE）+ **Q4 = AUTHORIZED_FOR_DESIGN_AND_PREREGISTRATION_ONLY**（非 Q4 FORMAL AUTHORIZED）。
+- **§6 当前禁止修复**：删除失效项（「不实现 H2 rollout」「不比 H1 vs H2」「不枚举 K」「不推荐 K」「不启动 Q3 七 K」「不启动 Q4」等，历史事实保留于历史段落）；新增 H2 冻结禁令（重开 H2/H2'/重调 H2/重跑 P3-C/cross-K·holdout·C25）、Q3 策略冻结（重调 H1/改 K recommendation）、Q4 授权限定（只 DESIGN/PREREGISTRATION；正式 sensitivity runs 待 Q4 spec Human Gate；禁消耗 Q4_EVALUATION random domain）、不改 G3/Q2/Q3 accepted core。
+- **自检**：`05_结果/Q3/final_closure/CURRENT_STATE_SYNC_CHECK.json` = **PASS**（top_gate / current_prohibitions / next_stage；stale 短语 0 违规；历史段落显式标记）。
+- **HG-Q4-H2-NA-01（additive addendum）**：Q4 中 H2 因素 = **NOT_APPLICABLE_AFTER_H2_DELETE**（historically NOT RUN）；禁止为补因素数量重激活 H2 / 设计 H2' / 发明替代策略；Q4 输入固定 H1 + K12 + NO_PM_BEFORE_MANDATORY（`08_项目管理/任务包/Q4_H2_NA_01_ADDENDUM.md`；不重写历史问题契约）。
+- **Q4/G6 EXPERIMENT SPEC DRAFT**：`08_项目管理/任务包/Q4_G6_EXPERIMENT_SPEC_DRAFT.md`（基准情景机械绑定 Q3 accepted H1+K12；机制时间账本非加法；一级因素 F1-K 复用 / F2-turnover / F3-preventive-threshold（**BLOCKED 待 Human Gate**）/ F4-A/B/C/E 时长扰动 / F5-failure 语义；H2 = NOT_APPLICABLE；二级 q/e 双语义严格分开；CRN paired Delta T / batch replicate / 95% CI；Q4_SCREENING/Q4_EVALUATION 隔离；精度规则；因素排序 vs 管理优先级；Top-2 交互；管理建议绑定）。
+- **Pro-Max 设计审查（fresh）**：**BLOCKED / authority_conflict=true**（F3 preventive-replacement-threshold 无法在冻结 NO_PM_BEFORE_MANDATORY policy family 内定义 → HUMAN_GATE_REQUIRED；MMR V2.1.2 PASS/CAVEAT 与 conflict 组合永不通过）。RA2（screening 数据绝对排除出最终 CI）与 RA3（Q4_SCREENING ID registry 预注册）已在 spec 闭合；RA1（F3 二选一裁决）留 Human Gate。
+- **Q4 状态**：Q4 = AUTHORIZED_FOR_DESIGN_AND_PREREGISTRATION_ONLY；**正式执行 NOT RUN；Q4_EVALUATION domain UNTOUCHED；FINAL STATUS = BLOCKED（F3 待 Human Gate 裁决）**。
+
 ## 2026-08-17 / `Q3 FINAL CLOSURE — CURRENT_STATE 状态修复`（Human Gate：authoritative header + prohibitions 过时矛盾）
 
 ### 修改
