@@ -2,6 +2,17 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-17 / `HG-Q4-FINAL-SEAL-01 — FINAL PASS / ACCEPTED`（Human Gate 确认；Q4 lifecycle CLOSED）
+
+### 修改
+
+- **Human Gate 最终确认**：`HG-Q4-FINAL-SEAL-01 = FINAL PASS / ACCEPTED`。
+- **Q4 = FINAL CLOSED / IMMUTABLE / READY_FOR_PAPER；Q4 research/modeling lifecycle = CLOSED**。
+- **new simulations = NOT AUTHORIZED；Q4 rerun = NOT AUTHORIZED；未来实质 Q4 变更 = HUMAN_GATE_REOPEN_Q4 REQUIRED**（作废当前 seal 需 Human Gate 明确授权）。
+- **G7 = AUTHORIZED_FOR_PAPER_FREEZE**（等待 Human Gate 启动，不自动开始）。
+- CURRENT_STATE 同步（state version 保持 `STATE-2026-08-17-Q4-FINAL-CLOSED`；seal 状态由 AUTHORIZED_BY_HUMAN_GATE 更新为 FINAL PASS / ACCEPTED）。
+- 本包无任何模拟 / rerun / Pro-Max / 数字或 final_handoff 修改；Q3 / H1 / K12 / H2 UNCHANGED。
+
 ## 2026-08-17 / `HG-Q4-FINAL-SEAL-01`（Q4 FINAL SEAL / FINAL CLOSED / IMMUTABLE；PAPER HANDOFF LOCK）
 
 ### 修改
