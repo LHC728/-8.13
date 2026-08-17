@@ -1,12 +1,49 @@
 {
  "package": "Q4_FINAL_PROVENANCE",
- "status": "NUMERIC_ACCEPTED",
- "semantic_review": "SEMANTIC_REVIEW_PENDING",
- "ready_for_paper": false,
+ "status": "NUMERIC_ACCEPTED / SEMANTIC_REVIEW_CLOSED",
+ "final_status": "READY_FOR_PAPER",
+ "semantic_review": "PASS / CLOSED (HG-Q4-REVIEWER-01 = PASS_WITH_CAVEAT)",
+ "ready_for_paper": true,
+ "g7": "AUTHORIZED_FOR_PAPER_FREEZE",
  "human_gate": {
   "id": "HG-Q4-NUMERIC-01",
   "verdict": "Q4 NUMERIC RESULTS = FINAL PASS / ACCEPTED; FORMAL FACTOR RANK = ACCEPTED; INTERACTION NUMERICS = ACCEPTED",
   "accepted_head": "8096d80"
+ },
+ "reviewer_governance": {
+  "id": "HG-Q4-REVIEWER-01",
+  "reviewer": "GPT-5.6 Sol",
+  "verdict": "PASS_WITH_CAVEAT",
+  "deepseek_pro_max_final_review": "SUPERSEDED / NOT REQUIRED",
+  "reason": "Human Gate authorized reviewer substitution; GPT-5.6 Sol independently reviewed frozen Q4 evidence after numeric acceptance",
+  "note": "NO fabricated Pro-Max runtime receipt; Pro-Max calls = 0 throughout"
+ },
+ "conditional_margin_direct_CI": {
+  "cond_E_M10": {
+   "definition": "T(INT_F2_05_E_M10,r) - T(F2_TURNOVER_05,r) per replicate",
+   "n": 128,
+   "replicate_ids": "100..227",
+   "t_quantile": 1.9793,
+   "mean_h": "-3945523829117634057023/1106804644422573096960",
+   "mean_h_float": -3.564788,
+   "SE_h": 0.233582,
+   "CI_low": -4.0271,
+   "CI_high": -3.1025,
+   "half_width_h": 0.4623
+  },
+  "cond_E_P10": {
+   "definition": "T(INT_F2_05_E_P10,r) - T(F2_TURNOVER_05,r) per replicate",
+   "n": 128,
+   "replicate_ids": "100..227",
+   "t_quantile": 1.9793,
+   "mean_h": "202175470013698855782653/2213609288845146193920",
+   "mean_h_float": 91.332952,
+   "SE_h": 0.559929,
+   "CI_low": 90.2247,
+   "CI_high": 92.4412,
+   "half_width_h": 1.1083
+  },
+  "note": "direct paired conditional-margin CIs; DISTINCT from I_minus/I_plus interaction-contrast CIs; must NOT be mixed"
  },
  "accepted_evaluation_root": "05_结果/Q4/evaluation/20260817T065336055564Z_b46f9219/",
  "accepted_files": [
@@ -68,6 +105,14 @@
   "interaction_conditional_margins_correct": true,
   "I_minus_arithmetic_correct": true,
   "I_plus_arithmetic_correct": true,
+  "conditional_margin_direct_CI_arithmetic_correct": true,
+  "ra_s1_cond_mean_matches_accepted": true,
+  "ra_s2_q_a_wording_pass": true,
+  "ra_s3a_scoped_robust_wording_pass": true,
+  "ra_s3b_q_b_joint_scale_pass": true,
+  "ra_s3c_e_joint_scale_pass": true,
+  "ra_s3d_factor_table_scope_pass": true,
+  "not_to_be_mixed_ci_note_present": true,
   "f3_scope_guard_present": true,
   "f5_universal_robustness_claim_absent": true,
   "no_global_causal_claim": true,
@@ -78,8 +123,20 @@
  },
  "model_routing": {
   "pro_max_calls_this_package": 0,
-  "final_semantic_review": "NOT RUN (low-price window, fresh Pro-Max, after Human Gate)",
+  "final_semantic_review": "CLOSED via HG-Q4-REVIEWER-01 (reviewer GPT-5.6 Sol, PASS_WITH_CAVEAT); DeepSeek Pro-Max final review = SUPERSEDED / NOT REQUIRED (Human Gate authorized reviewer substitution; NO fabricated runtime receipt)",
   "tools": "Flash / deterministic scripts only"
+ },
+ "closure": {
+  "hg_q4_reviewer_01": "PASS_WITH_CAVEAT",
+  "ra_s1": "PASS",
+  "ra_s2": "PASS",
+  "ra_s3": "PASS",
+  "accepted_numerics_unchanged": true,
+  "new_simulations": 0,
+  "pro_max_calls": 0,
+  "q4_final_semantic_review": "PASS / CLOSED",
+  "q4_final_status": "READY_FOR_PAPER",
+  "g7": "AUTHORIZED_FOR_PAPER_FREEZE"
  },
  "generated_at": "2026-08-17"
 }

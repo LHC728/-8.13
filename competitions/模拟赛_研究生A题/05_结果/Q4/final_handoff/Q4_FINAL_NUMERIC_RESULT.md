@@ -32,6 +32,7 @@
 
 - 数值逐项与 accepted `Q4_EVALUATION_RESULTS.json / scenario_stats` 一致（机械核对见 `Q4_FINAL_PROVENANCE.json`）。
 - **F1（K）＝ REUSED_ACCEPTED_FORMAL_EVIDENCE**（Q3 accepted 七 K；k\*=K12 为「七 K + 冻结 H1 政策集」内 strong winner；不重跑、不混入 Q4 CI）。
+- **level 说明（RA-S3B/C）**：Q-B 的「×0.8 / ×1.2」指 **q_A/q_B/q_C/q_D joint proportional scale**（四个真实问题率同乘同一比例，不是单独一个 q）；e 因子的「×0.8 / ×1.2」指 **e_A/e_B/e_C/e_E joint proportional scale**（四个测手差错率同乘同一比例，不是单独一个测手参数）。
 
 ## F3 正式措辞（COUNTERFACTUAL_ONLY；HG 批准措辞）
 

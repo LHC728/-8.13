@@ -52,9 +52,9 @@
 
 ### R4. Q-B（incoming defect pressure，rank 5）与 Q-A（rank 8）、e（rank 6）
 - 建议内容：**模型/参数输入因素，非管理杠杆**。
-  - **Q-B（incoming defect pressure）**：可用于描述上游来料质量变化风险（来料真实问题率 ↑20% → 模型内 ΔT ≈ +3.52 h，CI [2.69, 4.35]；↓20% → −2.37 h）；**不得称为单纯「调 q 就能降低 T」**。
-  - **e（operator-error environment / 测手差错环境 e）**：e ↓20% → −2.66 h（CI [−3.56, −1.76]）；↑20% → +2.20 h。可作为质量/测试管理风险因素；**不把 alpha/beta 拆成独立控制变量**。
-  - **Q-A（calibration-input uncertainty）**：标定输入不确定性（HIGH +1.58 / LOW −1.19 h）；**不是可直接控制的企业管理杠杆**。
+  - **Q-B（incoming defect pressure）**：本实验为 **q_A/q_B/q_C/q_D joint proportional scale = 0.8 / 1.2（四个真实问题率同乘同一比例，不是单独一个 q）**；可用于描述上游来料质量变化风险（↑20% → 模型内 ΔT ≈ +3.52 h，CI [2.69, 4.35]；↓20% → −2.37 h）；**不得称为单纯「调 q 就能降低 T」**。
+  - **e（operator-error environment / 测手差错环境 e）**：本实验为 **e_A/e_B/e_C/e_E joint proportional scale = 0.8 / 1.2（四个测手差错率同乘同一比例，不是单独一个测手参数）**；e ↓20% → −2.66 h（CI [−3.56, −1.76]）；↑20% → +2.20 h。可作为质量/测试管理风险因素；**不把 alpha/beta 拆成独立控制变量**。
+  - **Q-A（calibration-input uncertainty）**：在本次联合重标定链下，Q-A 的工期响应小于 Q-B（HIGH +1.58 / LOW −1.19 h）；这一结果与观测核随 q 重标定产生补偿作用的解释相一致，**但本实验未单独识别各传播通道的独立贡献**；**不是可直接控制的企业管理杠杆**。
 - 适用条件：q/e 语义严格区分（Q-A 标定输入 vs Q-B 真实问题率 vs e 误差环境），不可混用。
 
 ### R5. F3（rank 9；COUNTERFACTUAL_ONLY）

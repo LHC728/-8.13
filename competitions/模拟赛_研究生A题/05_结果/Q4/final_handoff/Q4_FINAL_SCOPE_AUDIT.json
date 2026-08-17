@@ -1,8 +1,29 @@
 {
  "package": "Q4_FINAL_SCOPE_AUDIT",
- "status": "NUMERIC_ACCEPTED / SEMANTIC_REVIEW_PENDING",
- "ready_for_paper": false,
+ "status": "NUMERIC_ACCEPTED / SEMANTIC_REVIEW_CLOSED",
+ "final_status": "READY_FOR_PAPER",
+ "ready_for_paper": true,
+ "g7": "AUTHORIZED_FOR_PAPER_FREEZE",
  "human_gate": "HG-Q4-NUMERIC-01",
+ "reviewer_governance": {
+  "id": "HG-Q4-REVIEWER-01",
+  "reviewer": "GPT-5.6 Sol",
+  "verdict": "PASS_WITH_CAVEAT",
+  "deepseek_pro_max_final_review": "SUPERSEDED / NOT REQUIRED",
+  "reason": "Human Gate authorized reviewer substitution; GPT-5.6 Sol independently reviewed frozen Q4 evidence after numeric acceptance",
+  "note": "NO fabricated Pro-Max runtime receipt; Pro-Max calls = 0"
+ },
+ "closure": {
+  "ra_s1_conditional_margin_CI": "PASS",
+  "ra_s2_q_a_wording": "PASS",
+  "ra_s3_scope_hardening": "PASS",
+  "accepted_numerics_unchanged": true,
+  "new_simulations": 0,
+  "pro_max_calls": 0,
+  "q4_final_semantic_review": "PASS / CLOSED",
+  "q4_final_status": "READY_FOR_PAPER",
+  "g7": "AUTHORIZED_FOR_PAPER_FREEZE"
+ },
  "accepted_head": "8096d80",
  "in_scope_this_repair": [
   "land HG-Q4-NUMERIC-01 numeric acceptance (state records)",
@@ -21,7 +42,7 @@
   "NO Q3 change (H1 / NO_PM_BEFORE_MANDATORY / K*=K12 UNCHANGED)",
   "NO H2 change",
   "NO G7 final paper freeze (NOT AUTHORIZED)",
-  "NO Pro-Max call in this package (high-price window; final semantic review deferred to low-price window)"
+  "NO Pro-Max call in this package (high-price window); final semantic review CLOSED via HG-Q4-REVIEWER-01 (reviewer substitution, DeepSeek Pro-Max SUPERSEDED / NOT REQUIRED)"
  ],
  "interpretation_repair_summary": {
   "old_incorrect": "E +-10% marginal effects both shrink / E_P10 penalty neutralized under fast turnover",
@@ -36,5 +57,5 @@
   "causality": "all conclusions MODEL-INTERNAL; no real-world causal theorem",
   "ledger": "mechanism ledger is NOT an additive decomposition of T"
  },
- "next_stage": "Q4 FINAL PAPER SEMANTIC REVIEW (fresh Pro-Max, low-price window) -> HUMAN GATE -> G7 PAPER FREEZE"
+ "next_stage": "G7 PAPER FREEZE (AUTHORIZED_FOR_PAPER_FREEZE); final paper writing proceeds from this package; semantic review CLOSED (HG-Q4-REVIEWER-01)"
 }

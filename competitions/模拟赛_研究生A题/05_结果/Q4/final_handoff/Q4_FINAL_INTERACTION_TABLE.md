@@ -27,6 +27,18 @@
 
 机械验证（exact）：`I_minus = cond_M10 − standalone_E_M10 = −3.5648 − (−34.0672) = +30.5024`；`I_plus = cond_P10 − standalone_E_P10 = +91.3330 − 18.1640 = +73.1689`（与 accepted 一致）。
 
+## 条件边际 direct paired CI（RA-S1；独立于 interaction-contrast CI）
+
+从 accepted `T_by_rep.json` 逐 replicate 计算（R=128，rep 100..227；t_{0.975,127}=1.9793，与正式 evaluation 相同）：
+
+| 条件边际 | 逐 rep 定义 | mean (h) | SE | 95% CI (h) | half-width |
+|---|---|---|---|---|---|
+| cond_E_M10_given_F2 | `T(INT_F2_05_E_M10, r) − T(F2_TURNOVER_05, r)` | **−3.5648** | 0.2336 | **[−4.0271, −3.1025]** | 0.4623 |
+| cond_E_P10_given_F2 | `T(INT_F2_05_E_P10, r) − T(F2_TURNOVER_05, r)` | **+91.3330** | 0.5599 | **[90.2247, 92.4412]** | 1.1083 |
+
+- mean 与 accepted exact 值一致（cond_M10 = INT_M10 − F2 = −3.5648；cond_P10 = INT_P10 − F2 = +91.3330）。
+- **重要（不得混用）**：I_minus / I_plus 的 CI 是 **interaction-contrast CI**（另一组 paired CI：`T(INT) − T(F2) − T(E 级) + T(base)`，用于检验非加性交互）；**conditional-margin CI** 是「已 fast-turnover 条件下 E 时长扰动的直接 paired 效应 CI」。两组 CI 语义不同，**不得混用**（例如不得用 I_plus CI [71.80, 74.54] 代替 cond_P10 CI [90.22, 92.44]，反之亦然）。
+
 ## 冻结解释（HG 批准措辞；替换一切旧「±10% 边际都萎缩/被中和」表述）
 
 > **F2 与 F4-E 存在显著模型内非加性交互，且交互具有明显方向非对称性：**

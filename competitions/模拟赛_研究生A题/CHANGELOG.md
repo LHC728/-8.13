@@ -2,6 +2,18 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-17 / `HG-Q4-REVIEWER-01`（Q4 FINAL SEMANTIC REVIEW = PASS / CLOSED；READY_FOR_PAPER；G7 AUTHORIZED_FOR_PAPER_FREEZE）
+
+### 修改
+
+- **Human Gate final semantic closure（reviewer = GPT-5.6 Sol，verdict = PASS_WITH_CAVEAT）落地**：**Q4 FINAL SEMANTIC REVIEW = PASS / CLOSED；Q4 FINAL STATUS = READY_FOR_PAPER；G7 = AUTHORIZED_FOR_PAPER_FREEZE**；**DeepSeek Pro-Max final review = SUPERSEDED / NOT REQUIRED**（Human Gate 授权 reviewer 替换；未伪造 Pro-Max runtime receipt；本阶段 Pro-Max calls = 0；无新 simulation / 无 rerun）。
+- **RA-S1（条件边际 direct paired CI）PASS**：从 accepted `T_by_rep.json` 逐 rep 计算 `T(INT) − T(F2)`（R=128，rep 100..227，t_{0.975,127}=1.9793）：cond E−10 = **−3.5648 h**（SE 0.2336，95% CI [−4.027, −3.103]，half-width 0.462）；cond E+10 = **+91.3330 h**（SE 0.5599，95% CI [90.225, 92.441]，half-width 1.108）；mean 与 accepted exact 值一致；**conditional-margin CI 与 I_minus/I_plus interaction-contrast CI 语义不同、不得混用**（写入 `Q4_FINAL_INTERACTION_TABLE.md` / `Q4_FINAL_MANAGEMENT_RECOMMENDATIONS.md` / `Q4_FINAL_PROVENANCE.json`）。
+- **RA-S2（Q-A 措辞）PASS**：删除「重标定核被证明抵消 q 变化」断言；冻结表述 = 「在本次联合重标定链下，Q-A 的工期响应小于 Q-B；这一结果与观测核随 q 重标定产生补偿作用的解释相一致，但本实验未单独识别各传播通道的独立贡献」（MECHANISM_EXPLANATION / Q4_FINAL_MECHANISM_NARRATIVE / 管理建议 R4 同步）。
+- **RA-S3（scope hardening）PASS**：A「快周转 + E 能力保持是稳健组合」→「在本次已测试模型情景内，实施快周转时同步维持 E 工序节拍是更稳妥的组合」（禁 universal robustness）；B Q-B 明确 = **q_A/q_B/q_C/q_D joint proportional scale = 0.8/1.2**（非单独一个 q）；C e 明确 = **e_A/e_B/e_C/e_E joint proportional scale = 0.8/1.2**（非单独一个测手参数）；D factor table 加 scope「本排序仅在本次预注册 factor levels / perturbation range 内成立，不是因素全参数域的全局敏感度排序」。
+- **reviewer governance 落文**（`Q4_FINAL_PROVENANCE.json` / `Q4_FINAL_SCOPE_AUDIT.json`）：HG-Q4-REVIEWER-01 / GPT-5.6 Sol / PASS_WITH_CAVEAT / Pro-Max SUPERSEDED（reason：Human Gate 授权 reviewer 替换，GPT-5.6 Sol 在 numeric acceptance 后独立审阅冻结证据）。
+- **CURRENT_STATE 同步**：state version → `STATE-2026-08-17-Q4-READY-FOR-PAPER`；Q4 FINAL STATUS = READY_FOR_PAPER；G7 = AUTHORIZED_FOR_PAPER_FREEZE；下一阶段 = G7 PAPER FREEZE。
+- **mechanical closure checker**（`tmp/closure_checker_hg_q4_reviewer.py`）：RA-S1 算术 / RA-S2 措辞 / RA-S3 guards / accepted numerics·T_by_rep·ledger_by_rep·registry 未改 / Q3·H1·K12·H2 未改 / new simulations = 0 / Pro-Max = 0——ALL PASS。
+
 ## 2026-08-17 / `HG-Q4-NUMERIC-01`（Q4 numeric FINAL PASS / ACCEPTED + interpretation repair）
 
 ### 修改

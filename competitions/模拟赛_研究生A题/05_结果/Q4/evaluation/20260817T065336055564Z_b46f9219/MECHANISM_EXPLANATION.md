@@ -35,9 +35,9 @@
 
 ## 4. q/e 语义因素（二级）
 
-- **Q-B（INCOMING_DEFECT_PRESSURE，kernel 冻结 baseline）**：q↑20%（QB_HIGH）→ E retest 2292→2685（+17%）、off_shift 48768→49356 → dT ≈ +3.52 h（CI [2.69, 4.35]）；q↓20%（QB_LOW）→ E retest 2292→1953 → dT ≈ −2.37 h（CI [−3.03, −1.70]）。机制 = **E 重测链 + 班外停工**。
-- **Q-A（CALIBRATION_INPUT，kernel 重标定 + q 同变）**：效应比 Q-B 更小（HIGH +1.58 h / LOW −1.19 h）——重标定核（alpha/beta 随 q 重新校准）部分抵消了真实问题率变化：更多真实问题被观测核「预先识别」→ 重测路径变化被压缩。符合「标定输入不确定性」语义。
-- **E（E-ERROR_ENVIRONMENT，e 同 scale，kernel 重标定）**：e↓20%（E_LOW）→ E retest 2019（−12%）→ dT ≈ −2.66 h（CI [−3.56, −1.76]）；e↑20%（E_HIGH）→ E retest 2469（+8%）→ dT ≈ +2.20 h（CI [1.28, 3.12]）。机制 = **观测误差率→重测频率→E 路径**。e 阶梯 ±20% 全链可行（e≤2min(q,1−q) 满足），无 clip。
+- **Q-B（INCOMING_DEFECT_PRESSURE，kernel 冻结 baseline；q_A/q_B/q_C/q_D joint proportional scale = 0.8 / 1.2，不是单独一个 q）**：q↑20%（QB_HIGH）→ E retest 2292→2685（+17%）、off_shift 48768→49356 → dT ≈ +3.52 h（CI [2.69, 4.35]）；q↓20%（QB_LOW）→ E retest 2292→1953 → dT ≈ −2.37 h（CI [−3.03, −1.70]）。机制 = **E 重测链 + 班外停工**。
+- **Q-A（CALIBRATION_INPUT，kernel 重标定 + q 同变）**：在本次联合重标定链下，**Q-A 的工期响应小于 Q-B**（HIGH +1.58 h / LOW −1.19 h vs Q-B HIGH +3.52 / LOW −2.37 h）；这一结果与观测核随 q 重标定产生补偿作用的解释相一致，**但本实验未单独识别各传播通道的独立贡献**（不得声称 mechanism independently identified）。仅标定输入不确定性，非管理杠杆。
+- **E（E-ERROR_ENVIRONMENT，e_A/e_B/e_C/e_E joint proportional scale = 0.8 / 1.2，不是单独一个测手参数；kernel 重标定）**：e↓20%（E_LOW）→ E retest 2019（−12%）→ dT ≈ −2.66 h（CI [−3.56, −1.76]）；e↑20%（E_HIGH）→ E retest 2469（+8%）→ dT ≈ +2.20 h（CI [1.28, 3.12]）。机制 = **观测误差率→重测频率→E 路径**。e 阶梯 ±20% 全链可行（e≤2min(q,1−q) 满足），无 clip。
 
 ## 5. F3（COUNTERFACTUAL_ONLY）与 F5（MODEL_SEMANTIC_ONLY）
 
