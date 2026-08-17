@@ -1,6 +1,6 @@
 # Q4 FINAL FACTOR TABLE（paper-facing；rank by |standardized effect|）
 
-> 状态：**NUMERIC_ACCEPTED / SEMANTIC_REVIEW_PENDING**。
+> 状态：**NUMERIC_ACCEPTED / SEMANTIC_REVIEW_CLOSED / READY_FOR_PAPER**（HG-Q4-REVIEWER-01 caveats CLOSED；HG-Q4-FINAL-SEAL-01 = FINAL PASS / ACCEPTED）。
 > 排序量（冻结规则）：`factor_score = max(|standardized_effect|)` per factor（main scenarios only；F1 = REUSED_ACCEPTED_FORMAL_EVIDENCE 不参与 Q4 排序）。
 > **表头优先写「rank by |standardized effect|」，方向符号另列**（避免 `-10.74 > -6.13 > +2.79` 的歧义写法）。
 

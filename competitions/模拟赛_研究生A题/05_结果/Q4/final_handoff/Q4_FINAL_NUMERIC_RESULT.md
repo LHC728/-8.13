@@ -1,6 +1,6 @@
 # Q4 FINAL NUMERIC RESULT（paper-facing；NUMERIC_ACCEPTED）
 
-> 状态：**NUMERIC_ACCEPTED / SEMANTIC_REVIEW_PENDING**（**NOT READY_FOR_PAPER**；final Pro-Max semantic review + Human Gate 前不得进入论文）。
+> 状态：**NUMERIC_ACCEPTED / SEMANTIC_REVIEW_CLOSED / READY_FOR_PAPER**（HG-Q4-REVIEWER-01 caveats CLOSED；HG-Q4-FINAL-SEAL-01 = FINAL PASS / ACCEPTED）。
 > 依据：Human Gate HG-Q4-NUMERIC-01（accepted HEAD `8096d80`）。
 > accepted evaluation root：`05_结果/Q4/evaluation/20260817T065336055564Z_b46f9219/`。
 > 设计：q4_evaluation / master_seed=7 / R=128 / rep 100..227；two-stage：stage-1（R=64）max half-width = 2.0930 h > 2.0 h → 全 scenarios 统一扩 R=128；final max half-width < 2.0 h。

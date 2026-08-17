@@ -1,0 +1,30 @@
+{
+ "authority_id": "HG-Q4-METADATA-SYNC-01",
+ "classification": "NON_SUBSTANTIVE_METADATA_ONLY",
+ "human_gate_reopen_q4": "NOT_REQUIRED",
+ "pre_sync_head": "c7c7fa2861f19dba6cf7b7e5856ba2ab301d9701",
+ "base_seal": "HG-Q4-FINAL-SEAL-01",
+ "base_final_closure_commit": "96f50e9",
+ "reason": "five final_handoff Markdown status/title metadata remained at pre-semantic-review state (SEMANTIC_REVIEW_PENDING / NOT READY_FOR_PAPER / DRAFT_FOR_HUMAN_GATE / paper-facing DRAFT) found by the PRE-MAIN integration audit",
+ "changed_files": [
+  "05_结果/Q4/final_handoff/Q4_FINAL_NUMERIC_RESULT.md",
+  "05_结果/Q4/final_handoff/Q4_FINAL_FACTOR_TABLE.md",
+  "05_结果/Q4/final_handoff/Q4_FINAL_INTERACTION_TABLE.md",
+  "05_结果/Q4/final_handoff/Q4_FINAL_MECHANISM_NARRATIVE.md",
+  "05_结果/Q4/final_handoff/Q4_FINAL_MANAGEMENT_RECOMMENDATIONS.md"
+ ],
+ "change_scope": "status/title metadata lines only (line 3 status; management recommendations title line 1); NUMERIC_ACCEPTED / SEMANTIC_REVIEW_CLOSED / READY_FOR_PAPER; HG-Q4-REVIEWER-01 caveats CLOSED; HG-Q4-FINAL-SEAL-01 FINAL PASS / ACCEPTED",
+ "substantive_body_changes": 0,
+ "numeric_changes": 0,
+ "formal_evidence_changes": 0,
+ "q3_h1_k12_h2_changes": 0,
+ "new_simulations": 0,
+ "reruns": 0,
+ "semantic_reviewer_calls": 0,
+ "pro_max_calls": 0,
+ "q4_status": "FINAL CLOSED / IMMUTABLE / READY_FOR_PAPER",
+ "g7_status": "AUTHORIZED_FOR_PAPER_FREEZE",
+ "hash_manifest_v1": "HISTORICAL_PRE_METADATA_SYNC_MANIFEST (unchanged, preserved)",
+ "hash_manifest_v2": "Q4_FINAL_HASH_MANIFEST_V2.json (CURRENT_EFFECTIVE)",
+ "generated_at": "2026-08-17T09:07:35.269159+00:00"
+}

@@ -2,6 +2,17 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-17 / `HG-Q4-METADATA-SYNC-01`（Q4 final_handoff 状态元数据同步 + 非实质 reseal）
+
+### 修改
+
+- **Human Gate 授权 HG-Q4-METADATA-SYNC-01 = PASS（classification: NON-SUBSTANTIVE METADATA-ONLY REPAIR；HUMAN_GATE_REOPEN_Q4 = NOT REQUIRED）**。
+- **5 个 final_handoff Markdown 状态/标题元数据同步**（`Q4_FINAL_NUMERIC_RESULT.md` / `Q4_FINAL_FACTOR_TABLE.md` / `Q4_FINAL_INTERACTION_TABLE.md` / `Q4_FINAL_MECHANISM_NARRATIVE.md` / `Q4_FINAL_MANAGEMENT_RECOMMENDATIONS.md`）：「SEMANTIC_REVIEW_PENDING / NOT READY_FOR_PAPER / DRAFT_FOR_HUMAN_GATE / paper-facing DRAFT」→「**NUMERIC_ACCEPTED / SEMANTIC_REVIEW_CLOSED / READY_FOR_PAPER**」（管理建议标题移除 paper-facing DRAFT，MODEL-INTERNAL 不变）；**仅 status/title 元数据行改动（逐文件第 3 行；管理建议另第 1 行标题）**。
+- **内容防火墙机械验证 PASS**：逐行 diff vs pre-sync HEAD `c7c7fa2`，非授权元数据行零差异 → **substantive_body_changes = 0**；Q4_EVALUATION_RESULTS / T_by_rep / ledger_by_rep / Q4_EVALUATION_REGISTRY / Q4_FINAL_PROVENANCE / Q4_FINAL_SCOPE_AUDIT **byte-identical**；numeric / formal evidence / JSON provenance changes = 0；Q3 / H1 / K12 / H2 零改动。
+- **非实质 reseal（additive，V1 保留）**：`05_结果/Q4/final_closure/` 新增 `Q4_METADATA_SYNC_RECEIPT.json/.md`（authority_id、classification、pre_sync_head `c7c7fa2`、base_seal `HG-Q4-FINAL-SEAL-01`、base_final_closure_commit `96f50e9`、5 个 changed_files、全部 0 计数、q4_status FINAL CLOSED / IMMUTABLE / READY_FOR_PAPER、g7_status AUTHORIZED_FOR_PAPER_FREEZE）+ `Q4_FINAL_HASH_MANIFEST_V2.json`（CURRENT_EFFECTIVE，16 entries；不 hash 自身）；`Q4_FINAL_HASH_MANIFEST.json` = **HISTORICAL_PRE_METADATA_SYNC_MANIFEST**（未删未改）。
+- **CURRENT_STATE 窄记录**：state version 保持 `STATE-2026-08-17-Q4-FINAL-CLOSED`（实质状态未变）；Q4 lifecycle 保持 CLOSED；G7 保持 AUTHORIZED_FOR_PAPER_FREEZE；main fast-forward 仍等待 post-sync Human Gate 审阅。
+- 本包无模拟 / 无 rerun / 无 semantic reviewer / 无 Pro-Max；未修改 main。
+
 ## 2026-08-17 / `HG-Q4-FINAL-SEAL-01 — FINAL PASS / ACCEPTED`（Human Gate 确认；Q4 lifecycle CLOSED）
 
 ### 修改

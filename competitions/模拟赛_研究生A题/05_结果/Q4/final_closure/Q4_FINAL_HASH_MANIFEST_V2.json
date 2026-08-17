@@ -1,0 +1,113 @@
+{
+ "manifest": "Q4_FINAL_HASH_MANIFEST_V2",
+ "status": "CURRENT_EFFECTIVE_HASH_MANIFEST",
+ "supersedes": {
+  "Q4_FINAL_HASH_MANIFEST.json": "HISTORICAL_PRE_METADATA_SYNC_MANIFEST",
+  "note": "V1 sealed the pre-sync bytes; V2 re-hashes the 5 markdown files after status/title metadata sync (HG-Q4-METADATA-SYNC-01) plus the same essential accepted formal/provenance artifacts. V1 is preserved unchanged as historical seal evidence."
+ },
+ "authority_id": "HG-Q4-METADATA-SYNC-01",
+ "classification": "NON_SUBSTANTIVE_METADATA_ONLY",
+ "pre_sync_head": "c7c7fa2861f19dba6cf7b7e5856ba2ab301d9701",
+ "base_seal": "HG-Q4-FINAL-SEAL-01",
+ "base_final_closure_commit": "96f50e9",
+ "generated_at": "2026-08-17T09:07:35.269159+00:00",
+ "note": "This manifest itself is NOT hashed (self-reference avoided).",
+ "entries": [
+  {
+   "path": "05_结果/Q4/final_handoff/Q4_FINAL_NUMERIC_RESULT.md",
+   "sha256": "be14d289e09066cad1fff2bb0e03c67f64b0a9a059e79dc37f453d197d4bc5bd",
+   "role": "PAPER_FACING_FINAL",
+   "mutable_after_seal": false
+  },
+  {
+   "path": "05_结果/Q4/final_handoff/Q4_FINAL_FACTOR_TABLE.md",
+   "sha256": "916e5d97cfb6bcb2cdf0676226958707751b7b7a4bfa7ccf22aee2764f8928c5",
+   "role": "PAPER_FACING_FINAL",
+   "mutable_after_seal": false
+  },
+  {
+   "path": "05_结果/Q4/final_handoff/Q4_FINAL_INTERACTION_TABLE.md",
+   "sha256": "8c98b0c14a352f7c973c0d394214aa5fcc907d47185f99b5b98e16676e1e3e32",
+   "role": "PAPER_FACING_FINAL",
+   "mutable_after_seal": false
+  },
+  {
+   "path": "05_结果/Q4/final_handoff/Q4_FINAL_MECHANISM_NARRATIVE.md",
+   "sha256": "357ef05079110b60ab26f7519aaae9650257ad098f698dfb1de134de9b1af281",
+   "role": "PAPER_FACING_FINAL",
+   "mutable_after_seal": false
+  },
+  {
+   "path": "05_结果/Q4/final_handoff/Q4_FINAL_MANAGEMENT_RECOMMENDATIONS.md",
+   "sha256": "fb18638a95c9b37eb14c4a30c4f8ea225cc38fcffe528e4b7e5cac6f4e50d50b",
+   "role": "PAPER_FACING_FINAL",
+   "mutable_after_seal": false
+  },
+  {
+   "path": "05_结果/Q4/final_handoff/Q4_FINAL_PROVENANCE.json",
+   "sha256": "0a56b610e9d46bda5c5590972d10f2d77783632f55dc3467c7afb58bed6ad7e5",
+   "role": "PAPER_FACING_FINAL",
+   "mutable_after_seal": false
+  },
+  {
+   "path": "05_结果/Q4/final_handoff/Q4_FINAL_SCOPE_AUDIT.json",
+   "sha256": "f120d6b0a026f4ab05a32b8194bdd841f131eb7bc26076a6fbde0ae126b3580c",
+   "role": "PAPER_FACING_FINAL",
+   "mutable_after_seal": false
+  },
+  {
+   "path": "05_结果/Q4/evaluation/20260817T065336055564Z_b46f9219/Q4_EVALUATION_RESULTS.json",
+   "sha256": "d14a5988c035d24cd606dd81d1f1d6522c67b8a9261a834d3aa7888f6967cac0",
+   "role": "FORMAL_NUMERIC_EVIDENCE",
+   "mutable_after_seal": false
+  },
+  {
+   "path": "05_结果/Q4/evaluation/20260817T065336055564Z_b46f9219/T_by_rep.json",
+   "sha256": "bbefb09b091deb51cfcf5d5a184198dce827ae7d26f27f4d560620a1c2c2f160",
+   "role": "FORMAL_NUMERIC_EVIDENCE",
+   "mutable_after_seal": false
+  },
+  {
+   "path": "05_结果/Q4/evaluation/20260817T065336055564Z_b46f9219/ledger_by_rep.json",
+   "sha256": "8b4c117a21c3ec2ce0377bda84454aa1bdcafc29b6d245e098caa139f0ab5c43",
+   "role": "FORMAL_NUMERIC_EVIDENCE",
+   "mutable_after_seal": false
+  },
+  {
+   "path": "05_结果/Q4/evaluation/Q4_EVALUATION_REGISTRY.json",
+   "sha256": "aaa3f99a66a930294563afdceb49ff54c990e82d931fb08fb6cfcaa615efc4d5",
+   "role": "FORMAL_DESIGN_REGISTRY",
+   "mutable_after_seal": false
+  },
+  {
+   "path": "05_结果/Q4/evaluation/20260817T065336055564Z_b46f9219/Q4_EVALUATION_REPORT.md",
+   "sha256": "f23f795f941adbd9268f9ca7eb9832c2960fe006300c56b69d18892e422c32c9",
+   "role": "ACCEPTED_REPORT_PROVENANCE",
+   "mutable_after_seal": false
+  },
+  {
+   "path": "05_结果/Q4/evaluation/20260817T065336055564Z_b46f9219/run_manifest.json",
+   "sha256": "974333e71e77c86a2487c36be5294fa7f73eac30b917ed97c3b32e784eea0a52",
+   "role": "ACCEPTED_REPORT_PROVENANCE",
+   "mutable_after_seal": false
+  },
+  {
+   "path": "05_结果/Q3/formal/run_20260815T133840057668Z_7ee48fc0/run_manifest.json",
+   "sha256": "def3da0f1b5ceb637d1e36d651b012a648c62019e7555d0757ed466df2f21827",
+   "role": "Q3_ACCEPTED_PROVENANCE_REFERENCE",
+   "mutable_after_seal": false
+  },
+  {
+   "path": "05_结果/Q3/formal/reissue_20260815T150613626910Z_f4da8f9d/run_manifest.json",
+   "sha256": "d0bf66bb2d00988193f5a42c093727e7e2092f356c2927545aa3b0e63107dede",
+   "role": "Q3_ACCEPTED_PROVENANCE_REFERENCE",
+   "mutable_after_seal": false
+  },
+  {
+   "path": "05_结果/Q3/formal/reissue_20260815T150613626910Z_f4da8f9d/input_hashes.json",
+   "sha256": "ff2087114b51cef77de63c73ff35d6de4dd714891caea410fd3921945bdacf63",
+   "role": "Q3_ACCEPTED_PROVENANCE_REFERENCE",
+   "mutable_after_seal": false
+  }
+ ]
+}

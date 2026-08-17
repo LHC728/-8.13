@@ -1,6 +1,6 @@
 # Q4 FINAL INTERACTION TABLE（paper-facing；F2 × F4-E）
 
-> 状态：**NUMERIC_ACCEPTED / SEMANTIC_REVIEW_PENDING**。
+> 状态：**NUMERIC_ACCEPTED / SEMANTIC_REVIEW_CLOSED / READY_FOR_PAPER**（HG-Q4-REVIEWER-01 caveats CLOSED；HG-Q4-FINAL-SEAL-01 = FINAL PASS / ACCEPTED）。
 > 数值与 accepted `Q4_EVALUATION_RESULTS.json` 一致，**未修改**；本表只呈现修正后的条件边际解释（HG-Q4-NUMERIC-01 §2）。
 
 ## 2×3 设计（q4_evaluation，seed 7，R=128，rep 100..227；paired ΔT vs baseline）

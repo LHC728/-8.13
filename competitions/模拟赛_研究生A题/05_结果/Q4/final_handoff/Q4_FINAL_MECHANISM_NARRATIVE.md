@@ -1,6 +1,6 @@
 # Q4 FINAL MECHANISM NARRATIVE（paper-facing）
 
-> 状态：**NUMERIC_ACCEPTED / SEMANTIC_REVIEW_PENDING**。
+> 状态：**NUMERIC_ACCEPTED / SEMANTIC_REVIEW_CLOSED / READY_FOR_PAPER**（HG-Q4-REVIEWER-01 caveats CLOSED；HG-Q4-FINAL-SEAL-01 = FINAL PASS / ACCEPTED）。
 > 机制账本（mechanism ledger，128 reps 求和）来自 accepted `Q4_EVALUATION_RESULTS.json / mechanism_ledgers`。
 > **账本不是 T 的加法分解**（并行活动重叠）——禁止 `T = 组件时间之和` 表述。
 
