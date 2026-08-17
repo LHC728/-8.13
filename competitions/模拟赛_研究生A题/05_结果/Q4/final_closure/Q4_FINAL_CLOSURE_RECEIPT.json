@@ -1,0 +1,28 @@
+{
+ "closure_id": "HG-Q4-FINAL-SEAL-01",
+ "status": "AUTHORIZED_BY_HUMAN_GATE",
+ "q4_status": "FINAL CLOSED / IMMUTABLE",
+ "paper_status": "READY_FOR_PAPER",
+ "g7_status": "AUTHORIZED_FOR_PAPER_FREEZE",
+ "sealed_head_before_closure": "a94bcd08fc0f0eb50a1c8cf11962b48bee0729f5",
+ "final_closure_commit": "PENDING_FILL_AFTER_COMMIT",
+ "formal_numeric_root": "05_结果/Q4/evaluation/20260817T065336055564Z_b46f9219/",
+ "paper_facing_root": "05_结果/Q4/final_handoff/",
+ "formal_design": {
+  "namespace": "q4_evaluation",
+  "seed": 7,
+  "R": 128,
+  "replicate_ids": "100..227",
+  "two_stage": "R=64 first; stage-1 max half-width 2.0930 h > target 2.0 h; uniform expansion to R=128; no factor-specific optional stopping"
+ },
+ "semantic_reviewer": "GPT-5.6 Sol",
+ "semantic_review": "HG-Q4-REVIEWER-01 PASS_WITH_CAVEAT; RA-S1/S2/S3 CLOSED",
+ "deepseek_pro_max": "SUPERSEDED / NOT REQUIRED",
+ "new_simulations_after_numeric_acceptance": 0,
+ "evaluation_reruns_after_numeric_acceptance": 0,
+ "q3_changed": false,
+ "h1_changed": false,
+ "k12_changed": false,
+ "h2_changed": false,
+ "generated_at": "2026-08-17T08:08:02.392390+00:00"
+}

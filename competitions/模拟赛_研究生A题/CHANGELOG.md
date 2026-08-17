@@ -2,6 +2,16 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-17 / `HG-Q4-FINAL-SEAL-01`（Q4 FINAL SEAL / FINAL CLOSED / IMMUTABLE；PAPER HANDOFF LOCK）
+
+### 修改
+
+- **Q4 FINAL SEAL = HG-Q4-FINAL-SEAL-01（AUTHORIZED_BY_HUMAN_GATE）**：**Q4 = FINAL CLOSED / IMMUTABLE / READY_FOR_PAPER；G7 = AUTHORIZED_FOR_PAPER_FREEZE**；sealed head `a94bcd0`。
+- **seal 验证（55 项机械检查全 PASS）**：HEAD==`a94bcd0`==origin；workspace clean；accepted formal root（q4_evaluation/seed 7/R=128/rep 100..227/two-stage 2.0930→2.0→uniform R=128）7/7 文件 + registry 存在且 git-diff 为空；final_handoff 7/7 存在且本包 0 实质修改；F2 / F4-E / I_minus / I_plus / conditional margins（cond E−10 −3.5648 h [−4.027, −3.103]、cond E+10 +91.3330 h [90.225, 92.441]）与 accepted 一致且两组 CI 未混用；factor rank 1..10 正确；F3 {150,180,210} scope / F5 无普遍鲁棒·无等价声明 / Q-A 通道未独立识别 / Q-B·e joint proportional scale / interaction 方向非对称 / ledger 非加法 / MODEL-INTERNAL 全部守卫 PASS；Q3 / H1 / K12 / H2 未改；new simulations = 0；evaluation reruns = 0；Pro-Max calls = 0；final_handoff 实质修改 = 0。
+- **final closure root 建立**：`05_结果/Q4/final_closure/`（6 件）：`Q4_FINAL_CLOSURE_RECEIPT.json/.md`、`Q4_FINAL_HASH_MANIFEST.json`（final_handoff 7/7 + formal core + registry + report/provenance + Q3 引用 SHA256；mutable_after_seal=false）、`Q4_FINAL_AUTHORITY_MAP.json`（paper number = final_handoff；formal numeric evidence = accepted evaluation root；seal/provenance = final_closure；screening = 历史 selection trail；historical drafts 以 final_handoff 为准）、`Q4_FINAL_REOPEN_POLICY.md`（HUMAN_GATE_REOPEN_Q4 清单 + G7 语义等价论文化操作 + 发现实质错误 STOP）、`Q4_FINAL_CLOSURE_AUDIT.json`（status=CLOSED）。
+- **CURRENT_STATE 终态同步**：state version → `STATE-2026-08-17-Q4-FINAL-CLOSED`；Q4 = FINAL CLOSED / IMMUTABLE / READY_FOR_PAPER；closure = HG-Q4-FINAL-SEAL-01；new Q4 simulation / rerun = NOT AUTHORIZED / NOT REQUIRED；G7 = AUTHORIZED_FOR_PAPER_FREEZE；下一阶段 = G7 PAPER FREEZE（等待 Human Gate 启动，不得自动开始）。
+- 本包为 closure-only：**无新模拟 / 无 rerun / 无 Pro-Max / 无 final_handoff 修改 / 无 accepted numerics 修改 / 无 Q3·H1·K12·H2 修改**。
+
 ## 2026-08-17 / `HG-Q4-REVIEWER-01`（Q4 FINAL SEMANTIC REVIEW = PASS / CLOSED；READY_FOR_PAPER；G7 AUTHORIZED_FOR_PAPER_FREEZE）
 
 ### 修改

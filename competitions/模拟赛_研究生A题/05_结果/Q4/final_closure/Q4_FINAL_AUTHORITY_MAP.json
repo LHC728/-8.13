@@ -1,0 +1,79 @@
+{
+ "closure_id": "HG-Q4-FINAL-SEAL-01",
+ "final_paper_number_authority": {
+  "root": "05_结果/Q4/final_handoff/",
+  "use_for": [
+   "paper numbers",
+   "paper-facing wording",
+   "formal factor table",
+   "interaction",
+   "mechanism narrative",
+   "management recommendations"
+  ],
+  "files": [
+   "Q4_FINAL_NUMERIC_RESULT.md",
+   "Q4_FINAL_FACTOR_TABLE.md",
+   "Q4_FINAL_INTERACTION_TABLE.md",
+   "Q4_FINAL_MECHANISM_NARRATIVE.md",
+   "Q4_FINAL_MANAGEMENT_RECOMMENDATIONS.md",
+   "Q4_FINAL_PROVENANCE.json",
+   "Q4_FINAL_SCOPE_AUDIT.json"
+  ]
+ },
+ "formal_numeric_evidence_authority": {
+  "root": "05_结果/Q4/evaluation/20260817T065336055564Z_b46f9219/",
+  "use_for": [
+   "raw formal evaluation",
+   "paired replicate evidence",
+   "CI reproduction",
+   "mechanism ledger evidence"
+  ],
+  "files": [
+   "Q4_EVALUATION_RESULTS.json",
+   "T_by_rep.json",
+   "ledger_by_rep.json",
+   "Q4_EVALUATION_REPORT.md",
+   "run_manifest.json",
+   "MECHANISM_EXPLANATION.md",
+   "MANAGEMENT_RECOMMENDATION_DRAFT.md"
+  ]
+ },
+ "provenance_seal_authority": {
+  "root": "05_结果/Q4/final_closure/",
+  "use_for": [
+   "closure status",
+   "hashes",
+   "authority lineage",
+   "reopen rules"
+  ]
+ },
+ "screening_only": {
+  "roots": [
+   "05_结果/Q4/screening/phase_1a/",
+   "05_结果/Q4/screening/phase_1b/",
+   "05_结果/Q4/screening/merged/"
+  ],
+  "use_for": [
+   "historical experiment-selection trail"
+  ],
+  "not_for": [
+   "final effect estimate",
+   "final CI",
+   "paper formal inference"
+  ]
+ },
+ "historical_drafts": {
+  "note": "evaluation/MANAGEMENT_RECOMMENDATION_DRAFT.md and MECHANISM_EXPLANATION.md remain accepted workflow records; for final paper wording prefer final_handoff"
+ },
+ "authority_chain": [
+  "HG-Q4-F3-01 (hypothetical counterfactual F3 authority)",
+  "HG-Q4-H2-NA-01 (H2 not applicable after Q3 delete)",
+  "HG-Q4-NS-01 (additive q4_screening / q4_evaluation namespace authority)",
+  "Q4 Phase 1A (screening accepted)",
+  "Q4 Phase 1B (q/e screening accepted)",
+  "Q4 Formal Evaluation (numeric formal inference source)",
+  "HG-Q4-NUMERIC-01 (numeric results FINAL PASS / ACCEPTED)",
+  "HG-Q4-REVIEWER-01 (GPT-5.6 Sol final semantic review PASS_WITH_CAVEAT; RA-S1/S2/S3 CLOSED)",
+  "HG-Q4-FINAL-SEAL-01 (final seal, AUTHORIZED_BY_HUMAN_GATE)"
+ ]
+}
