@@ -2,6 +2,16 @@
 
 本文件只记录会改变当前入口、权威版本、模型含义、阶段状态或文件结构的变更。详细论证保留在签字口径、评审响应和 AI 使用日志中。
 
+## 2026-08-17 / `HG-Q4-F3-01`（Q4 F3 authority 裁决：RA1 = OPTION B / ACCEPTED）
+
+### 修改
+
+- **Human Gate 裁决**：F3 preventive replacement threshold = **AUTHORIZED_AS_HYPOTHETICAL_COUNTERFACTUAL_SENSITIVITY**——作为模型内 what-if 因素改变预防更换阈值；计算相对正式 H1 baseline 的 paired Delta T；参与 Q4 数学因素影响排序；可支撑有条件的管理建议。
+- **冻结边界（F3 may NOT）**：不得 reopen Q3 policy selection、不得替换 H1、不得改变 K\*、不得宣称「PM beats H1」、不得宣称新最优政策、不得成为 H2'、不得追溯修改 Q3 结论。**Q3 formal strategy = H1 / NO_PM_BEFORE_MANDATORY UNCHANGED；K\*=K12 UNCHANGED**。
+- **authority_conflict = RESOLVED_BY_HUMAN_GATE**；RA1 = CLOSED（Pro-Max 设计审查的 BLOCKED 解除——initial BLOCKED 由该裁决解决）。
+- `Q4_G6_EXPERIMENT_SPEC_DRAFT.md` F3 更新为 AUTHORIZED（含 may / may NOT 冻结边界）；`q4_design_risk_card.json` design_review 更新（authority_conflict=RESOLVED_BY_HUMAN_GATE、required_actions_closed=true）。
+- Q4 仍 = **AUTHORIZED_FOR_DESIGN_AND_PREREGISTRATION_ONLY**；正式执行 NOT RUN；Q4_EVALUATION domain UNTOUCHED；**Q4_SPEC_READY_FOR_HUMAN_GATE**（正式 Q4 execution 仍待 Human Gate 另行授权）。
+
 ## 2026-08-17 / `Q3 STATE FINAL REPAIR + Q4/G6 BOOTSTRAP`（设计预注册；Q4 = AUTHORIZED_FOR_DESIGN_AND_PREREGISTRATION_ONLY）
 
 ### 修改

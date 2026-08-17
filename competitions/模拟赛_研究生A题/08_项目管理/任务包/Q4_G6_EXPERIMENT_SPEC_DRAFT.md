@@ -1,6 +1,6 @@
 # Q4 / G6 EXPERIMENT SPEC DRAFT（实验设计与预注册草稿）
 
-> 状态：**DRAFT / PREREGISTRATION**（本轮只设计、预注册，不正式跑大规模情景）。
+> 状态：**DRAFT / PREREGISTRATION（F3 经 HG-Q4-F3-01 授权为假设性反事实敏感性；authority_conflict = RESOLVED_BY_HUMAN_GATE）**。本轮只设计、预注册，不正式跑大规模情景。
 > 权威：问题契约 §5；项目计划 G6；Q3 FINAL CLOSURE（`05_结果/Q3/final_closure/`）；HG-Q4-H2-NA-01（`08_项目管理/任务包/Q4_H2_NA_01_ADDENDUM.md`）。
 > 本轮授权：Q4 = **AUTHORIZED_FOR_DESIGN_AND_PREREGISTRATION_ONLY**（不得执行正式 Q4；不得消耗 Q4_EVALUATION random domain）。
 > 正式执行须：本 spec 经 Pro-Max 设计审查（required actions 闭合）+ Human Gate 批准后另行授权。
@@ -44,7 +44,7 @@ Baseline evidence / config hash（机械绑定）：`05_结果/Q3/formal/run_202
 |---|---|---|---|
 | F1 | K | `{9,9.5,10,10.5,11,11.5,12}` | **优先复用 Q3 accepted formal results**（`7ee48fc0` 各 K cell），不得无意义重跑；复用角色 = 「已冻结 Q3 因素 K 的已有正式证据」，非 Q4 新选择数据 |
 | F2 | turnover | baseline 1.0 h vs 替代 0.5 h（完全重叠） | 优先检查已有 accepted compatible evidence（G3/B05 替代敏感性）是否可复用；不可复用才在 Q4_SCREENING 域补跑 |
-| F3 | preventive replacement threshold | **BLOCKED / PENDING_HUMAN_GATE（Pro-Max 设计审查 2026-08-17：authority_conflict=true）**——在冻结 NO_PM_BEFORE_MANDATORY policy family 内无法定义（任何 τ<240 都是 mandatory 前的 PM，必然评估冻结候选政策集之外的策略）。待 Human Gate 二选一：(a) 通过 frozen addendum 从 Q4 一级因素删除 F3（镜像 HG-Q4-H2-NA-01）；或 (b) 严格授权为假设性反事实敏感性（冻结措辞：正式策略仍 H1/NO_PM_BEFORE_MANDATORY、结果标模型内 what-if、排除在 k\* 推荐范围、不宣称『PM beats H1』）。**F3 解决前不得执行任何涉及 F3 的 Q4 运行**。 | 若需改变正式 H1 policy family → `authority_conflict=true` → **HUMAN_GATE_REQUIRED**（不得自动运行） |
+| F3 | preventive replacement threshold | **AUTHORIZED_AS_HYPOTHETICAL_COUNTERFACTUAL_SENSITIVITY（HG-Q4-F3-01，Human Gate 2026-08-17：RA1 = OPTION B / ACCEPTED）**——作为模型内 what-if 因素改变预防更换阈值；计算相对正式 H1 baseline 的 paired Delta T；参与 Q4 数学因素影响排序；可支撑有条件的管理建议。**冻结边界（F3 may NOT）**：不得 reopen Q3 policy selection、不得替换 H1、不得改变 K\*、不得宣称「PM beats H1」、不得宣称新最优政策、不得成为 H2'、不得追溯修改 Q3 结论。正式策略保持 H1 / NO_PM_BEFORE_MANDATORY（UNCHANGED），K\*=K12（UNCHANGED）。 | 若未来需要改变正式 H1 policy family → `authority_conflict=true` → **HUMAN_GATE_REQUIRED**（不得自动运行） |
 | F4-A/B/C/E | 各工序 duration 统一比例扰动 | 对称、简单预注册 levels（默认 ±10%；若仓库已有冻结 level 定义则优先使用冻结定义） | 不得偷偷调整 levels 使排名“好看” |
 | F5 | failure semantics | 分段线性 CDF（主） vs 常风险率替代 | 只称**模型语义敏感性**，不称现实因果 |
 | H2 | （historical） | **NOT_APPLICABLE_AFTER_H2_DELETE**（HG-Q4-H2-NA-01） | 禁止重新激活 H2 / H2' / 发明替代策略补因素数量 |

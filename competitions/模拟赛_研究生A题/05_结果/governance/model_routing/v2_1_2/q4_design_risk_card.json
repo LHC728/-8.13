@@ -60,16 +60,25 @@
     "fresh Pro-Max design review required before Human Gate decides formal Q4 execution"
   ],
   "design_review": {
-    "pro_max_verdict": "BLOCKED",
-    "authority_conflict": true,
+    "pro_max_verdict": "BLOCKED (initial)",
+    "authority_conflict": "RESOLVED_BY_HUMAN_GATE",
     "date": "2026-08-17",
-    "reason": "F3 preventive-replacement-threshold cannot be defined inside the frozen NO_PM_BEFORE_MANDATORY H1 policy family (any tau<240 is PM-before-mandatory, i.e. a policy outside the Q3 frozen candidate set whose k* scope is limited to that set); the draft's unresolved F3 + historical contract §5 PM entry trigger authority_conflict=true -> HUMAN_GATE_REQUIRED (MMR V2.1.2: PASS/CAVEAT with conflict never passes)",
+    "resolution": "HG-Q4-F3-01 (Human Gate 2026-08-17): RA1 = OPTION B / ACCEPTED — F3 =
+      AUTHORIZED_AS_HYPOTHETICAL_COUNTERFACTUAL_SENSITIVITY (model-internal
+      what-if threshold factor; paired Delta T vs the formal H1 baseline;
+      participates in Q4 mathematical factor ranking; may support
+      conditional management recommendations). Q3 formal strategy H1 /
+      NO_PM_BEFORE_MANDATORY UNCHANGED; K*=K12 UNCHANGED. F3 may NOT:
+      reopen Q3 policy selection, replace H1, change K*, claim 'PM beats
+      H1', claim a new optimal policy, become H2', or retroactively modify
+      Q3 conclusions.",
+    "reason_initial_block": "F3 preventive-replacement-threshold could not be defined inside the frozen NO_PM_BEFORE_MANDATORY H1 policy family; the Human Gate resolved the authority tension via HG-Q4-F3-01 (option B: strict hypothetical counterfactual with frozen wording)",
     "required_actions": [
-      "RA1 (HUMAN_GATE): adjudicate F3 — (a) drop F3 from Q4 level-1 factors via frozen addendum amending contract §5 (mirror HG-Q4-H2-NA-01), or (b) authorize strictly as hypothetical counterfactual sensitivity with frozen wording (formal strategy stays H1/NO_PM_BEFORE_MANDATORY; results model-internal what-if; excluded from k* recommendation scope; no 'PM beats H1' claims). No Q4 execution touching F3 before resolution.",
+      "RA1 (HG-Q4-F3-01): F3 adjudicated — OPTION B / ACCEPTED (hypothetical counterfactual sensitivity with frozen boundaries) - CLOSED",
       "RA2 (closed in spec): screening data absolutely excluded from final effect/CI estimation; final CI evidence exclusively from Q4_EVALUATION replicates.",
       "RA3 (closed in spec): freeze a Q4_SCREENING replicate-ID registry + manifest before any screening run (mechanical non-overlap verification)."
     ],
-    "required_actions_closed": false
+    "required_actions_closed": true
   },
   "notes": [
     "MMR V2.1.2 YELLOW -> fresh Pro-Max (deepseek-pro-max / deepseek-v4-pro / reasoning=max / read-only) review of the Q4 design; reviewer answers A-L; all required actions must close before Human Gate authorizes formal Q4 execution.",
