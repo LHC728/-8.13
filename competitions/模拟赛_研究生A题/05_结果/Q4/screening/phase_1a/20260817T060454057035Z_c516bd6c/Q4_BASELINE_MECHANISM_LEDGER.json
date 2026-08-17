@@ -1,0 +1,47 @@
+{
+ "check": "Q4_BASELINE_MECHANISM_LEDGER",
+ "ledger": {
+  "active_wait_time": "0",
+  "calibration_time": {
+   "A": "10",
+   "B": "0",
+   "C": "20/3",
+   "E": "40/3"
+  },
+  "effective_test_time": {
+   "A": "5000",
+   "B": "4000",
+   "C": "5000",
+   "E": "5907"
+  },
+  "failure_wasted_fragment_time": {
+   "A": "13999912566217005/36028797018963968",
+   "B": "0",
+   "C": "2441204150641246295/2305843009213693952",
+   "E": "0"
+  },
+  "note": "THIS IS A MECHANISM LEDGER. IT IS NOT AN ADDITIVE DECOMPOSITION OF T (parallel activities overlap). Summed over 20 baseline replicates of q4_screening (screening diagnostic only).",
+  "off_shift_time": "7668",
+  "queue_blocking_time": "SCREENING_APPROX (see note)",
+  "retest_time": {
+   "A": "95",
+   "B": "118",
+   "C": "225/2",
+   "E": "426"
+  },
+  "shift_boundary_wasted_fragment_time": {
+   "A": "0",
+   "B": "0",
+   "C": "0",
+   "E": "0"
+  },
+  "terminal_cancelled_fragment_time": {
+   "A": "5/2",
+   "B": "0",
+   "C": "0",
+   "E": "1079722365158342637/576460752303423488"
+  },
+  "turnover_occupancy_time": "1960"
+ },
+ "note": "THIS IS A MECHANISM LEDGER. IT IS NOT AN ADDITIVE DECOMPOSITION OF T (parallel activities overlap). Summed over 20 baseline replicates of q4_screening (screening diagnostic only)."
+}

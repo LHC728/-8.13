@@ -1,0 +1,11 @@
+{
+ "authorized": [
+  "failure_semantic"
+ ],
+ "changed": [
+  "scenario_id"
+ ],
+ "check": "only_one_factor_diff",
+ "scenario": "F5_CONSTANT_HAZARD",
+ "status": "FAIL"
+}

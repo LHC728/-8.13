@@ -1,0 +1,23 @@
+{
+ "config_hash_baseline": "618d24ab3d823f97651524c6e0e4074553de280afab898fa0feca4abc43da275",
+ "generated_at": "2026-08-17T06:06:59.994242Z",
+ "master_seed": 7,
+ "namespace": "q4_screening",
+ "registry_commit": "f404c16",
+ "scenario_config_hashes": {
+  "F2_TURNOVER_05": "bb15bb6453f9a5f83d30200df0d9a0059691c0cb564d2f09a8448f8a5bec94cb",
+  "F3_TAU150": "fb339f40aaad318ceffea03f237858c992ab4e3892b62f7ee7aa13896c4d35fd",
+  "F3_TAU180": "5445d1e48c7b3fe587f6994b41848e688bbae1ae9a9a17f1806cd0ecd487747c",
+  "F3_TAU210": "67b9f459b82cc1597d1635a1652086f44fbb9fd4178360e4be9fde12b87b5f44",
+  "F4_A_M10": "58dfac3883e120cd5e3a89a24cbf6f3bd0423164aab68cf5588e39420f79e96d",
+  "F4_A_P10": "c2e30580cfe37945f5d05addf936e7075642437cd096960240abd8a6b74dc03a",
+  "F4_B_M10": "9118c78fe68e3954f50955bfdd986d8f7e3b1326b5d1bf25cbcd41623ac0f6bc",
+  "F4_B_P10": "e8f9506b58c4160abef013590c36405f650650d48381e7033657b8bc5f0f41f8",
+  "F4_C_M10": "b4c26e3000f01dd3d8508f7a7cb20f72ac053d8154bc59cdfc00f1f819753780",
+  "F4_C_P10": "a757c47c30487a56952c0d437afe1a54d10dd4e233b184786aaa180aaa0c1807",
+  "F4_E_M10": "49eacfe46bbb105b73bd18622ac3e91f5ae4872a7942bf3e8578fc61fae38980",
+  "F4_E_P10": "d42486aecbbdc60f007d920e1e2c8eb093ab097d7c138adefdbe98d29c6d9f11",
+  "F5_CONSTANT_HAZARD": "6f081f756e02bdb33bf8ac100f0ff9d15f8fa38063884fb9c31128744d71190b"
+ },
+ "spec_freeze_commit": "62ebe5f"
+}

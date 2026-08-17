@@ -1,0 +1,12 @@
+{
+ "R_eval_proposed": null,
+ "R_max": null,
+ "R_min": null,
+ "basis": "screening paired Delta T variance of the largest-effect factor (F2)",
+ "check": "EVALUATION_SAMPLE_SIZE_PROPOSAL",
+ "paired_sd_h": 7.8625,
+ "q4_evaluation": "NOT RUN",
+ "rule": "pre-registered 95% CI half-width w: R >= (t_{0.975} * sd / w)^2; exact numbers to be frozen by the formal Q4 evaluation preregistration (NOT decided from ranking after the fact)",
+ "status": "PROPOSAL_ONLY",
+ "target_half_width": null
+}

@@ -1,0 +1,11 @@
+{
+ "check": "authorized_core_delta",
+ "g3/key_schema_v1.py": {
+  "authorized_change": "Q4 additive namespace (HG-Q4-NS-01)",
+  "sha256": "4fd6ad1085b7d5111b96f4cccf2dee0792fe032982fdf6583ccb18de3cb85a83"
+ },
+ "g3/random_des_v1.py": {
+  "authorized_change": "Q4 additive namespace (HG-Q4-NS-01)",
+  "sha256": "801d6352af076e6f2e82c319c128d228eb9eb0703522675afe35ca187ee89928"
+ }
+}

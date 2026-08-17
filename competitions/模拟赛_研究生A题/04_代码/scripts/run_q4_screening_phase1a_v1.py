@@ -101,8 +101,21 @@ def build_cfg(rep: int, scenario: dict) -> rd.RandomDesConfig:
 
 def run_one(cfg: rd.RandomDesConfig, constant_hazard: bool = False):
     if constant_hazard:
+        # F5 MODEL-SEMANTIC SENSITIVITY: same keyed U_L; the frozen
+        # constant-hazard sensitivity inverse CDF returns a float (G3
+        # sensitivity construct; main model stays exact piecewise-linear);
+        # the engine requires a Fraction lifetime, so the adapter converts
+        # the float to its exact rational representation (Fraction(float)
+        # is the exact binary-rational value; no independent re-draw, no
+        # core change, no canonical binary float).
+        sens = lr.sensitivity_constant_hazard_inverse_cdf
+
+        def _ch_inverse_cdf(u, f120, f240):
+            lt, cens = sens(u, f120, f240)
+            return (None if lt is None else Fraction(lt)), cens
+
         orig = lr.inverse_cdf
-        lr.inverse_cdf = lr.sensitivity_constant_hazard_inverse_cdf
+        lr.inverse_cdf = _ch_inverse_cdf
         try:
             result = rd.run_random_des(cfg)
         finally:

@@ -1,0 +1,79 @@
+{
+ "R_screen": 20,
+ "check": "Q4_PHASE1A_SCOPE_AUDIT",
+ "checks": {
+  "authorized_core_delta": {
+   "g3/key_schema_v1.py": {
+    "authorized_change": "Q4 additive namespace (HG-Q4-NS-01)",
+    "sha256": "4fd6ad1085b7d5111b96f4cccf2dee0792fe032982fdf6583ccb18de3cb85a83"
+   },
+   "g3/random_des_v1.py": {
+    "authorized_change": "Q4 additive namespace (HG-Q4-NS-01)",
+    "sha256": "801d6352af076e6f2e82c319c128d228eb9eb0703522675afe35ca187ee89928"
+   }
+  },
+  "crn": {
+   "master_seed": 7,
+   "namespace": "q4_screening",
+   "note": "baseline and every scenario share the same namespace/master_seed/replicate -> same keyed U_X/U_D/U_Y/U_L; parameter changes are same-U transforms only",
+   "replicate_ids": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+   ],
+   "status": "PASS"
+  },
+  "evaluation_firewall": {
+   "q4_evaluation_keys_consumed": 0,
+   "q4_evaluation_result_files": 0,
+   "q4_evaluation_runs": 0,
+   "status": "PASS"
+  },
+  "only_one_factor_diff": {
+   "authorized": [
+    "failure_semantic"
+   ],
+   "changed": [
+    "scenario_id"
+   ],
+   "scenario": "F5_CONSTANT_HAZARD",
+   "status": "FAIL"
+  }
+ },
+ "executed": [
+  "baseline mechanism ledger",
+  "F2",
+  "F3 (150/180/210)",
+  "F4 A/B/C/E +/-10%",
+  "F5 constant-hazard"
+ ],
+ "h2": "FROZEN_HISTORICAL_CHALLENGER (not reactivated)",
+ "master_seed": 7,
+ "namespace": "q4_screening",
+ "not_executed": {
+  "final_factor_inference": "NOT AUTHORIZED",
+  "final_management_recommendation": "NOT AUTHORIZED",
+  "q4_evaluation": "NOT RUN",
+  "q_e_secondary": "DESIGNED / NOT RUN",
+  "top2_interaction": "NOT RUN"
+ },
+ "note": "screening data absolutely excluded from any future final CI estimation (Q4_EVALUATION is the only final-CI source).",
+ "q3": "FINAL / IMMUTABLE"
+}

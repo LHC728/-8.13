@@ -1,0 +1,506 @@
+{
+ "R_eval_proposal": {
+  "R_eval_proposed": null,
+  "R_max": null,
+  "R_min": null,
+  "note": "PROPOSAL ONLY (Q4_EVALUATION NOT RUN); screening paired variance suggests R via 95% CI half-width rule",
+  "target_half_width": null
+ },
+ "R_screen": 20,
+ "baseline": {
+  "K": "12",
+  "failure_semantics": "piecewise-linear",
+  "policy": "NO_PM_BEFORE_MANDATORY",
+  "strategy": "H1",
+  "turnover": "1h_literal"
+ },
+ "baseline_mechanism_ledger": {
+  "active_wait_time": "0",
+  "calibration_time": {
+   "A": "10",
+   "B": "0",
+   "C": "20/3",
+   "E": "40/3"
+  },
+  "effective_test_time": {
+   "A": "5000",
+   "B": "4000",
+   "C": "5000",
+   "E": "5907"
+  },
+  "failure_wasted_fragment_time": {
+   "A": "13999912566217005/36028797018963968",
+   "B": "0",
+   "C": "2441204150641246295/2305843009213693952",
+   "E": "0"
+  },
+  "note": "THIS IS A MECHANISM LEDGER. IT IS NOT AN ADDITIVE DECOMPOSITION OF T (parallel activities overlap). Summed over 20 baseline replicates of q4_screening (screening diagnostic only).",
+  "off_shift_time": "7668",
+  "queue_blocking_time": "SCREENING_APPROX (see note)",
+  "retest_time": {
+   "A": "95",
+   "B": "118",
+   "C": "225/2",
+   "E": "426"
+  },
+  "shift_boundary_wasted_fragment_time": {
+   "A": "0",
+   "B": "0",
+   "C": "0",
+   "E": "0"
+  },
+  "terminal_cancelled_fragment_time": {
+   "A": "5/2",
+   "B": "0",
+   "C": "0",
+   "E": "1079722365158342637/576460752303423488"
+  },
+  "turnover_occupancy_time": "1960"
+ },
+ "candidate_top2": [
+  {
+   "factor_id": "F2",
+   "mean_Delta_T": "-1507/20",
+   "scenario_id": "F2_TURNOVER_05",
+   "screening_CI": [
+    -79.029707,
+    -71.670293
+   ],
+   "standardized_effect": -9.583503
+  },
+  {
+   "factor_id": "F4-E",
+   "mean_Delta_T": "-7097/200",
+   "scenario_id": "F4_E_M10",
+   "screening_CI": [
+    -38.576183,
+    -32.393817
+   ],
+   "standardized_effect": -5.372474
+  }
+ ],
+ "checks": {
+  "authorized_core_delta": {
+   "g3/key_schema_v1.py": {
+    "authorized_change": "Q4 additive namespace (HG-Q4-NS-01)",
+    "sha256": "4fd6ad1085b7d5111b96f4cccf2dee0792fe032982fdf6583ccb18de3cb85a83"
+   },
+   "g3/random_des_v1.py": {
+    "authorized_change": "Q4 additive namespace (HG-Q4-NS-01)",
+    "sha256": "801d6352af076e6f2e82c319c128d228eb9eb0703522675afe35ca187ee89928"
+   }
+  },
+  "crn": {
+   "master_seed": 7,
+   "namespace": "q4_screening",
+   "note": "baseline and every scenario share the same namespace/master_seed/replicate -> same keyed U_X/U_D/U_Y/U_L; parameter changes are same-U transforms only",
+   "replicate_ids": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+   ],
+   "status": "PASS"
+  },
+  "evaluation_firewall": {
+   "q4_evaluation_keys_consumed": 0,
+   "q4_evaluation_result_files": 0,
+   "q4_evaluation_runs": 0,
+   "status": "PASS"
+  },
+  "only_one_factor_diff": {
+   "authorized": [
+    "failure_semantic"
+   ],
+   "changed": [
+    "scenario_id"
+   ],
+   "scenario": "F5_CONSTANT_HAZARD",
+   "status": "FAIL"
+  }
+ },
+ "factor_ranking": [
+  {
+   "SE": 1.758102,
+   "authority": "-",
+   "factor_id": "F2",
+   "mean_Delta_T_h": "-1507/20",
+   "scenario_id": "F2_TURNOVER_05",
+   "screening_CI_high": -71.670293,
+   "screening_CI_low": -79.029707,
+   "sign_consistency": "ALL_NEG",
+   "source": "Q4_SCREENING",
+   "standardized_effect": -9.583503,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 1.476915,
+   "authority": "-",
+   "factor_id": "F4-E",
+   "mean_Delta_T_h": "-7097/200",
+   "scenario_id": "F4_E_M10",
+   "screening_CI_high": -32.393817,
+   "screening_CI_low": -38.576183,
+   "sign_consistency": "ALL_NEG",
+   "source": "Q4_SCREENING",
+   "standardized_effect": -5.372474,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 0.98832,
+   "authority": "-",
+   "factor_id": "F4-C",
+   "mean_Delta_T_h": "159/10",
+   "scenario_id": "F4_C_P10",
+   "screening_CI_high": 17.968554,
+   "screening_CI_low": 13.831446,
+   "sign_consistency": "ALL_POS",
+   "source": "Q4_SCREENING",
+   "standardized_effect": 3.597366,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 1.558438,
+   "authority": "-",
+   "factor_id": "F4-E",
+   "mean_Delta_T_h": "6215449104249006633007/345876451382054092800",
+   "scenario_id": "F4_E_P10",
+   "screening_CI_high": 21.231954,
+   "screening_CI_low": 14.708331,
+   "sign_consistency": "ALL_POS",
+   "source": "Q4_SCREENING",
+   "standardized_effect": 2.57838,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 1.357533,
+   "authority": "-",
+   "factor_id": "F4-A",
+   "mean_Delta_T_h": "273/20",
+   "scenario_id": "F4_A_P10",
+   "screening_CI_high": 16.491316,
+   "screening_CI_low": 10.808684,
+   "sign_consistency": "ALL_POS",
+   "source": "Q4_SCREENING",
+   "standardized_effect": 2.248368,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 0.745638,
+   "authority": "COUNTERFACTUAL_ONLY",
+   "factor_id": "F3",
+   "mean_Delta_T_h": "11/8",
+   "scenario_id": "F3_TAU150",
+   "screening_CI_high": 2.93562,
+   "screening_CI_low": -0.18562,
+   "sign_consistency": "MIXED",
+   "source": "Q4_SCREENING",
+   "standardized_effect": 0.412344,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 0.350704,
+   "authority": "-",
+   "factor_id": "F4-A",
+   "mean_Delta_T_h": "-19/40",
+   "scenario_id": "F4_A_M10",
+   "screening_CI_high": 0.259024,
+   "screening_CI_low": -1.209024,
+   "sign_consistency": "MIXED",
+   "source": "Q4_SCREENING",
+   "standardized_effect": -0.302857,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 0.560163,
+   "authority": "COUNTERFACTUAL_ONLY",
+   "factor_id": "F3",
+   "mean_Delta_T_h": "29/40",
+   "scenario_id": "F3_TAU180",
+   "screening_CI_high": 1.897422,
+   "screening_CI_low": -0.447422,
+   "sign_consistency": "MIXED",
+   "source": "Q4_SCREENING",
+   "standardized_effect": 0.289407,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 0.414433,
+   "authority": "COUNTERFACTUAL_ONLY",
+   "factor_id": "F3",
+   "mean_Delta_T_h": "33213993915376109987/69175290276410818560",
+   "scenario_id": "F3_TAU210",
+   "screening_CI_high": 1.347552,
+   "screening_CI_low": -0.387267,
+   "sign_consistency": "MIXED",
+   "source": "Q4_SCREENING",
+   "standardized_effect": 0.25906,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 0.474342,
+   "authority": "-",
+   "factor_id": "F4-C",
+   "mean_Delta_T_h": "-1/2",
+   "scenario_id": "F4_C_M10",
+   "screening_CI_high": 0.492797,
+   "screening_CI_low": -1.492797,
+   "sign_consistency": "MIXED",
+   "source": "Q4_SCREENING",
+   "standardized_effect": -0.235702,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 0.02,
+   "authority": "-",
+   "factor_id": "F4-B",
+   "mean_Delta_T_h": "-1/50",
+   "scenario_id": "F4_B_M10",
+   "screening_CI_high": 0.02186,
+   "screening_CI_low": -0.06186,
+   "sign_consistency": "MIXED",
+   "source": "Q4_SCREENING",
+   "standardized_effect": -0.223607,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 0.02,
+   "authority": "-",
+   "factor_id": "F4-B",
+   "mean_Delta_T_h": "1/50",
+   "scenario_id": "F4_B_P10",
+   "screening_CI_high": 0.06186,
+   "screening_CI_low": -0.02186,
+   "sign_consistency": "MIXED",
+   "source": "Q4_SCREENING",
+   "standardized_effect": 0.223607,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 0.6,
+   "authority": "MODEL_SEMANTIC_ONLY",
+   "factor_id": "F5",
+   "mean_Delta_T_h": "3/5",
+   "scenario_id": "F5_CONSTANT_HAZARD",
+   "screening_CI_high": 1.8558,
+   "screening_CI_low": -0.6558,
+   "sign_consistency": "MIXED",
+   "source": "Q4_SCREENING",
+   "standardized_effect": 0.223607,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  }
+ ],
+ "master_seed": 7,
+ "namespace": "q4_screening",
+ "replicate_ids": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19
+ ],
+ "run_id": "20260817T060454057035Z_c516bd6c",
+ "screening_rows": [
+  {
+   "SE": 1.758102,
+   "authority": "-",
+   "factor_id": "F2",
+   "mean_Delta_T_h": "-1507/20",
+   "scenario_id": "F2_TURNOVER_05",
+   "screening_CI_high": -71.670293,
+   "screening_CI_low": -79.029707,
+   "sign_consistency": "ALL_NEG",
+   "source": "Q4_SCREENING",
+   "standardized_effect": -9.583503,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 1.476915,
+   "authority": "-",
+   "factor_id": "F4-E",
+   "mean_Delta_T_h": "-7097/200",
+   "scenario_id": "F4_E_M10",
+   "screening_CI_high": -32.393817,
+   "screening_CI_low": -38.576183,
+   "sign_consistency": "ALL_NEG",
+   "source": "Q4_SCREENING",
+   "standardized_effect": -5.372474,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 0.98832,
+   "authority": "-",
+   "factor_id": "F4-C",
+   "mean_Delta_T_h": "159/10",
+   "scenario_id": "F4_C_P10",
+   "screening_CI_high": 17.968554,
+   "screening_CI_low": 13.831446,
+   "sign_consistency": "ALL_POS",
+   "source": "Q4_SCREENING",
+   "standardized_effect": 3.597366,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 1.558438,
+   "authority": "-",
+   "factor_id": "F4-E",
+   "mean_Delta_T_h": "6215449104249006633007/345876451382054092800",
+   "scenario_id": "F4_E_P10",
+   "screening_CI_high": 21.231954,
+   "screening_CI_low": 14.708331,
+   "sign_consistency": "ALL_POS",
+   "source": "Q4_SCREENING",
+   "standardized_effect": 2.57838,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 1.357533,
+   "authority": "-",
+   "factor_id": "F4-A",
+   "mean_Delta_T_h": "273/20",
+   "scenario_id": "F4_A_P10",
+   "screening_CI_high": 16.491316,
+   "screening_CI_low": 10.808684,
+   "sign_consistency": "ALL_POS",
+   "source": "Q4_SCREENING",
+   "standardized_effect": 2.248368,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 0.745638,
+   "authority": "COUNTERFACTUAL_ONLY",
+   "factor_id": "F3",
+   "mean_Delta_T_h": "11/8",
+   "scenario_id": "F3_TAU150",
+   "screening_CI_high": 2.93562,
+   "screening_CI_low": -0.18562,
+   "sign_consistency": "MIXED",
+   "source": "Q4_SCREENING",
+   "standardized_effect": 0.412344,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 0.350704,
+   "authority": "-",
+   "factor_id": "F4-A",
+   "mean_Delta_T_h": "-19/40",
+   "scenario_id": "F4_A_M10",
+   "screening_CI_high": 0.259024,
+   "screening_CI_low": -1.209024,
+   "sign_consistency": "MIXED",
+   "source": "Q4_SCREENING",
+   "standardized_effect": -0.302857,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 0.560163,
+   "authority": "COUNTERFACTUAL_ONLY",
+   "factor_id": "F3",
+   "mean_Delta_T_h": "29/40",
+   "scenario_id": "F3_TAU180",
+   "screening_CI_high": 1.897422,
+   "screening_CI_low": -0.447422,
+   "sign_consistency": "MIXED",
+   "source": "Q4_SCREENING",
+   "standardized_effect": 0.289407,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 0.414433,
+   "authority": "COUNTERFACTUAL_ONLY",
+   "factor_id": "F3",
+   "mean_Delta_T_h": "33213993915376109987/69175290276410818560",
+   "scenario_id": "F3_TAU210",
+   "screening_CI_high": 1.347552,
+   "screening_CI_low": -0.387267,
+   "sign_consistency": "MIXED",
+   "source": "Q4_SCREENING",
+   "standardized_effect": 0.25906,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 0.474342,
+   "authority": "-",
+   "factor_id": "F4-C",
+   "mean_Delta_T_h": "-1/2",
+   "scenario_id": "F4_C_M10",
+   "screening_CI_high": 0.492797,
+   "screening_CI_low": -1.492797,
+   "sign_consistency": "MIXED",
+   "source": "Q4_SCREENING",
+   "standardized_effect": -0.235702,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 0.02,
+   "authority": "-",
+   "factor_id": "F4-B",
+   "mean_Delta_T_h": "-1/50",
+   "scenario_id": "F4_B_M10",
+   "screening_CI_high": 0.02186,
+   "screening_CI_low": -0.06186,
+   "sign_consistency": "MIXED",
+   "source": "Q4_SCREENING",
+   "standardized_effect": -0.223607,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 0.02,
+   "authority": "-",
+   "factor_id": "F4-B",
+   "mean_Delta_T_h": "1/50",
+   "scenario_id": "F4_B_P10",
+   "screening_CI_high": 0.06186,
+   "screening_CI_low": -0.02186,
+   "sign_consistency": "MIXED",
+   "source": "Q4_SCREENING",
+   "standardized_effect": 0.223607,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  },
+  {
+   "SE": 0.6,
+   "authority": "MODEL_SEMANTIC_ONLY",
+   "factor_id": "F5",
+   "mean_Delta_T_h": "3/5",
+   "scenario_id": "F5_CONSTANT_HAZARD",
+   "screening_CI_high": 1.8558,
+   "screening_CI_low": -0.6558,
+   "sign_consistency": "MIXED",
+   "source": "Q4_SCREENING",
+   "standardized_effect": 0.223607,
+   "status": "SCREENING_ONLY_NON_FINAL"
+  }
+ ],
+ "wallclock_s": 94.46
+}

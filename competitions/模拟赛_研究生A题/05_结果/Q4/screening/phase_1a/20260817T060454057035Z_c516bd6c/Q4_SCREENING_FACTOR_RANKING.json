@@ -1,0 +1,163 @@
+{
+ "check": "Q4_SCREENING_FACTOR_RANKING",
+ "mathematical_effect_rank": [
+  {
+   "SE": 1.758102,
+   "authority": "-",
+   "factor_id": "F2",
+   "mean_Delta_T_h": "-1507/20",
+   "rank": 1,
+   "scenario_id": "F2_TURNOVER_05",
+   "screening_CI_high": -71.670293,
+   "screening_CI_low": -79.029707,
+   "sign_consistency": "ALL_NEG",
+   "standardized_effect": -9.583503
+  },
+  {
+   "SE": 1.476915,
+   "authority": "-",
+   "factor_id": "F4-E",
+   "mean_Delta_T_h": "-7097/200",
+   "rank": 2,
+   "scenario_id": "F4_E_M10",
+   "screening_CI_high": -32.393817,
+   "screening_CI_low": -38.576183,
+   "sign_consistency": "ALL_NEG",
+   "standardized_effect": -5.372474
+  },
+  {
+   "SE": 0.98832,
+   "authority": "-",
+   "factor_id": "F4-C",
+   "mean_Delta_T_h": "159/10",
+   "rank": 3,
+   "scenario_id": "F4_C_P10",
+   "screening_CI_high": 17.968554,
+   "screening_CI_low": 13.831446,
+   "sign_consistency": "ALL_POS",
+   "standardized_effect": 3.597366
+  },
+  {
+   "SE": 1.558438,
+   "authority": "-",
+   "factor_id": "F4-E",
+   "mean_Delta_T_h": "6215449104249006633007/345876451382054092800",
+   "rank": 4,
+   "scenario_id": "F4_E_P10",
+   "screening_CI_high": 21.231954,
+   "screening_CI_low": 14.708331,
+   "sign_consistency": "ALL_POS",
+   "standardized_effect": 2.57838
+  },
+  {
+   "SE": 1.357533,
+   "authority": "-",
+   "factor_id": "F4-A",
+   "mean_Delta_T_h": "273/20",
+   "rank": 5,
+   "scenario_id": "F4_A_P10",
+   "screening_CI_high": 16.491316,
+   "screening_CI_low": 10.808684,
+   "sign_consistency": "ALL_POS",
+   "standardized_effect": 2.248368
+  },
+  {
+   "SE": 0.745638,
+   "authority": "COUNTERFACTUAL_ONLY",
+   "factor_id": "F3",
+   "mean_Delta_T_h": "11/8",
+   "rank": 6,
+   "scenario_id": "F3_TAU150",
+   "screening_CI_high": 2.93562,
+   "screening_CI_low": -0.18562,
+   "sign_consistency": "MIXED",
+   "standardized_effect": 0.412344
+  },
+  {
+   "SE": 0.350704,
+   "authority": "-",
+   "factor_id": "F4-A",
+   "mean_Delta_T_h": "-19/40",
+   "rank": 7,
+   "scenario_id": "F4_A_M10",
+   "screening_CI_high": 0.259024,
+   "screening_CI_low": -1.209024,
+   "sign_consistency": "MIXED",
+   "standardized_effect": -0.302857
+  },
+  {
+   "SE": 0.560163,
+   "authority": "COUNTERFACTUAL_ONLY",
+   "factor_id": "F3",
+   "mean_Delta_T_h": "29/40",
+   "rank": 8,
+   "scenario_id": "F3_TAU180",
+   "screening_CI_high": 1.897422,
+   "screening_CI_low": -0.447422,
+   "sign_consistency": "MIXED",
+   "standardized_effect": 0.289407
+  },
+  {
+   "SE": 0.414433,
+   "authority": "COUNTERFACTUAL_ONLY",
+   "factor_id": "F3",
+   "mean_Delta_T_h": "33213993915376109987/69175290276410818560",
+   "rank": 9,
+   "scenario_id": "F3_TAU210",
+   "screening_CI_high": 1.347552,
+   "screening_CI_low": -0.387267,
+   "sign_consistency": "MIXED",
+   "standardized_effect": 0.25906
+  },
+  {
+   "SE": 0.474342,
+   "authority": "-",
+   "factor_id": "F4-C",
+   "mean_Delta_T_h": "-1/2",
+   "rank": 10,
+   "scenario_id": "F4_C_M10",
+   "screening_CI_high": 0.492797,
+   "screening_CI_low": -1.492797,
+   "sign_consistency": "MIXED",
+   "standardized_effect": -0.235702
+  },
+  {
+   "SE": 0.02,
+   "authority": "-",
+   "factor_id": "F4-B",
+   "mean_Delta_T_h": "-1/50",
+   "rank": 11,
+   "scenario_id": "F4_B_M10",
+   "screening_CI_high": 0.02186,
+   "screening_CI_low": -0.06186,
+   "sign_consistency": "MIXED",
+   "standardized_effect": -0.223607
+  },
+  {
+   "SE": 0.02,
+   "authority": "-",
+   "factor_id": "F4-B",
+   "mean_Delta_T_h": "1/50",
+   "rank": 12,
+   "scenario_id": "F4_B_P10",
+   "screening_CI_high": 0.06186,
+   "screening_CI_low": -0.02186,
+   "sign_consistency": "MIXED",
+   "standardized_effect": 0.223607
+  },
+  {
+   "SE": 0.6,
+   "authority": "MODEL_SEMANTIC_ONLY",
+   "factor_id": "F5",
+   "mean_Delta_T_h": "3/5",
+   "rank": 13,
+   "scenario_id": "F5_CONSTANT_HAZARD",
+   "screening_CI_high": 1.8558,
+   "screening_CI_low": -0.6558,
+   "sign_consistency": "MIXED",
+   "standardized_effect": 0.223607
+  }
+ ],
+ "preliminary_management_notes": "separate from mathematical rank",
+ "status": "SCREENING_ONLY_NON_FINAL"
+}
